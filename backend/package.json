@@ -1,0 +1,17 @@
+{
+  "name": "aura-asset-manager-backend",
+  "version": "1.0.0",
+  "description": "FastAPI backend for Aura Asset Manager",
+  "main": "main.py",
+  "scripts": {
+    "start": "python main.py",
+    "deploy": "uvicorn main:app --host 0.0.0.0 --port $PORT"
+  },
+  "repository": {
+    "type": "git",
+    "url": "."
+  },
+  "keywords": ["fastapi", "python", "api"],
+  "author": "Your Name",
+  "license": "MIT"
+}
