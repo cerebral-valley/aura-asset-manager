@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth.jsx'
 import { Button } from '../ui/button.jsx'
 import { 
@@ -16,6 +17,7 @@ import './AppLayout.css'
 const AppLayout = ({ children, currentPage = 'dashboard' }) => {
   const { user, signOut } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const location = useLocation()
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: Home, id: 'dashboard' },
@@ -61,11 +63,11 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
           <nav className="flex-1 p-4 space-y-2">
             {navigation.map((item) => {
               const Icon = item.icon
-              const isActive = currentPage === item.id
+              const isActive = location.pathname === item.href
               return (
-                <a
+                <Link
                   key={item.name}
-                  href={item.href}
+                  to={item.href}
                   className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                     isActive
                       ? 'bg-primary text-primary-foreground'
@@ -74,7 +76,7 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
                 >
                   <Icon className="mr-3 h-5 w-5" />
                   {item.name}
-                </a>
+                </Link>
               )
             })}
           </nav>
