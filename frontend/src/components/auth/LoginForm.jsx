@@ -12,20 +12,34 @@ const LoginForm = () => {
   const [isSignUp, setIsSignUp] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
   const { signIn, signUp } = useAuth()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setSuccessMessage('')
 
     try {
-      const { error } = isSignUp 
-        ? await signUp(email, password)
-        : await signIn(email, password)
-
-      if (error) {
-        setError(error.message)
+      if (isSignUp) {
+        const { data, error } = await signUp(email, password)
+        
+        if (error) {
+          setError(error.message)
+        } else {
+          setSuccessMessage(
+            "We've sent a verification link to your email. Please check your inbox and click the link to verify your account."
+          )
+          // Reset the form after successful signup
+          setEmail('')
+          setPassword('')
+        }
+      } else {
+        const { error } = await signIn(email, password)
+        if (error) {
+          setError(error.message)
+        }
       }
     } catch (err) {
       setError('An unexpected error occurred')
@@ -48,6 +62,12 @@ const LoginForm = () => {
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            
+            {successMessage && (
+              <Alert variant="success" className="bg-green-50 border-green-200 text-green-800">
+                <AlertDescription>{successMessage}</AlertDescription>
               </Alert>
             )}
             

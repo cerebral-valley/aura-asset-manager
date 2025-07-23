@@ -49,11 +49,6 @@ class Settings(BaseSettings):
     def is_development(self) -> bool:
         """Check if running in development."""
         return self.ENVIRONMENT.lower() == "development"
-    
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
 
 # Create settings instance
 settings = Settings()
-

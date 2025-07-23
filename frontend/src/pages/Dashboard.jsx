@@ -19,8 +19,19 @@ const Dashboard = () => {
         const data = await dashboardService.getSummary()
         setDashboardData(data)
       } catch (err) {
-        setError('Failed to load dashboard data')
         console.error('Dashboard error:', err)
+        if (err.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          setError(`Failed to load dashboard data: ${err.response.status} - ${err.response.data?.detail || err.message}`)
+          console.error('Response data:', err.response.data)
+        } else if (err.request) {
+          // The request was made but no response was received
+          setError(`No response from API server. The backend may not be running or accessible.`)
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          setError(`Error preparing request: ${err.message}`)
+        }
       } finally {
         setLoading(false)
       }
