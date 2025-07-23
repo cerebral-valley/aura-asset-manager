@@ -1,4 +1,4 @@
-import apiClient from '@/lib/api.js'
+import apiClient from '@/lib/api'
 
 export const dashboardService = {
   async getSummary() {
