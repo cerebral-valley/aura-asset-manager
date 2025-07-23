@@ -18,19 +18,23 @@ const apiClient = axios.create({
 // Add auth token to requests
 apiClient.interceptors.request.use(async (config) => {
   try {
+    console.log('API Request START - URL:', config.baseURL + config.url)
     const { data: { session } } = await supabase.auth.getSession()
     
-    console.log('API Request - Session data:', session)
-    console.log('API Request - URL:', config.url)
+    console.log('API Request - Session exists:', !!session)
+    console.log('API Request - Access token exists:', !!session?.access_token)
     
     if (session?.access_token) {
       config.headers.Authorization = `Bearer ${session.access_token}`
       console.log('API Request - Added auth header, token length:', session.access_token.length)
+      console.log('API Request - Token preview:', session.access_token.substring(0, 20) + '...')
     } else {
       console.log('API Request - No access token found')
     }
+    
+    console.log('API Request - Final headers:', config.headers)
   } catch (error) {
-    console.error('Error getting auth session:', error)
+    console.error('API Request - Error getting auth session:', error)
   }
   
   return config
@@ -39,20 +43,27 @@ apiClient.interceptors.request.use(async (config) => {
 // Add response interceptor for better error handling
 apiClient.interceptors.response.use(
   response => {
-    console.log('API Response - Success:', response.status, response.config.url)
+    console.log('API Response - SUCCESS:', response.status, 'URL:', response.config.url)
+    console.log('API Response - Data:', response.data)
     return response
   }, 
   error => {
     // Log detailed error information
-    console.log('API Response - Error occurred for URL:', error.config?.url)
+    console.error('API Response - ERROR for URL:', error.config?.url)
+    console.error('API Response - Full error object:', error)
+    
     if (error.response) {
-      console.error(`API Error: ${error.response.status}`, error.response.data)
-      console.error('Response headers:', error.response.headers)
+      console.error('API Response - Server responded with error:', error.response.status)
+      console.error('API Response - Error data:', error.response.data)
+      console.error('API Response - Error headers:', error.response.headers)
     } else if (error.request) {
-      console.error('No response received:', error.request)
+      console.error('API Response - No response received')
+      console.error('API Response - Request details:', error.request)
+      console.error('API Response - This usually means network/CORS issues')
     } else {
-      console.error('Error setting up request:', error.message)
+      console.error('API Response - Error setting up request:', error.message)
     }
+    
     return Promise.reject(error)
   }
 )
