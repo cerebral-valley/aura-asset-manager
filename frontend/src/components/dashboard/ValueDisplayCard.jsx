@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card.jsx'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 
 const ValueDisplayCard = ({ 

@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
-import AppLayout from '../components/layout/AppLayout'
-import ValueDisplayCard from '../components/dashboard/ValueDisplayCard'
-import AssetAllocationChart from '../components/dashboard/AssetAllocationChart'
-import RecentTransactions from '../components/dashboard/RecentTransactions'
-import { dashboardService } from '../services/dashboard'
+import AppLayout from '../components/layout/AppLayout.jsx'
+import ValueDisplayCard from '../components/dashboard/ValueDisplayCard.jsx'
+import AssetAllocationChart from '../components/dashboard/AssetAllocationChart.jsx'
+import RecentTransactions from '../components/dashboard/RecentTransactions.jsx'
+import { dashboardService } from '../services/dashboard.js'
 import { Wallet, Shield, TrendingUp, PlusCircle } from 'lucide-react'
-import { Button } from '../components/ui/button'
-import { Alert, AlertDescription } from '../components/ui/alert'
+import { Button } from '../components/ui/button.jsx'
+import { Alert, AlertDescription } from '../components/ui/alert.jsx'
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null)

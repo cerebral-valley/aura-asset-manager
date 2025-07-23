@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
-import { Badge } from '../ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card.jsx'
+import { Badge } from '../ui/badge.jsx'
 import { formatDistanceToNow } from 'date-fns'
 import { ArrowUpCircle, ArrowDownCircle, RefreshCw } from 'lucide-react'
 

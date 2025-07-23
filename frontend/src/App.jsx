@@ -1,6 +1,6 @@
 import { AuthProvider, useAuth } from './hooks/useAuth.jsx'
-import LoginForm from './components/auth/LoginForm'
-import Dashboard from './pages/Dashboard'
+import LoginForm from './components/auth/LoginForm.jsx'
+import Dashboard from './pages/Dashboard.jsx'
 import './App.css'
 
 function AppContent() {

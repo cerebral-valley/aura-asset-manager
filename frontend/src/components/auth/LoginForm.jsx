@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth.jsx'
-import { Button } from '../ui/button'
-import { Input } from '../ui/input'
-import { Label } from '../ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
-import { Alert, AlertDescription } from '../ui/alert'
+import { Button } from '../ui/button.jsx'
+import { Input } from '../ui/input.jsx'
+import { Label } from '../ui/label.jsx'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card.jsx'
+import { Alert, AlertDescription } from '../ui/alert.jsx'
 
 const LoginForm = () => {
   const [email, setEmail] = useState('')

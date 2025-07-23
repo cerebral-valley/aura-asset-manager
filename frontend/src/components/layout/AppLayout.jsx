@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth.jsx'
-import { Button } from '../ui/button'
+import { Button } from '../ui/button.jsx'
 import { 
   Home, 
   Briefcase, 
