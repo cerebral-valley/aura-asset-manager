@@ -113,64 +113,63 @@ const Dashboard = () => {
         </Button>
       </div>
 
-        {/* Key Metrics */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <ValueDisplayCard
-            title={themeLabels.netWorth}
-            value={dashboardData?.net_worth || 0}
-            subtitle="Total asset value"
-            icon={Wallet}
-            className="md:col-span-1"
-          />
-          <ValueDisplayCard
-            title={themeLabels.insurance}
-            value={dashboardData?.total_insurance_coverage || 0}
-            subtitle="Total coverage protection"
-            icon={Shield}
-            className="md:col-span-1"
-          />
-          <ValueDisplayCard
-            title="Growth Potential"
-            value={`${((dashboardData?.net_worth || 0) / 1000000 * 100).toFixed(1)}%`}
-            subtitle="Progress toward financial freedom"
-            icon={TrendingUp}
-            className="md:col-span-1 lg:col-span-1"
-          />
-        </div>
+      {/* Key Metrics */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <ValueDisplayCard
+          title={themeLabels.netWorth}
+          value={dashboardData?.net_worth || 0}
+          subtitle="Total asset value"
+          icon={Wallet}
+          className="md:col-span-1"
+        />
+        <ValueDisplayCard
+          title={themeLabels.insurance}
+          value={dashboardData?.total_insurance_coverage || 0}
+          subtitle="Total coverage protection"
+          icon={Shield}
+          className="md:col-span-1"
+        />
+        <ValueDisplayCard
+          title="Growth Potential"
+          value={`${((dashboardData?.net_worth || 0) / 1000000 * 100).toFixed(1)}%`}
+          subtitle="Progress toward financial freedom"
+          icon={TrendingUp}
+          className="md:col-span-1 lg:col-span-1"
+        />
+      </div>
 
-        {/* Charts and Recent Activity */}
-        <div className="grid gap-6 lg:grid-cols-2">
-          <AssetAllocationChart 
-            data={dashboardData?.asset_allocation || []}
-            title="Your Portfolio Composition"
-          />
-          <RecentTransactions 
-            transactions={dashboardData?.recent_transactions || []}
-            title="Recent Milestones"
-          />
-        </div>
+      {/* Charts and Recent Activity */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <AssetAllocationChart 
+          data={dashboardData?.asset_allocation || []}
+          title="Your Portfolio Composition"
+        />
+        <RecentTransactions 
+          transactions={dashboardData?.recent_transactions || []}
+          title="Recent Milestones"
+        />
+      </div>
 
-        {/* Quick Actions */}
-        <div className="bg-card rounded-lg p-6 border">
-          <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Button variant="outline" className="justify-start">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Add Asset
-            </Button>
-            <Button variant="outline" className="justify-start">
-              <Shield className="h-4 w-4 mr-2" />
-              Add Insurance
-            </Button>
-            <Button variant="outline" className="justify-start">
-              <TrendingUp className="h-4 w-4 mr-2" />
-              Record Transaction
-            </Button>
-            <Button variant="outline" className="justify-start">
-              <Wallet className="h-4 w-4 mr-2" />
-              Update Values
-            </Button>
-          </div>
+      {/* Quick Actions */}
+      <div className="bg-card rounded-lg p-6 border">
+        <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Button variant="outline" className="justify-start">
+            <PlusCircle className="h-4 w-4 mr-2" />
+            Add Asset
+          </Button>
+          <Button variant="outline" className="justify-start">
+            <Shield className="h-4 w-4 mr-2" />
+            Add Insurance
+          </Button>
+          <Button variant="outline" className="justify-start">
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Record Transaction
+          </Button>
+          <Button variant="outline" className="justify-start">
+            <Wallet className="h-4 w-4 mr-2" />
+            Update Values
+          </Button>
         </div>
       </div>
     </div>
