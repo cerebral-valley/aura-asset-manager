@@ -18,6 +18,10 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
   const { user, signOut } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
+  
+  console.log('🏗️ AppLayout: Rendering with location:', location.pathname)
+  console.log('🏗️ AppLayout: User:', user?.email || 'No user')
+  console.log('🏗️ AppLayout: Children:', !!children)
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: Home, id: 'dashboard' },
@@ -28,6 +32,7 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
   ]
 
   const handleSignOut = async () => {
+    console.log('🚪 AppLayout: User signing out')
     await signOut()
   }
 
@@ -64,10 +69,15 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
             {navigation.map((item) => {
               const Icon = item.icon
               const isActive = location.pathname === item.href
+              console.log(`🔗 Navigation: ${item.name} - current: ${location.pathname}, href: ${item.href}, active: ${isActive}`)
               return (
                 <Link
                   key={item.name}
                   to={item.href}
+                  onClick={() => {
+                    console.log(`🔗 Navigation CLICK: ${item.name} -> ${item.href}`)
+                    setSidebarOpen(false)
+                  }}
                   className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                     isActive
                       ? 'bg-primary text-primary-foreground'
