@@ -2,7 +2,7 @@
   "buildCommand": "cd frontend && pnpm run build",
   "outputDirectory": "frontend/dist",
   "installCommand": "cd frontend && pnpm install",
-  "nodeVersion": "18.x",
+  "nodeVersion": "20.x",
   "github": {
     "silent": false
   },
