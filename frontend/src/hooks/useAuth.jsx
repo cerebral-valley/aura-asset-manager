@@ -1,7 +1,6 @@
 import { useState, useEffect, createContext, useContext } from 'react'
-import { supabase } from '@/lib/supabase-test'
+import { supabase } from '@/lib/supabase'
 
-// Force cache invalidation - test deployment
 const AuthContext = createContext({})
 
 export const useAuth = () => {
