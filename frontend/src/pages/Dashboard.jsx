@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import AppLayout from '../components/layout/AppLayout.jsx'
 import ValueDisplayCard from '../components/dashboard/ValueDisplayCard.jsx'
 import AssetAllocationChart from '../components/dashboard/AssetAllocationChart.jsx'
 import RecentTransactions from '../components/dashboard/RecentTransactions.jsx'
@@ -13,35 +12,35 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  console.log('📊 Dashboard: Component rendering, loading:', loading, 'error:', error)
+  console.log('Dashboard: Component rendering, loading:', loading, 'error:', error)
 
   useEffect(() => {
-    console.log('📊 Dashboard: useEffect triggered - fetching data')
+    console.log('Dashboard: useEffect triggered - fetching data')
     const fetchDashboardData = async () => {
       try {
-        console.log('📊 Dashboard: Calling dashboardService.getSummary()')
+        console.log('Dashboard: Calling dashboardService.getSummary()')
         const data = await dashboardService.getSummary()
-        console.log('📊 Dashboard: Data received:', data)
+        console.log('Dashboard: Data received:', data)
         setDashboardData(data)
       } catch (err) {
-        console.error('📊 Dashboard: Error occurred:', err)
+        console.error('Dashboard: Error occurred:', err)
         if (err.response) {
           // The request was made and the server responded with a status code
           // that falls out of the range of 2xx
-          console.error('📊 Dashboard: Response error - status:', err.response.status, 'data:', err.response.data)
+          console.error('Dashboard: Response error - status:', err.response.status, 'data:', err.response.data)
           setError(`Failed to load dashboard data: ${err.response.status} - ${err.response.data?.detail || err.message}`)
           console.error('Response data:', err.response.data)
         } else if (err.request) {
           // The request was made but no response was received
-          console.error('📊 Dashboard: Network error - no response received:', err.request)
+          console.error('Dashboard: Network error - no response received:', err.request)
           setError(`No response from API server. The backend may not be running or accessible.`)
         } else {
           // Something happened in setting up the request that triggered an Error
-          console.error('📊 Dashboard: Request setup error:', err.message)
+          console.error('Dashboard: Request setup error:', err.message)
           setError(`Error preparing request: ${err.message}`)
         }
       } finally {
-        console.log('📊 Dashboard: Finished loading, setting loading to false')
+        console.log('Dashboard: Finished loading, setting loading to false')
         setLoading(false)
       }
     }
@@ -73,7 +72,7 @@ const Dashboard = () => {
   }
 
   if (loading) {
-    console.log('📊 Dashboard: Rendering loading state')
+    console.log('Dashboard: Rendering loading state')
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
@@ -85,7 +84,7 @@ const Dashboard = () => {
   }
 
   if (error) {
-    console.log('📊 Dashboard: Rendering error state:', error)
+    console.log('Dashboard: Rendering error state:', error)
     return (
       <Alert variant="destructive">
         <AlertDescription>{error}</AlertDescription>
@@ -93,7 +92,7 @@ const Dashboard = () => {
     )
   }
 
-  console.log('📊 Dashboard: Rendering main dashboard with data:', !!dashboardData)
+  console.log('Dashboard: Rendering main dashboard with data:', !!dashboardData)
   const themeLabels = getThemeLabels(dashboardData?.user_theme)
 
   return (
