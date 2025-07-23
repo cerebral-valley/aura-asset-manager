@@ -1,4 +1,4 @@
-import apiClient from '@/lib/api'
+import apiClient from '@/lib/api.js'
 
 export const insuranceService = {
   async getPolicies() {
