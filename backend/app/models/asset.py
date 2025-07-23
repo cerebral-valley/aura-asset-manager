@@ -24,7 +24,7 @@ class Asset(Base):
     current_value = Column(Numeric(18, 2))
     quantity = Column(Numeric(18, 4))
     unit_of_measure = Column(Text)  # e.g., 'shares', 'oz', 'sqft', 'units'
-    metadata = Column(JSONB)  # Flexible JSON field for asset-specific characteristics
+    asset_metadata = Column(JSONB)  # Flexible JSON field for asset-specific characteristics
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     

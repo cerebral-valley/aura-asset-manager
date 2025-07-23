@@ -26,7 +26,7 @@ class InsurancePolicy(Base):
     end_date = Column(Date)
     renewal_date = Column(Date)
     notes = Column(Text)
-    metadata = Column(JSONB)  # Flexible JSON field for policy-specific details
+    insurance_metadata = Column(JSONB)  # Flexible JSON field for policy-specific details
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     

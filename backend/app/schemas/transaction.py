@@ -16,7 +16,7 @@ class TransactionBase(BaseModel):
     amount: Optional[Decimal] = None
     quantity_change: Optional[Decimal] = None
     notes: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    transaction_metadata: Optional[Dict[str, Any]] = None
 
 class TransactionCreate(TransactionBase):
     """Schema for creating a transaction."""
@@ -29,7 +29,7 @@ class TransactionUpdate(BaseModel):
     amount: Optional[Decimal] = None
     quantity_change: Optional[Decimal] = None
     notes: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    transaction_metadata: Optional[Dict[str, Any]] = None
 
 class TransactionInDB(TransactionBase):
     """Schema for transaction in database."""

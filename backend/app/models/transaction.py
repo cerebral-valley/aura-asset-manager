@@ -22,7 +22,7 @@ class Transaction(Base):
     amount = Column(Numeric(18, 2))  # Monetary amount involved
     quantity_change = Column(Numeric(18, 4))  # Change in quantity (positive for purchase, negative for sale)
     notes = Column(Text)
-    metadata = Column(JSONB)  # Flexible JSON field for transaction-specific details
+    transaction_metadata = Column(JSONB)  # Flexible JSON field for transaction-specific details
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships

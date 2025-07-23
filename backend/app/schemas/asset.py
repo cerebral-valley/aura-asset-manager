@@ -18,7 +18,7 @@ class AssetBase(BaseModel):
     current_value: Optional[Decimal] = None
     quantity: Optional[Decimal] = None
     unit_of_measure: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    asset_metadata: Optional[Dict[str, Any]] = None
 
 class AssetCreate(AssetBase):
     """Schema for creating an asset."""
@@ -34,7 +34,7 @@ class AssetUpdate(BaseModel):
     current_value: Optional[Decimal] = None
     quantity: Optional[Decimal] = None
     unit_of_measure: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    asset_metadata: Optional[Dict[str, Any]] = None
 
 class AssetInDB(AssetBase):
     """Schema for asset in database."""
