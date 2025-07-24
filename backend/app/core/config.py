@@ -3,7 +3,8 @@ Application configuration settings using Pydantic Settings.
 """
 
 from pydantic_settings import BaseSettings
-from typing import List
+from pydantic import field_validator
+from typing import List, Union
 import os
 
 class Settings(BaseSettings):
@@ -24,6 +25,13 @@ class Settings(BaseSettings):
     
     # CORS Configuration
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "https://aura-asset-manager.vercel.app"]
+    
+    @field_validator('ALLOWED_ORIGINS', mode='before')
+    @classmethod
+    def parse_cors_origins(cls, v):
+        if isinstance(v, str):
+            return [origin.strip() for origin in v.split(',')]
+        return v
     
     # Environment
     ENVIRONMENT: str = "development"
