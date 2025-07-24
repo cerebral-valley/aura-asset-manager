@@ -5,6 +5,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aura-asset-ma
 
 // Log the API URL being used for debugging
 console.log('API Base URL:', API_BASE_URL)
+console.log('Environment check - VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL)
+console.log('All environment variables:', import.meta.env)
 
 // Create axios instance
 const apiClient = axios.create({
@@ -18,7 +20,11 @@ const apiClient = axios.create({
 // Add auth token to requests
 apiClient.interceptors.request.use(async (config) => {
   try {
-    console.log('API Request START - URL:', config.baseURL + config.url)
+    const fullURL = config.baseURL + config.url
+    console.log('API Request START - Full URL:', fullURL)
+    console.log('API Request - Base URL:', config.baseURL)
+    console.log('API Request - Endpoint:', config.url)
+    
     const { data: { session } } = await supabase.auth.getSession()
     
     console.log('API Request - Session exists:', !!session)
