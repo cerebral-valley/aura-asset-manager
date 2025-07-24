@@ -30,6 +30,14 @@ class Settings(BaseSettings):
     @classmethod
     def parse_cors_origins(cls, v):
         if isinstance(v, str):
+            # Handle JSON array format like '["url1","url2"]'
+            if v.startswith('[') and v.endswith(']'):
+                import json
+                try:
+                    return json.loads(v)
+                except json.JSONDecodeError:
+                    pass
+            # Handle comma-separated format like 'url1,url2'
             return [origin.strip() for origin in v.split(',')]
         return v
     
