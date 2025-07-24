@@ -24,7 +24,11 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     # CORS Configuration
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "https://aura-asset-manager.vercel.app"]
+    ALLOWED_ORIGINS: List[str] = [
+        "https://aura-asset-manager.vercel.app",
+        "http://localhost:5173",
+        "http://localhost:3000"
+    ]
     
     @field_validator('ALLOWED_ORIGINS', mode='before')
     @classmethod
