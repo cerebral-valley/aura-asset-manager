@@ -179,6 +179,11 @@ export default function Transactions() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    console.log('🚀 TRANSACTION_SUBMIT_START: Form submission initiated', {
+      transactionType: transactionForm.transaction_type,
+      formData: transactionForm,
+      timestamp: new Date().toISOString()
+    })
     
     try {
       if (editingTransaction) {
@@ -191,60 +196,204 @@ export default function Transactions() {
       } else {
         // Create new transaction
         if (transactionForm.transaction_type === 'create') {
-          // First create the asset, then create the transaction
+          console.log('📝 CREATE_ASSET_START: Creating new asset', {
+            assetName: transactionForm.asset_name,
+            assetType: transactionForm.asset_type,
+            code: 'CREATE_001'
+          })
+          
+          // Validate required fields before API call
+          if (!transactionForm.asset_name?.trim()) {
+            throw new Error('VALIDATION_ERROR_001: Asset name is required')
+          }
+          if (!transactionForm.asset_type?.trim()) {
+            throw new Error('VALIDATION_ERROR_002: Asset type is required')
+          }
+          if (!transactionForm.purchase_date) {
+            throw new Error('VALIDATION_ERROR_003: Purchase date is required')
+          }
+          
+          // First create the asset
           const assetData = {
-            name: transactionForm.asset_name,
+            name: transactionForm.asset_name.trim(),
             asset_type: transactionForm.asset_type,
-            description: transactionForm.description + (transactionForm.custom_properties ? `\n\nCustom Properties:\n${transactionForm.custom_properties}` : ''),
+            description: transactionForm.description?.trim() || '',
             purchase_date: transactionForm.purchase_date,
             initial_value: parseFloat(transactionForm.initial_value) || 0,
             current_value: parseFloat(transactionForm.current_value) || parseFloat(transactionForm.initial_value) || 0,
             quantity: parseFloat(transactionForm.quantity) || 1,
-            unit_of_measure: transactionForm.unit_of_measure
+            unit_of_measure: transactionForm.unit_of_measure?.trim() || ''
           }
+          
+          console.log('📦 CREATE_ASSET_DATA: Asset data prepared', {
+            assetData,
+            code: 'CREATE_002'
+          })
           
           const newAsset = await assetsService.createAsset(assetData)
           
-          // Then create the transaction
+          console.log('✅ CREATE_ASSET_SUCCESS: Asset created successfully', {
+            assetId: newAsset.id,
+            assetName: newAsset.name,
+            code: 'CREATE_003'
+          })
+          
+          // ✅ FIXED: Now include ALL transaction fields
           const transactionData = {
             asset_id: newAsset.id,
             transaction_type: 'create',
             transaction_date: transactionForm.purchase_date,
             amount: parseFloat(transactionForm.initial_value) || 0,
             quantity_change: parseFloat(transactionForm.quantity) || 1,
-            notes: transactionForm.notes || `Created asset: ${transactionForm.asset_name}`
+            notes: transactionForm.notes?.trim() || '',
+            // ✅ ADD MISSING FIELDS - ALL 10 FORM FIELDS NOW MAPPED:
+            asset_name: transactionForm.asset_name.trim(),
+            asset_type: transactionForm.asset_type,
+            acquisition_value: parseFloat(transactionForm.initial_value) || 0,
+            current_value: parseFloat(transactionForm.current_value) || parseFloat(transactionForm.initial_value) || 0,
+            quantity: parseFloat(transactionForm.quantity) || 1,
+            unit_of_measure: transactionForm.unit_of_measure?.trim() || '',
+            custom_properties: transactionForm.custom_properties?.trim() || '',
+            asset_description: transactionForm.description?.trim() || ''
           }
           
-          await transactionsService.createTransaction(transactionData)
+          console.log('📋 CREATE_TRANSACTION_DATA: Transaction data prepared', {
+            transactionData,
+            fieldsCount: Object.keys(transactionData).length,
+            code: 'CREATE_004'
+          })
+          
+          console.log('🔍 FIELD_MAPPING_DEBUG: Frontend to DB mapping', {
+            mapping: {
+              'asset_name (UI)': `${transactionForm.asset_name?.trim()} → ${transactionData.asset_name}`,
+              'asset_type (UI)': `${transactionForm.asset_type} → ${transactionData.asset_type}`,
+              'purchase_date (UI)': `${transactionForm.purchase_date} → ${transactionData.transaction_date}`,
+              'initial_value (UI)': `${transactionForm.initial_value} → ${transactionData.acquisition_value}`,
+              'current_value (UI)': `${transactionForm.current_value} → ${transactionData.current_value}`,
+              'quantity (UI)': `${transactionForm.quantity} → ${transactionData.quantity}`,
+              'unit_of_measure (UI)': `${transactionForm.unit_of_measure} → ${transactionData.unit_of_measure}`,
+              'custom_properties (UI)': `${transactionForm.custom_properties} → ${transactionData.custom_properties}`,
+              'description (UI)': `${transactionForm.description} → ${transactionData.asset_description}`,
+              'notes (UI)': `${transactionForm.notes} → ${transactionData.notes}`
+            },
+            code: 'CREATE_005'
+          })
+          
+          const newTransaction = await transactionsService.createTransaction(transactionData)
+          
+          console.log('✅ CREATE_TRANSACTION_SUCCESS: Transaction recorded successfully', {
+            transactionId: newTransaction.id,
+            assetId: newAsset.id,
+            transactionType: newTransaction.transaction_type,
+            amount: newTransaction.amount,
+            allFieldsStored: {
+              asset_name: newTransaction.asset_name,
+              asset_type: newTransaction.asset_type,
+              custom_properties: newTransaction.custom_properties,
+              asset_description: newTransaction.asset_description,
+              unit_of_measure: newTransaction.unit_of_measure
+            },
+            code: 'CREATE_006'
+          })
+          
+          toast({
+            title: "Asset created successfully!",
+            description: `${transactionForm.asset_name} has been added to your portfolio.`,
+          })
+          
         } else {
+          console.log('🔄 UPDATE_TRANSACTION_START: Processing update transaction', {
+            transactionType: transactionForm.transaction_type,
+            assetId: transactionForm.asset_id,
+            code: 'UPDATE_001'
+          })
+          
+          if (!transactionForm.asset_id) {
+            throw new Error('VALIDATION_ERROR_004: Asset selection is required for updates')
+          }
+          
           // For other transaction types, just create the transaction
           const transactionData = {
             asset_id: transactionForm.asset_id,
             transaction_type: transactionForm.transaction_type,
             transaction_date: new Date().toISOString().split('T')[0],
             amount: parseFloat(transactionForm.amount) || 0,
-            notes: transactionForm.notes
+            notes: transactionForm.notes?.trim() || ''
           }
           
+          console.log('📋 UPDATE_TRANSACTION_DATA: Update transaction data', {
+            transactionData,
+            code: 'UPDATE_002'
+          })
+          
           await transactionsService.createTransaction(transactionData)
+          
+          console.log('✅ UPDATE_SUCCESS: Transaction updated', {
+            transactionType: transactionForm.transaction_type,
+            code: 'UPDATE_003'
+          })
+          
+          toast({
+            title: "Transaction recorded successfully!",
+            description: "The transaction has been processed.",
+          })
         }
-        
-        toast({
-          title: "Success",
-          description: "Transaction recorded successfully"
-        })
       }
+      
+      // Refresh data and close dialog
+      console.log('🔄 REFRESH_START: Refreshing transaction and asset lists', {
+        code: 'REFRESH_001'
+      })
       
       setShowTransactionDialog(false)
       resetForm()
-      fetchTransactions()
-      fetchAssets()
+      await Promise.all([fetchTransactions(), fetchAssets()])
+      
+      console.log('✅ REFRESH_SUCCESS: Data refreshed successfully', {
+        code: 'REFRESH_002'
+      })
+      
+      console.log('🎉 TRANSACTION_SUBMIT_COMPLETE: Form submission completed successfully', {
+        transactionType: transactionForm.transaction_type,
+        timestamp: new Date().toISOString(),
+        code: 'COMPLETE_001'
+      })
+      
     } catch (error) {
-      console.error('Failed to process transaction:', error)
+      console.error('❌ TRANSACTION_SUBMIT_ERROR: Form submission failed', {
+        error: error.message,
+        stack: error.stack,
+        formData: transactionForm,
+        errorCode: error.message.includes('_ERROR_') ? error.message.split(':')[0] : 'UNKNOWN_ERROR',
+        timestamp: new Date().toISOString(),
+        code: 'ERROR_001'
+      })
+      
+      let errorMessage = "Failed to process transaction. Please try again."
+      
+      // Provide specific error messages based on error codes
+      if (error.message.includes('VALIDATION_ERROR_001')) {
+        errorMessage = "Asset name is required."
+      } else if (error.message.includes('VALIDATION_ERROR_002')) {
+        errorMessage = "Please select an asset type."
+      } else if (error.message.includes('VALIDATION_ERROR_003')) {
+        errorMessage = "Purchase date is required."
+      } else if (error.message.includes('VALIDATION_ERROR_004')) {
+        errorMessage = "Please select an asset to update."
+      } else if (error.message.includes('Network Error') || error.message.includes('fetch')) {
+        errorMessage = "Network error. Please check your connection and try again."
+      } else if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+        errorMessage = "Authentication error. Please refresh the page and try again."
+      } else if (error.message.includes('403') || error.message.includes('Forbidden')) {
+        errorMessage = "Permission denied. Please check your access rights."
+      } else if (error.message.includes('500')) {
+        errorMessage = "Server error. Please try again in a few moments."
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to process transaction",
-        variant: "destructive"
+        description: errorMessage,
+        variant: "destructive",
       })
     }
   }
