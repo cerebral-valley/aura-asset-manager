@@ -2,7 +2,9 @@ import { AuthProvider, useAuth } from './hooks/useAuth'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import LoginForm from './components/auth/LoginForm'
 import Dashboard from './pages/Dashboard'
+import Transactions from './pages/Transactions'
 import AppLayout from './components/layout/AppLayout'
+import { Toaster } from './components/ui/toaster'
 import './App.css'
 
 // Page Components
@@ -18,7 +20,7 @@ function InsurancePage() {
 
 function TransactionsPage() {
   console.log('TransactionsPage: Rendering Transactions page')
-  return <div className="p-6"><h1 className="text-2xl font-bold">Transactions Page</h1><p>Coming Soon</p></div>
+  return <Transactions />
 }
 
 function AnalyticsPage() {
@@ -77,6 +79,7 @@ function App() {
     <AuthProvider>
       <Router>
         <AppContent />
+        <Toaster />
       </Router>
     </AuthProvider>
   )
