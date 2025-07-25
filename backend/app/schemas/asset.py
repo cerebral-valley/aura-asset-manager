@@ -2,9 +2,9 @@
 Asset Pydantic schemas for API serialization.
 """
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime, date
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Union
 from uuid import UUID
 from decimal import Decimal
 
@@ -18,7 +18,15 @@ class AssetBase(BaseModel):
     current_value: Optional[Decimal] = None
     quantity: Optional[Decimal] = None
     unit_of_measure: Optional[str] = None
-    asset_metadata: Optional[Dict[str, Any]] = None
+    asset_metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    
+    @field_validator('asset_metadata', mode='before')
+    @classmethod
+    def validate_asset_metadata(cls, v):
+        """Handle NULL asset_metadata from database."""
+        if v is None:
+            return {}
+        return v
 
 class AssetCreate(AssetBase):
     """Schema for creating an asset."""
@@ -34,7 +42,15 @@ class AssetUpdate(BaseModel):
     current_value: Optional[Decimal] = None
     quantity: Optional[Decimal] = None
     unit_of_measure: Optional[str] = None
-    asset_metadata: Optional[Dict[str, Any]] = None
+    asset_metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    
+    @field_validator('asset_metadata', mode='before')
+    @classmethod
+    def validate_asset_metadata(cls, v):
+        """Handle NULL asset_metadata from database."""
+        if v is None:
+            return {}
+        return v
 
 class AssetInDB(AssetBase):
     """Schema for asset in database."""
