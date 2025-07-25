@@ -1,6 +1,7 @@
 """
 Aura Asset Manager - FastAPI Backend Application
 Main entry point for the FastAPI application.
+Updated: July 25, 2025 - CORS Fix Deployment
 """
 
 from fastapi import FastAPI
@@ -42,6 +43,16 @@ app.include_router(insurance.router, prefix="/api/v1/insurance", tags=["insuranc
 async def root():
     """Root endpoint for health check."""
     return {"message": "Aura Asset Manager API is running"}
+
+@app.get("/cors-debug")
+async def cors_debug():
+    """Debug endpoint to check CORS configuration."""
+    return {
+        "allowed_origins": settings.ALLOWED_ORIGINS,
+        "environment": settings.ENVIRONMENT,
+        "is_production": settings.is_production,
+        "message": "CORS Debug Info"
+    }
 
 @app.get("/health")
 async def health_check():
