@@ -99,7 +99,7 @@ export default function Transactions() {
     // Asset creation fields
     asset_name: '',
     asset_type: '',
-    purchase_date: '',
+    purchase_date: new Date().toISOString().split('T')[0], // Default to today's date
     initial_value: '',
     current_value: '',
     quantity: '1',
@@ -158,7 +158,7 @@ export default function Transactions() {
       asset_id: '',
       asset_name: '',
       asset_type: '',
-      purchase_date: '',
+      purchase_date: new Date().toISOString().split('T')[0], // Default to today's date
       initial_value: '',
       current_value: '',
       quantity: '1',
