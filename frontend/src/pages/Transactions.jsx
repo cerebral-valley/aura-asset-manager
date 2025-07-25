@@ -78,6 +78,8 @@ const transactionTypes = [
 ]
 
 export default function Transactions() {
+  console.log('Transactions: Component initializing')
+  
   const [transactions, setTransactions] = useState([])
   const [assets, setAssets] = useState([])
   const [loading, setLoading] = useState(true)
@@ -86,6 +88,8 @@ export default function Transactions() {
   const [showTransactionDialog, setShowTransactionDialog] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState(null)
   const [selectedTransactionType, setSelectedTransactionType] = useState('create')
+  
+  console.log('Transactions: State initialized, loading:', loading)
   
   // Form state
   const [transactionForm, setTransactionForm] = useState({
@@ -109,23 +113,31 @@ export default function Transactions() {
   
   const { toast } = useToast()
 
+  console.log('Transactions: About to set up useEffect')
+
   useEffect(() => {
+    console.log('Transactions: useEffect triggered, calling fetchTransactions and fetchAssets')
     fetchTransactions()
     fetchAssets()
   }, [])
 
   const fetchTransactions = async () => {
+    console.log('Transactions: fetchTransactions called')
     try {
+      console.log('Transactions: Calling transactionsService.getTransactions()')
       const data = await transactionsService.getTransactions()
+      console.log('Transactions: Received data:', data)
       setTransactions(data || [])
+      console.log('Transactions: Set transactions state')
     } catch (error) {
-      console.error('Failed to fetch transactions:', error)
+      console.error('Transactions: Failed to fetch transactions:', error)
       toast({
         title: "Error",
         description: "Failed to fetch transactions",
         variant: "destructive"
       })
     } finally {
+      console.log('Transactions: Setting loading to false')
       setLoading(false)
     }
   }
@@ -293,6 +305,7 @@ export default function Transactions() {
   }
 
   if (loading) {
+    console.log('Transactions: Rendering loading state')
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
@@ -303,6 +316,8 @@ export default function Transactions() {
     )
   }
 
+  console.log('Transactions: Rendering main component')
+  
   return (
     <div className="space-y-6">
       {/* Header */}

@@ -2,7 +2,7 @@ import { AuthProvider, useAuth } from './hooks/useAuth'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import LoginForm from './components/auth/LoginForm'
 import Dashboard from './pages/Dashboard'
-import TransactionsTest from './pages/TransactionsTest'
+import TransactionsSimple from './pages/TransactionsSimple'
 import AppLayout from './components/layout/AppLayout'
 import { Toaster } from './components/ui/toaster'
 import './App.css'
@@ -19,8 +19,13 @@ function InsurancePage() {
 }
 
 function TransactionsPage() {
-  console.log('TransactionsPage: Rendering Transactions page')
-  return <TransactionsTest />
+  console.log('TransactionsPage: Rendering simple Transactions page')
+  try {
+    return <TransactionsSimple />
+  } catch (error) {
+    console.error('TransactionsPage: Error rendering TransactionsSimple:', error)
+    return <div className="p-6"><h1 className="text-2xl font-bold text-red-500">Error loading Transactions</h1><p>{error.message}</p></div>
+  }
 }
 
 function AnalyticsPage() {
