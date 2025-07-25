@@ -85,7 +85,7 @@ export default function Transactions() {
   const [assets, setAssets] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedType, setSelectedType] = useState('')
+  const [selectedType, setSelectedType] = useState('all')
   const [showTransactionDialog, setShowTransactionDialog] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState(null)
   const [selectedTransactionType, setSelectedTransactionType] = useState('create')
@@ -296,7 +296,7 @@ export default function Transactions() {
   const filteredTransactions = transactions.filter(transaction => {
     const matchesSearch = transaction.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          transaction.asset_name?.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesType = !selectedType || transaction.transaction_type === selectedType
+    const matchesType = !selectedType || selectedType === 'all' || transaction.transaction_type === selectedType
     return matchesSearch && matchesType
   })
 
@@ -650,7 +650,7 @@ export default function Transactions() {
                   <SelectValue placeholder="All types" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All types</SelectItem>
+                  <SelectItem value="all">All types</SelectItem>
                   {transactionTypes.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
                       {type.label}
