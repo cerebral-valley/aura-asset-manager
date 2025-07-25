@@ -19,11 +19,11 @@ function InsurancePage() {
 }
 
 function TransactionsPage() {
-  console.log('TransactionsPage: Rendering simple Transactions page')
+  console.log('TransactionsPage: Rendering Transactions page')
   try {
-    return <TransactionsSimple />
+    return <Transactions />
   } catch (error) {
-    console.error('TransactionsPage: Error rendering TransactionsSimple:', error)
+    console.error('TransactionsPage: Error rendering Transactions:', error)
     return <div className="p-6"><h1 className="text-2xl font-bold text-red-500">Error loading Transactions</h1><p>{error.message}</p></div>
   }
 }
