@@ -10,7 +10,7 @@ from decimal import Decimal
 
 class TransactionBase(BaseModel):
     """Base transaction schema."""
-    asset_id: UUID
+    asset_id: Optional[UUID] = None  # Optional for 'create' transactions
     transaction_type: str
     transaction_date: date  # Changed from datetime to date for YYYY-MM-DD format
     amount: Optional[Decimal] = None

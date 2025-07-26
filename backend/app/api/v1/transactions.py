@@ -41,24 +41,74 @@ async def create_transaction(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """Create a new transaction."""
-    # Verify that the asset belongs to the current user
-    asset = db.query(Asset).filter(
-        Asset.id == transaction.asset_id,
-        Asset.user_id == current_user.id
-    ).first()
+    """Create a new transaction. For 'create' type, also creates the asset."""
     
-    if not asset:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Asset not found"
-        )
+    # 🎯 HANDLE ASSET CREATION FOR 'CREATE' TRANSACTION TYPE
+    if transaction.transaction_type == "create":
+        # Create new asset from transaction data
+        if not transaction.asset_name or not transaction.asset_type:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="asset_name and asset_type are required for create transactions"
+            )
+        
+        # Create the asset first
+        asset_data = {
+            "name": transaction.asset_name,
+            "asset_type": transaction.asset_type,
+            "description": transaction.asset_description or "",
+            "purchase_date": transaction.transaction_date,
+            "initial_value": transaction.acquisition_value or 0,
+            "current_value": transaction.current_value or transaction.acquisition_value or 0,
+            "quantity": transaction.quantity or 1,
+            "unit_of_measure": transaction.unit_of_measure or "",
+            "user_id": current_user.id
+        }
+        
+        # Handle custom_properties if provided
+        if hasattr(transaction, 'custom_properties') and transaction.custom_properties:
+            asset_data["asset_metadata"] = {"custom_properties": transaction.custom_properties}
+        else:
+            asset_data["asset_metadata"] = {}
+        
+        db_asset = Asset(**asset_data)
+        db.add(db_asset)
+        db.flush()  # Get the asset ID without committing
+        
+        # Now create the transaction with the new asset_id
+        transaction_data = transaction.dict()
+        transaction_data["asset_id"] = db_asset.id
+        db_transaction = Transaction(**transaction_data, user_id=current_user.id)
+        
+    else:
+        # For other transaction types, verify that the asset exists
+        if not transaction.asset_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="asset_id is required for non-create transactions"
+            )
+            
+        asset = db.query(Asset).filter(
+            Asset.id == transaction.asset_id,
+            Asset.user_id == current_user.id
+        ).first()
+        
+        if not asset:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Asset not found"
+            )
+        
+        db_transaction = Transaction(**transaction.dict(), user_id=current_user.id)
     
-    db_transaction = Transaction(**transaction.dict(), user_id=current_user.id)
     db.add(db_transaction)
     
     # Update asset values based on transaction type
-    if transaction.transaction_type == "purchase" and transaction.quantity_change:
+    # For 'create' transactions, the asset is already properly initialized
+    if transaction.transaction_type == "create":
+        # Asset values are already set during creation, no additional updates needed
+        pass
+    elif transaction.transaction_type == "purchase" and transaction.quantity_change:
         if asset.quantity:
             asset.quantity += transaction.quantity_change
         else:

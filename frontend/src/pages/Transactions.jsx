@@ -213,41 +213,21 @@ export default function Transactions() {
             throw new Error('VALIDATION_ERROR_003: Purchase date is required')
           }
           
-          // 🎯 FIXED: Send everything to transactions endpoint, not assets
-          // Create a placeholder asset first (just for the asset_id requirement)
-          const assetData = {
-            name: transactionForm.asset_name.trim(),
-            asset_type: transactionForm.asset_type,
-            description: transactionForm.description?.trim() || '',
-            purchase_date: transactionForm.purchase_date,
-            initial_value: parseFloat(transactionForm.initial_value) || 0,
-            current_value: parseFloat(transactionForm.current_value) || parseFloat(transactionForm.initial_value) || 0,
-            quantity: parseFloat(transactionForm.quantity) || 1,
-            unit_of_measure: transactionForm.unit_of_measure?.trim() || ''
-          }
-          
-          console.log('📦 CREATE_ASSET_DATA: Asset data prepared for placeholder', {
-            assetData,
+          // 🎯 PURE TRANSACTION-CENTRIC: Send everything directly to transactions endpoint
+          console.log('� CREATE_TRANSACTION_DIRECT: Creating transaction with all asset data', {
+            formData: transactionForm,
             code: 'CREATE_002'
           })
           
-          const newAsset = await assetsService.createAsset(assetData)
-          
-          console.log('✅ CREATE_ASSET_SUCCESS: Placeholder asset created', {
-            assetId: newAsset.id,
-            assetName: newAsset.name,
-            code: 'CREATE_003'
-          })
-          
-          // 🎯 NOW SEND ALL DATA TO TRANSACTIONS ENDPOINT
+          // 🎯 ALL DATA GOES TO TRANSACTIONS ENDPOINT (no asset creation needed)
           const transactionData = {
-            asset_id: newAsset.id,
+            // Asset will be created automatically by backend based on transaction data
             transaction_type: 'create',
             transaction_date: transactionForm.purchase_date,
             amount: parseFloat(transactionForm.initial_value) || 0,
             quantity_change: parseFloat(transactionForm.quantity) || 1,
             notes: transactionForm.notes?.trim() || '',
-            // 🎯 ALL 10 FRONTEND FIELDS NOW SENT TO TRANSACTIONS:
+            // 🎯 ALL 10 FRONTEND FIELDS SENT TO TRANSACTIONS:
             asset_name: transactionForm.asset_name.trim(),
             asset_type: transactionForm.asset_type,
             acquisition_value: parseFloat(transactionForm.initial_value) || 0,
@@ -264,7 +244,7 @@ export default function Transactions() {
             code: 'CREATE_004'
           })
           
-          console.log('🔍 FIELD_MAPPING_DEBUG: Frontend to DB mapping', {
+          console.log('🔍 PURE_TRANSACTION_MAPPING: All data routed to transactions', {
             mapping: {
               'asset_name (UI)': `${transactionForm.asset_name?.trim()} → ${transactionData.asset_name}`,
               'asset_type (UI)': `${transactionForm.asset_type} → ${transactionData.asset_type}`,
@@ -277,24 +257,24 @@ export default function Transactions() {
               'description (UI)': `${transactionForm.description} → ${transactionData.asset_description}`,
               'notes (UI)': `${transactionForm.notes} → ${transactionData.notes}`
             },
-            code: 'CREATE_005'
+            routedTo: '/transactions/ (NOT /assets/)',
+            code: 'CREATE_003'
           })
           
           const newTransaction = await transactionsService.createTransaction(transactionData)
           
-          console.log('✅ CREATE_TRANSACTION_SUCCESS: Transaction recorded successfully', {
+          console.log('✅ PURE_TRANSACTION_SUCCESS: Transaction created with all asset data', {
             transactionId: newTransaction.id,
-            assetId: newAsset.id,
             transactionType: newTransaction.transaction_type,
             amount: newTransaction.amount,
-            allFieldsStored: {
+            assetFieldsStored: {
               asset_name: newTransaction.asset_name,
               asset_type: newTransaction.asset_type,
               custom_properties: newTransaction.custom_properties,
               asset_description: newTransaction.asset_description,
               unit_of_measure: newTransaction.unit_of_measure
             },
-            code: 'CREATE_006'
+            code: 'CREATE_004'
           })
           
           toast({
