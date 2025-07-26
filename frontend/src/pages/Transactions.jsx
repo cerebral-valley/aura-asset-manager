@@ -113,6 +113,7 @@ export default function Transactions() {
   })
   
   const { toast } = useToast()
+  const { session } = useAuth() // Get session for authentication
 
   console.log('Transactions: About to set up useEffect')
 
@@ -257,11 +258,27 @@ export default function Transactions() {
               'description (UI)': `${transactionForm.description} → ${transactionData.asset_description}`,
               'notes (UI)': `${transactionForm.notes} → ${transactionData.notes}`
             },
-            routedTo: '/transactions/ (NOT /assets/)',
+            routedTo: '/transaction-create/ (DEDICATED ENDPOINT)',
             code: 'CREATE_003'
           })
           
-          const newTransaction = await transactionsService.createTransaction(transactionData)
+          const newTransaction = await (async () => {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/transaction-create/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`
+              },
+              body: JSON.stringify(transactionData)
+            })
+            
+            if (!response.ok) {
+              const errorData = await response.json()
+              throw new Error(`API Error: ${response.status} - ${errorData.detail || 'Unknown error'}`)
+            }
+            
+            return await response.json()
+          })()
           
           console.log('✅ PURE_TRANSACTION_SUCCESS: Transaction created with all asset data', {
             transactionId: newTransaction.id,
