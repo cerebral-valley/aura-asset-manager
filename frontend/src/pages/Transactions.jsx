@@ -425,6 +425,25 @@ export default function Transactions() {
     return transactionTypes.find(t => t.value === type) || transactionTypes[0]
   }
 
+  // Format asset type for display
+  const formatAssetType = (assetTypeValue) => {
+    if (!assetTypeValue) return 'N/A'
+    
+    // Find the asset type in our configuration
+    for (const [category, types] of Object.entries(assetTypes)) {
+      const foundType = types.find(type => type.value === assetTypeValue)
+      if (foundType) {
+        return `${category} - ${foundType.label}`
+      }
+    }
+    
+    // Fallback: format the raw value if not found in config
+    return assetTypeValue
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+  }
+
   const filteredTransactions = transactions.filter(transaction => {
     const matchesSearch = transaction.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          transaction.asset_name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -838,7 +857,7 @@ export default function Transactions() {
                         <div className="space-y-1">
                           <div className="font-medium">{transaction.asset_name || 'Unknown Asset'}</div>
                           <div className="text-sm text-muted-foreground">
-                            Type: {transaction.asset_type || 'N/A'}
+                            Type: {formatAssetType(transaction.asset_type)}
                           </div>
                           {transaction.asset_description && (
                             <div className="text-xs text-muted-foreground max-w-xs truncate">
