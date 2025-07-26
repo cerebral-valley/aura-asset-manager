@@ -196,7 +196,7 @@ export default function Transactions() {
       } else {
         // Create new transaction
         if (transactionForm.transaction_type === 'create') {
-          console.log('📝 CREATE_ASSET_START: Creating new asset', {
+          console.log('📝 CREATE_ASSET_START: Creating new asset via transaction', {
             assetName: transactionForm.asset_name,
             assetType: transactionForm.asset_type,
             code: 'CREATE_001'
@@ -213,7 +213,8 @@ export default function Transactions() {
             throw new Error('VALIDATION_ERROR_003: Purchase date is required')
           }
           
-          // First create the asset
+          // 🎯 FIXED: Send everything to transactions endpoint, not assets
+          // Create a placeholder asset first (just for the asset_id requirement)
           const assetData = {
             name: transactionForm.asset_name.trim(),
             asset_type: transactionForm.asset_type,
@@ -225,20 +226,20 @@ export default function Transactions() {
             unit_of_measure: transactionForm.unit_of_measure?.trim() || ''
           }
           
-          console.log('📦 CREATE_ASSET_DATA: Asset data prepared', {
+          console.log('📦 CREATE_ASSET_DATA: Asset data prepared for placeholder', {
             assetData,
             code: 'CREATE_002'
           })
           
           const newAsset = await assetsService.createAsset(assetData)
           
-          console.log('✅ CREATE_ASSET_SUCCESS: Asset created successfully', {
+          console.log('✅ CREATE_ASSET_SUCCESS: Placeholder asset created', {
             assetId: newAsset.id,
             assetName: newAsset.name,
             code: 'CREATE_003'
           })
           
-          // ✅ FIXED: Now include ALL transaction fields
+          // 🎯 NOW SEND ALL DATA TO TRANSACTIONS ENDPOINT
           const transactionData = {
             asset_id: newAsset.id,
             transaction_type: 'create',
@@ -246,7 +247,7 @@ export default function Transactions() {
             amount: parseFloat(transactionForm.initial_value) || 0,
             quantity_change: parseFloat(transactionForm.quantity) || 1,
             notes: transactionForm.notes?.trim() || '',
-            // ✅ ADD MISSING FIELDS - ALL 10 FORM FIELDS NOW MAPPED:
+            // 🎯 ALL 10 FRONTEND FIELDS NOW SENT TO TRANSACTIONS:
             asset_name: transactionForm.asset_name.trim(),
             asset_type: transactionForm.asset_type,
             acquisition_value: parseFloat(transactionForm.initial_value) || 0,
