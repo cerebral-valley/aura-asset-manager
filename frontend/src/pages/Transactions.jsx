@@ -809,8 +809,10 @@ export default function Transactions() {
               <TableRow>
                 <TableHead>Date</TableHead>
                 <TableHead>Type</TableHead>
-                <TableHead>Asset</TableHead>
-                <TableHead>Amount</TableHead>
+                <TableHead>Asset Details</TableHead>
+                <TableHead>Values</TableHead>
+                <TableHead>Quantity & Unit</TableHead>
+                <TableHead>Properties</TableHead>
                 <TableHead>Notes</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -833,16 +835,72 @@ export default function Transactions() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="font-medium">{transaction.asset_name || 'Unknown Asset'}</div>
+                        <div className="space-y-1">
+                          <div className="font-medium">{transaction.asset_name || 'Unknown Asset'}</div>
+                          <div className="text-sm text-muted-foreground">
+                            Type: {transaction.asset_type || 'N/A'}
+                          </div>
+                          {transaction.asset_description && (
+                            <div className="text-xs text-muted-foreground max-w-xs truncate">
+                              {transaction.asset_description}
+                            </div>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
-                        <span className={typeInfo.color}>
-                          {transaction.amount ? formatCurrency(transaction.amount) : '-'}
-                        </span>
+                        <div className="space-y-1">
+                          {transaction.acquisition_value && (
+                            <div className="text-sm">
+                              <span className="text-muted-foreground">Acquired:</span> {formatCurrency(transaction.acquisition_value)}
+                            </div>
+                          )}
+                          {transaction.current_value && (
+                            <div className="text-sm">
+                              <span className="text-muted-foreground">Current:</span> {formatCurrency(transaction.current_value)}
+                            </div>
+                          )}
+                          {transaction.amount && (
+                            <div className={`text-sm font-medium ${typeInfo.color}`}>
+                              <span className="text-muted-foreground">Amount:</span> {formatCurrency(transaction.amount)}
+                            </div>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
-                        <div className="max-w-xs truncate">
-                          {transaction.notes || '-'}
+                        <div className="space-y-1">
+                          {transaction.quantity && (
+                            <div className="text-sm">
+                              <span className="font-medium">{transaction.quantity}</span>
+                              {transaction.unit_of_measure && (
+                                <span className="text-muted-foreground"> {transaction.unit_of_measure}</span>
+                              )}
+                            </div>
+                          )}
+                          {!transaction.quantity && (
+                            <span className="text-muted-foreground text-sm">-</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-xs">
+                          {transaction.custom_properties ? (
+                            <div className="text-xs text-muted-foreground truncate" title={transaction.custom_properties}>
+                              {transaction.custom_properties}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">-</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-xs">
+                          {transaction.notes ? (
+                            <div className="text-sm truncate" title={transaction.notes}>
+                              {transaction.notes}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">-</span>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
@@ -860,7 +918,7 @@ export default function Transactions() {
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
+                  <TableCell colSpan={8} className="text-center py-8">
                     <div className="text-muted-foreground">
                       {searchTerm || selectedType ? 'No transactions match your filters' : 'No transactions found. Record your first transaction to get started.'}
                     </div>
