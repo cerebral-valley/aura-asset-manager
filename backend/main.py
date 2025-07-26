@@ -37,7 +37,7 @@ app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["dashboard"])
 app.include_router(assets.router, prefix="/api/v1/assets", tags=["assets"])
 app.include_router(transactions.router, prefix="/api/v1/transactions", tags=["transactions"])
-app.include_router(transaction_create.router, prefix="/api/v1/transaction-create", tags=["transaction-create"])
+app.include_router(transaction_create.router, prefix="/api/v1/transaction_create", tags=["transaction-create"])
 app.include_router(insurance.router, prefix="/api/v1/insurance", tags=["insurance"])
 
 @app.get("/")
@@ -61,7 +61,10 @@ async def health_check():
     return {"status": "healthy", "version": "1.0.0"}
 
 if __name__ == "__main__":
+    import os
     import uvicorn
+    # Change directory to backend before running uvicorn
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
