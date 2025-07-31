@@ -122,44 +122,20 @@ const Insurance = () => {
   };
 
   if (loading) return <div>Loading insurance policies...</div>;
-  if (error) return <div>{error}</div>;
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Insurance Policies</h1>
-      {/* KPIs & Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded shadow p-4">
-          <h2 className="font-semibold mb-2">Premiums Overview</h2>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={chartData}>
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="premium" fill="#8884d8" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="bg-white rounded shadow p-4">
-          <h2 className="font-semibold mb-2">Policy Status Breakdown</h2>
-          <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-              <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                {pieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-      {/* Policies Table & Actions */}
-      <div className="bg-white rounded shadow p-4">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="font-semibold">All Policies</h2>
+      {/* Error message if fetch fails */}
+      {error && (
+        <div className="text-red-600 mb-4">{error}</div>
+      )}
+
+      {/* If no error and no policies, show empty state */}
+      {!error && policies.length === 0 && (
+        <div className="bg-white rounded shadow p-6 flex flex-col items-center justify-center">
+          <h2 className="font-semibold mb-2">No policies found</h2>
+          <p className="mb-4 text-gray-500">You have not added any insurance policies yet.</p>
           <button
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
             onClick={() => openModal()}
@@ -167,42 +143,89 @@ const Insurance = () => {
             Add Policy
           </button>
         </div>
-        {actionError && <div className="text-red-600 mb-2">{actionError}</div>}
-        <table className="min-w-full text-sm" aria-label="Insurance Policies Table">
-          <thead>
-            <tr>
-              <th className="text-left py-2 px-4">Name</th>
-              <th className="text-left py-2 px-4">Premium</th>
-              <th className="text-left py-2 px-4">Status</th>
-              <th className="text-left py-2 px-4">Expiry Date</th>
-              <th className="text-left py-2 px-4">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {policies.map((p, idx) => (
-              <tr key={p.id || idx} className="border-t">
-                <td className="py-2 px-4">{p.name || p.policy_name || 'Policy'}</td>
-                <td className="py-2 px-4">{typeof p.premium === 'number' ? p.premium : '-'}</td>
-                <td className="py-2 px-4">{p.status || '-'}</td>
-                <td className="py-2 px-4">{p.expiry_date || '-'}</td>
-                <td className="py-2 px-4">
-                  <button
-                    className="text-blue-600 hover:underline mr-2"
-                    onClick={() => openModal(p)}
-                    aria-label={`Edit policy ${p.name || p.policy_name || 'Policy'}`}
-                  >Edit</button>
-                  <button
-                    className="text-red-600 hover:underline"
-                    onClick={() => handleDelete(p.id)}
-                    disabled={actionLoading}
-                    aria-label={`Delete policy ${p.name || p.policy_name || 'Policy'}`}
-                  >Delete</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      )}
+
+      {/* If policies exist, show charts and table */}
+      {policies.length > 0 && (
+        <>
+          {/* KPIs & Charts */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="bg-white rounded shadow p-4">
+              <h2 className="font-semibold mb-2">Premiums Overview</h2>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={chartData}>
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="premium" fill="#8884d8" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="bg-white rounded shadow p-4">
+              <h2 className="font-semibold mb-2">Policy Status Breakdown</h2>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                    {pieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          {/* Policies Table & Actions */}
+          <div className="bg-white rounded shadow p-4">
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="font-semibold">All Policies</h2>
+              <button
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                onClick={() => openModal()}
+              >
+                Add Policy
+              </button>
+            </div>
+            {actionError && <div className="text-red-600 mb-2">{actionError}</div>}
+            <table className="min-w-full text-sm" aria-label="Insurance Policies Table">
+              <thead>
+                <tr>
+                  <th className="text-left py-2 px-4">Name</th>
+                  <th className="text-left py-2 px-4">Premium</th>
+                  <th className="text-left py-2 px-4">Status</th>
+                  <th className="text-left py-2 px-4">Expiry Date</th>
+                  <th className="text-left py-2 px-4">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {policies.map((p, idx) => (
+                  <tr key={p.id || idx} className="border-t">
+                    <td className="py-2 px-4">{p.name || p.policy_name || 'Policy'}</td>
+                    <td className="py-2 px-4">{typeof p.premium === 'number' ? p.premium : '-'}</td>
+                    <td className="py-2 px-4">{p.status || '-'}</td>
+                    <td className="py-2 px-4">{p.expiry_date || '-'}</td>
+                    <td className="py-2 px-4">
+                      <button
+                        className="text-blue-600 hover:underline mr-2"
+                        onClick={() => openModal(p)}
+                        aria-label={`Edit policy ${p.name || p.policy_name || 'Policy'}`}
+                      >Edit</button>
+                      <button
+                        className="text-red-600 hover:underline"
+                        onClick={() => handleDelete(p.id)}
+                        disabled={actionLoading}
+                        aria-label={`Delete policy ${p.name || p.policy_name || 'Policy'}`}
+                      >Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
 
       {/* Add/Edit Modal */}
       {modalOpen && (
