@@ -37,16 +37,16 @@ const Insurance = () => {
   // Example chart data (replace with real KPIs from policies)
   // Only show non-sensitive, necessary fields in charts and table
   const chartData = policies.map(p => ({
-    name: p.name || p.policy_name || 'Policy',
-    premium: typeof p.premium === 'number' ? p.premium : 0,
-    status: p.status || 'Active',
-    expiry: p.expiry_date || '',
+    name: p.policy_name || 'Policy',
+    premium: typeof p.premium_amount === 'number' ? p.premium_amount : 0,
+    coverage: typeof p.coverage_amount === 'number' ? p.coverage_amount : 0,
+    type: p.policy_type || 'Unknown',
   }));
 
-  // Example pie chart data (policy status breakdown)
+  // Example pie chart data (policy type breakdown)
   const pieData = Object.entries(
     policies.reduce((acc, p) => {
-      acc[p.status] = (acc[p.status] || 0) + 1;
+      acc[p.policy_type] = (acc[p.policy_type] || 0) + 1;
       return acc;
     }, {})
   ).map(([name, value]) => ({ name, value }));
@@ -67,13 +67,30 @@ const Insurance = () => {
     }, 100);
     if (policy) {
       reset({
-        name: policy.name || policy.policy_name || '',
-        premium: policy.premium || '',
-        status: policy.status || 'Active',
-        expiry_date: policy.expiry_date || '',
+        policy_name: policy.policy_name || '',
+        policy_type: policy.policy_type || '',
+        provider: policy.provider || '',
+        coverage_amount: policy.coverage_amount || '',
+        premium_amount: policy.premium_amount || '',
+        premium_frequency: policy.premium_frequency || 'monthly',
+        start_date: policy.start_date || '',
+        end_date: policy.end_date || '',
+        renewal_date: policy.renewal_date || '',
+        notes: policy.notes || '',
       });
     } else {
-      reset({ name: '', premium: '', status: 'Active', expiry_date: '' });
+      reset({ 
+        policy_name: '', 
+        policy_type: '', 
+        provider: '', 
+        coverage_amount: '', 
+        premium_amount: '', 
+        premium_frequency: 'monthly',
+        start_date: '', 
+        end_date: '', 
+        renewal_date: '', 
+        notes: '' 
+      });
     }
   };
 
@@ -125,7 +142,16 @@ const Insurance = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Insurance Policies</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Insurance Policies</h1>
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          onClick={() => openModal()}
+        >
+          Add Policy
+        </button>
+      </div>
+      
       {/* Error message if fetch fails */}
       {error && (
         <div className="text-red-600 mb-4">{error}</div>
@@ -135,13 +161,7 @@ const Insurance = () => {
       {!error && policies.length === 0 && (
         <div className="bg-white rounded shadow p-6 flex flex-col items-center justify-center">
           <h2 className="font-semibold mb-2">No policies found</h2>
-          <p className="mb-4 text-gray-500">You have not added any insurance policies yet.</p>
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            onClick={() => openModal()}
-          >
-            Add Policy
-          </button>
+          <p className="mb-4 text-gray-500">You have not added any insurance policies yet. Click "Add Policy" above to get started.</p>
         </div>
       )}
 
@@ -163,7 +183,7 @@ const Insurance = () => {
               </ResponsiveContainer>
             </div>
             <div className="bg-white rounded shadow p-4">
-              <h2 className="font-semibold mb-2">Policy Status Breakdown</h2>
+              <h2 className="font-semibold mb-2">Policy Type Breakdown</h2>
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
                   <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
@@ -192,31 +212,33 @@ const Insurance = () => {
             <table className="min-w-full text-sm" aria-label="Insurance Policies Table">
               <thead>
                 <tr>
-                  <th className="text-left py-2 px-4">Name</th>
+                  <th className="text-left py-2 px-4">Policy Name</th>
+                  <th className="text-left py-2 px-4">Type</th>
                   <th className="text-left py-2 px-4">Premium</th>
-                  <th className="text-left py-2 px-4">Status</th>
-                  <th className="text-left py-2 px-4">Expiry Date</th>
+                  <th className="text-left py-2 px-4">Coverage</th>
+                  <th className="text-left py-2 px-4">End Date</th>
                   <th className="text-left py-2 px-4">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {policies.map((p, idx) => (
                   <tr key={p.id || idx} className="border-t">
-                    <td className="py-2 px-4">{p.name || p.policy_name || 'Policy'}</td>
-                    <td className="py-2 px-4">{typeof p.premium === 'number' ? p.premium : '-'}</td>
-                    <td className="py-2 px-4">{p.status || '-'}</td>
-                    <td className="py-2 px-4">{p.expiry_date || '-'}</td>
+                    <td className="py-2 px-4">{p.policy_name || 'Policy'}</td>
+                    <td className="py-2 px-4">{p.policy_type || '-'}</td>
+                    <td className="py-2 px-4">{typeof p.premium_amount === 'number' ? `$${p.premium_amount}` : '-'}</td>
+                    <td className="py-2 px-4">{typeof p.coverage_amount === 'number' ? `$${p.coverage_amount}` : '-'}</td>
+                    <td className="py-2 px-4">{p.end_date || '-'}</td>
                     <td className="py-2 px-4">
                       <button
                         className="text-blue-600 hover:underline mr-2"
                         onClick={() => openModal(p)}
-                        aria-label={`Edit policy ${p.name || p.policy_name || 'Policy'}`}
+                        aria-label={`Edit policy ${p.policy_name || 'Policy'}`}
                       >Edit</button>
                       <button
                         className="text-red-600 hover:underline"
                         onClick={() => handleDelete(p.id)}
                         disabled={actionLoading}
-                        aria-label={`Delete policy ${p.name || p.policy_name || 'Policy'}`}
+                        aria-label={`Delete policy ${p.policy_name || 'Policy'}`}
                       >Delete</button>
                     </td>
                   </tr>
@@ -253,53 +275,119 @@ const Insurance = () => {
             <h2 className="font-semibold mb-4" id="modal-title">{editPolicy ? 'Edit Policy' : 'Add Policy'}</h2>
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="mb-3">
-                <label className="block mb-1" htmlFor="name">Name</label>
+                <label className="block mb-1" htmlFor="policy_name">Policy Name</label>
                 <input
-                  id="name"
+                  id="policy_name"
                   className="border rounded px-3 py-2 w-full"
-                  {...register('name', { required: 'Name is required' })}
+                  {...register('policy_name', { required: 'Policy name is required' })}
                   disabled={actionLoading}
                   aria-required="true"
                 />
-                {errors.name && <span className="text-red-600 text-xs">{errors.name.message}</span>}
+                {errors.policy_name && <span className="text-red-600 text-xs">{errors.policy_name.message}</span>}
               </div>
               <div className="mb-3">
-                <label className="block mb-1" htmlFor="premium">Premium</label>
-                <input
-                  id="premium"
-                  type="number"
-                  className="border rounded px-3 py-2 w-full"
-                  {...register('premium', { required: 'Premium is required', min: 0 })}
-                  disabled={actionLoading}
-                  aria-required="true"
-                />
-                {errors.premium && <span className="text-red-600 text-xs">{errors.premium.message}</span>}
-              </div>
-              <div className="mb-3">
-                <label className="block mb-1" htmlFor="status">Status</label>
+                <label className="block mb-1" htmlFor="policy_type">Policy Type</label>
                 <select
-                  id="status"
+                  id="policy_type"
                   className="border rounded px-3 py-2 w-full"
-                  {...register('status', { required: true })}
+                  {...register('policy_type', { required: 'Policy type is required' })}
                   disabled={actionLoading}
                   aria-required="true"
                 >
-                  <option value="Active">Active</option>
-                  <option value="Expired">Expired</option>
-                  <option value="Pending">Pending</option>
+                  <option value="">Select Type</option>
+                  <option value="life">Life Insurance</option>
+                  <option value="health">Health Insurance</option>
+                  <option value="auto">Auto Insurance</option>
+                  <option value="home">Home Insurance</option>
+                  <option value="loan">Loan Insurance</option>
                 </select>
+                {errors.policy_type && <span className="text-red-600 text-xs">{errors.policy_type.message}</span>}
               </div>
               <div className="mb-3">
-                <label className="block mb-1" htmlFor="expiry_date">Expiry Date</label>
+                <label className="block mb-1" htmlFor="provider">Provider</label>
                 <input
-                  id="expiry_date"
-                  type="date"
+                  id="provider"
                   className="border rounded px-3 py-2 w-full"
-                  {...register('expiry_date', { required: 'Expiry date is required' })}
+                  {...register('provider')}
+                  disabled={actionLoading}
+                />
+              </div>
+              <div className="mb-3">
+                <label className="block mb-1" htmlFor="coverage_amount">Coverage Amount</label>
+                <input
+                  id="coverage_amount"
+                  type="number"
+                  step="0.01"
+                  className="border rounded px-3 py-2 w-full"
+                  {...register('coverage_amount', { required: 'Coverage amount is required', min: 0 })}
                   disabled={actionLoading}
                   aria-required="true"
                 />
-                {errors.expiry_date && <span className="text-red-600 text-xs">{errors.expiry_date.message}</span>}
+                {errors.coverage_amount && <span className="text-red-600 text-xs">{errors.coverage_amount.message}</span>}
+              </div>
+              <div className="mb-3">
+                <label className="block mb-1" htmlFor="premium_amount">Premium Amount</label>
+                <input
+                  id="premium_amount"
+                  type="number"
+                  step="0.01"
+                  className="border rounded px-3 py-2 w-full"
+                  {...register('premium_amount', { min: 0 })}
+                  disabled={actionLoading}
+                />
+              </div>
+              <div className="mb-3">
+                <label className="block mb-1" htmlFor="premium_frequency">Premium Frequency</label>
+                <select
+                  id="premium_frequency"
+                  className="border rounded px-3 py-2 w-full"
+                  {...register('premium_frequency')}
+                  disabled={actionLoading}
+                >
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="annually">Annually</option>
+                </select>
+              </div>
+              <div className="mb-3">
+                <label className="block mb-1" htmlFor="start_date">Start Date</label>
+                <input
+                  id="start_date"
+                  type="date"
+                  className="border rounded px-3 py-2 w-full"
+                  {...register('start_date')}
+                  disabled={actionLoading}
+                />
+              </div>
+              <div className="mb-3">
+                <label className="block mb-1" htmlFor="end_date">End Date</label>
+                <input
+                  id="end_date"
+                  type="date"
+                  className="border rounded px-3 py-2 w-full"
+                  {...register('end_date')}
+                  disabled={actionLoading}
+                />
+              </div>
+              <div className="mb-3">
+                <label className="block mb-1" htmlFor="renewal_date">Renewal Date</label>
+                <input
+                  id="renewal_date"
+                  type="date"
+                  className="border rounded px-3 py-2 w-full"
+                  {...register('renewal_date')}
+                  disabled={actionLoading}
+                />
+              </div>
+              <div className="mb-3">
+                <label className="block mb-1" htmlFor="notes">Notes</label>
+                <textarea
+                  id="notes"
+                  rows="3"
+                  className="border rounded px-3 py-2 w-full"
+                  {...register('notes')}
+                  disabled={actionLoading}
+                />
               </div>
               {actionError && <div className="text-red-600 mb-2">{actionError}</div>}
               <button
