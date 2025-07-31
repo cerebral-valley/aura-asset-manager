@@ -21,7 +21,7 @@ class InsurancePolicyBase(BaseModel):
     end_date: Optional[date] = None
     renewal_date: Optional[date] = None
     notes: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    policy_metadata: Optional[Dict[str, Any]] = None
     status: Optional[str] = "active"
 
 class InsurancePolicyCreate(InsurancePolicyBase):
@@ -41,7 +41,7 @@ class InsurancePolicyUpdate(BaseModel):
     end_date: Optional[date] = None
     renewal_date: Optional[date] = None
     notes: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    policy_metadata: Optional[Dict[str, Any]] = None
     status: Optional[str] = None
 
 class InsurancePolicyInDB(InsurancePolicyBase):
