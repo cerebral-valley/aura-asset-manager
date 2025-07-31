@@ -409,6 +409,8 @@ const Insurance = () => {
                     <input
                       id="start_date"
                       type="date"
+                      min="1900-01-01"
+                      max="2100-12-31"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                       {...register('start_date')}
                       disabled={actionLoading}
@@ -419,6 +421,8 @@ const Insurance = () => {
                     <input
                       id="end_date"
                       type="date"
+                      min="1900-01-01"
+                      max="2100-12-31"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                       {...register('end_date')}
                       disabled={actionLoading}
@@ -429,6 +433,8 @@ const Insurance = () => {
                     <input
                       id="renewal_date"
                       type="date"
+                      min="1900-01-01"
+                      max="2100-12-31"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                       {...register('renewal_date')}
                       disabled={actionLoading}
