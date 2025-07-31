@@ -252,7 +252,7 @@ const Insurance = () => {
       {/* Add/Edit Modal */}
       {modalOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-title"
@@ -262,143 +262,182 @@ const Insurance = () => {
           }}
         >
           <div
-            className="bg-white rounded shadow-lg p-6 w-full max-w-md relative"
+            className="bg-white rounded shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto relative"
             ref={modalRef}
             tabIndex={0}
             aria-label={editPolicy ? 'Edit Policy Modal' : 'Add Policy Modal'}
           >
-            <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-              onClick={closeModal}
-              aria-label="Close"
-            >✕</button>
-            <h2 className="font-semibold mb-4" id="modal-title">{editPolicy ? 'Edit Policy' : 'Add Policy'}</h2>
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="mb-3">
-                <label className="block mb-1" htmlFor="policy_name">Policy Name</label>
-                <input
-                  id="policy_name"
-                  className="border rounded px-3 py-2 w-full"
-                  {...register('policy_name', { required: 'Policy name is required' })}
-                  disabled={actionLoading}
-                  aria-required="true"
-                />
-                {errors.policy_name && <span className="text-red-600 text-xs">{errors.policy_name.message}</span>}
-              </div>
-              <div className="mb-3">
-                <label className="block mb-1" htmlFor="policy_type">Policy Type</label>
-                <select
-                  id="policy_type"
-                  className="border rounded px-3 py-2 w-full"
-                  {...register('policy_type', { required: 'Policy type is required' })}
-                  disabled={actionLoading}
-                  aria-required="true"
-                >
-                  <option value="">Select Type</option>
-                  <option value="life">Life Insurance</option>
-                  <option value="health">Health Insurance</option>
-                  <option value="auto">Auto Insurance</option>
-                  <option value="home">Home Insurance</option>
-                  <option value="loan">Loan Insurance</option>
-                </select>
-                {errors.policy_type && <span className="text-red-600 text-xs">{errors.policy_type.message}</span>}
-              </div>
-              <div className="mb-3">
-                <label className="block mb-1" htmlFor="provider">Provider</label>
-                <input
-                  id="provider"
-                  className="border rounded px-3 py-2 w-full"
-                  {...register('provider')}
-                  disabled={actionLoading}
-                />
-              </div>
-              <div className="mb-3">
-                <label className="block mb-1" htmlFor="coverage_amount">Coverage Amount</label>
-                <input
-                  id="coverage_amount"
-                  type="number"
-                  step="0.01"
-                  className="border rounded px-3 py-2 w-full"
-                  {...register('coverage_amount', { required: 'Coverage amount is required', min: 0 })}
-                  disabled={actionLoading}
-                  aria-required="true"
-                />
-                {errors.coverage_amount && <span className="text-red-600 text-xs">{errors.coverage_amount.message}</span>}
-              </div>
-              <div className="mb-3">
-                <label className="block mb-1" htmlFor="premium_amount">Premium Amount</label>
-                <input
-                  id="premium_amount"
-                  type="number"
-                  step="0.01"
-                  className="border rounded px-3 py-2 w-full"
-                  {...register('premium_amount', { min: 0 })}
-                  disabled={actionLoading}
-                />
-              </div>
-              <div className="mb-3">
-                <label className="block mb-1" htmlFor="premium_frequency">Premium Frequency</label>
-                <select
-                  id="premium_frequency"
-                  className="border rounded px-3 py-2 w-full"
-                  {...register('premium_frequency')}
-                  disabled={actionLoading}
-                >
-                  <option value="monthly">Monthly</option>
-                  <option value="quarterly">Quarterly</option>
-                  <option value="annually">Annually</option>
-                </select>
-              </div>
-              <div className="mb-3">
-                <label className="block mb-1" htmlFor="start_date">Start Date</label>
-                <input
-                  id="start_date"
-                  type="date"
-                  className="border rounded px-3 py-2 w-full"
-                  {...register('start_date')}
-                  disabled={actionLoading}
-                />
-              </div>
-              <div className="mb-3">
-                <label className="block mb-1" htmlFor="end_date">End Date</label>
-                <input
-                  id="end_date"
-                  type="date"
-                  className="border rounded px-3 py-2 w-full"
-                  {...register('end_date')}
-                  disabled={actionLoading}
-                />
-              </div>
-              <div className="mb-3">
-                <label className="block mb-1" htmlFor="renewal_date">Renewal Date</label>
-                <input
-                  id="renewal_date"
-                  type="date"
-                  className="border rounded px-3 py-2 w-full"
-                  {...register('renewal_date')}
-                  disabled={actionLoading}
-                />
-              </div>
-              <div className="mb-3">
-                <label className="block mb-1" htmlFor="notes">Notes</label>
-                <textarea
-                  id="notes"
-                  rows="3"
-                  className="border rounded px-3 py-2 w-full"
-                  {...register('notes')}
-                  disabled={actionLoading}
-                />
-              </div>
-              {actionError && <div className="text-red-600 mb-2">{actionError}</div>}
+            <div className="sticky top-0 bg-white border-b p-6 pb-4">
               <button
-                type="submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
-                disabled={actionLoading}
-                aria-disabled={actionLoading}
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                onClick={closeModal}
+                aria-label="Close"
+              >✕</button>
+              <h2 className="font-semibold text-lg" id="modal-title">{editPolicy ? 'Edit Policy' : 'Add Policy'}</h2>
+            </div>
+            <div className="p-6 pt-4">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4"
               >
-                {actionLoading ? 'Saving...' : (editPolicy ? 'Update Policy' : 'Add Policy')}
-              </button>
-            </form>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block mb-1 font-medium" htmlFor="policy_name">Policy Name</label>
+                    <input
+                      id="policy_name"
+                      className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      {...register('policy_name', { required: 'Policy name is required' })}
+                      disabled={actionLoading}
+                      aria-required="true"
+                    />
+                    {errors.policy_name && <span className="text-red-600 text-xs">{errors.policy_name.message}</span>}
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-medium" htmlFor="policy_type">Policy Type</label>
+                    <select
+                      id="policy_type"
+                      className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      {...register('policy_type', { required: 'Policy type is required' })}
+                      disabled={actionLoading}
+                      aria-required="true"
+                    >
+                      <option value="">Select Type</option>
+                      <option value="life">Life Insurance</option>
+                      <option value="health">Health Insurance</option>
+                      <option value="auto">Auto Insurance</option>
+                      <option value="home">Home Insurance</option>
+                      <option value="loan">Loan Insurance</option>
+                    </select>
+                    {errors.policy_type && <span className="text-red-600 text-xs">{errors.policy_type.message}</span>}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block mb-1 font-medium" htmlFor="provider">Provider</label>
+                    <input
+                      id="provider"
+                      className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      {...register('provider')}
+                      disabled={actionLoading}
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-medium" htmlFor="premium_frequency">Premium Frequency</label>
+                    <select
+                      id="premium_frequency"
+                      className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      {...register('premium_frequency')}
+                      disabled={actionLoading}
+                    >
+                      <option value="monthly">Monthly</option>
+                      <option value="quarterly">Quarterly</option>
+                      <option value="annually">Annually</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block mb-1 font-medium" htmlFor="coverage_amount">Coverage Amount ($)</label>
+                    <input
+                      id="coverage_amount"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      {...register('coverage_amount', { 
+                        required: 'Coverage amount is required', 
+                        min: { value: 0, message: 'Amount must be positive' },
+                        valueAsNumber: true
+                      })}
+                      disabled={actionLoading}
+                      aria-required="true"
+                    />
+                    {errors.coverage_amount && <span className="text-red-600 text-xs">{errors.coverage_amount.message}</span>}
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-medium" htmlFor="premium_amount">Premium Amount ($)</label>
+                    <input
+                      id="premium_amount"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      {...register('premium_amount', { 
+                        min: { value: 0, message: 'Amount must be positive' },
+                        valueAsNumber: true
+                      })}
+                      disabled={actionLoading}
+                    />
+                    {errors.premium_amount && <span className="text-red-600 text-xs">{errors.premium_amount.message}</span>}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block mb-1 font-medium" htmlFor="start_date">Start Date</label>
+                    <input
+                      id="start_date"
+                      type="date"
+                      className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      {...register('start_date')}
+                      disabled={actionLoading}
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-medium" htmlFor="end_date">End Date</label>
+                    <input
+                      id="end_date"
+                      type="date"
+                      className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      {...register('end_date')}
+                      disabled={actionLoading}
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-medium" htmlFor="renewal_date">Renewal Date</label>
+                    <input
+                      id="renewal_date"
+                      type="date"
+                      className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      {...register('renewal_date')}
+                      disabled={actionLoading}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block mb-1 font-medium" htmlFor="notes">Notes</label>
+                  <textarea
+                    id="notes"
+                    rows="3"
+                    className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    {...register('notes')}
+                    disabled={actionLoading}
+                  />
+                </div>
+
+                {actionError && <div className="text-red-600 bg-red-50 p-3 rounded">{actionError}</div>}
+                
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50"
+                    disabled={actionLoading}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+                    disabled={actionLoading}
+                    aria-disabled={actionLoading}
+                  >
+                    {actionLoading ? 'Saving...' : (editPolicy ? 'Update Policy' : 'Add Policy')}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

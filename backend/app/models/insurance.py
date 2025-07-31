@@ -26,9 +26,10 @@ class InsurancePolicy(Base):
     end_date = Column(Date)
     renewal_date = Column(Date)
     notes = Column(Text)
-    insurance_metadata = Column(JSONB)  # Flexible JSON field for policy-specific details
+    metadata = Column(JSONB)  # Flexible JSON field for policy-specific details
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    status = Column(Text, default='active')  # e.g., 'active', 'expired', 'cancelled'
     
     def __repr__(self):
         return f"<InsurancePolicy(id={self.id}, name={self.policy_name}, type={self.policy_type})>"
