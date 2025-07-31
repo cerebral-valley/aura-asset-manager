@@ -2,7 +2,7 @@
 Insurance Pydantic schemas for API serialization.
 """
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from datetime import datetime, date
 from typing import Optional, Dict, Any
 from uuid import UUID
@@ -24,6 +24,34 @@ class InsurancePolicyBase(BaseModel):
     policy_metadata: Optional[Dict[str, Any]] = None
     status: Optional[str] = "active"
 
+    @validator('premium_amount', pre=True)
+    def validate_premium_amount(cls, v):
+        """Handle empty strings for optional Decimal fields."""
+        if v == "" or v is None:
+            return None
+        return v
+
+    @validator('coverage_amount', pre=True)
+    def validate_coverage_amount(cls, v):
+        """Handle empty strings for required Decimal fields."""
+        if v == "" or v is None:
+            raise ValueError("Coverage amount is required")
+        return v
+
+    @validator('provider', 'policy_number', 'notes', pre=True)
+    def validate_optional_strings(cls, v):
+        """Handle empty strings for optional string fields."""
+        if v == "":
+            return None
+        return v
+
+    @validator('start_date', 'end_date', 'renewal_date', pre=True)
+    def validate_optional_dates(cls, v):
+        """Handle empty strings for optional date fields."""
+        if v == "" or v is None:
+            return None
+        return v
+
 class InsurancePolicyCreate(InsurancePolicyBase):
     """Schema for creating an insurance policy."""
     pass
@@ -43,6 +71,27 @@ class InsurancePolicyUpdate(BaseModel):
     notes: Optional[str] = None
     policy_metadata: Optional[Dict[str, Any]] = None
     status: Optional[str] = None
+
+    @validator('premium_amount', 'coverage_amount', pre=True)
+    def validate_optional_decimal_fields(cls, v):
+        """Handle empty strings for optional Decimal fields in updates."""
+        if v == "" or v is None:
+            return None
+        return v
+
+    @validator('provider', 'policy_number', 'notes', 'policy_name', 'policy_type', pre=True)
+    def validate_optional_string_fields(cls, v):
+        """Handle empty strings for optional string fields in updates."""
+        if v == "":
+            return None
+        return v
+
+    @validator('start_date', 'end_date', 'renewal_date', pre=True)
+    def validate_optional_date_fields(cls, v):
+        """Handle empty strings for optional date fields in updates."""
+        if v == "" or v is None:
+            return None
+        return v
 
 class InsurancePolicyInDB(InsurancePolicyBase):
     """Schema for insurance policy in database."""
