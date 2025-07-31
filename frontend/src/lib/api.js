@@ -1,7 +1,8 @@
 import axios from 'axios'
 import { supabase } from './supabase'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aura-asset-manager-production.up.railway.app/api/v1'
+// Ensure HTTPS is always used
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://aura-asset-manager-production.up.railway.app/api/v1').replace(/^http:/, 'https:')
 
 // Log the API URL being used for debugging
 console.log('API Base URL:', API_BASE_URL)
@@ -20,10 +21,17 @@ const apiClient = axios.create({
 // Add auth token to requests
 apiClient.interceptors.request.use(async (config) => {
   try {
+    // Ensure the URL is always HTTPS
+    if (config.baseURL.startsWith('http:')) {
+      config.baseURL = config.baseURL.replace('http:', 'https:')
+      console.log('API Request - Fixed baseURL to use HTTPS:', config.baseURL)
+    }
+    
     const fullURL = config.baseURL + config.url
     console.log('API Request START - Full URL:', fullURL)
     console.log('API Request - Base URL:', config.baseURL)
     console.log('API Request - Endpoint:', config.url)
+    console.log('API Request - Method:', config.method)
     
     const { data: { session } } = await supabase.auth.getSession()
     

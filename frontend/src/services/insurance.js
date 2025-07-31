@@ -2,7 +2,7 @@ import apiClient from '@/lib/api'
 
 export const insuranceService = {
   async getPolicies() {
-    const response = await apiClient.get('/insurance')
+    const response = await apiClient.get('/insurance/')
     return response.data
   },
 
@@ -12,7 +12,7 @@ export const insuranceService = {
   },
 
   async createPolicy(policy) {
-    const response = await apiClient.post('/insurance', policy)
+    const response = await apiClient.post('/insurance/', policy)
     return response.data
   },
 
