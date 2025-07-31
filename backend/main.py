@@ -4,8 +4,10 @@ Main entry point for the FastAPI application.
 Updated: July 25, 2025 - CORS Fix Deployment
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.api.v1 import auth, dashboard, assets, transactions, insurance, transaction_create
 
@@ -17,6 +19,27 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Custom validation exception handler for debugging
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    print(f"🚨 Validation Error Details:")
+    print(f"   URL: {request.url}")
+    print(f"   Method: {request.method}")
+    print(f"   Headers: {dict(request.headers)}")
+    try:
+        body = await request.body()
+        print(f"   Body: {body.decode()}")
+    except Exception as e:
+        print(f"   Body read error: {e}")
+    print(f"   Validation errors: {exc.errors()}")
+    print(f"   Full exception: {exc}")
+    
+    # Return the default FastAPI validation error response
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors(), "body": body.decode() if body else None}
+    )
 
 # Debug: Log CORS configuration
 print(f"🌐 CORS Configuration:")
