@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import LoginForm from './components/auth/LoginForm'
 import Dashboard from './pages/Dashboard'
 import Transactions from './pages/Transactions'
+import Insurance from './pages/Insurance'
 import AppLayout from './components/layout/AppLayout'
 import { Toaster } from './components/ui/toaster'
 import './App.css'
@@ -13,10 +14,7 @@ function AssetsPage() {
   return <div className="p-6"><h1 className="text-2xl font-bold">Assets Page</h1><p>Coming Soon</p></div>
 }
 
-function InsurancePage() {
-  console.log('InsurancePage: Rendering Insurance page')
-  return <div className="p-6"><h1 className="text-2xl font-bold">Insurance Page</h1><p>Coming Soon</p></div>
-}
+// Removed InsurancePage placeholder; now using real Insurance component
 
 function TransactionsPage() {
   console.log('TransactionsPage: Rendering Transactions page')
@@ -69,7 +67,7 @@ function AppContent() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/dashboard" element={<Navigate to="/" replace />} />
         <Route path="/assets" element={<AssetsPage />} />
-        <Route path="/insurance" element={<InsurancePage />} />
+        <Route path="/insurance" element={<Insurance />} />
         <Route path="/transactions" element={<TransactionsPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
