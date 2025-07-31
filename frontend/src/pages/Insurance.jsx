@@ -70,6 +70,7 @@ const Insurance = () => {
         policy_name: policy.policy_name || '',
         policy_type: policy.policy_type || '',
         provider: policy.provider || '',
+        policy_number: policy.policy_number || '',
         coverage_amount: policy.coverage_amount || '',
         premium_amount: policy.premium_amount || '',
         premium_frequency: policy.premium_frequency || 'monthly',
@@ -84,6 +85,7 @@ const Insurance = () => {
         policy_name: '', 
         policy_type: '', 
         provider: '', 
+        policy_number: '',
         coverage_amount: '', 
         premium_amount: '', 
         premium_frequency: 'monthly',
@@ -333,6 +335,18 @@ const Insurance = () => {
                     />
                   </div>
                   <div>
+                    <label className="block mb-1 font-medium" htmlFor="policy_number">Policy Number</label>
+                    <input
+                      id="policy_number"
+                      className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      {...register('policy_number')}
+                      disabled={actionLoading}
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
                     <label className="block mb-1 font-medium" htmlFor="status">Status</label>
                     <select
                       id="status"
@@ -345,9 +359,6 @@ const Insurance = () => {
                       <option value="cancelled">Cancelled</option>
                     </select>
                   </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block mb-1 font-medium" htmlFor="premium_frequency">Premium Frequency</label>
                     <select
@@ -360,9 +371,6 @@ const Insurance = () => {
                       <option value="quarterly">Quarterly</option>
                       <option value="annually">Annually</option>
                     </select>
-                  </div>
-                  <div>
-                    {/* Placeholder for balance */}
                   </div>
                 </div>
 

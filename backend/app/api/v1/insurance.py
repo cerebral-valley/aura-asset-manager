@@ -30,11 +30,24 @@ async def create_insurance_policy(
     db: Session = Depends(get_db)
 ):
     """Create a new insurance policy."""
-    db_policy = InsurancePolicy(**policy.dict(), user_id=current_user.id)
-    db.add(db_policy)
-    db.commit()
-    db.refresh(db_policy)
-    return db_policy
+    try:
+        # Convert Pydantic model to dict and handle the metadata field mapping
+        policy_data = policy.dict()
+        # Map policy_metadata to the database column name if it exists
+        if 'policy_metadata' in policy_data:
+            # The SQLAlchemy model expects this field as policy_metadata but maps to 'metadata' column
+            pass  # Keep as is since our model handles the mapping
+        
+        db_policy = InsurancePolicy(**policy_data, user_id=current_user.id)
+        db.add(db_policy)
+        db.commit()
+        db.refresh(db_policy)
+        return db_policy
+    except Exception as e:
+        db.rollback()
+        print(f"Error creating insurance policy: {e}")
+        print(f"Policy data received: {policy.dict()}")
+        raise HTTPException(status_code=422, detail=f"Failed to create policy: {str(e)}")
 
 @router.get("/{policy_id}", response_model=InsurancePolicySchema)
 async def get_insurance_policy(
