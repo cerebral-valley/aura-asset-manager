@@ -217,27 +217,41 @@ const Insurance = () => {
       renewal_date: data.renewal_date
     });
     
+    // Process dates to ensure they're in the correct format or null
+    const processedData = {
+      ...data,
+      start_date: data.start_date && data.start_date.trim() !== '' ? data.start_date : null,
+      end_date: data.end_date && data.end_date.trim() !== '' ? data.end_date : null,
+      renewal_date: data.renewal_date && data.renewal_date.trim() !== '' ? data.renewal_date : null,
+    };
+    
+    console.log('🔍 Processed date fields:', {
+      start_date: processedData.start_date,
+      end_date: processedData.end_date,
+      renewal_date: processedData.renewal_date
+    });
+    
     // Validate date logic
-    if (data.start_date && data.end_date && data.start_date > data.end_date) {
+    if (processedData.start_date && processedData.end_date && processedData.start_date > processedData.end_date) {
       setActionError('End date must be after or same as start date');
       setActionLoading(false);
       return;
     }
     
-    if (data.start_date && data.renewal_date && data.start_date > data.renewal_date) {
+    if (processedData.start_date && processedData.renewal_date && processedData.start_date > processedData.renewal_date) {
       setActionError('Renewal date must be after or same as start date');
       setActionLoading(false);
       return;
     }
     
     try {
-      console.log('🚀 Sending to API:', editPolicy ? 'UPDATE' : 'CREATE', data);
+      console.log('🚀 Sending to API:', editPolicy ? 'UPDATE' : 'CREATE', processedData);
       if (editPolicy) {
-        const result = await insuranceService.updatePolicy(editPolicy.id, data);
+        const result = await insuranceService.updatePolicy(editPolicy.id, processedData);
         console.log('✅ Update result:', result);
         toast.success('Policy updated successfully');
       } else {
-        const result = await insuranceService.createPolicy(data);
+        const result = await insuranceService.createPolicy(processedData);
         console.log('✅ Create result:', result);
         toast.success('Policy added successfully');
       }
