@@ -142,6 +142,11 @@ const Insurance = () => {
   // Form setup
   const { register, handleSubmit, reset, formState: { errors }, watch } = useForm();
 
+  // Controlled state for date fields
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [renewalDate, setRenewalDate] = useState('');
+
   // Helper function to format date for HTML date input (YYYY-MM-DD)
   const formatDateForInput = (dateString) => {
     if (!dateString) return '';
@@ -198,12 +203,12 @@ const Insurance = () => {
         coverage_amount: policy.coverage_amount || '',
         premium_amount: policy.premium_amount || '',
         premium_frequency: policy.premium_frequency || 'monthly',
-        start_date: formatDateForInput(policy.start_date),
-        end_date: formatDateForInput(policy.end_date),
-        renewal_date: formatDateForInput(policy.renewal_date),
         notes: policy.notes || '',
         status: policy.status || 'active',
       });
+      setStartDate(formatDateForInput(policy.start_date) || '');
+      setEndDate(formatDateForInput(policy.end_date) || '');
+      setRenewalDate(formatDateForInput(policy.renewal_date) || '');
     } else {
       reset({ 
         policy_name: '', 
@@ -213,12 +218,12 @@ const Insurance = () => {
         coverage_amount: '', 
         premium_amount: '', 
         premium_frequency: 'monthly',
-        start_date: '', 
-        end_date: '', 
-        renewal_date: '', 
         notes: '',
         status: 'active'
       });
+      setStartDate('');
+      setEndDate('');
+      setRenewalDate('');
     }
   };
 
@@ -243,11 +248,12 @@ const Insurance = () => {
     });
 
     // Process dates to ensure they're in the correct format or null
+
     const processedData = {
       ...data,
-      start_date: data.start_date && data.start_date.trim() !== '' ? data.start_date : null,
-      end_date: data.end_date && data.end_date.trim() !== '' ? data.end_date : null,
-      renewal_date: data.renewal_date && data.renewal_date.trim() !== '' ? data.renewal_date : null,
+      start_date: startDate && startDate.trim() !== '' ? startDate : null,
+      end_date: endDate && endDate.trim() !== '' ? endDate : null,
+      renewal_date: renewalDate && renewalDate.trim() !== '' ? renewalDate : null,
     };
 
     console.log('🔍 [DEBUG] Processed date fields before API call:', {
@@ -603,10 +609,9 @@ const Insurance = () => {
                       type="date"
                       min="2000-01-01"
                       max="2099-12-31"
-                      pattern="\\d{4}-\\d{2}-\\d{2}"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      {...register('start_date')}
-                      value={formatDateForInput(watch('start_date'))}
+                      value={startDate}
+                      onChange={e => setStartDate(e.target.value)}
                       disabled={actionLoading}
                     />
                   </div>
@@ -618,9 +623,8 @@ const Insurance = () => {
                       min="2000-01-01"
                       max="2099-12-31"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      pattern="\\d{4}-\\d{2}-\\d{2}"
-                      {...register('end_date')}
-                      value={formatDateForInput(watch('end_date'))}
+                      value={endDate}
+                      onChange={e => setEndDate(e.target.value)}
                       disabled={actionLoading}
                     />
                   </div>
@@ -632,9 +636,8 @@ const Insurance = () => {
                       min="2000-01-01"
                       max="2099-12-31"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      pattern="\\d{4}-\\d{2}-\\d{2}"
-                      {...register('renewal_date')}
-                      value={formatDateForInput(watch('renewal_date'))}
+                      value={renewalDate}
+                      onChange={e => setRenewalDate(e.target.value)}
                       disabled={actionLoading}
                     />
                   </div>
