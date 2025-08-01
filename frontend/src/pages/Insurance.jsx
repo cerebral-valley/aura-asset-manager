@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { insuranceService } from '../services/insurance';
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
+Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888'];
@@ -38,12 +39,12 @@ const Insurance = () => {
   // Helper functions for display formatting
   const formatCurrency = (amount) => {
     if (!amount || amount === 0 || amount === '0' || amount === '') return '-';
-    
+
     // Convert string to number if needed
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-    
+
     if (isNaN(numAmount) || numAmount === 0) return '-';
-    
+
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -73,9 +74,9 @@ const Insurance = () => {
     try {
       const date = new Date(renewalDate);
       if (isNaN(date.getTime())) return '-';
-      
+
       const currentYear = new Date().getFullYear();
-      
+
       // If renewal date is in the past, show next year's renewal
       if (date.getFullYear() < currentYear) {
         date.setFullYear(currentYear);
@@ -83,7 +84,7 @@ const Insurance = () => {
           date.setFullYear(currentYear + 1);
         }
       }
-      
+
       return date.toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
@@ -100,14 +101,14 @@ const Insurance = () => {
     try {
       const start = new Date(startDate);
       const end = new Date(endDate);
-      
+
       if (isNaN(start.getTime()) || isNaN(end.getTime())) return '-';
-      
+
       const diffTime = Math.abs(end - start);
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       const years = Math.floor(diffDays / 365);
       const months = Math.floor((diffDays % 365) / 30);
-      
+
       if (years > 0 && months > 0) {
         return `${years}y ${months}m`;
       } else if (years > 0) {
@@ -122,6 +123,65 @@ const Insurance = () => {
       return '-';
     }
   };
+
+  // Helper function to safely format date for HTML date input (YYYY-MM-DD)
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return '';
+    
+    try {
+      // If already in YYYY-MM-DD format, validate and return
+      if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const date = new Date(dateString + 'T00:00:00'); // Add time to avoid timezone issues
+        if (!isNaN(date.getTime())) {
+          return dateString;
+        }
+      }
+      
+      // Handle DD/MM/YYYY format (European format)
+      if (typeof dateString === 'string' && dateString.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+        const [day, month, year] = dateString.split('/');
+        const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        
+        // Validate the constructed date
+        const date = new Date(formattedDate + 'T00:00:00');
+        if (!isNaN(date.getTime())) {
+          return formattedDate;
+        }
+      }
+      
+      // Handle MM/DD/YYYY format (American format)
+      if (typeof dateString === 'string' && dateString.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+        const [month, day, year] = dateString.split('/');
+        // Check if day > 12, then it's likely DD/MM format
+        if (parseInt(day, 10) > 12) {
+          const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+          const date = new Date(formattedDate + 'T00:00:00');
+          if (!isNaN(date.getTime())) {
+            return formattedDate;
+          }
+        } else {
+          const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+          const date = new Date(formattedDate + 'T00:00:00');
+          if (!isNaN(date.getTime())) {
+            return formattedDate;
+          }
+        }
+      }
+      
+      // Try to parse as a regular Date
+      const date = new Date(dateString);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split('T')[0];
+      }
+      
+      console.warn('Unable to parse date:', dateString);
+      return '';
+    } catch (error) {
+      console.error('Date parsing error:', error, dateString);
+      return '';
+    }
+  };
+
   // Only show non-sensitive, necessary fields in charts and table
   const chartData = policies.map(p => ({
     name: p.policy_name || 'Policy',
@@ -138,63 +198,38 @@ const Insurance = () => {
     }, {})
   ).map(([name, value]) => ({ name, value }));
 
-
   // Form setup
   const { register, handleSubmit, reset, formState: { errors }, watch } = useForm();
-
-  // Controlled state for date fields
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [renewalDate, setRenewalDate] = useState('');
-
-  // Helper function to format date for HTML date input (YYYY-MM-DD)
-  const formatDateForInput = (dateString) => {
-    if (!dateString) return '';
-    // If already in YYYY-MM-DD, return as is
-    if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      return dateString;
-    }
-    // Try DD/MM/YYYY or MM/DD/YYYY
-    if (typeof dateString === 'string' && dateString.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-      const [part1, part2, year] = dateString.split('/');
-      // Try to guess if DD/MM/YYYY or MM/DD/YYYY by checking if part1 > 12 (then it's DD/MM/YYYY)
-      let month, day;
-      if (parseInt(part1, 10) > 12) {
-        day = part1;
-        month = part2;
-      } else if (parseInt(part2, 10) > 12) {
-        // If part2 > 12, it's MM/DD/YYYY
-        month = part1;
-        day = part2;
-      } else {
-        // Ambiguous, default to DD/MM/YYYY
-        day = part1;
-        month = part2;
-      }
-      // Pad month and day
-      const mm = month.padStart(2, '0');
-      const dd = day.padStart(2, '0');
-      return `${year}-${mm}-${dd}`;
-    }
-    // Try to parse as Date
-    const date = new Date(dateString);
-    if (!isNaN(date.getTime())) {
-      return date.toISOString().split('T')[0];
-    }
-    return '';
-  };
 
   // Open modal for add/edit
   const openModal = (policy = null) => {
     setEditPolicy(policy);
     setActionError(null);
     setModalOpen(true);
+    
     setTimeout(() => {
       if (modalRef.current) {
         modalRef.current.focus();
       }
     }, 100);
+    
     if (policy) {
+      console.log('📅 [DEBUG] Opening modal with policy dates:', {
+        start_date: policy.start_date,
+        end_date: policy.end_date,
+        renewal_date: policy.renewal_date
+      });
+
+      const startDateFormatted = formatDateForInput(policy.start_date);
+      const endDateFormatted = formatDateForInput(policy.end_date);
+      const renewalDateFormatted = formatDateForInput(policy.renewal_date);
+
+      console.log('📅 [DEBUG] Formatted dates for form:', {
+        start_date: startDateFormatted,
+        end_date: endDateFormatted,
+        renewal_date: renewalDateFormatted
+      });
+
       reset({
         policy_name: policy.policy_name || '',
         policy_type: policy.policy_type || '',
@@ -205,25 +240,25 @@ const Insurance = () => {
         premium_frequency: policy.premium_frequency || 'monthly',
         notes: policy.notes || '',
         status: policy.status || 'active',
+        start_date: startDateFormatted,
+        end_date: endDateFormatted,
+        renewal_date: renewalDateFormatted,
       });
-      setStartDate(formatDateForInput(policy.start_date) || '');
-      setEndDate(formatDateForInput(policy.end_date) || '');
-      setRenewalDate(formatDateForInput(policy.renewal_date) || '');
     } else {
-      reset({ 
-        policy_name: '', 
-        policy_type: '', 
-        provider: '', 
+      reset({
+        policy_name: '',
+        policy_type: '',
+        provider: '',
         policy_number: '',
-        coverage_amount: '', 
-        premium_amount: '', 
+        coverage_amount: '',
+        premium_amount: '',
         premium_frequency: 'monthly',
         notes: '',
-        status: 'active'
+        status: 'active',
+        start_date: '',
+        end_date: '',
+        renewal_date: '',
       });
-      setStartDate('');
-      setEndDate('');
-      setRenewalDate('');
     }
   };
 
@@ -231,6 +266,7 @@ const Insurance = () => {
   const closeModal = () => {
     setModalOpen(false);
     setEditPolicy(null);
+    setActionError(null);
     reset();
   };
 
@@ -239,50 +275,39 @@ const Insurance = () => {
     setActionLoading(true);
     setActionError(null);
 
-    // Debug: Print raw and processed date fields before API call
-    console.log('🔍 [DEBUG] Form submission data:', data);
-    console.log('🔍 [DEBUG] Raw date fields:', {
-      start_date: data.start_date,
-      end_date: data.end_date,
-      renewal_date: data.renewal_date
-    });
-
-    // Process dates to ensure they're in the correct format or null
-
-    const processedData = {
-      ...data,
-      start_date: startDate && startDate.trim() !== '' ? startDate : null,
-      end_date: endDate && endDate.trim() !== '' ? endDate : null,
-      renewal_date: renewalDate && renewalDate.trim() !== '' ? renewalDate : null,
-    };
-
-    console.log('🔍 [DEBUG] Processed date fields before API call:', {
-      start_date: processedData.start_date,
-      end_date: processedData.end_date,
-      renewal_date: processedData.renewal_date
-    });
-    
-    // Validate date logic
-    if (
-      processedData.start_date &&
-      processedData.end_date &&
-      new Date(processedData.start_date) > new Date(processedData.end_date)
-    ) {
-      setActionError('End date must be after or same as start date');
-      setActionLoading(false);
-      return;
-    }
-    if (
-      processedData.start_date &&
-      processedData.renewal_date &&
-      new Date(processedData.start_date) > new Date(processedData.renewal_date)
-    ) {
-      setActionError('Renewal date must be after or same as start date');
-      setActionLoading(false);
-      return;
-    }
+    console.log('🔍 [DEBUG] Form submission - raw data:', data);
 
     try {
+      // Clean up date fields
+      const processedData = {
+        ...data,
+        start_date: data.start_date && data.start_date.trim() !== '' ? data.start_date : null,
+        end_date: data.end_date && data.end_date.trim() !== '' ? data.end_date : null,
+        renewal_date: data.renewal_date && data.renewal_date.trim() !== '' ? data.renewal_date : null,
+      };
+
+      console.log('✅ [DEBUG] Processed data for API:', processedData);
+
+      // Date validation
+      if (processedData.start_date && processedData.end_date) {
+        const startDate = new Date(processedData.start_date + 'T00:00:00');
+        const endDate = new Date(processedData.end_date + 'T00:00:00');
+        
+        if (startDate > endDate) {
+          throw new Error('End date must be after start date');
+        }
+      }
+
+      if (processedData.start_date && processedData.renewal_date) {
+        const startDate = new Date(processedData.start_date + 'T00:00:00');
+        const renewalDate = new Date(processedData.renewal_date + 'T00:00:00');
+        
+        if (startDate > renewalDate) {
+          throw new Error('Renewal date must be after start date');
+        }
+      }
+
+      // API call
       let result;
       if (editPolicy) {
         result = await insuranceService.updatePolicy(editPolicy.id, processedData);
@@ -293,14 +318,18 @@ const Insurance = () => {
         console.log('✅ Create result:', result);
         toast.success('Policy added successfully');
       }
+      
       closeModal();
       fetchPolicies();
+      
     } catch (err) {
       console.error('❌ Form submission error:', err);
       console.error('❌ Error response:', err.response?.data);
-      setActionError('Failed to save policy');
-      toast.error('Failed to save policy');
+      const errorMessage = err.message || 'Failed to save policy';
+      setActionError(errorMessage);
+      toast.error(errorMessage);
     }
+    
     setActionLoading(false);
   };
 
@@ -333,7 +362,7 @@ const Insurance = () => {
           Add Policy
         </button>
       </div>
-      
+
       {/* Error message if fetch fails */}
       {error && (
         <div className="text-red-600 mb-4">{error}</div>
@@ -379,6 +408,7 @@ const Insurance = () => {
               </ResponsiveContainer>
             </div>
           </div>
+
           {/* Policies Table & Actions */}
           <div className="bg-white rounded shadow p-4">
             <div className="flex justify-between items-center mb-2">
@@ -476,8 +506,7 @@ const Insurance = () => {
               <h2 className="font-semibold text-lg" id="modal-title">{editPolicy ? 'Edit Policy' : 'Add Policy'}</h2>
             </div>
             <div className="p-6 pt-4">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4"
-              >
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block mb-1 font-medium" htmlFor="policy_name">Policy Name</label>
@@ -513,7 +542,7 @@ const Insurance = () => {
                     {errors.policy_type && <span className="text-red-600 text-xs">{errors.policy_type.message}</span>}
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block mb-1 font-medium" htmlFor="provider">Provider</label>
@@ -534,7 +563,7 @@ const Insurance = () => {
                     />
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block mb-1 font-medium" htmlFor="status">Status</label>
@@ -573,8 +602,8 @@ const Insurance = () => {
                       step="0.01"
                       min="0"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      {...register('coverage_amount', { 
-                        required: 'Coverage amount is required', 
+                      {...register('coverage_amount', {
+                        required: 'Coverage amount is required',
                         min: { value: 0, message: 'Amount must be positive' },
                         valueAsNumber: true
                       })}
@@ -591,7 +620,7 @@ const Insurance = () => {
                       step="0.01"
                       min="0"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      {...register('premium_amount', { 
+                      {...register('premium_amount', {
                         min: { value: 0, message: 'Amount must be positive' },
                         valueAsNumber: true
                       })}
@@ -610,8 +639,7 @@ const Insurance = () => {
                       min="2000-01-01"
                       max="2099-12-31"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={startDate}
-                      onChange={e => setStartDate(e.target.value)}
+                      {...register('start_date')}
                       disabled={actionLoading}
                     />
                   </div>
@@ -623,8 +651,7 @@ const Insurance = () => {
                       min="2000-01-01"
                       max="2099-12-31"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={endDate}
-                      onChange={e => setEndDate(e.target.value)}
+                      {...register('end_date')}
                       disabled={actionLoading}
                     />
                   </div>
@@ -636,8 +663,7 @@ const Insurance = () => {
                       min="2000-01-01"
                       max="2099-12-31"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={renewalDate}
-                      onChange={e => setRenewalDate(e.target.value)}
+                      {...register('renewal_date')}
                       disabled={actionLoading}
                     />
                   </div>
@@ -655,7 +681,7 @@ const Insurance = () => {
                 </div>
 
                 {actionError && <div className="text-red-600 bg-red-50 p-3 rounded">{actionError}</div>}
-                
+
                 <div className="flex gap-3 pt-4">
                   <button
                     type="button"
