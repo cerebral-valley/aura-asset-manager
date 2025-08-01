@@ -45,9 +45,9 @@ class InsurancePolicyBase(BaseModel):
             return None
         return v
 
-    @validator('start_date', 'end_date', 'renewal_date', pre=True)
+    @validator('start_date', 'end_date', 'renewal_date', pre=True, always=False)
     def validate_optional_dates(cls, v):
-        """Handle empty strings for optional date fields."""
+        """Handle empty strings for optional date fields during input validation only."""
         print(f"🔍 DATE VALIDATOR (Create) - Input: {v} (type: {type(v)})")
         if v == "" or v is None:
             print(f"🔍 DATE VALIDATOR (Create) - Converting empty/None to None")
@@ -89,7 +89,7 @@ class InsurancePolicyUpdate(BaseModel):
             return None
         return v
 
-    @validator('start_date', 'end_date', 'renewal_date', pre=True)
+    @validator('start_date', 'end_date', 'renewal_date', pre=True, always=False)
     def validate_optional_date_fields(cls, v):
         """Handle empty strings for optional date fields in updates."""
         print(f"🔍 DATE VALIDATOR (Update) - Input: {v} (type: {type(v)})")
@@ -98,6 +98,29 @@ class InsurancePolicyUpdate(BaseModel):
             return None
         print(f"🔍 DATE VALIDATOR (Update) - Returning: {v}")
         return v
+
+class InsurancePolicyResponse(BaseModel):
+    """Schema for insurance policy responses - without validators."""
+    id: UUID
+    user_id: UUID
+    policy_name: str
+    policy_type: str
+    provider: Optional[str] = None
+    policy_number: Optional[str] = None
+    coverage_amount: Decimal
+    premium_amount: Optional[Decimal] = None
+    premium_frequency: Optional[str] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    renewal_date: Optional[date] = None
+    notes: Optional[str] = None
+    policy_metadata: Optional[Dict[str, Any]] = None
+    status: Optional[str] = "active"
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
 
 class InsurancePolicyInDB(InsurancePolicyBase):
     """Schema for insurance policy in database."""
@@ -113,8 +136,8 @@ class InsurancePolicy(InsurancePolicyInDB):
     """Public insurance policy schema."""
     pass
 
-# Alias for backward compatibility
-InsurancePolicySchema = InsurancePolicy
+# Use the response schema without validators for API responses
+InsurancePolicySchema = InsurancePolicyResponse
 
 class InsurancePolicySummary(BaseModel):
     """Summary schema for insurance policy list views."""
