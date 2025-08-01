@@ -632,40 +632,58 @@ const Insurance = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block mb-1 font-medium" htmlFor="start_date">Start Date</label>
+                    <label className="block mb-1 font-medium" htmlFor="start_date">Start Date (YYYY-MM-DD)</label>
                     <input
                       id="start_date"
-                      type="date"
-                      min="2000-01-01"
-                      max="2099-12-31"
+                      type="text"
+                      placeholder="YYYY-MM-DD"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      {...register('start_date')}
+                      {...register('start_date', {
+                        validate: value => {
+                          if (!value) return true;
+                          return /^\d{4}-\d{2}-\d{2}$/.test(value) || 'Date must be in YYYY-MM-DD format';
+                        }
+                      })}
                       disabled={actionLoading}
+                      autoComplete="off"
                     />
+                    {errors.start_date && <span className="text-red-600 text-xs">{errors.start_date.message}</span>}
                   </div>
                   <div>
-                    <label className="block mb-1 font-medium" htmlFor="end_date">End Date</label>
+                    <label className="block mb-1 font-medium" htmlFor="end_date">End Date (YYYY-MM-DD)</label>
                     <input
                       id="end_date"
-                      type="date"
-                      min="2000-01-01"
-                      max="2099-12-31"
+                      type="text"
+                      placeholder="YYYY-MM-DD"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      {...register('end_date')}
+                      {...register('end_date', {
+                        validate: value => {
+                          if (!value) return true;
+                          return /^\d{4}-\d{2}-\d{2}$/.test(value) || 'Date must be in YYYY-MM-DD format';
+                        }
+                      })}
                       disabled={actionLoading}
+                      autoComplete="off"
                     />
+                    {errors.end_date && <span className="text-red-600 text-xs">{errors.end_date.message}</span>}
                   </div>
                   <div>
-                    <label className="block mb-1 font-medium" htmlFor="renewal_date">Renewal Date</label>
+                    <label className="block mb-1 font-medium" htmlFor="renewal_date">Renewal Date (YYYY-MM-DD)</label>
                     <input
                       id="renewal_date"
-                      type="date"
-                      min="2000-01-01"
-                      max="2099-12-31"
+                      type="text"
+                      placeholder="YYYY-MM-DD"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      {...register('renewal_date')}
+                      {...register('renewal_date', {
+                        validate: value => {
+                          if (!value) return true;
+                          return /^\d{4}-\d{2}-\d{2}$/.test(value) || 'Date must be in YYYY-MM-DD format';
+                        }
+                      })}
                       disabled={actionLoading}
+                      autoComplete="off"
                     />
+                    {errors.renewal_date && <span className="text-red-600 text-xs">{errors.renewal_date.message}</span>}
                   </div>
                 </div>
 
