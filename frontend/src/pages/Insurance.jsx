@@ -145,14 +145,38 @@ const Insurance = () => {
   // Helper function to format date for HTML date input (YYYY-MM-DD)
   const formatDateForInput = (dateString) => {
     if (!dateString) return '';
-    // If dateString is already in YYYY-MM-DD format, return as is
+    // If already in YYYY-MM-DD, return as is
     if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
       return dateString;
     }
-    // Otherwise, try to parse and format
+    // Try DD/MM/YYYY or MM/DD/YYYY
+    if (typeof dateString === 'string' && dateString.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+      const [part1, part2, year] = dateString.split('/');
+      // Try to guess if DD/MM/YYYY or MM/DD/YYYY by checking if part1 > 12 (then it's DD/MM/YYYY)
+      let month, day;
+      if (parseInt(part1, 10) > 12) {
+        day = part1;
+        month = part2;
+      } else if (parseInt(part2, 10) > 12) {
+        // If part2 > 12, it's MM/DD/YYYY
+        month = part1;
+        day = part2;
+      } else {
+        // Ambiguous, default to DD/MM/YYYY
+        day = part1;
+        month = part2;
+      }
+      // Pad month and day
+      const mm = month.padStart(2, '0');
+      const dd = day.padStart(2, '0');
+      return `${year}-${mm}-${dd}`;
+    }
+    // Try to parse as Date
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '';
-    return date.toISOString().split('T')[0];
+    if (!isNaN(date.getTime())) {
+      return date.toISOString().split('T')[0];
+    }
+    return '';
   };
 
   // Open modal for add/edit
@@ -579,6 +603,7 @@ const Insurance = () => {
                       type="date"
                       min="2000-01-01"
                       max="2099-12-31"
+                      pattern="\\d{4}-\\d{2}-\\d{2}"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                       {...register('start_date')}
                       value={formatDateForInput(watch('start_date'))}
@@ -593,6 +618,7 @@ const Insurance = () => {
                       min="2000-01-01"
                       max="2099-12-31"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      pattern="\\d{4}-\\d{2}-\\d{2}"
                       {...register('end_date')}
                       value={formatDateForInput(watch('end_date'))}
                       disabled={actionLoading}
@@ -606,6 +632,7 @@ const Insurance = () => {
                       min="2000-01-01"
                       max="2099-12-31"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      pattern="\\d{4}-\\d{2}-\\d{2}"
                       {...register('renewal_date')}
                       value={formatDateForInput(watch('renewal_date'))}
                       disabled={actionLoading}
