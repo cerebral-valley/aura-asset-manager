@@ -20,8 +20,6 @@ const Insurance = () => {
     setLoading(true);
     insuranceService.getPolicies()
       .then(data => {
-        console.log('📋 Fetched policies data:', data);
-        console.log('📋 Sample policy data structure:', data[0]);
         setPolicies(data);
         setLoading(false);
       })
@@ -346,12 +344,7 @@ const Insurance = () => {
                 </tr>
               </thead>
               <tbody>
-                {policies.map((p, idx) => {
-                  console.log(`📊 Policy ${idx}:`, p);
-                  console.log(`📊 Policy ${idx} premium_amount:`, p.premium_amount, typeof p.premium_amount);
-                  console.log(`📊 Policy ${idx} start_date:`, p.start_date, typeof p.start_date);
-                  console.log(`📊 Policy ${idx} end_date:`, p.end_date, typeof p.end_date);
-                  return (
+                {policies.map((p, idx) => (
                   <tr key={p.id || idx} className="border-t">
                     <td className="py-2 px-4">{p.policy_name || 'Policy'}</td>
                     <td className="py-2 px-4 capitalize">{p.policy_type || '-'}</td>
@@ -385,7 +378,7 @@ const Insurance = () => {
                       >Delete</button>
                     </td>
                   </tr>
-                )})}
+                ))}
               </tbody>
             </table>
           </div>
