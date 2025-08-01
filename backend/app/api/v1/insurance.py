@@ -33,6 +33,7 @@ async def create_insurance_policy(
     try:
         print(f"🔍 Raw policy data received: {policy.dict()}")
         print(f"🔍 Policy data types: {[(k, type(v)) for k, v in policy.dict().items()]}")
+        print(f"🔍 CREATE POLICY - Date fields: start_date={policy.start_date}, end_date={policy.end_date}, renewal_date={policy.renewal_date}")
         
         # Convert Pydantic model to dict and handle the metadata field mapping
         policy_data = policy.dict()
@@ -47,12 +48,14 @@ async def create_insurance_policy(
         print(f"🔍 About to create InsurancePolicy with user_id: {current_user.id}")
         
         db_policy = InsurancePolicy(**policy_data, user_id=current_user.id)
+        print(f"🔍 CREATE POLICY - DB object dates before save: start={db_policy.start_date}, end={db_policy.end_date}, renewal={db_policy.renewal_date}")
         print(f"🔍 InsurancePolicy object created successfully")
         
         db.add(db_policy)
         db.commit()
         db.refresh(db_policy)
         
+        print(f"🔍 CREATE POLICY - After save: start={db_policy.start_date}, end={db_policy.end_date}, renewal={db_policy.renewal_date}")
         print(f"🔍 Policy saved successfully with ID: {db_policy.id}")
         return db_policy
     except Exception as e:
@@ -92,24 +95,45 @@ async def update_insurance_policy(
     db: Session = Depends(get_db)
 ):
     """Update an existing insurance policy."""
-    policy = db.query(InsurancePolicy).filter(
-        InsurancePolicy.id == policy_id,
-        InsurancePolicy.user_id == current_user.id
-    ).first()
-    
-    if not policy:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Insurance policy not found"
-        )
-    
-    update_data = policy_update.dict(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(policy, field, value)
-    
-    db.commit()
-    db.refresh(policy)
-    return policy
+    try:
+        print(f"🔍 UPDATE POLICY - Policy ID: {policy_id}")
+        print(f"🔍 UPDATE POLICY - Raw update data: {policy_update.dict()}")
+        print(f"🔍 UPDATE POLICY - Date fields: start_date={policy_update.start_date}, end_date={policy_update.end_date}, renewal_date={policy_update.renewal_date}")
+        
+        policy = db.query(InsurancePolicy).filter(
+            InsurancePolicy.id == policy_id,
+            InsurancePolicy.user_id == current_user.id
+        ).first()
+        
+        if not policy:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Insurance policy not found"
+            )
+        
+        print(f"🔍 UPDATE POLICY - Found policy: {policy.policy_name}")
+        print(f"🔍 UPDATE POLICY - Current dates: start={policy.start_date}, end={policy.end_date}, renewal={policy.renewal_date}")
+        
+        update_data = policy_update.dict(exclude_unset=True)
+        print(f"🔍 UPDATE POLICY - Update data after exclude_unset: {update_data}")
+        
+        for field, value in update_data.items():
+            print(f"🔍 UPDATE POLICY - Setting {field} = {value} (type: {type(value)})")
+            setattr(policy, field, value)
+        
+        db.commit()
+        db.refresh(policy)
+        
+        print(f"🔍 UPDATE POLICY - After update: start={policy.start_date}, end={policy.end_date}, renewal={policy.renewal_date}")
+        
+        return policy
+    except Exception as e:
+        db.rollback()
+        print(f"❌ UPDATE POLICY ERROR: {e}")
+        print(f"❌ UPDATE POLICY ERROR type: {type(e)}")
+        import traceback
+        print(f"❌ UPDATE POLICY Full traceback: {traceback.format_exc()}")
+        raise HTTPException(status_code=422, detail=f"Failed to update policy: {str(e)}")
 
 @router.delete("/{policy_id}")
 async def delete_insurance_policy(

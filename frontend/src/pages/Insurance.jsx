@@ -210,6 +210,13 @@ const Insurance = () => {
     setActionLoading(true);
     setActionError(null);
     
+    console.log('🔍 Form submission data:', data);
+    console.log('🔍 Date fields:', {
+      start_date: data.start_date,
+      end_date: data.end_date,
+      renewal_date: data.renewal_date
+    });
+    
     // Validate date logic
     if (data.start_date && data.end_date && data.start_date > data.end_date) {
       setActionError('End date must be after or same as start date');
@@ -224,16 +231,21 @@ const Insurance = () => {
     }
     
     try {
+      console.log('🚀 Sending to API:', editPolicy ? 'UPDATE' : 'CREATE', data);
       if (editPolicy) {
-        await insuranceService.updatePolicy(editPolicy.id, data);
+        const result = await insuranceService.updatePolicy(editPolicy.id, data);
+        console.log('✅ Update result:', result);
         toast.success('Policy updated successfully');
       } else {
-        await insuranceService.createPolicy(data);
+        const result = await insuranceService.createPolicy(data);
+        console.log('✅ Create result:', result);
         toast.success('Policy added successfully');
       }
       closeModal();
       fetchPolicies();
     } catch (err) {
+      console.error('❌ Form submission error:', err);
+      console.error('❌ Error response:', err.response?.data);
       setActionError('Failed to save policy');
       toast.error('Failed to save policy');
     }

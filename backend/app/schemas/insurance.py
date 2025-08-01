@@ -48,8 +48,11 @@ class InsurancePolicyBase(BaseModel):
     @validator('start_date', 'end_date', 'renewal_date', pre=True)
     def validate_optional_dates(cls, v):
         """Handle empty strings for optional date fields."""
+        print(f"🔍 DATE VALIDATOR (Create) - Input: {v} (type: {type(v)})")
         if v == "" or v is None:
+            print(f"🔍 DATE VALIDATOR (Create) - Converting empty/None to None")
             return None
+        print(f"🔍 DATE VALIDATOR (Create) - Returning: {v}")
         return v
 
 class InsurancePolicyCreate(InsurancePolicyBase):
@@ -89,8 +92,11 @@ class InsurancePolicyUpdate(BaseModel):
     @validator('start_date', 'end_date', 'renewal_date', pre=True)
     def validate_optional_date_fields(cls, v):
         """Handle empty strings for optional date fields in updates."""
+        print(f"🔍 DATE VALIDATOR (Update) - Input: {v} (type: {type(v)})")
         if v == "" or v is None:
+            print(f"🔍 DATE VALIDATOR (Update) - Converting empty/None to None")
             return None
+        print(f"🔍 DATE VALIDATOR (Update) - Returning: {v}")
         return v
 
 class InsurancePolicyInDB(InsurancePolicyBase):
@@ -106,6 +112,9 @@ class InsurancePolicyInDB(InsurancePolicyBase):
 class InsurancePolicy(InsurancePolicyInDB):
     """Public insurance policy schema."""
     pass
+
+# Alias for backward compatibility
+InsurancePolicySchema = InsurancePolicy
 
 class InsurancePolicySummary(BaseModel):
     """Summary schema for insurance policy list views."""
