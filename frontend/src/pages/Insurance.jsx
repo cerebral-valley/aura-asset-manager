@@ -632,7 +632,7 @@ const Insurance = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block mb-1 font-medium" htmlFor="start_date">Start Date (YYYY-MM-DD)</label>
+                    <label className="block mb-1 font-medium" htmlFor="start_date">Start Date</label>
                     <input
                       id="start_date"
                       type="text"
@@ -650,7 +650,7 @@ const Insurance = () => {
                     {errors.start_date && <span className="text-red-600 text-xs">{errors.start_date.message}</span>}
                   </div>
                   <div>
-                    <label className="block mb-1 font-medium" htmlFor="end_date">End Date (YYYY-MM-DD)</label>
+                    <label className="block mb-1 font-medium" htmlFor="end_date">End Date</label>
                     <input
                       id="end_date"
                       type="text"
@@ -668,7 +668,7 @@ const Insurance = () => {
                     {errors.end_date && <span className="text-red-600 text-xs">{errors.end_date.message}</span>}
                   </div>
                   <div>
-                    <label className="block mb-1 font-medium" htmlFor="renewal_date">Renewal Date (YYYY-MM-DD)</label>
+                    <label className="block mb-1 font-medium" htmlFor="renewal_date">Renewal Date</label>
                     <input
                       id="renewal_date"
                       type="text"
