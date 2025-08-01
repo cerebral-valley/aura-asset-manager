@@ -183,12 +183,22 @@ const Insurance = () => {
   };
 
   // Only show non-sensitive, necessary fields in charts and table
-  const chartData = policies.map(p => ({
-    name: p.policy_name || 'Policy',
-    premium: typeof p.premium_amount === 'number' ? p.premium_amount : 0,
-    coverage: typeof p.coverage_amount === 'number' ? p.coverage_amount : 0,
-    type: p.policy_type || 'Unknown',
-  }));
+  // Annualize premium values for the chart
+  const chartData = policies
+    .map(p => {
+      let premium = Number(p.premium_amount) || 0;
+      let freq = (p.premium_frequency || '').toLowerCase();
+      if (freq === 'monthly') premium = premium * 12;
+      else if (freq === 'quarterly') premium = premium * 4;
+      // Annually or unknown: leave as is
+      return {
+        name: p.policy_name || 'Policy',
+        premium,
+        coverage: typeof p.coverage_amount === 'number' ? p.coverage_amount : 0,
+        type: p.policy_type || 'Unknown',
+      };
+    })
+    .filter(p => p.premium > 0);
 
   // Example pie chart data (policy type breakdown)
   const pieData = Object.entries(
@@ -382,14 +392,14 @@ const Insurance = () => {
           {/* KPIs & Charts */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div className="bg-white rounded shadow p-4">
-              <h2 className="font-semibold mb-2">Premiums Overview</h2>
+              <h2 className="font-semibold mb-2">Annual Premiums Overview</h2>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={chartData}>
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip formatter={(value) => formatCurrency(value)} />
                   <Legend />
-                  <Bar dataKey="premium" fill="#8884d8" />
+                  <Bar dataKey="premium" fill="#8884d8" name="Annual Premium" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
