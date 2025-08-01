@@ -196,9 +196,51 @@ const Insurance = () => {
         premium,
         coverage: typeof p.coverage_amount === 'number' ? p.coverage_amount : 0,
         type: p.policy_type || 'Unknown',
+        status: p.status || 'active',
       };
     })
     .filter(p => p.premium > 0);
+
+  // --- NEW: Aggregate KPIs for each active policy type ---
+  const POLICY_TYPES = [
+    { key: 'life', label: 'Life Insurance' },
+    { key: 'health', label: 'Health Insurance' },
+    { key: 'auto', label: 'Auto Insurance' },
+    { key: 'home', label: 'Home Insurance' },
+    { key: 'loan', label: 'Loan Insurance' },
+    { key: 'travel', label: 'Travel Insurance' },
+    { key: 'asset', label: 'Asset Insurance' },
+    { key: 'factory', label: 'Factory Insurance' },
+    { key: 'fire', label: 'Fire Insurance' },
+  ];
+
+  // Aggregate by type for active policies
+  const aggregateByType = POLICY_TYPES.map(({ key, label }) => {
+    let annualPremium = 0;
+    let totalCoverage = 0;
+    policies.forEach(p => {
+      if ((p.policy_type || '').toLowerCase() === key && (p.status || 'active') === 'active') {
+        let premium = Number(p.premium_amount) || 0;
+        let freq = (p.premium_frequency || '').toLowerCase();
+        if (freq === 'monthly') premium = premium * 12;
+        else if (freq === 'quarterly') premium = premium * 4;
+        // Annually or unknown: leave as is
+        annualPremium += premium;
+        totalCoverage += Number(p.coverage_amount) || 0;
+      }
+    });
+    return { type: label, annualPremium, totalCoverage };
+  });
+
+  // Total row
+  const totalAnnualPremium = aggregateByType.reduce((sum, t) => sum + t.annualPremium, 0);
+  const totalCoverage = aggregateByType.reduce((sum, t) => sum + t.totalCoverage, 0);
+
+  // --- NEW: Policy type counts (show 0 for missing types) ---
+  const policyTypeCounts = POLICY_TYPES.map(({ key, label }) => {
+    const count = policies.filter(p => (p.policy_type || '').toLowerCase() === key).length;
+    return { type: label, count };
+  });
 
   // Example pie chart data (policy type breakdown)
   const pieData = Object.entries(
@@ -416,6 +458,55 @@ const Insurance = () => {
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* --- NEW: Aggregate KPIs by policy type --- */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="bg-white rounded shadow p-4 overflow-x-auto">
+              <h2 className="font-semibold mb-2">Aggregate by Active Policy Type</h2>
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr>
+                    <th className="text-left py-2 px-4">Policy Type</th>
+                    <th className="text-left py-2 px-4">Annualized Premiums</th>
+                    <th className="text-left py-2 px-4">Total Coverage</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {aggregateByType.map((row, idx) => (
+                    <tr key={row.type} className="border-t">
+                      <td className="py-2 px-4">{row.type}</td>
+                      <td className="py-2 px-4">{formatCurrency(row.annualPremium)}</td>
+                      <td className="py-2 px-4">{formatCurrency(row.totalCoverage)}</td>
+                    </tr>
+                  ))}
+                  <tr className="border-t font-bold">
+                    <td className="py-2 px-4">Total</td>
+                    <td className="py-2 px-4">{formatCurrency(totalAnnualPremium)}</td>
+                    <td className="py-2 px-4">{formatCurrency(totalCoverage)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="bg-white rounded shadow p-4 overflow-x-auto">
+              <h2 className="font-semibold mb-2">Policy Type Counts</h2>
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr>
+                    <th className="text-left py-2 px-4">Policy Type</th>
+                    <th className="text-left py-2 px-4">Count</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {policyTypeCounts.map(row => (
+                    <tr key={row.type} className="border-t">
+                      <td className="py-2 px-4">{row.type}</td>
+                      <td className="py-2 px-4">{row.count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 
