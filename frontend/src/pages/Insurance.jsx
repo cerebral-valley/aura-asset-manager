@@ -209,14 +209,15 @@ const Insurance = () => {
   const onSubmit = async (data) => {
     setActionLoading(true);
     setActionError(null);
-    
-    console.log('🔍 Form submission data:', data);
-    console.log('🔍 Date fields:', {
+
+    // Debug: Print raw and processed date fields before API call
+    console.log('🔍 [DEBUG] Form submission data:', data);
+    console.log('🔍 [DEBUG] Raw date fields:', {
       start_date: data.start_date,
       end_date: data.end_date,
       renewal_date: data.renewal_date
     });
-    
+
     // Process dates to ensure they're in the correct format or null
     const processedData = {
       ...data,
@@ -224,34 +225,41 @@ const Insurance = () => {
       end_date: data.end_date && data.end_date.trim() !== '' ? data.end_date : null,
       renewal_date: data.renewal_date && data.renewal_date.trim() !== '' ? data.renewal_date : null,
     };
-    
-    console.log('🔍 Processed date fields:', {
+
+    console.log('🔍 [DEBUG] Processed date fields before API call:', {
       start_date: processedData.start_date,
       end_date: processedData.end_date,
       renewal_date: processedData.renewal_date
     });
     
     // Validate date logic
-    if (processedData.start_date && processedData.end_date && processedData.start_date > processedData.end_date) {
+    if (
+      processedData.start_date &&
+      processedData.end_date &&
+      new Date(processedData.start_date) > new Date(processedData.end_date)
+    ) {
       setActionError('End date must be after or same as start date');
       setActionLoading(false);
       return;
     }
-    
-    if (processedData.start_date && processedData.renewal_date && processedData.start_date > processedData.renewal_date) {
+    if (
+      processedData.start_date &&
+      processedData.renewal_date &&
+      new Date(processedData.start_date) > new Date(processedData.renewal_date)
+    ) {
       setActionError('Renewal date must be after or same as start date');
       setActionLoading(false);
       return;
     }
-    
+
     try {
-      console.log('🚀 Sending to API:', editPolicy ? 'UPDATE' : 'CREATE', processedData);
+      let result;
       if (editPolicy) {
-        const result = await insuranceService.updatePolicy(editPolicy.id, processedData);
+        result = await insuranceService.updatePolicy(editPolicy.id, processedData);
         console.log('✅ Update result:', result);
         toast.success('Policy updated successfully');
       } else {
-        const result = await insuranceService.createPolicy(processedData);
+        result = await insuranceService.createPolicy(processedData);
         console.log('✅ Create result:', result);
         toast.success('Policy added successfully');
       }
@@ -573,6 +581,7 @@ const Insurance = () => {
                       max="2099-12-31"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                       {...register('start_date')}
+                      value={formatDateForInput(watch('start_date'))}
                       disabled={actionLoading}
                     />
                   </div>
@@ -585,6 +594,7 @@ const Insurance = () => {
                       max="2099-12-31"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                       {...register('end_date')}
+                      value={formatDateForInput(watch('end_date'))}
                       disabled={actionLoading}
                     />
                   </div>
@@ -597,6 +607,7 @@ const Insurance = () => {
                       max="2099-12-31"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                       {...register('renewal_date')}
+                      value={formatDateForInput(watch('renewal_date'))}
                       disabled={actionLoading}
                     />
                   </div>
