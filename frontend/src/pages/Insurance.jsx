@@ -53,7 +53,25 @@ const Insurance = () => {
 
 
   // Form setup
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const { register, handleSubmit, reset, formState: { errors }, watch } = useForm();
+
+  // Watch start_date to dynamically set min dates for end_date and renewal_date
+  const watchedStartDate = watch('start_date');
+
+  // Calculate minimum dates based on start date
+  const getMinEndDate = () => {
+    if (watchedStartDate) {
+      return watchedStartDate; // End date should be same or after start date
+    }
+    return new Date().toISOString().split('T')[0]; // Default to today
+  };
+
+  const getMinRenewalDate = () => {
+    if (watchedStartDate) {
+      return watchedStartDate; // Renewal date should be same or after start date
+    }
+    return new Date().toISOString().split('T')[0]; // Default to today
+  };
 
   // Open modal for add/edit
   const openModal = (policy = null) => {
@@ -109,6 +127,20 @@ const Insurance = () => {
   const onSubmit = async (data) => {
     setActionLoading(true);
     setActionError(null);
+    
+    // Validate date logic
+    if (data.start_date && data.end_date && data.start_date > data.end_date) {
+      setActionError('End date must be after or same as start date');
+      setActionLoading(false);
+      return;
+    }
+    
+    if (data.start_date && data.renewal_date && data.start_date > data.renewal_date) {
+      setActionError('Renewal date must be after or same as start date');
+      setActionLoading(false);
+      return;
+    }
+    
     try {
       if (editPolicy) {
         await insuranceService.updatePolicy(editPolicy.id, data);
@@ -417,8 +449,8 @@ const Insurance = () => {
                     <input
                       id="start_date"
                       type="date"
-                      min="1900-01-01"
-                      max="2100-12-31"
+                      min="2020-01-01"
+                      max="2030-12-31"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                       {...register('start_date')}
                       disabled={actionLoading}
@@ -429,8 +461,8 @@ const Insurance = () => {
                     <input
                       id="end_date"
                       type="date"
-                      min="1900-01-01"
-                      max="2100-12-31"
+                      min={getMinEndDate()}
+                      max="2050-12-31"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                       {...register('end_date')}
                       disabled={actionLoading}
@@ -441,8 +473,8 @@ const Insurance = () => {
                     <input
                       id="renewal_date"
                       type="date"
-                      min="1900-01-01"
-                      max="2100-12-31"
+                      min={getMinRenewalDate()}
+                      max="2050-12-31"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                       {...register('renewal_date')}
                       disabled={actionLoading}
