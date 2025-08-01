@@ -20,10 +20,13 @@ const Insurance = () => {
     setLoading(true);
     insuranceService.getPolicies()
       .then(data => {
+        console.log('📋 Fetched policies data:', data);
+        console.log('📋 Sample policy data structure:', data[0]);
         setPolicies(data);
         setLoading(false);
       })
       .catch(err => {
+        console.error('❌ Error fetching policies:', err);
         setError('Failed to fetch insurance policies');
         setLoading(false);
         toast.error('Failed to fetch insurance policies');
@@ -36,61 +39,89 @@ const Insurance = () => {
 
   // Helper functions for display formatting
   const formatCurrency = (amount) => {
-    if (!amount || amount === 0) return '-';
+    if (!amount || amount === 0 || amount === '0' || amount === '') return '-';
+    
+    // Convert string to number if needed
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    
+    if (isNaN(numAmount) || numAmount === 0) return '-';
+    
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2
-    }).format(amount);
+    }).format(numAmount);
   };
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    try {
+      // Handle both YYYY-MM-DD format from DB and Date objects
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '-';
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      console.warn('Date formatting error:', error, dateString);
+      return '-';
+    }
   };
 
   const getNextRenewalDate = (renewalDate) => {
     if (!renewalDate) return '-';
-    const date = new Date(renewalDate);
-    const currentYear = new Date().getFullYear();
-    
-    // If renewal date is in the past, show next year's renewal
-    if (date.getFullYear() < currentYear) {
-      date.setFullYear(currentYear);
-      if (date < new Date()) {
-        date.setFullYear(currentYear + 1);
+    try {
+      const date = new Date(renewalDate);
+      if (isNaN(date.getTime())) return '-';
+      
+      const currentYear = new Date().getFullYear();
+      
+      // If renewal date is in the past, show next year's renewal
+      if (date.getFullYear() < currentYear) {
+        date.setFullYear(currentYear);
+        if (date < new Date()) {
+          date.setFullYear(currentYear + 1);
+        }
       }
+      
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    } catch (error) {
+      console.warn('Renewal date formatting error:', error, renewalDate);
+      return '-';
     }
-    
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
   };
 
   const getCoverageDuration = (startDate, endDate) => {
     if (!startDate || !endDate) return '-';
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const diffTime = Math.abs(end - start);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    const years = Math.floor(diffDays / 365);
-    const months = Math.floor((diffDays % 365) / 30);
-    
-    if (years > 0 && months > 0) {
-      return `${years}y ${months}m`;
-    } else if (years > 0) {
-      return `${years} year${years > 1 ? 's' : ''}`;
-    } else if (months > 0) {
-      return `${months} month${months > 1 ? 's' : ''}`;
-    } else {
-      return `${diffDays} days`;
+    try {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) return '-';
+      
+      const diffTime = Math.abs(end - start);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const years = Math.floor(diffDays / 365);
+      const months = Math.floor((diffDays % 365) / 30);
+      
+      if (years > 0 && months > 0) {
+        return `${years}y ${months}m`;
+      } else if (years > 0) {
+        return `${years} year${years > 1 ? 's' : ''}`;
+      } else if (months > 0) {
+        return `${months} month${months > 1 ? 's' : ''}`;
+      } else {
+        return `${diffDays} days`;
+      }
+    } catch (error) {
+      console.warn('Duration calculation error:', error, startDate, endDate);
+      return '-';
     }
   };
   // Only show non-sensitive, necessary fields in charts and table
@@ -113,22 +144,17 @@ const Insurance = () => {
   // Form setup
   const { register, handleSubmit, reset, formState: { errors }, watch } = useForm();
 
-  // Watch start_date to dynamically set min dates for end_date and renewal_date
-  const watchedStartDate = watch('start_date');
-
-  // Calculate minimum dates based on start date
-  const getMinEndDate = () => {
-    if (watchedStartDate) {
-      return watchedStartDate; // End date should be same or after start date
+  // Helper function to format date for HTML date input (YYYY-MM-DD)
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return '';
+    // If dateString is already in YYYY-MM-DD format, return as is
+    if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return dateString;
     }
-    return '1900-01-01'; // Default to 1900 if no start date
-  };
-
-  const getMinRenewalDate = () => {
-    if (watchedStartDate) {
-      return watchedStartDate; // Renewal date should be same or after start date
-    }
-    return '1900-01-01'; // Default to 1900 if no start date
+    // Otherwise, try to parse and format
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+    return date.toISOString().split('T')[0];
   };
 
   // Open modal for add/edit
@@ -150,9 +176,9 @@ const Insurance = () => {
         coverage_amount: policy.coverage_amount || '',
         premium_amount: policy.premium_amount || '',
         premium_frequency: policy.premium_frequency || 'monthly',
-        start_date: policy.start_date || '',
-        end_date: policy.end_date || '',
-        renewal_date: policy.renewal_date || '',
+        start_date: formatDateForInput(policy.start_date),
+        end_date: formatDateForInput(policy.end_date),
+        renewal_date: formatDateForInput(policy.renewal_date),
         notes: policy.notes || '',
         status: policy.status || 'active',
       });
@@ -320,7 +346,12 @@ const Insurance = () => {
                 </tr>
               </thead>
               <tbody>
-                {policies.map((p, idx) => (
+                {policies.map((p, idx) => {
+                  console.log(`📊 Policy ${idx}:`, p);
+                  console.log(`📊 Policy ${idx} premium_amount:`, p.premium_amount, typeof p.premium_amount);
+                  console.log(`📊 Policy ${idx} start_date:`, p.start_date, typeof p.start_date);
+                  console.log(`📊 Policy ${idx} end_date:`, p.end_date, typeof p.end_date);
+                  return (
                   <tr key={p.id || idx} className="border-t">
                     <td className="py-2 px-4">{p.policy_name || 'Policy'}</td>
                     <td className="py-2 px-4 capitalize">{p.policy_type || '-'}</td>
@@ -354,7 +385,7 @@ const Insurance = () => {
                       >Delete</button>
                     </td>
                   </tr>
-                ))}
+                )})}
               </tbody>
             </table>
           </div>
@@ -519,7 +550,7 @@ const Insurance = () => {
                     <input
                       id="start_date"
                       type="date"
-                      min="1900-01-01"
+                      min="2000-01-01"
                       max="2099-12-31"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                       {...register('start_date')}
@@ -531,7 +562,7 @@ const Insurance = () => {
                     <input
                       id="end_date"
                       type="date"
-                      min={getMinEndDate()}
+                      min="2000-01-01"
                       max="2099-12-31"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                       {...register('end_date')}
@@ -543,7 +574,7 @@ const Insurance = () => {
                     <input
                       id="renewal_date"
                       type="date"
-                      min={getMinRenewalDate()}
+                      min="2000-01-01"
                       max="2099-12-31"
                       className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                       {...register('renewal_date')}

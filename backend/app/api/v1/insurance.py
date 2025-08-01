@@ -14,7 +14,7 @@ from uuid import UUID
 
 router = APIRouter()
 
-@router.get("/", response_model=List[InsurancePolicySummary])
+@router.get("/", response_model=List[InsurancePolicySchema])
 async def get_insurance_policies(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
