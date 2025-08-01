@@ -461,52 +461,55 @@ const Insurance = () => {
             </div>
           </div>
 
-          {/* --- NEW: Aggregate KPIs by policy type --- */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-white rounded shadow p-4 overflow-x-auto">
-              <h2 className="font-semibold mb-2">Aggregate by Active Policy Type</h2>
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr>
-                    <th className="text-left py-2 px-4">Policy Type</th>
-                    <th className="text-left py-2 px-4">Annualized Premiums</th>
-                    <th className="text-left py-2 px-4">Total Coverage</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {aggregateByType.map((row, idx) => (
-                    <tr key={row.type} className="border-t">
-                      <td className="py-2 px-4">{row.type}</td>
-                      <td className="py-2 px-4">{formatCurrency(row.annualPremium)}</td>
-                      <td className="py-2 px-4">{formatCurrency(row.totalCoverage)}</td>
+          {/* --- Aggregate KPIs by policy type: moved up for visibility --- */}
+          <div className="mb-8">
+            <h2 className="text-xl font-bold mb-4">Policy Aggregates</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white rounded shadow p-4 overflow-x-auto">
+                <h3 className="font-semibold mb-2">Aggregate by Active Policy Type</h3>
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr>
+                      <th className="text-left py-2 px-4">Policy Type</th>
+                      <th className="text-left py-2 px-4">Annualized Premiums</th>
+                      <th className="text-left py-2 px-4">Total Coverage</th>
                     </tr>
-                  ))}
-                  <tr className="border-t font-bold">
-                    <td className="py-2 px-4">Total</td>
-                    <td className="py-2 px-4">{formatCurrency(totalAnnualPremium)}</td>
-                    <td className="py-2 px-4">{formatCurrency(totalCoverage)}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div className="bg-white rounded shadow p-4 overflow-x-auto">
-              <h2 className="font-semibold mb-2">Policy Type Counts</h2>
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr>
-                    <th className="text-left py-2 px-4">Policy Type</th>
-                    <th className="text-left py-2 px-4">Count</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {policyTypeCounts.map(row => (
-                    <tr key={row.type} className="border-t">
-                      <td className="py-2 px-4">{row.type}</td>
-                      <td className="py-2 px-4">{row.count}</td>
+                  </thead>
+                  <tbody>
+                    {aggregateByType.map((row, idx) => (
+                      <tr key={row.type} className="border-t">
+                        <td className="py-2 px-4">{row.type}</td>
+                        <td className="py-2 px-4">{formatCurrency(row.annualPremium)}</td>
+                        <td className="py-2 px-4">{formatCurrency(row.totalCoverage)}</td>
+                      </tr>
+                    ))}
+                    <tr className="border-t font-bold">
+                      <td className="py-2 px-4">Total</td>
+                      <td className="py-2 px-4">{formatCurrency(totalAnnualPremium)}</td>
+                      <td className="py-2 px-4">{formatCurrency(totalCoverage)}</td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </tbody>
+                </table>
+              </div>
+              <div className="bg-white rounded shadow p-4 overflow-x-auto">
+                <h3 className="font-semibold mb-2">Policy Type Counts</h3>
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr>
+                      <th className="text-left py-2 px-4">Policy Type</th>
+                      <th className="text-left py-2 px-4">Count</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {policyTypeCounts.map(row => (
+                      <tr key={row.type} className="border-t">
+                        <td className="py-2 px-4">{row.type}</td>
+                        <td className="py-2 px-4">{row.count}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
