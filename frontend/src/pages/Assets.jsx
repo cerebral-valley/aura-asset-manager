@@ -102,15 +102,43 @@ const Assets = () => {
     });
   }
 
-  // Asset type definitions
+  // Asset type definitions with flexible matching
   const ASSET_TYPES = [
-    { key: 'real_estate', label: 'Real Estate' },
-    { key: 'stock', label: 'Stocks' },
-    { key: 'bond', label: 'Bonds' },
-    { key: 'crypto', label: 'Cryptocurrency' },
-    { key: 'gold', label: 'Gold' },
-    { key: 'cash', label: 'Cash' },
-    { key: 'other', label: 'Other' },
+    { 
+      key: 'real_estate', 
+      label: 'Real Estate',
+      matchPatterns: ['real_estate', 'real_estate_commercial', 'real_estate_residential', 'property']
+    },
+    { 
+      key: 'stock', 
+      label: 'Stocks',
+      matchPatterns: ['stock', 'stocks', 'equity', 'share']
+    },
+    { 
+      key: 'bond', 
+      label: 'Bonds',
+      matchPatterns: ['bond', 'bonds', 'fixed_income']
+    },
+    { 
+      key: 'crypto', 
+      label: 'Cryptocurrency',
+      matchPatterns: ['crypto', 'cryptocurrency', 'bitcoin', 'ethereum', 'digital_currency']
+    },
+    { 
+      key: 'gold', 
+      label: 'Gold',
+      matchPatterns: ['gold', 'precious_metals', 'bullion']
+    },
+    { 
+      key: 'cash', 
+      label: 'Cash',
+      matchPatterns: ['cash', 'savings', 'money_market', 'checking']
+    },
+    { 
+      key: 'other', 
+      label: 'Other',
+      matchPatterns: ['other', 'misc', 'miscellaneous']
+    },
   ];
 
   console.log('🔍 Asset types configuration:', ASSET_TYPES.map(t => t.key));
@@ -128,8 +156,18 @@ const Assets = () => {
   const assetsToProcess = activeAssets.length > 0 ? activeAssets : assets;
   console.log(`🔍 Processing ${assetsToProcess.length} assets (${activeAssets.length > 0 ? 'active only' : 'ALL for debugging'})`);
 
+  // Helper function to match asset types
+  const matchesAssetType = (assetType, typeConfig) => {
+    if (!assetType) return false;
+    const normalizedAssetType = assetType.toLowerCase().trim();
+    return typeConfig.matchPatterns.some(pattern => 
+      normalizedAssetType === pattern.toLowerCase() || 
+      normalizedAssetType.includes(pattern.toLowerCase())
+    );
+  };
+
   // Aggregate by asset type for assets to process
-  const aggregateByType = ASSET_TYPES.map(({ key, label }) => {
+  const aggregateByType = ASSET_TYPES.map(({ key, label, matchPatterns }) => {
     let totalLatestValue = 0;
     let totalPresentValue = 0;
     let count = 0;
@@ -139,11 +177,10 @@ const Assets = () => {
     console.log(`🔍 Processing asset type: ${key} (${label})`);
 
     assetsToProcess.forEach(asset => {
-      const assetType = (asset.asset_type || '').toLowerCase().trim();
-      const keyType = key.toLowerCase().trim();
-      const assetTypeMatch = assetType === keyType;
+      const assetType = (asset.asset_type || '').trim();
+      const assetTypeMatch = matchesAssetType(assetType, { matchPatterns });
       
-      console.log(`🔍 Asset "${asset.name}": type="${asset.asset_type}" (normalized: "${assetType}") vs "${key}" (normalized: "${keyType}") = ${assetTypeMatch}`);
+      console.log(`🔍 Asset "${asset.name}": type="${asset.asset_type}" vs patterns=[${matchPatterns.join(', ')}] = ${assetTypeMatch}`);
       
       if (assetTypeMatch) {
         const latestValue = getLatestValue(asset);
@@ -199,8 +236,8 @@ const Assets = () => {
   const totalPresentValue = aggregateByType.reduce((sum, t) => sum + t.presentValue, 0);
 
   // Asset type counts
-  const assetTypeCounts = ASSET_TYPES.map(({ key, label }) => {
-    const count = assetsToProcess.filter(asset => (asset.asset_type || '').toLowerCase() === key).length;
+  const assetTypeCounts = ASSET_TYPES.map(({ key, label, matchPatterns }) => {
+    const count = assetsToProcess.filter(asset => matchesAssetType(asset.asset_type, { matchPatterns })).length;
     return { type: label, count };
   });
 
