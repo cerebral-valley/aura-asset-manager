@@ -18,12 +18,12 @@ class AssetBase(BaseModel):
     current_value: Optional[Decimal] = None
     quantity: Optional[Decimal] = None
     unit_of_measure: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    asset_metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
     
-    @field_validator('metadata', mode='before')
+    @field_validator('asset_metadata', mode='before')
     @classmethod
-    def validate_metadata(cls, v):
-        """Handle NULL metadata from database."""
+    def validate_asset_metadata(cls, v):
+        """Handle NULL asset_metadata from database."""
         if v is None:
             return {}
         return v
@@ -42,12 +42,12 @@ class AssetUpdate(BaseModel):
     current_value: Optional[Decimal] = None
     quantity: Optional[Decimal] = None
     unit_of_measure: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    asset_metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
     
-    @field_validator('metadata', mode='before')
+    @field_validator('asset_metadata', mode='before')
     @classmethod
-    def validate_metadata(cls, v):
-        """Handle NULL metadata from database."""
+    def validate_asset_metadata(cls, v):
+        """Handle NULL asset_metadata from database."""
         if v is None:
             return {}
         return v

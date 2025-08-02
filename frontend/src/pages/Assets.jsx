@@ -68,10 +68,10 @@ const Assets = () => {
     }
   };
 
-  // Filter out sold assets (assuming a sold asset has quantity of 0 or metadata.status === 'sold')
+  // Filter out sold assets (assuming a sold asset has quantity of 0 or asset_metadata.status === 'sold')
   const activeAssets = assets.filter(asset => {
     const quantity = Number(asset.quantity) || 0;
-    const status = asset.metadata?.status || 'active';
+    const status = asset.asset_metadata?.status || 'active';
     return quantity > 0 && status !== 'sold';
   });
 
