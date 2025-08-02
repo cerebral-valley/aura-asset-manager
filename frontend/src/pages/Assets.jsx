@@ -24,8 +24,6 @@ const Assets = () => {
     setLoading(true);
     assetsService.getAssets()
       .then(data => {
-        console.log('🔍 Raw assets data from API:', data);
-        console.log('🔍 Asset types found:', data.map(a => a.asset_type));
         setAssets(data);
         setLoading(false);
       })
@@ -83,32 +81,13 @@ const Assets = () => {
     // 2. AND (quantity is null/undefined OR quantity > 0)
     const isActive = status !== 'sold' && (quantity === null || quantity === undefined || Number(quantity) > 0);
     
-    console.log(`🔍 Asset "${asset.name}": quantity=${quantity}, status=${status}, isActive=${isActive}`);
     return isActive;
   });
 
   console.log('🔍 Active assets count:', activeAssets.length);
-  console.log('🔍 Active assets:', activeAssets);
-
-  // Debug: If no active assets, let's see what we have in all assets
-  if (activeAssets.length === 0) {
-    console.log('⚠️ No active assets found! Showing debug info for all assets:');
-    assets.forEach((asset, index) => {
-      console.log(`Asset ${index + 1}:`, {
-        name: asset.name,
-        asset_type: asset.asset_type,
-        quantity: asset.quantity,
-        status: asset.asset_metadata?.status,
-        initial_value: asset.initial_value,
-        current_value: asset.current_value
-      });
-    });
-  }
 
   // Asset category definitions using shared classification
   const AGGREGATION_CATEGORIES = getAggregationCategories();
-
-  console.log('🔍 Asset aggregation categories:', AGGREGATION_CATEGORIES);
 
   // Get latest acquisition value (current_value if available, else initial_value)
   const getLatestValue = (asset) => {
@@ -121,7 +100,6 @@ const Assets = () => {
 
   // Use all assets for debugging if no active assets found
   const assetsToProcess = activeAssets.length > 0 ? activeAssets : assets;
-  console.log(`🔍 Processing ${assetsToProcess.length} assets (${activeAssets.length > 0 ? 'active only' : 'ALL for debugging'})`);
 
   // Helper function to match asset types to categories
   const matchesAssetCategory = (assetType, categoryConfig) => {
@@ -137,20 +115,14 @@ const Assets = () => {
     let totalQuantity = 0;
     let unit = '-';
 
-    console.log(`🔍 Processing asset category: ${key} (${label})`);
-
     assetsToProcess.forEach(asset => {
       const assetType = (asset.asset_type || '').trim();
       const assetTypeMatch = matchesAssetCategory(assetType, { assetTypes: categoryAssetTypes });
-      
-      console.log(`🔍 Asset "${asset.name}": type="${asset.asset_type}" vs category="${label}" types=[${categoryAssetTypes.join(', ')}] = ${assetTypeMatch}`);
       
       if (assetTypeMatch) {
         const latestValue = getLatestValue(asset);
         const presentValue = getPresentValue(asset);
         const quantity = Number(asset.quantity) || 0;
-        
-        console.log(`🔍 Matched asset "${asset.name}": latest=${latestValue}, present=${presentValue}, qty=${quantity}`);
         
         totalLatestValue += latestValue;
         totalPresentValue += presentValue;
@@ -188,12 +160,6 @@ const Assets = () => {
     };
   });
 
-  // Debug: Show all unique asset types found in data
-  const uniqueAssetTypes = [...new Set(assetsToProcess.map(a => a.asset_type))];
-  console.log('🔍 Unique asset types in data:', uniqueAssetTypes);
-  console.log('🔍 Expected categories:', AGGREGATION_CATEGORIES.map(t => t.label));
-  console.log('🔍 Aggregation results:', aggregateByType.map(a => `${a.type}: ${a.count} assets`));
-
   // Total values
   const totalLatestValue = aggregateByType.reduce((sum, t) => sum + t.latestValue, 0);
   const totalPresentValue = aggregateByType.reduce((sum, t) => sum + t.presentValue, 0);
@@ -211,8 +177,6 @@ const Assets = () => {
       name: item.type,
       value: item.presentValue
     }));
-
-  console.log('🔍 Pie chart data:', pieData);
 
   // Value over time chart data (simplified - using purchase dates)
   const valueOverTimeData = activeAssets
@@ -238,9 +202,6 @@ const Assets = () => {
   }, {});
 
   const chartData = Object.values(yearlyData).sort((a, b) => a.year - b.year);
-
-  console.log('🔍 Value over time chart data:', chartData);
-  console.log('🔍 Chart data length:', chartData.length);
 
   // Form setup
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
@@ -458,10 +419,13 @@ const Assets = () => {
             <div className="flex justify-between items-center mb-2">
               <h2 className="font-semibold">All Assets</h2>
               <button
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                onClick={() => openModal()}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2"
+                onClick={() => navigate('/transactions')}
               >
-                Add Asset
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                New Transaction
               </button>
             </div>
             {actionError && <div className="text-red-600 mb-2">{actionError}</div>}
