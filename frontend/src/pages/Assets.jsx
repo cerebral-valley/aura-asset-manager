@@ -249,6 +249,8 @@ const Assets = () => {
       value: item.presentValue
     }));
 
+  console.log('🔍 Pie chart data:', pieData);
+
   // Value over time chart data (simplified - using purchase dates)
   const valueOverTimeData = activeAssets
     .filter(asset => asset.purchase_date && (getLatestValue(asset) > 0 || getPresentValue(asset) > 0))
@@ -273,6 +275,9 @@ const Assets = () => {
   }, {});
 
   const chartData = Object.values(yearlyData).sort((a, b) => a.year - b.year);
+
+  console.log('🔍 Value over time chart data:', chartData);
+  console.log('🔍 Chart data length:', chartData.length);
 
   // Form setup
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
