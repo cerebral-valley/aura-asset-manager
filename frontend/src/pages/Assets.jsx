@@ -70,17 +70,37 @@ const Assets = () => {
     }
   };
 
-  // Filter out sold assets (assuming a sold asset has quantity of 0 or asset_metadata.status === 'sold')
+  // Filter out sold assets (but be permissive with null/undefined quantities)
   const activeAssets = assets.filter(asset => {
-    const quantity = Number(asset.quantity) || 0;
+    const quantity = asset.quantity;
     const status = asset.asset_metadata?.status || 'active';
-    const isActive = quantity > 0 && status !== 'sold';
+    
+    // Consider asset active if:
+    // 1. Status is not 'sold'
+    // 2. AND (quantity is null/undefined OR quantity > 0)
+    const isActive = status !== 'sold' && (quantity === null || quantity === undefined || Number(quantity) > 0);
+    
     console.log(`🔍 Asset "${asset.name}": quantity=${quantity}, status=${status}, isActive=${isActive}`);
     return isActive;
   });
 
   console.log('🔍 Active assets count:', activeAssets.length);
   console.log('🔍 Active assets:', activeAssets);
+
+  // Debug: If no active assets, let's see what we have in all assets
+  if (activeAssets.length === 0) {
+    console.log('⚠️ No active assets found! Showing debug info for all assets:');
+    assets.forEach((asset, index) => {
+      console.log(`Asset ${index + 1}:`, {
+        name: asset.name,
+        asset_type: asset.asset_type,
+        quantity: asset.quantity,
+        status: asset.asset_metadata?.status,
+        initial_value: asset.initial_value,
+        current_value: asset.current_value
+      });
+    });
+  }
 
   // Asset type definitions
   const ASSET_TYPES = [
@@ -104,7 +124,11 @@ const Assets = () => {
     return Number(asset.current_value) || Number(asset.initial_value) || 0;
   };
 
-  // Aggregate by asset type for active assets
+  // Use all assets for debugging if no active assets found
+  const assetsToProcess = activeAssets.length > 0 ? activeAssets : assets;
+  console.log(`🔍 Processing ${assetsToProcess.length} assets (${activeAssets.length > 0 ? 'active only' : 'ALL for debugging'})`);
+
+  // Aggregate by asset type for assets to process
   const aggregateByType = ASSET_TYPES.map(({ key, label }) => {
     let totalLatestValue = 0;
     let totalPresentValue = 0;
@@ -114,7 +138,7 @@ const Assets = () => {
 
     console.log(`🔍 Processing asset type: ${key} (${label})`);
 
-    activeAssets.forEach(asset => {
+    assetsToProcess.forEach(asset => {
       const assetType = (asset.asset_type || '').toLowerCase().trim();
       const keyType = key.toLowerCase().trim();
       const assetTypeMatch = assetType === keyType;
@@ -165,7 +189,7 @@ const Assets = () => {
   });
 
   // Debug: Show all unique asset types found in data
-  const uniqueAssetTypes = [...new Set(activeAssets.map(a => a.asset_type))];
+  const uniqueAssetTypes = [...new Set(assetsToProcess.map(a => a.asset_type))];
   console.log('🔍 Unique asset types in data:', uniqueAssetTypes);
   console.log('🔍 Expected asset types:', ASSET_TYPES.map(t => t.key));
   console.log('🔍 Aggregation results:', aggregateByType.map(a => `${a.type}: ${a.count} assets`));
@@ -176,7 +200,7 @@ const Assets = () => {
 
   // Asset type counts
   const assetTypeCounts = ASSET_TYPES.map(({ key, label }) => {
-    const count = activeAssets.filter(asset => (asset.asset_type || '').toLowerCase() === key).length;
+    const count = assetsToProcess.filter(asset => (asset.asset_type || '').toLowerCase() === key).length;
     return { type: label, count };
   });
 
