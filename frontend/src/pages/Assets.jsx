@@ -31,6 +31,19 @@ const Assets = () => {
       transactionsService.getTransactions()
     ])
       .then(([assetsData, transactionsData]) => {
+        console.log('🔍 Assets fetched:', assetsData.length);
+        
+        // Debug farmland_ps specifically
+        const farmlandAsset = assetsData.find(a => a.name === 'farmland_ps');
+        if (farmlandAsset) {
+          console.log('🚜 farmland_ps asset from API:', {
+            name: farmlandAsset.name,
+            initial_value: farmlandAsset.initial_value,
+            current_value: farmlandAsset.current_value,
+            quantity: farmlandAsset.quantity
+          });
+        }
+        
         setAssets(assetsData);
         setTransactions(transactionsData);
         setLoading(false);
@@ -99,14 +112,34 @@ const Assets = () => {
 
   // Helper function to get the latest value from transactions
   const getLatestTransactionValue = (asset, valueType = 'current_value') => {
-    // Get all transactions for this asset
+    // TRUST THE ASSET'S VALUES FIRST - backend updates these when transactions are created
+    // The backend properly updates asset.current_value and asset.initial_value when 
+    // update_market_value and update_acquisition_value transactions are created
+    
+    if (valueType === 'current_value') {
+      // Use asset's current_value (updated by backend), fallback to initial_value
+      const assetCurrentValue = Number(asset.current_value);
+      const assetInitialValue = Number(asset.initial_value);
+      
+      if (assetCurrentValue && assetCurrentValue > 0) {
+        return assetCurrentValue;
+      } else if (assetInitialValue && assetInitialValue > 0) {
+        return assetInitialValue;
+      }
+    } else if (valueType === 'acquisition_value') {
+      // Use asset's initial_value (updated by backend for acquisition value updates)
+      const assetInitialValue = Number(asset.initial_value);
+      
+      if (assetInitialValue && assetInitialValue > 0) {
+        return assetInitialValue;
+      }
+    }
+    
+    // Only if asset values are missing/zero, then check transactions as fallback
     const assetTransactions = transactions.filter(t => t.asset_id === asset.id);
     
     if (assetTransactions.length === 0) {
-      // Fallback to asset's static values
-      return valueType === 'current_value' 
-        ? (Number(asset.current_value) || Number(asset.initial_value) || 0)
-        : (Number(asset.initial_value) || 0);
+      return 0;
     }
     
     // Sort transactions by date (most recent first)
@@ -152,10 +185,8 @@ const Assets = () => {
       }
     }
     
-    // Final fallback to asset's static values
-    return valueType === 'current_value' 
-      ? (Number(asset.current_value) || Number(asset.initial_value) || 0)
-      : (Number(asset.initial_value) || 0);
+    // Final fallback
+    return 0;
   };
 
   // Get latest acquisition value (current_value if available, else initial_value)
