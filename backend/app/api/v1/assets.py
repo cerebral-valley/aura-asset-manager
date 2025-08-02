@@ -14,7 +14,7 @@ from uuid import UUID
 
 router = APIRouter()
 
-@router.get("/", response_model=List[AssetSummary])
+@router.get("/", response_model=List[AssetSchema])
 async def get_assets(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -25,7 +25,9 @@ async def get_assets(
     # Debug logging
     print(f"🔍 Found {len(assets)} assets for user {current_user.id}")
     for asset in assets:
-        print(f"🔍 Asset: {asset.name}, type: {asset.asset_type}, status: {asset.status}")
+        print(f"🔍 Asset: {asset.name}, type: {asset.asset_type}, current_value: {asset.current_value}, initial_value: {asset.initial_value}, quantity: {asset.quantity}")
+        if asset.asset_metadata:
+            print(f"🔍   Metadata: {asset.asset_metadata}")
     
     return assets
 
