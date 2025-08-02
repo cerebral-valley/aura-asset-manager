@@ -489,17 +489,8 @@ const Assets = () => {
 
           {/* Assets Table */}
           <div className="bg-white rounded shadow p-4">
-            <div className="flex justify-between items-center mb-2">
+            <div className="mb-2">
               <h2 className="font-semibold">All Assets</h2>
-              <button
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2"
-                onClick={() => navigate('/transactions')}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                New Transaction
-              </button>
             </div>
             {actionError && <div className="text-red-600 mb-2">{actionError}</div>}
             <table className="min-w-full text-sm" aria-label="Assets Table">
@@ -513,7 +504,6 @@ const Assets = () => {
                   <th className="text-left py-2 px-4">Unit</th>
                   <th className="text-left py-2 px-4">Purchase Date</th>
                   <th className="text-left py-2 px-4">Notes</th>
-                  <th className="text-left py-2 px-4">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -527,19 +517,6 @@ const Assets = () => {
                     <td className="py-2 px-4">{asset.unit_of_measure || '-'}</td>
                     <td className="py-2 px-4">{formatDate(asset.purchase_date)}</td>
                     <td className="py-2 px-4">{asset.description || '-'}</td>
-                    <td className="py-2 px-4">
-                      <button
-                        className="text-blue-600 hover:underline mr-2"
-                        onClick={() => openModal(asset)}
-                        aria-label={`Edit asset ${asset.name || 'Asset'}`}
-                      >Edit</button>
-                      <button
-                        className="text-red-600 hover:underline"
-                        onClick={() => handleDelete(asset.id)}
-                        disabled={actionLoading}
-                        aria-label={`Delete asset ${asset.name || 'Asset'}`}
-                      >Delete</button>
-                    </td>
                   </tr>
                 ))}
               </tbody>
