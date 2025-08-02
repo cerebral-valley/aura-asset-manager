@@ -115,8 +115,11 @@ const Assets = () => {
     console.log(`🔍 Processing asset type: ${key} (${label})`);
 
     activeAssets.forEach(asset => {
-      const assetTypeMatch = (asset.asset_type || '').toLowerCase() === key;
-      console.log(`🔍 Asset "${asset.name}": type="${asset.asset_type}" vs "${key}" = ${assetTypeMatch}`);
+      const assetType = (asset.asset_type || '').toLowerCase().trim();
+      const keyType = key.toLowerCase().trim();
+      const assetTypeMatch = assetType === keyType;
+      
+      console.log(`🔍 Asset "${asset.name}": type="${asset.asset_type}" (normalized: "${assetType}") vs "${key}" (normalized: "${keyType}") = ${assetTypeMatch}`);
       
       if (assetTypeMatch) {
         const latestValue = getLatestValue(asset);
@@ -160,6 +163,12 @@ const Assets = () => {
       displayValue
     };
   });
+
+  // Debug: Show all unique asset types found in data
+  const uniqueAssetTypes = [...new Set(activeAssets.map(a => a.asset_type))];
+  console.log('🔍 Unique asset types in data:', uniqueAssetTypes);
+  console.log('🔍 Expected asset types:', ASSET_TYPES.map(t => t.key));
+  console.log('🔍 Aggregation results:', aggregateByType.map(a => `${a.type}: ${a.count} assets`));
 
   // Total values
   const totalLatestValue = aggregateByType.reduce((sum, t) => sum + t.latestValue, 0);
