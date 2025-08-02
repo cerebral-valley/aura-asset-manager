@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { assetsService } from '../services/assets';
@@ -21,6 +21,14 @@ const Assets = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState(null);
   const modalRef = useRef(null);
+
+  // Sorting and filtering states
+  const [sortField, setSortField] = useState('name');
+  const [sortDirection, setSortDirection] = useState('asc');
+  const [nameFilter, setNameFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [dateFromFilter, setDateFromFilter] = useState('');
+  const [dateToFilter, setDateToFilter] = useState('');
 
   const fetchAssets = () => {
     setLoading(true);
@@ -174,6 +182,104 @@ const Assets = () => {
   // Use all assets for debugging if no active assets found
   const assetsToProcess = activeAssets.length > 0 ? activeAssets : assets;
 
+  // Helper function to format percentage
+  const formatPercentage = (value, total) => {
+    if (!total || total === 0) return '0%';
+    return `${((value / total) * 100).toFixed(1)}%`;
+  };
+
+  // Sorting function
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  // Filter and sort assets for the table
+  const filteredAndSortedAssets = useMemo(() => {
+    let filtered = [...assetsToProcess];
+
+    // Apply filters
+    if (nameFilter) {
+      filtered = filtered.filter(asset => 
+        asset.name.toLowerCase().includes(nameFilter.toLowerCase())
+      );
+    }
+
+    if (typeFilter) {
+      filtered = filtered.filter(asset => 
+        asset.asset_type.toLowerCase().includes(typeFilter.toLowerCase())
+      );
+    }
+
+    if (dateFromFilter) {
+      filtered = filtered.filter(asset => 
+        new Date(asset.purchase_date) >= new Date(dateFromFilter)
+      );
+    }
+
+    if (dateToFilter) {
+      filtered = filtered.filter(asset => 
+        new Date(asset.purchase_date) <= new Date(dateToFilter)
+      );
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      let aValue, bValue;
+
+      switch (sortField) {
+        case 'name':
+          aValue = a.name || '';
+          bValue = b.name || '';
+          break;
+        case 'type':
+          aValue = a.asset_type || '';
+          bValue = b.asset_type || '';
+          break;
+        case 'acquisition_value':
+          aValue = getAcquisitionValue(a);
+          bValue = getAcquisitionValue(b);
+          break;
+        case 'present_value':
+          aValue = getPresentValue(a);
+          bValue = getPresentValue(b);
+          break;
+        case 'quantity':
+          aValue = Number(a.quantity) || 0;
+          bValue = Number(b.quantity) || 0;
+          break;
+        case 'purchase_date':
+          aValue = new Date(a.purchase_date || 0);
+          bValue = new Date(b.purchase_date || 0);
+          break;
+        default:
+          aValue = a.name || '';
+          bValue = b.name || '';
+      }
+
+      if (typeof aValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (sortDirection === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+
+    return filtered;
+  }, [assetsToProcess, nameFilter, typeFilter, dateFromFilter, dateToFilter, sortField, sortDirection]);
+
+  // Calculate totals for the filtered assets
+  const filteredTotalAcquisition = filteredAndSortedAssets.reduce((sum, asset) => sum + getAcquisitionValue(asset), 0);
+  const filteredTotalPresent = filteredAndSortedAssets.reduce((sum, asset) => sum + getPresentValue(asset), 0);
+
   // Helper function to match asset types to categories
   const matchesAssetCategory = (assetType, categoryConfig) => {
     if (!assetType) return false;
@@ -182,7 +288,7 @@ const Assets = () => {
 
   // Aggregate by asset category for assets to process
   const aggregateByType = AGGREGATION_CATEGORIES.map(({ key, label, assetTypes: categoryAssetTypes }) => {
-    let totalLatestValue = 0;
+    let totalAcquisitionValue = 0;
     let totalPresentValue = 0;
     let count = 0;
     let totalQuantity = 0;
@@ -193,11 +299,11 @@ const Assets = () => {
       const assetTypeMatch = matchesAssetCategory(assetType, { assetTypes: categoryAssetTypes });
       
       if (assetTypeMatch) {
-        const latestValue = getLatestValue(asset);
+        const acquisitionValue = getAcquisitionValue(asset);
         const presentValue = getPresentValue(asset);
         const quantity = Number(asset.quantity) || 0;
         
-        totalLatestValue += latestValue;
+        totalAcquisitionValue += acquisitionValue;
         totalPresentValue += presentValue;
         count += 1;
         totalQuantity += quantity;
@@ -226,7 +332,7 @@ const Assets = () => {
 
     return { 
       type: label, 
-      latestValue: totalLatestValue, 
+      acquisitionValue: totalAcquisitionValue,
       presentValue: totalPresentValue,
       count,
       displayValue
@@ -234,7 +340,7 @@ const Assets = () => {
   });
 
   // Total values
-  const totalLatestValue = aggregateByType.reduce((sum, t) => sum + t.latestValue, 0);
+  const totalAcquisitionValue = aggregateByType.reduce((sum, t) => sum + t.acquisitionValue, 0);
   const totalPresentValue = aggregateByType.reduce((sum, t) => sum + t.presentValue, 0);
 
   // Asset type counts
@@ -443,7 +549,9 @@ const Assets = () => {
                     <tr>
                       <th className="text-left py-2 px-4">Asset Type</th>
                       <th className="text-left py-2 px-4">Latest Acquisition Value</th>
-                      <th className="text-left py-2 px-4">Present Value</th>
+                      <th className="text-left py-2 px-4">% Share (Acq)</th>
+                      <th className="text-left py-2 px-4">Latest Market Value</th>
+                      <th className="text-left py-2 px-4">% Share (Market)</th>
                       <th className="text-left py-2 px-4">Summary</th>
                     </tr>
                   </thead>
@@ -451,15 +559,19 @@ const Assets = () => {
                     {aggregateByType.map((row, idx) => (
                       <tr key={row.type} className="border-t">
                         <td className="py-2 px-4">{row.type}</td>
-                        <td className="py-2 px-4">{formatCurrency(row.latestValue)}</td>
+                        <td className="py-2 px-4">{formatCurrency(row.acquisitionValue)}</td>
+                        <td className="py-2 px-4">{formatPercentage(row.acquisitionValue, totalAcquisitionValue)}</td>
                         <td className="py-2 px-4">{formatCurrency(row.presentValue)}</td>
+                        <td className="py-2 px-4">{formatPercentage(row.presentValue, totalPresentValue)}</td>
                         <td className="py-2 px-4">{row.displayValue}</td>
                       </tr>
                     ))}
                     <tr className="border-t font-bold">
                       <td className="py-2 px-4">Total</td>
-                      <td className="py-2 px-4">{formatCurrency(totalLatestValue)}</td>
+                      <td className="py-2 px-4">{formatCurrency(totalAcquisitionValue)}</td>
+                      <td className="py-2 px-4">100%</td>
                       <td className="py-2 px-4">{formatCurrency(totalPresentValue)}</td>
+                      <td className="py-2 px-4">100%</td>
                       <td className="py-2 px-4">{activeAssets.length} assets</td>
                     </tr>
                   </tbody>
@@ -489,38 +601,109 @@ const Assets = () => {
 
           {/* Assets Table */}
           <div className="bg-white rounded shadow p-4">
-            <div className="mb-2">
-              <h2 className="font-semibold">All Assets</h2>
+            <div className="mb-4">
+              <h2 className="font-semibold mb-3">All Assets</h2>
+              
+              {/* Filters */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Filter by Name</label>
+                  <input
+                    type="text"
+                    placeholder="Search asset name..."
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={nameFilter}
+                    onChange={(e) => setNameFilter(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Filter by Type</label>
+                  <input
+                    type="text"
+                    placeholder="Search asset type..."
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={typeFilter}
+                    onChange={(e) => setTypeFilter(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Date From</label>
+                  <input
+                    type="date"
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={dateFromFilter}
+                    onChange={(e) => setDateFromFilter(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Date To</label>
+                  <input
+                    type="date"
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={dateToFilter}
+                    onChange={(e) => setDateToFilter(e.target.value)}
+                  />
+                </div>
+              </div>
             </div>
+            
             {actionError && <div className="text-red-600 mb-2">{actionError}</div>}
-            <table className="min-w-full text-sm" aria-label="Assets Table">
-              <thead>
-                <tr>
-                  <th className="text-left py-2 px-4">Name</th>
-                  <th className="text-left py-2 px-4">Type</th>
-                  <th className="text-left py-2 px-4">Acquisition Value</th>
-                  <th className="text-left py-2 px-4">Present Value</th>
-                  <th className="text-left py-2 px-4">Quantity</th>
-                  <th className="text-left py-2 px-4">Unit</th>
-                  <th className="text-left py-2 px-4">Purchase Date</th>
-                  <th className="text-left py-2 px-4">Notes</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activeAssets.map((asset, idx) => (
-                  <tr key={asset.id || idx} className="border-t">
-                    <td className="py-2 px-4">{asset.name || 'Asset'}</td>
-                    <td className="py-2 px-4 capitalize">{asset.asset_type || '-'}</td>
-                    <td className="py-2 px-4">{formatCurrency(getAcquisitionValue(asset))}</td>
-                    <td className="py-2 px-4">{formatCurrency(getPresentValue(asset))}</td>
-                    <td className="py-2 px-4">{asset.quantity || '-'}</td>
-                    <td className="py-2 px-4">{asset.unit_of_measure || '-'}</td>
-                    <td className="py-2 px-4">{formatDate(asset.purchase_date)}</td>
-                    <td className="py-2 px-4">{asset.description || '-'}</td>
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm" aria-label="Assets Table">
+                <thead>
+                  <tr>
+                    <th className="text-left py-2 px-4 cursor-pointer hover:bg-gray-50" onClick={() => handleSort('name')}>
+                      Name {sortField === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th className="text-left py-2 px-4 cursor-pointer hover:bg-gray-50" onClick={() => handleSort('type')}>
+                      Type {sortField === 'type' && (sortDirection === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th className="text-left py-2 px-4 cursor-pointer hover:bg-gray-50" onClick={() => handleSort('acquisition_value')}>
+                      Acquisition Value {sortField === 'acquisition_value' && (sortDirection === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th className="text-left py-2 px-4 cursor-pointer hover:bg-gray-50" onClick={() => handleSort('present_value')}>
+                      Present Value {sortField === 'present_value' && (sortDirection === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th className="text-left py-2 px-4 cursor-pointer hover:bg-gray-50" onClick={() => handleSort('quantity')}>
+                      Quantity {sortField === 'quantity' && (sortDirection === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th className="text-left py-2 px-4">Unit</th>
+                    <th className="text-left py-2 px-4 cursor-pointer hover:bg-gray-50" onClick={() => handleSort('purchase_date')}>
+                      Purchase Date {sortField === 'purchase_date' && (sortDirection === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th className="text-left py-2 px-4">Notes</th>
+                    <th className="text-left py-2 px-4">% Share</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredAndSortedAssets.map((asset, idx) => (
+                    <tr key={asset.id || idx} className="border-t">
+                      <td className="py-2 px-4">{asset.name || 'Asset'}</td>
+                      <td className="py-2 px-4 capitalize">{asset.asset_type || '-'}</td>
+                      <td className="py-2 px-4">{formatCurrency(getAcquisitionValue(asset))}</td>
+                      <td className="py-2 px-4">{formatCurrency(getPresentValue(asset))}</td>
+                      <td className="py-2 px-4">{asset.quantity || '-'}</td>
+                      <td className="py-2 px-4">{asset.unit_of_measure || '-'}</td>
+                      <td className="py-2 px-4">{formatDate(asset.purchase_date)}</td>
+                      <td className="py-2 px-4">{asset.description || '-'}</td>
+                      <td className="py-2 px-4">{formatPercentage(getPresentValue(asset), filteredTotalPresent)}</td>
+                    </tr>
+                  ))}
+                  <tr className="border-t-2 font-bold bg-gray-50">
+                    <td className="py-2 px-4">Total</td>
+                    <td className="py-2 px-4">-</td>
+                    <td className="py-2 px-4">{formatCurrency(filteredTotalAcquisition)}</td>
+                    <td className="py-2 px-4">{formatCurrency(filteredTotalPresent)}</td>
+                    <td className="py-2 px-4">-</td>
+                    <td className="py-2 px-4">-</td>
+                    <td className="py-2 px-4">-</td>
+                    <td className="py-2 px-4">{filteredAndSortedAssets.length} assets</td>
+                    <td className="py-2 px-4">100%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </>
       )}
