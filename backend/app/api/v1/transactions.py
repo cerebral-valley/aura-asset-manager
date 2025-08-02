@@ -120,6 +120,12 @@ async def create_transaction(
             asset.quantity = 0
     elif transaction.transaction_type == "value_update" and transaction.amount:
         asset.current_value = transaction.amount
+    elif transaction.transaction_type == "update_market_value" and transaction.amount:
+        # Update the asset's current market value
+        asset.current_value = transaction.amount
+    elif transaction.transaction_type == "update_acquisition_value" and transaction.amount:
+        # Update the asset's initial/acquisition value
+        asset.initial_value = transaction.amount
     
     db.commit()
     db.refresh(db_transaction)
