@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { assetsService } from '../services/assets';
+import { transactionsService } from '../services/transactions';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
 Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
@@ -12,6 +13,7 @@ const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888'];
 const Assets = () => {
   const navigate = useNavigate();
   const [assets, setAssets] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -22,16 +24,22 @@ const Assets = () => {
 
   const fetchAssets = () => {
     setLoading(true);
-    assetsService.getAssets()
-      .then(data => {
-        setAssets(data);
+    
+    // Fetch both assets and transactions
+    Promise.all([
+      assetsService.getAssets(),
+      transactionsService.getTransactions()
+    ])
+      .then(([assetsData, transactionsData]) => {
+        setAssets(assetsData);
+        setTransactions(transactionsData);
         setLoading(false);
       })
       .catch(err => {
-        console.error('❌ Error fetching assets:', err);
-        setError('Failed to fetch assets');
+        console.error('❌ Error fetching assets or transactions:', err);
+        setError('Failed to fetch data');
         setLoading(false);
-        toast.error('Failed to fetch assets');
+        toast.error('Failed to fetch data');
       });
   };
 
@@ -89,13 +97,78 @@ const Assets = () => {
   // Asset category definitions using shared classification
   const AGGREGATION_CATEGORIES = getAggregationCategories();
 
+  // Helper function to get the latest value from transactions
+  const getLatestTransactionValue = (asset, valueType = 'current_value') => {
+    // Get all transactions for this asset
+    const assetTransactions = transactions.filter(t => t.asset_id === asset.id);
+    
+    if (assetTransactions.length === 0) {
+      // Fallback to asset's static values
+      return valueType === 'current_value' 
+        ? (Number(asset.current_value) || Number(asset.initial_value) || 0)
+        : (Number(asset.initial_value) || 0);
+    }
+    
+    // Sort transactions by date (most recent first)
+    const sortedTransactions = assetTransactions.sort((a, b) => 
+      new Date(b.transaction_date) - new Date(a.transaction_date)
+    );
+    
+    if (valueType === 'current_value') {
+      // Look for the latest market value update transaction
+      const marketValueTransaction = sortedTransactions.find(t => 
+        t.transaction_type === 'update_market_value' && t.amount != null
+      );
+      
+      if (marketValueTransaction) {
+        return Number(marketValueTransaction.amount) || 0;
+      }
+      
+      // If no market value update, look for transactions with current_value
+      const currentValueTransaction = sortedTransactions.find(t => 
+        t.current_value != null && t.current_value > 0
+      );
+      
+      if (currentValueTransaction) {
+        return Number(currentValueTransaction.current_value) || 0;
+      }
+    } else if (valueType === 'acquisition_value') {
+      // Look for the latest acquisition value update transaction
+      const acquisitionTransaction = sortedTransactions.find(t => 
+        t.transaction_type === 'update_acquisition_value' && t.amount != null
+      );
+      
+      if (acquisitionTransaction) {
+        return Number(acquisitionTransaction.amount) || 0;
+      }
+      
+      // If no acquisition value update, look for transactions with acquisition_value
+      const acquisitionValueTransaction = sortedTransactions.find(t => 
+        t.acquisition_value != null && t.acquisition_value > 0
+      );
+      
+      if (acquisitionValueTransaction) {
+        return Number(acquisitionValueTransaction.acquisition_value) || 0;
+      }
+    }
+    
+    // Final fallback to asset's static values
+    return valueType === 'current_value' 
+      ? (Number(asset.current_value) || Number(asset.initial_value) || 0)
+      : (Number(asset.initial_value) || 0);
+  };
+
   // Get latest acquisition value (current_value if available, else initial_value)
   const getLatestValue = (asset) => {
-    return Number(asset.current_value) || Number(asset.initial_value) || 0;
+    return getLatestTransactionValue(asset, 'current_value');
   };
 
   const getPresentValue = (asset) => {
-    return Number(asset.current_value) || Number(asset.initial_value) || 0;
+    return getLatestTransactionValue(asset, 'current_value');
+  };
+
+  const getAcquisitionValue = (asset) => {
+    return getLatestTransactionValue(asset, 'acquisition_value');
   };
 
   // Use all assets for debugging if no active assets found
@@ -448,8 +521,8 @@ const Assets = () => {
                   <tr key={asset.id || idx} className="border-t">
                     <td className="py-2 px-4">{asset.name || 'Asset'}</td>
                     <td className="py-2 px-4 capitalize">{asset.asset_type || '-'}</td>
-                    <td className="py-2 px-4">{formatCurrency(asset.initial_value)}</td>
-                    <td className="py-2 px-4">{formatCurrency(asset.current_value || asset.initial_value)}</td>
+                    <td className="py-2 px-4">{formatCurrency(getAcquisitionValue(asset))}</td>
+                    <td className="py-2 px-4">{formatCurrency(getPresentValue(asset))}</td>
                     <td className="py-2 px-4">{asset.quantity || '-'}</td>
                     <td className="py-2 px-4">{asset.unit_of_measure || '-'}</td>
                     <td className="py-2 px-4">{formatDate(asset.purchase_date)}</td>
