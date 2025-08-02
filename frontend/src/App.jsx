@@ -2,6 +2,7 @@ import { AuthProvider, useAuth } from './hooks/useAuth'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import LoginForm from './components/auth/LoginForm'
 import Dashboard from './pages/Dashboard'
+import Assets from './pages/Assets'
 import Transactions from './pages/Transactions'
 import Insurance from './pages/Insurance'
 import AppLayout from './components/layout/AppLayout'
@@ -11,7 +12,12 @@ import './App.css'
 // Page Components
 function AssetsPage() {
   console.log('AssetsPage: Rendering Assets page')
-  return <div className="p-6"><h1 className="text-2xl font-bold">Assets Page</h1><p>Coming Soon</p></div>
+  try {
+    return <Assets />
+  } catch (error) {
+    console.error('AssetsPage: Error rendering Assets:', error)
+    return <div className="p-6"><h1 className="text-2xl font-bold text-red-500">Error loading Assets</h1><p>{error.message}</p></div>
+  }
 }
 
 // Removed InsurancePage placeholder; now using real Insurance component
