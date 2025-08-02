@@ -253,11 +253,11 @@ const Assets = () => {
 
   // Value over time chart data (simplified - using purchase dates)
   const valueOverTimeData = activeAssets
-    .filter(asset => asset.purchase_date && (getLatestValue(asset) > 0 || getPresentValue(asset) > 0))
+    .filter(asset => asset.purchase_date && (getAcquisitionValue(asset) > 0 || getPresentValue(asset) > 0))
     .map(asset => ({
       date: asset.purchase_date,
       year: new Date(asset.purchase_date).getFullYear(),
-      latestValue: getLatestValue(asset),
+      acquisitionValue: getAcquisitionValue(asset),
       presentValue: getPresentValue(asset),
       name: asset.name
     }))
@@ -267,9 +267,9 @@ const Assets = () => {
   const yearlyData = valueOverTimeData.reduce((acc, asset) => {
     const year = asset.year;
     if (!acc[year]) {
-      acc[year] = { year, latestValue: 0, presentValue: 0 };
+      acc[year] = { year, acquisitionValue: 0, presentValue: 0 };
     }
-    acc[year].latestValue += asset.latestValue;
+    acc[year].acquisitionValue += asset.acquisitionValue;
     acc[year].presentValue += asset.presentValue;
     return acc;
   }, {});
@@ -411,7 +411,7 @@ const Assets = () => {
                   <YAxis />
                   <Tooltip formatter={(value) => formatCurrency(value)} />
                   <Legend />
-                  <Line type="monotone" dataKey="latestValue" stroke="#8884d8" name="Acquisition Value" />
+                  <Line type="monotone" dataKey="acquisitionValue" stroke="#8884d8" name="Acquisition Value" />
                   <Line type="monotone" dataKey="presentValue" stroke="#82ca9d" name="Present Value" />
                 </LineChart>
               </ResponsiveContainer>
