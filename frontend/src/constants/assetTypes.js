@@ -54,6 +54,21 @@ export const getCategoryForAssetType = (assetTypeValue) => {
   return 'Other';
 }
 
+// Get display label for asset type value
+export const getAssetTypeLabel = (assetTypeValue) => {
+  if (!assetTypeValue) return '-';
+  
+  for (const [category, types] of Object.entries(assetTypes)) {
+    const type = types.find(type => type.value === assetTypeValue);
+    if (type) {
+      return type.label;
+    }
+  }
+  
+  // Fallback: convert underscores to spaces and capitalize
+  return assetTypeValue.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+}
+
 // Create aggregation categories for dashboard display
 export const getAggregationCategories = () => {
   return Object.keys(assetTypes).map(category => ({

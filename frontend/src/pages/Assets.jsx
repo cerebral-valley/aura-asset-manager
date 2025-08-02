@@ -6,7 +6,7 @@ import { transactionsService } from '../services/transactions';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
 Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
-import { assetTypes, getAggregationCategories, getCategoryForAssetType } from '../constants/assetTypes';
+import { assetTypes, getAggregationCategories, getCategoryForAssetType, getAssetTypeLabel } from '../constants/assetTypes';
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888'];
 
@@ -256,6 +256,10 @@ const Assets = () => {
           aValue = new Date(a.purchase_date || 0);
           bValue = new Date(b.purchase_date || 0);
           break;
+        case 'share_percentage':
+          aValue = getPresentValue(a);
+          bValue = getPresentValue(b);
+          break;
         default:
           aValue = a.name || '';
           bValue = b.name || '';
@@ -317,17 +321,17 @@ const Assets = () => {
     // Special formatting for different asset types
     let displayValue = '-';
     if (key === 'real_estate') {
-      displayValue = count > 0 ? `${count} properties` : '-';
+      displayValue = count > 0 ? `${count}` : '-';
     } else if (key === 'crypto' && unit && unit.toLowerCase().includes('btc')) {
-      displayValue = totalQuantity > 0 ? `${totalQuantity.toFixed(8)} BTC` : '-';
+      displayValue = totalQuantity > 0 ? `${totalQuantity.toFixed(8)}` : '-';
     } else if (key === 'gold' && unit && unit.toLowerCase().includes('gram')) {
-      displayValue = totalQuantity > 0 ? `${totalQuantity.toFixed(2)} grams` : '-';
+      displayValue = totalQuantity > 0 ? `${totalQuantity.toFixed(2)}` : '-';
     } else if ((key === 'stock' || key === 'bond') && totalPresentValue > 0) {
       displayValue = formatCurrency(totalPresentValue);
     } else if (count === 0) {
       displayValue = '-';
     } else {
-      displayValue = `${count} assets`;
+      displayValue = `${count}`;
     }
 
     return { 
@@ -572,7 +576,7 @@ const Assets = () => {
                       <td className="py-2 px-4">100%</td>
                       <td className="py-2 px-4">{formatCurrency(totalPresentValue)}</td>
                       <td className="py-2 px-4">100%</td>
-                      <td className="py-2 px-4">{activeAssets.length} assets</td>
+                      <td className="py-2 px-4">{activeAssets.length}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -673,14 +677,16 @@ const Assets = () => {
                       Purchase Date {sortField === 'purchase_date' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
                     <th className="text-left py-2 px-4">Notes</th>
-                    <th className="text-left py-2 px-4">% Share</th>
+                    <th className="text-left py-2 px-4 cursor-pointer hover:bg-gray-50" onClick={() => handleSort('share_percentage')}>
+                      % Share {sortField === 'share_percentage' && (sortDirection === 'asc' ? '↑' : '↓')}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredAndSortedAssets.map((asset, idx) => (
                     <tr key={asset.id || idx} className="border-t">
                       <td className="py-2 px-4">{asset.name || 'Asset'}</td>
-                      <td className="py-2 px-4 capitalize">{asset.asset_type || '-'}</td>
+                      <td className="py-2 px-4">{getAssetTypeLabel(asset.asset_type)}</td>
                       <td className="py-2 px-4">{formatCurrency(getAcquisitionValue(asset))}</td>
                       <td className="py-2 px-4">{formatCurrency(getPresentValue(asset))}</td>
                       <td className="py-2 px-4">{asset.quantity || '-'}</td>
