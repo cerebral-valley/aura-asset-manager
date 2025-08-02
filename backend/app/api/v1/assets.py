@@ -21,6 +21,12 @@ async def get_assets(
 ):
     """Get all assets for the current user."""
     assets = db.query(Asset).filter(Asset.user_id == current_user.id).all()
+    
+    # Debug logging
+    print(f"🔍 Found {len(assets)} assets for user {current_user.id}")
+    for asset in assets:
+        print(f"🔍 Asset: {asset.name}, type: {asset.asset_type}, status: {asset.status}")
+    
     return assets
 
 @router.post("/", response_model=AssetSchema)

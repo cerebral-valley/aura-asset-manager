@@ -21,6 +21,8 @@ const Assets = () => {
     setLoading(true);
     assetsService.getAssets()
       .then(data => {
+        console.log('🔍 Raw assets data from API:', data);
+        console.log('🔍 Asset types found:', data.map(a => a.asset_type));
         setAssets(data);
         setLoading(false);
       })
@@ -72,8 +74,13 @@ const Assets = () => {
   const activeAssets = assets.filter(asset => {
     const quantity = Number(asset.quantity) || 0;
     const status = asset.asset_metadata?.status || 'active';
-    return quantity > 0 && status !== 'sold';
+    const isActive = quantity > 0 && status !== 'sold';
+    console.log(`🔍 Asset "${asset.name}": quantity=${quantity}, status=${status}, isActive=${isActive}`);
+    return isActive;
   });
+
+  console.log('🔍 Active assets count:', activeAssets.length);
+  console.log('🔍 Active assets:', activeAssets);
 
   // Asset type definitions
   const ASSET_TYPES = [
@@ -85,6 +92,8 @@ const Assets = () => {
     { key: 'cash', label: 'Cash' },
     { key: 'other', label: 'Other' },
   ];
+
+  console.log('🔍 Asset types configuration:', ASSET_TYPES.map(t => t.key));
 
   // Get latest acquisition value (current_value if available, else initial_value)
   const getLatestValue = (asset) => {
@@ -103,11 +112,18 @@ const Assets = () => {
     let totalQuantity = 0;
     let unit = '-';
 
+    console.log(`🔍 Processing asset type: ${key} (${label})`);
+
     activeAssets.forEach(asset => {
-      if ((asset.asset_type || '').toLowerCase() === key) {
+      const assetTypeMatch = (asset.asset_type || '').toLowerCase() === key;
+      console.log(`🔍 Asset "${asset.name}": type="${asset.asset_type}" vs "${key}" = ${assetTypeMatch}`);
+      
+      if (assetTypeMatch) {
         const latestValue = getLatestValue(asset);
         const presentValue = getPresentValue(asset);
         const quantity = Number(asset.quantity) || 0;
+        
+        console.log(`🔍 Matched asset "${asset.name}": latest=${latestValue}, present=${presentValue}, qty=${quantity}`);
         
         totalLatestValue += latestValue;
         totalPresentValue += presentValue;
