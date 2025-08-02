@@ -1,13 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import { assetsService } from '../services/assets';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
 Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
+import { assetTypes, getAggregationCategories, getCategoryForAssetType } from '../constants/assetTypes';
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888'];
 
 const Assets = () => {
+  const navigate = useNavigate();
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -102,46 +105,10 @@ const Assets = () => {
     });
   }
 
-  // Asset type definitions with flexible matching
-  const ASSET_TYPES = [
-    { 
-      key: 'real_estate', 
-      label: 'Real Estate',
-      matchPatterns: ['real_estate', 'real_estate_commercial', 'real_estate_residential', 'property']
-    },
-    { 
-      key: 'stock', 
-      label: 'Stocks',
-      matchPatterns: ['stock', 'stocks', 'equity', 'share']
-    },
-    { 
-      key: 'bond', 
-      label: 'Bonds',
-      matchPatterns: ['bond', 'bonds', 'fixed_income']
-    },
-    { 
-      key: 'crypto', 
-      label: 'Cryptocurrency',
-      matchPatterns: ['crypto', 'cryptocurrency', 'bitcoin', 'ethereum', 'digital_currency']
-    },
-    { 
-      key: 'gold', 
-      label: 'Gold',
-      matchPatterns: ['gold', 'precious_metals', 'bullion']
-    },
-    { 
-      key: 'cash', 
-      label: 'Cash',
-      matchPatterns: ['cash', 'savings', 'money_market', 'checking']
-    },
-    { 
-      key: 'other', 
-      label: 'Other',
-      matchPatterns: ['other', 'misc', 'miscellaneous']
-    },
-  ];
+  // Asset category definitions using shared classification
+  const AGGREGATION_CATEGORIES = getAggregationCategories();
 
-  console.log('🔍 Asset types configuration:', ASSET_TYPES.map(t => t.key));
+  console.log('🔍 Asset aggregation categories:', AGGREGATION_CATEGORIES);
 
   // Get latest acquisition value (current_value if available, else initial_value)
   const getLatestValue = (asset) => {
@@ -156,31 +123,27 @@ const Assets = () => {
   const assetsToProcess = activeAssets.length > 0 ? activeAssets : assets;
   console.log(`🔍 Processing ${assetsToProcess.length} assets (${activeAssets.length > 0 ? 'active only' : 'ALL for debugging'})`);
 
-  // Helper function to match asset types
-  const matchesAssetType = (assetType, typeConfig) => {
+  // Helper function to match asset types to categories
+  const matchesAssetCategory = (assetType, categoryConfig) => {
     if (!assetType) return false;
-    const normalizedAssetType = assetType.toLowerCase().trim();
-    return typeConfig.matchPatterns.some(pattern => 
-      normalizedAssetType === pattern.toLowerCase() || 
-      normalizedAssetType.includes(pattern.toLowerCase())
-    );
+    return categoryConfig.assetTypes.includes(assetType.toLowerCase().trim());
   };
 
-  // Aggregate by asset type for assets to process
-  const aggregateByType = ASSET_TYPES.map(({ key, label, matchPatterns }) => {
+  // Aggregate by asset category for assets to process
+  const aggregateByType = AGGREGATION_CATEGORIES.map(({ key, label, assetTypes: categoryAssetTypes }) => {
     let totalLatestValue = 0;
     let totalPresentValue = 0;
     let count = 0;
     let totalQuantity = 0;
     let unit = '-';
 
-    console.log(`🔍 Processing asset type: ${key} (${label})`);
+    console.log(`🔍 Processing asset category: ${key} (${label})`);
 
     assetsToProcess.forEach(asset => {
       const assetType = (asset.asset_type || '').trim();
-      const assetTypeMatch = matchesAssetType(assetType, { matchPatterns });
+      const assetTypeMatch = matchesAssetCategory(assetType, { assetTypes: categoryAssetTypes });
       
-      console.log(`🔍 Asset "${asset.name}": type="${asset.asset_type}" vs patterns=[${matchPatterns.join(', ')}] = ${assetTypeMatch}`);
+      console.log(`🔍 Asset "${asset.name}": type="${asset.asset_type}" vs category="${label}" types=[${categoryAssetTypes.join(', ')}] = ${assetTypeMatch}`);
       
       if (assetTypeMatch) {
         const latestValue = getLatestValue(asset);
@@ -228,7 +191,7 @@ const Assets = () => {
   // Debug: Show all unique asset types found in data
   const uniqueAssetTypes = [...new Set(assetsToProcess.map(a => a.asset_type))];
   console.log('🔍 Unique asset types in data:', uniqueAssetTypes);
-  console.log('🔍 Expected asset types:', ASSET_TYPES.map(t => t.key));
+  console.log('🔍 Expected categories:', AGGREGATION_CATEGORIES.map(t => t.label));
   console.log('🔍 Aggregation results:', aggregateByType.map(a => `${a.type}: ${a.count} assets`));
 
   // Total values
@@ -236,8 +199,8 @@ const Assets = () => {
   const totalPresentValue = aggregateByType.reduce((sum, t) => sum + t.presentValue, 0);
 
   // Asset type counts
-  const assetTypeCounts = ASSET_TYPES.map(({ key, label, matchPatterns }) => {
-    const count = assetsToProcess.filter(asset => matchesAssetType(asset.asset_type, { matchPatterns })).length;
+  const assetTypeCounts = AGGREGATION_CATEGORIES.map(({ key, label, assetTypes: categoryAssetTypes }) => {
+    const count = assetsToProcess.filter(asset => matchesAssetCategory(asset.asset_type, { assetTypes: categoryAssetTypes })).length;
     return { type: label, count };
   });
 
@@ -378,10 +341,13 @@ const Assets = () => {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Assets</h1>
         <button
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          onClick={() => openModal()}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2"
+          onClick={() => navigate('/transactions')}
         >
-          Add Asset
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          New Transaction
         </button>
       </div>
 
@@ -394,7 +360,7 @@ const Assets = () => {
       {!error && activeAssets.length === 0 && (
         <div className="bg-white rounded shadow p-6 flex flex-col items-center justify-center">
           <h2 className="font-semibold mb-2">No assets found</h2>
-          <p className="mb-4 text-gray-500">You have not added any assets yet. Click "Add Asset" above to get started.</p>
+          <p className="mb-4 text-gray-500">You have not added any assets yet. Click "New Transaction" above to create your first asset.</p>
         </div>
       )}
 
