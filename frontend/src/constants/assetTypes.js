@@ -16,7 +16,11 @@ export const assetTypes = {
     { value: 'crypto', label: 'Cryptocurrency' },
     { value: 'fd', label: 'Fixed Deposit' },
     { value: 'bank', label: 'Bank Account' },
-    { value: 'cash_in_hand', label: 'Cash in Hand' }
+    { value: 'cash_in_hand', label: 'Cash in Hand' },
+    { value: 'retirement_account', label: 'Retirement Account (IRA, PPF, NPS etc)' },
+    { value: 'aif', label: 'AIF (Alternative Investment Fund)' },
+    { value: 'private_equity', label: 'Private Equity' },
+    { value: 'esops', label: 'ESOPs (Employee Stock Options)' }
   ],
   'Physical Assets': [
     { value: 'precious_metal_gold', label: 'Gold' },

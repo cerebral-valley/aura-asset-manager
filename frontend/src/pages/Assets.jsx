@@ -30,6 +30,14 @@ const Assets = () => {
   const [dateFromFilter, setDateFromFilter] = useState('');
   const [dateToFilter, setDateToFilter] = useState('');
 
+  // Projection and visualization states
+  const [projectionTimeframe, setProjectionTimeframe] = useState(5); // Default 5 years
+  const [projectionGrowthRate, setProjectionGrowthRate] = useState(7); // Default 7% annual growth
+  const [showProjections, setShowProjections] = useState(false);
+  const [chartTimeRange, setChartTimeRange] = useState('all'); // 1M, 3M, 6M, 1Y, all
+  const [darkMode, setDarkMode] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(true);
+
   const fetchAssets = () => {
     setLoading(true);
     
@@ -86,6 +94,47 @@ const Assets = () => {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(numAmount);
+  };
+
+  // Projection calculation functions
+  const calculateProjectedValue = (currentValue, years, annualGrowthRate) => {
+    return currentValue * Math.pow(1 + (annualGrowthRate / 100), years);
+  };
+
+  const generateProjectionData = () => {
+    if (!chartData || chartData.length === 0) return [];
+    
+    const projectionData = [];
+    const currentYear = new Date().getFullYear();
+    const currentValue = totalPresentValue;
+    
+    for (let i = 1; i <= projectionTimeframe; i++) {
+      projectionData.push({
+        year: currentYear + i,
+        projectedValue: calculateProjectedValue(currentValue, i, projectionGrowthRate)
+      });
+    }
+    return projectionData;
+  };
+
+  // Enhanced chart data with projections
+  const getEnhancedChartData = () => {
+    if (!showProjections) return chartData;
+    
+    const baseData = [...chartData];
+    const projections = generateProjectionData();
+    
+    // Merge projection data with existing chart data
+    projections.forEach(projection => {
+      const existingIndex = baseData.findIndex(item => item.year === projection.year);
+      if (existingIndex >= 0) {
+        baseData[existingIndex] = { ...baseData[existingIndex], ...projection };
+      } else {
+        baseData.push(projection);
+      }
+    });
+    
+    return baseData.sort((a, b) => a.year - b.year);
   };
 
   const formatDate = (dateString) => {
@@ -498,7 +547,7 @@ const Assets = () => {
   if (loading) return <div>Loading assets...</div>;
 
   return (
-    <div className="p-6">
+    <div className={`p-6 min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Assets</h1>
         <button
@@ -519,7 +568,7 @@ const Assets = () => {
 
       {/* If no error and no assets, show empty state */}
       {!error && activeAssets.length === 0 && (
-        <div className="bg-white rounded shadow p-6 flex flex-col items-center justify-center">
+        <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded shadow p-6 flex flex-col items-center justify-center`}>
           <h2 className="font-semibold mb-2">No assets found</h2>
           <p className="mb-4 text-gray-500">You have not added any assets yet. Click "New Transaction" above to create your first asset.</p>
         </div>
@@ -528,22 +577,111 @@ const Assets = () => {
       {/* If assets exist, show charts and table */}
       {activeAssets.length > 0 && (
         <>
-          {/* Charts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-white rounded shadow p-4">
+          {/* Control Panel */}
+          <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded shadow p-4 mb-6`}>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <h3 className="font-semibold">Dashboard Controls</h3>
+                <button
+                  onClick={() => setDarkMode(!darkMode)}
+                  className={`px-3 py-1 rounded ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'}`}
+                >
+                  {darkMode ? '☀️ Light' : '🌙 Dark'}
+                </button>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                {/* Chart Time Range Selector */}
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium">Chart Range:</label>
+                  <select
+                    value={chartTimeRange}
+                    onChange={(e) => setChartTimeRange(e.target.value)}
+                    className={`px-2 py-1 rounded border text-sm ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                  >
+                    <option value="1M">1 Month</option>
+                    <option value="3M">3 Months</option>
+                    <option value="6M">6 Months</option>
+                    <option value="1Y">1 Year</option>
+                    <option value="all">All Time</option>
+                  </select>
+                </div>
+
+                {/* Projection Controls */}
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium">Projections:</label>
+                  <button
+                    onClick={() => setShowProjections(!showProjections)}
+                    className={`px-3 py-1 rounded text-sm ${showProjections 
+                      ? 'bg-blue-500 text-white' 
+                      : darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'
+                    }`}
+                  >
+                    {showProjections ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+
+                {showProjections && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm font-medium">Years:</label>
+                      <select
+                        value={projectionTimeframe}
+                        onChange={(e) => setProjectionTimeframe(Number(e.target.value))}
+                        className={`px-2 py-1 rounded border text-sm ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                      >
+                        <option value={1}>1 Year</option>
+                        <option value={3}>3 Years</option>
+                        <option value={5}>5 Years</option>
+                        <option value={10}>10 Years</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm font-medium">Growth %:</label>
+                      <input
+                        type="number"
+                        value={projectionGrowthRate}
+                        onChange={(e) => setProjectionGrowthRate(Number(e.target.value))}
+                        className={`w-16 px-2 py-1 rounded border text-sm ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                        min="0"
+                        max="100"
+                        step="0.1"
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Charts Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+            {/* Asset Value Over Time */}
+            <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded shadow p-4`}>
               <h2 className="font-semibold mb-2">Asset Value Over Time</h2>
               <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={chartData}>
+                <LineChart data={getEnhancedChartData()}>
                   <XAxis dataKey="year" />
                   <YAxis tickFormatter={formatChartCurrency} />
                   <Tooltip formatter={(value) => formatChartCurrency(value)} />
                   <Legend />
                   <Line type="monotone" dataKey="acquisitionValue" stroke="#8884d8" name="Acquisition Value" />
                   <Line type="monotone" dataKey="presentValue" stroke="#82ca9d" name="Present Value" />
+                  {showProjections && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="projectedValue" 
+                      stroke="#ff7300" 
+                      strokeDasharray="5 5"
+                      name="Projected Value" 
+                    />
+                  )}
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            <div className="bg-white rounded shadow p-4">
+
+            {/* Asset Distribution */}
+            <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded shadow p-4`}>
               <h2 className="font-semibold mb-2">Asset Distribution</h2>
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
@@ -565,17 +703,58 @@ const Assets = () => {
                 </PieChart>
               </ResponsiveContainer>
             </div>
+
+            {/* Asset Timeline */}
+            <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded shadow p-4`}>
+              <h2 className="font-semibold mb-2">Asset Timeline</h2>
+              <div className="h-64 overflow-y-auto pr-2">
+                {activeAssets
+                  .filter(asset => asset.purchase_date)
+                  .sort((a, b) => new Date(b.purchase_date) - new Date(a.purchase_date))
+                  .map((asset, index) => (
+                    <div key={asset.id || index} className="relative flex items-start mb-4 last:mb-0">
+                      {/* Timeline line */}
+                      <div className="flex flex-col items-center mr-4">
+                        <div className={`w-3 h-3 rounded-full ${
+                          index % 4 === 0 ? 'bg-blue-500' :
+                          index % 4 === 1 ? 'bg-green-500' :
+                          index % 4 === 2 ? 'bg-purple-500' : 'bg-orange-500'
+                        }`}></div>
+                        {index < activeAssets.filter(a => a.purchase_date).length - 1 && (
+                          <div className={`w-0.5 h-8 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} mt-1`}></div>
+                        )}
+                      </div>
+                      
+                      {/* Timeline content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium truncate">{asset.name}</p>
+                          <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                            {formatDate(asset.purchase_date)}
+                          </span>
+                        </div>
+                        <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} capitalize`}>
+                          {getAssetTypeLabel(asset.asset_type)}
+                        </p>
+                        <p className="text-sm font-semibold text-green-600">
+                          {formatChartCurrency(getPresentValue(asset))}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
           </div>
 
           {/* Asset Aggregates */}
           <div className="mb-8">
             <h2 className="text-xl font-bold mb-4">Asset Aggregates</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white rounded shadow p-4 overflow-x-auto">
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded shadow p-4 overflow-x-auto`}>
                 <h3 className="font-semibold mb-2">Aggregate by Asset Type</h3>
                 <table className="min-w-full text-sm">
                   <thead>
-                    <tr>
+                    <tr className={darkMode ? 'border-gray-600' : ''}>
                       <th className="text-left py-2 px-4">Asset Type</th>
                       <th className="text-left py-2 px-4">Latest Acquisition Value</th>
                       <th className="text-left py-2 px-4">% Share (Acq)</th>
@@ -586,7 +765,7 @@ const Assets = () => {
                   </thead>
                   <tbody>
                     {aggregateByType.map((row, idx) => (
-                      <tr key={row.type} className="border-t">
+                      <tr key={row.type} className={`border-t ${darkMode ? 'border-gray-600' : ''}`}>
                         <td className="py-2 px-4">{row.type}</td>
                         <td className="py-2 px-4">{formatCurrency(row.acquisitionValue)}</td>
                         <td className="py-2 px-4">{formatPercentage(row.acquisitionValue, totalAcquisitionValue)}</td>
@@ -595,7 +774,7 @@ const Assets = () => {
                         <td className="py-2 px-4">{row.displayValue}</td>
                       </tr>
                     ))}
-                    <tr className="border-t font-bold">
+                    <tr className={`border-t font-bold ${darkMode ? 'border-gray-600' : ''}`}>
                       <td className="py-2 px-4">Total</td>
                       <td className="py-2 px-4">{formatCurrency(totalAcquisitionValue)}</td>
                       <td className="py-2 px-4">100%</td>
@@ -606,7 +785,7 @@ const Assets = () => {
                   </tbody>
                 </table>
               </div>
-              <div className="bg-white rounded shadow p-4 overflow-x-auto">
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded shadow p-4 overflow-x-auto`}>
                 <h3 className="font-semibold mb-2">Asset Type Counts</h3>
                 <table className="min-w-full text-sm">
                   <thead>
@@ -629,7 +808,7 @@ const Assets = () => {
           </div>
 
           {/* Assets Table */}
-          <div className="bg-white rounded shadow p-4">
+          <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded shadow p-4`}>
             <div className="mb-4">
               <h2 className="font-semibold mb-3">All Assets</h2>
               
@@ -640,7 +819,9 @@ const Assets = () => {
                   <input
                     type="text"
                     placeholder="Search asset name..."
-                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'
+                    }`}
                     value={nameFilter}
                     onChange={(e) => setNameFilter(e.target.value)}
                   />
@@ -650,7 +831,9 @@ const Assets = () => {
                   <input
                     type="text"
                     placeholder="Search asset type..."
-                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'
+                    }`}
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
                   />
@@ -659,7 +842,9 @@ const Assets = () => {
                   <label className="block text-sm font-medium mb-1">Date From</label>
                   <input
                     type="date"
-                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
+                    }`}
                     value={dateFromFilter}
                     onChange={(e) => setDateFromFilter(e.target.value)}
                   />
@@ -668,7 +853,9 @@ const Assets = () => {
                   <label className="block text-sm font-medium mb-1">Date To</label>
                   <input
                     type="date"
-                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
+                    }`}
                     value={dateToFilter}
                     onChange={(e) => setDateToFilter(e.target.value)}
                   />
@@ -682,34 +869,34 @@ const Assets = () => {
               <table className="min-w-full text-sm" aria-label="Assets Table">
                 <thead>
                   <tr>
-                    <th className="text-left py-2 px-4 cursor-pointer hover:bg-gray-50" onClick={() => handleSort('name')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('name')}>
                       Name {sortField === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className="text-left py-2 px-4 cursor-pointer hover:bg-gray-50" onClick={() => handleSort('type')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('type')}>
                       Type {sortField === 'type' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className="text-left py-2 px-4 cursor-pointer hover:bg-gray-50" onClick={() => handleSort('acquisition_value')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('acquisition_value')}>
                       Acquisition Value {sortField === 'acquisition_value' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className="text-left py-2 px-4 cursor-pointer hover:bg-gray-50" onClick={() => handleSort('present_value')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('present_value')}>
                       Present Value {sortField === 'present_value' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className="text-left py-2 px-4 cursor-pointer hover:bg-gray-50" onClick={() => handleSort('quantity')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('quantity')}>
                       Quantity {sortField === 'quantity' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
                     <th className="text-left py-2 px-4">Unit</th>
-                    <th className="text-left py-2 px-4 cursor-pointer hover:bg-gray-50" onClick={() => handleSort('purchase_date')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('purchase_date')}>
                       Purchase Date {sortField === 'purchase_date' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
                     <th className="text-left py-2 px-4">Notes</th>
-                    <th className="text-left py-2 px-4 cursor-pointer hover:bg-gray-50" onClick={() => handleSort('share_percentage')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('share_percentage')}>
                       % Share {sortField === 'share_percentage' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredAndSortedAssets.map((asset, idx) => (
-                    <tr key={asset.id || idx} className="border-t">
+                    <tr key={asset.id || idx} className={`border-t ${darkMode ? 'border-gray-600' : ''}`}>
                       <td className="py-2 px-4">{asset.name || 'Asset'}</td>
                       <td className="py-2 px-4">{getAssetTypeLabel(asset.asset_type)}</td>
                       <td className="py-2 px-4">{formatCurrency(getAcquisitionValue(asset))}</td>
