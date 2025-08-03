@@ -6,7 +6,7 @@ import { transactionsService } from '../services/transactions';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
 Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
-import { assetTypes, getAggregationCategories, getCategoryForAssetType, getAssetTypeLabel } from '../constants/assetTypes';
+import { assetTypes, getAggregationCategories, getCategoryForAssetType, getAssetTypeLabel, getAllAssetTypes } from '../constants/assetTypes';
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888'];
 
