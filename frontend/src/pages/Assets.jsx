@@ -419,6 +419,37 @@ const Assets = () => {
     return { type: label, count };
   });
 
+  // Detailed asset breakdown by specific asset types
+  const detailedAssetBreakdown = getAllAssetTypes().map(assetType => {
+    const matchingAssets = assetsToProcess.filter(asset => asset.asset_type === assetType.value);
+    
+    if (matchingAssets.length === 0) return null;
+
+    const totalAcquisitionValue = matchingAssets.reduce((sum, asset) => sum + getAcquisitionValue(asset), 0);
+    const totalPresentValue = matchingAssets.reduce((sum, asset) => sum + getPresentValue(asset), 0);
+    const totalQuantity = matchingAssets.reduce((sum, asset) => sum + (parseFloat(asset.quantity) || 0), 0);
+
+    return {
+      assetType: assetType.label,
+      category: assetType.category,
+      acquisitionValue: totalAcquisitionValue,
+      presentValue: totalPresentValue,
+      quantity: totalQuantity,
+      count: matchingAssets.length,
+      acquisitionPercentage: totalAcquisitionValue,
+      presentPercentage: totalPresentValue
+    };
+  }).filter(Boolean); // Remove null entries
+
+  // Calculate percentages for detailed breakdown
+  const detailedTotalAcquisition = detailedAssetBreakdown.reduce((sum, item) => sum + item.acquisitionValue, 0);
+  const detailedTotalPresent = detailedAssetBreakdown.reduce((sum, item) => sum + item.presentValue, 0);
+  
+  detailedAssetBreakdown.forEach(item => {
+    item.acquisitionPercentage = detailedTotalAcquisition > 0 ? (item.acquisitionValue / detailedTotalAcquisition * 100) : 0;
+    item.presentPercentage = detailedTotalPresent > 0 ? (item.presentValue / detailedTotalPresent * 100) : 0;
+  });
+
   // Pie chart data for asset distribution (by current value)
   const pieData = aggregateByType
     .filter(item => item.presentValue > 0)
@@ -786,23 +817,45 @@ const Assets = () => {
                 </table>
               </div>
               <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded shadow p-4 overflow-x-auto`}>
-                <h3 className="font-semibold mb-2">Asset Type Counts</h3>
-                <table className="min-w-full text-sm">
-                  <thead>
-                    <tr>
-                      <th className="text-left py-2 px-4">Asset Type</th>
-                      <th className="text-left py-2 px-4">Count</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {assetTypeCounts.map(row => (
-                      <tr key={row.type} className="border-t">
-                        <td className="py-2 px-4">{row.type}</td>
-                        <td className="py-2 px-4">{row.count}</td>
+                <h3 className="font-semibold mb-2">Detailed Asset Breakdown</h3>
+                <div className="max-h-80 overflow-y-auto">
+                  <table className="min-w-full text-sm">
+                    <thead className="sticky top-0 bg-inherit">
+                      <tr className={`${darkMode ? 'border-gray-600' : 'border-gray-200'} border-b`}>
+                        <th className="text-left py-2 px-4 font-medium">Asset Type</th>
+                        <th className="text-left py-2 px-4 font-medium">Invested Value</th>
+                        <th className="text-left py-2 px-4 font-medium">Present Value</th>
+                        <th className="text-left py-2 px-4 font-medium">Count</th>
+                        <th className="text-left py-2 px-4 font-medium">% Share</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {detailedAssetBreakdown.map((item, idx) => (
+                        <tr key={item.assetType} className={`border-t ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
+                          <td className="py-2 px-4">
+                            <div>
+                              <div className="font-medium">{item.assetType}</div>
+                              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                {item.category}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-2 px-4">{formatCurrency(item.acquisitionValue)}</td>
+                          <td className="py-2 px-4">{formatCurrency(item.presentValue)}</td>
+                          <td className="py-2 px-4">{item.count}</td>
+                          <td className="py-2 px-4">{item.presentPercentage.toFixed(1)}%</td>
+                        </tr>
+                      ))}
+                      <tr className={`border-t-2 font-bold ${darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-300 bg-gray-50'}`}>
+                        <td className="py-2 px-4">Total</td>
+                        <td className="py-2 px-4">{formatCurrency(detailedTotalAcquisition)}</td>
+                        <td className="py-2 px-4">{formatCurrency(detailedTotalPresent)}</td>
+                        <td className="py-2 px-4">{detailedAssetBreakdown.reduce((sum, item) => sum + item.count, 0)}</td>
+                        <td className="py-2 px-4">100%</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
