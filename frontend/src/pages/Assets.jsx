@@ -71,6 +71,23 @@ const Assets = () => {
     }).format(numAmount);
   };
 
+  // Currency formatter for charts (no decimals)
+  const formatChartCurrency = (amount) => {
+    if (!amount || amount === 0 || amount === '0' || amount === '') return '$0';
+
+    // Convert string to number if needed
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+
+    if (isNaN(numAmount) || numAmount === 0) return '$0';
+
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(numAmount);
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     try {
@@ -518,8 +535,8 @@ const Assets = () => {
               <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={chartData}>
                   <XAxis dataKey="year" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
+                  <YAxis tickFormatter={formatChartCurrency} />
+                  <Tooltip formatter={(value) => formatChartCurrency(value)} />
                   <Legend />
                   <Line type="monotone" dataKey="acquisitionValue" stroke="#8884d8" name="Acquisition Value" />
                   <Line type="monotone" dataKey="presentValue" stroke="#82ca9d" name="Present Value" />
@@ -530,12 +547,20 @@ const Assets = () => {
               <h2 className="font-semibold mb-2">Asset Distribution</h2>
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
-                  <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                  <Pie 
+                    data={pieData} 
+                    dataKey="value" 
+                    nameKey="name" 
+                    cx="50%" 
+                    cy="50%" 
+                    outerRadius={80} 
+                    label={({ value, percent }) => `${formatChartCurrency(value)} (${(percent * 100).toFixed(1)}%)`}
+                  >
                     {pieData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
+                  <Tooltip formatter={(value) => formatChartCurrency(value)} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
