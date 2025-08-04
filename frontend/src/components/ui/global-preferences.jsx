@@ -8,7 +8,7 @@ export const CURRENCIES = {
   GBP: { symbol: '£', label: 'British Pound', format: 'en-GB' },
   EUR: { symbol: '€', label: 'Euro', format: 'de-DE' },
   JPY: { symbol: '¥', label: 'Japanese Yen', format: 'ja-JP' },
-  CNY: { symbol: '¥', label: 'Chinese Renminbi', format: 'zh-CN' },
+  CNY: { symbol: '¥', label: 'Chinese Yuan', format: 'zh-CN' },
   RUB: { symbol: '₽', label: 'Russian Ruble', format: 'ru-RU' },
   INR: { symbol: '₹', label: 'Indian Rupee', format: 'en-IN' }
 }

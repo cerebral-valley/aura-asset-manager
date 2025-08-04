@@ -20,7 +20,6 @@ const UserSettings = () => {
   const [settings, setSettings] = useState({
     first_name: '',
     last_name: '',
-    username: '',
     recovery_email: '',
     country: '',
     currency: 'USD',
@@ -33,7 +32,7 @@ const UserSettings = () => {
     { value: 'GBP', label: '£ British Pound' },
     { value: 'EUR', label: '€ Euro' },
     { value: 'JPY', label: '¥ Japanese Yen' },
-    { value: 'CNY', label: '¥ Chinese Renminbi' },
+    { value: 'CNY', label: '¥ Chinese Yuan (CNY)' },
     { value: 'RUB', label: '₽ Russian Ruble' },
     { value: 'INR', label: '₹ Indian Rupee' }
   ]
@@ -67,6 +66,8 @@ const UserSettings = () => {
         setError('Please log in to access your settings')
       } else if (err.message.includes('Please log in')) {
         setError(err.message)
+      } else if (err.message.includes('500') || err.message.includes('Failed to load resource')) {
+        setError('Settings feature is currently unavailable. Database may need to be updated.')
       } else {
         setError('Failed to load settings. Please try refreshing the page.')
       }
@@ -105,6 +106,8 @@ const UserSettings = () => {
         setError('Your session has expired. Please log in again.')
       } else if (err.message.includes('Please log in')) {
         setError(err.message)
+      } else if (err.message.includes('500') || err.message.includes('Failed to create') || err.message.includes('Failed to save')) {
+        setError('Unable to save settings. The database may need to be updated. Please contact support.')
       } else {
         setError(err.message || 'Failed to save settings. Please try again.')
       }
@@ -185,16 +188,6 @@ const UserSettings = () => {
                   placeholder="Enter your last name"
                 />
               </div>
-            </div>
-
-            <div>
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                value={settings.username || ''}
-                onChange={(e) => handleInputChange('username', e.target.value)}
-                placeholder="Enter your username"
-              />
             </div>
 
             <div>
