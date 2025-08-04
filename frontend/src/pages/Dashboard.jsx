@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import ValueDisplayCard from '../components/dashboard/ValueDisplayCard.jsx'
 import AssetAllocationChart from '../components/dashboard/AssetAllocationChart.jsx'
 import InsurancePolicyBreakdown from '../components/dashboard/InsurancePolicyBreakdown.jsx'
-import GlobalPreferences from '../components/ui/global-preferences.jsx'
 import { dashboardService } from '../services/dashboard.js'
 import { Wallet, Shield, TrendingUp } from 'lucide-react'
 import { Alert, AlertDescription } from '../components/ui/alert.jsx'
@@ -107,7 +106,6 @@ const Dashboard = () => {
             {themeLabels.subtitle}
           </p>
         </div>
-        <GlobalPreferences />
       </div>
 
       {/* Key Metrics */}

@@ -32,19 +32,19 @@ const AssetAllocationChart = ({ data, title = "Asset Allocation" }) => {
 
   return (
     <Card>
-      <CardHeader className="pb-4">
+      <CardHeader className="pb-2">
         <CardTitle>{title}</CardTitle>
       </CardHeader>
-      <CardContent className="pt-6 pb-8">
-        <ResponsiveContainer width="100%" height={250}>
-          <PieChart>
+      <CardContent className="pt-4 pb-6">
+        <ResponsiveContainer width="100%" height={350}>
+          <PieChart margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
             <Pie
               data={data}
               dataKey="value"
               nameKey="name"
               cx="50%"
               cy="50%"
-              outerRadius={80}
+              outerRadius={100}
               fill="#8884d8"
               label={renderCustomLabel}
             >
@@ -53,7 +53,9 @@ const AssetAllocationChart = ({ data, title = "Asset Allocation" }) => {
               ))}
             </Pie>
             <Tooltip formatter={formatTooltip} />
-            <Legend />
+            <Legend 
+              wrapperStyle={{ paddingTop: '20px' }}
+            />
           </PieChart>
         </ResponsiveContainer>
       </CardContent>

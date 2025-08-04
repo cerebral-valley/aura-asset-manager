@@ -115,7 +115,14 @@ const InsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown" }) => {
             <div>
               <span className="text-muted-foreground">Total Coverage:</span>
               <span className="ml-2 font-semibold">
-                {formatCurrency(policies.reduce((sum, p) => sum + (p.coverage_amount || 0), 0))}
+                {(() => {
+                  const totalCoverage = policies.reduce((sum, p) => {
+                    const coverage = parseFloat(p.coverage_amount) || 0
+                    return sum + coverage
+                  }, 0)
+                  
+                  return totalCoverage > 0 ? formatCurrency(totalCoverage) : formatCurrency(0)
+                })()}
               </span>
             </div>
           </div>

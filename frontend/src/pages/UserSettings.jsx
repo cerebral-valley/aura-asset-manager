@@ -58,11 +58,18 @@ const UserSettings = () => {
   const fetchSettings = async () => {
     try {
       setLoading(true)
+      setError('')
       const data = await userSettingsService.getSettings()
       setSettings(data)
     } catch (err) {
       console.error('Error fetching settings:', err)
-      setError('Failed to load settings')
+      if (err.message.includes('authentication') || err.message.includes('Invalid')) {
+        setError('Please log in to access your settings')
+      } else if (err.message.includes('Please log in')) {
+        setError(err.message)
+      } else {
+        setError('Failed to load settings. Please try refreshing the page.')
+      }
     } finally {
       setLoading(false)
     }
@@ -94,7 +101,13 @@ const UserSettings = () => {
       setTimeout(() => setSuccess(''), 3000)
     } catch (err) {
       console.error('Error saving settings:', err)
-      setError(err.message || 'Failed to save settings')
+      if (err.message.includes('authentication') || err.message.includes('Invalid')) {
+        setError('Your session has expired. Please log in again.')
+      } else if (err.message.includes('Please log in')) {
+        setError(err.message)
+      } else {
+        setError(err.message || 'Failed to save settings. Please try again.')
+      }
     } finally {
       setSaving(false)
     }
