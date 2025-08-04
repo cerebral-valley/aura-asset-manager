@@ -18,6 +18,14 @@ class AssetBase(BaseModel):
     current_value: Optional[Decimal] = None
     quantity: Optional[Decimal] = None
     unit_of_measure: Optional[str] = None
+    
+    # Annuity-specific fields
+    annuity_type: Optional[str] = None
+    purchase_amount: Optional[Decimal] = None
+    guaranteed_rate: Optional[Decimal] = None
+    accumulation_phase_end: Optional[date] = None
+    has_payment_schedule: Optional[bool] = False
+    
     asset_metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
     
     @field_validator('asset_metadata', mode='before')
@@ -42,6 +50,14 @@ class AssetUpdate(BaseModel):
     current_value: Optional[Decimal] = None
     quantity: Optional[Decimal] = None
     unit_of_measure: Optional[str] = None
+    
+    # Annuity-specific fields
+    annuity_type: Optional[str] = None
+    purchase_amount: Optional[Decimal] = None
+    guaranteed_rate: Optional[Decimal] = None
+    accumulation_phase_end: Optional[date] = None
+    has_payment_schedule: Optional[bool] = None
+    
     asset_metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
     
     @field_validator('asset_metadata', mode='before')

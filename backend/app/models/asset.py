@@ -2,7 +2,7 @@
 Asset model for SQLAlchemy.
 """
 
-from sqlalchemy import Column, String, DateTime, Text, Date, ForeignKey, Numeric
+from sqlalchemy import Column, String, DateTime, Text, Date, ForeignKey, Numeric, Boolean
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -24,6 +24,14 @@ class Asset(Base):
     current_value = Column(Numeric(18, 2))
     quantity = Column(Numeric(18, 4))
     unit_of_measure = Column(Text)  # e.g., 'shares', 'oz', 'sqft', 'units'
+    
+    # Annuity-specific fields
+    annuity_type = Column(Text)  # 'fixed', 'variable', 'indexed', 'immediate', 'deferred'
+    purchase_amount = Column(Numeric(18, 2))  # Initial lump sum paid for annuity
+    guaranteed_rate = Column(Numeric(5, 4))  # For fixed annuities (stored as decimal, e.g., 0.0525 for 5.25%)
+    accumulation_phase_end = Column(Date)  # When annuity payments start
+    has_payment_schedule = Column(Boolean, default=False)
+    
     asset_metadata = Column("metadata", JSONB)  # Flexible JSON field for asset-specific characteristics
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

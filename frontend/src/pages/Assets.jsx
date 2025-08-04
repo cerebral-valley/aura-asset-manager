@@ -7,6 +7,7 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
 Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
 import { assetTypes, getAggregationCategories, getCategoryForAssetType, getAssetTypeLabel, getAllAssetTypes } from '../constants/assetTypes';
+import AnnuityManager from '../components/assets/AnnuityManager';
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888'];
 
@@ -37,6 +38,7 @@ const Assets = () => {
   const [chartTimeRange, setChartTimeRange] = useState('all'); // 1M, 3M, 6M, 1Y, all
   const [darkMode, setDarkMode] = useState(false);
   const [showTimeline, setShowTimeline] = useState(true);
+  const [expandedAsset, setExpandedAsset] = useState(null); // For showing annuity manager
 
   const fetchAssets = () => {
     setLoading(true);
@@ -945,21 +947,61 @@ const Assets = () => {
                     <th className={`text-left py-2 px-4 cursor-pointer ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('share_percentage')}>
                       % Share {sortField === 'share_percentage' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
+                    <th className="text-left py-2 px-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredAndSortedAssets.map((asset, idx) => (
-                    <tr key={asset.id || idx} className={`border-t ${darkMode ? 'border-gray-600' : ''}`}>
-                      <td className="py-2 px-4">{asset.name || 'Asset'}</td>
-                      <td className="py-2 px-4">{getAssetTypeLabel(asset.asset_type)}</td>
-                      <td className="py-2 px-4">{formatCurrency(getAcquisitionValue(asset))}</td>
-                      <td className="py-2 px-4">{formatCurrency(getPresentValue(asset))}</td>
-                      <td className="py-2 px-4">{asset.quantity || '-'}</td>
-                      <td className="py-2 px-4">{asset.unit_of_measure || '-'}</td>
-                      <td className="py-2 px-4">{formatDate(asset.purchase_date)}</td>
-                      <td className="py-2 px-4">{asset.description || '-'}</td>
-                      <td className="py-2 px-4">{formatPercentage(getPresentValue(asset), filteredTotalPresent)}</td>
-                    </tr>
+                    <React.Fragment key={asset.id || idx}>
+                      <tr className={`border-t ${darkMode ? 'border-gray-600' : ''}`}>
+                        <td className="py-2 px-4">{asset.name || 'Asset'}</td>
+                        <td className="py-2 px-4">{getAssetTypeLabel(asset.asset_type)}</td>
+                        <td className="py-2 px-4">{formatCurrency(getAcquisitionValue(asset))}</td>
+                        <td className="py-2 px-4">{formatCurrency(getPresentValue(asset))}</td>
+                        <td className="py-2 px-4">{asset.quantity || '-'}</td>
+                        <td className="py-2 px-4">{asset.unit_of_measure || '-'}</td>
+                        <td className="py-2 px-4">{formatDate(asset.purchase_date)}</td>
+                        <td className="py-2 px-4">{asset.description || '-'}</td>
+                        <td className="py-2 px-4">{formatPercentage(getPresentValue(asset), filteredTotalPresent)}</td>
+                        <td className="py-2 px-4">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => openModal(asset)}
+                              className="text-blue-600 hover:text-blue-800 text-sm"
+                              title="Edit Asset"
+                            >
+                              Edit
+                            </button>
+                            {(asset.asset_type?.includes('annuity') || asset.has_payment_schedule) && (
+                              <button
+                                onClick={() => setExpandedAsset(expandedAsset === asset.id ? null : asset.id)}
+                                className="text-green-600 hover:text-green-800 text-sm"
+                                title="Manage Annuity"
+                              >
+                                {expandedAsset === asset.id ? 'Hide' : 'Manage'}
+                              </button>
+                            )}
+                            <button
+                              onClick={() => deleteAsset(asset.id)}
+                              className="text-red-600 hover:text-red-800 text-sm"
+                              title="Delete Asset"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      {expandedAsset === asset.id && (asset.asset_type?.includes('annuity') || asset.has_payment_schedule) && (
+                        <tr>
+                          <td colSpan="10" className="py-4 px-4 bg-gray-50">
+                            <AnnuityManager 
+                              asset={asset} 
+                              onUpdate={fetchAssets}
+                            />
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   ))}
                   <tr className="border-t-2 font-bold bg-gray-50">
                     <td className="py-2 px-4">Total</td>
@@ -971,6 +1013,7 @@ const Assets = () => {
                     <td className="py-2 px-4">-</td>
                     <td className="py-2 px-4">{filteredAndSortedAssets.length} assets</td>
                     <td className="py-2 px-4">100%</td>
+                    <td className="py-2 px-4">-</td>
                   </tr>
                 </tbody>
               </table>
@@ -1029,13 +1072,15 @@ const Assets = () => {
                       aria-required="true"
                     >
                       <option value="">Select Type</option>
-                      <option value="real_estate">Real Estate</option>
-                      <option value="stock">Stock</option>
-                      <option value="bond">Bond</option>
-                      <option value="crypto">Cryptocurrency</option>
-                      <option value="gold">Gold</option>
-                      <option value="cash">Cash</option>
-                      <option value="other">Other</option>
+                      {Object.keys(assetTypes).map(category => (
+                        <optgroup key={category} label={category}>
+                          {assetTypes[category].map(type => (
+                            <option key={type.value} value={type.value}>
+                              {type.label}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ))}
                     </select>
                     {errors.asset_type && <span className="text-red-600 text-xs">{errors.asset_type.message}</span>}
                   </div>
