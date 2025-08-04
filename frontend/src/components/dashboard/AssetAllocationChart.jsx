@@ -1,25 +1,13 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card.jsx'
+import { formatCurrency } from '../ui/global-preferences.jsx'
 
-const COLORS = [
-  'hsl(var(--chart-1))',
-  'hsl(var(--chart-2))',
-  'hsl(var(--chart-3))',
-  'hsl(var(--chart-4))',
-  'hsl(var(--chart-5))',
-]
+// Same color scheme as Assets page for consistency
+const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888']
 
 const AssetAllocationChart = ({ data, title = "Asset Allocation" }) => {
   const formatTooltip = (value, name) => {
-    return [
-      new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(value),
-      name
-    ]
+    return [formatCurrency(value), name]
   }
 
   const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {

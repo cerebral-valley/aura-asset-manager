@@ -23,7 +23,8 @@ async def get_dashboard_summary(
 ) -> Dict[str, Any]:
     """Get dashboard summary data."""
     
-    # Calculate total net worth
+    # Calculate total net worth using LATEST MARKET VALUE (current_value) from all assets
+    # This ensures the aggregate matches the sum of all latest market values
     total_assets = db.query(func.sum(Asset.current_value)).filter(
         Asset.user_id == current_user.id
     ).scalar() or Decimal('0')
@@ -33,7 +34,7 @@ async def get_dashboard_summary(
         InsurancePolicy.user_id == current_user.id
     ).scalar() or Decimal('0')
     
-    # Get asset allocation data
+    # Get asset allocation data using current_value for consistency
     asset_allocation = db.query(
         Asset.asset_type,
         func.sum(Asset.current_value).label('total_value')
@@ -68,9 +69,9 @@ async def get_dashboard_summary(
     ]
     
     return {
-        "net_worth": float(total_assets),
+        "net_worth": float(total_assets),  # This now correctly sums all current_value fields
         "total_insurance_coverage": float(total_insurance),
-        "asset_allocation": allocation_data,
+        "asset_allocation": allocation_data,  # Also uses current_value for consistency
         "recent_transactions": transaction_data,
         "user_theme": current_user.theme
     }

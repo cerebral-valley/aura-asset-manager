@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import ValueDisplayCard from '../components/dashboard/ValueDisplayCard.jsx'
 import AssetAllocationChart from '../components/dashboard/AssetAllocationChart.jsx'
-import RecentTransactions from '../components/dashboard/RecentTransactions.jsx'
+import InsurancePolicyBreakdown from '../components/dashboard/InsurancePolicyBreakdown.jsx'
+import GlobalPreferences from '../components/ui/global-preferences.jsx'
 import { dashboardService } from '../services/dashboard.js'
-import { Wallet, Shield, TrendingUp, PlusCircle } from 'lucide-react'
-import { Button } from '../components/ui/button.jsx'
+import { Wallet, Shield, TrendingUp } from 'lucide-react'
 import { Alert, AlertDescription } from '../components/ui/alert.jsx'
 
 const Dashboard = () => {
@@ -107,10 +107,7 @@ const Dashboard = () => {
             {themeLabels.subtitle}
           </p>
         </div>
-        <Button className="flex items-center space-x-2">
-          <PlusCircle className="h-4 w-4" />
-          <span>Add Asset</span>
-        </Button>
+        <GlobalPreferences />
       </div>
 
       {/* Key Metrics */}
@@ -138,39 +135,15 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Charts and Recent Activity */}
+      {/* Charts and Analytics */}
       <div className="grid gap-6 lg:grid-cols-2">
         <AssetAllocationChart 
           data={dashboardData?.asset_allocation || []}
           title="Your Portfolio Composition"
         />
-        <RecentTransactions 
-          transactions={dashboardData?.recent_transactions || []}
-          title="Recent Milestones"
+        <InsurancePolicyBreakdown 
+          title="Insurance Policy Breakdown"
         />
-      </div>
-
-      {/* Quick Actions */}
-      <div className="bg-card rounded-lg p-6 border">
-        <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Button variant="outline" className="justify-start">
-            <PlusCircle className="h-4 w-4 mr-2" />
-            Add Asset
-          </Button>
-          <Button variant="outline" className="justify-start">
-            <Shield className="h-4 w-4 mr-2" />
-            Add Insurance
-          </Button>
-          <Button variant="outline" className="justify-start">
-            <TrendingUp className="h-4 w-4 mr-2" />
-            Record Transaction
-          </Button>
-          <Button variant="outline" className="justify-start">
-            <Wallet className="h-4 w-4 mr-2" />
-            Update Values
-          </Button>
-        </div>
       </div>
     </div>
   )

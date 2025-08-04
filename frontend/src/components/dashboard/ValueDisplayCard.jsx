@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card.jsx'
 import { TrendingUp, TrendingDown } from 'lucide-react'
+import { formatCurrency } from '../ui/global-preferences.jsx'
 
 const ValueDisplayCard = ({ 
   title, 
@@ -12,12 +13,7 @@ const ValueDisplayCard = ({
 }) => {
   const formatValue = (val) => {
     if (typeof val === 'number') {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(val)
+      return formatCurrency(val)
     }
     return val
   }
