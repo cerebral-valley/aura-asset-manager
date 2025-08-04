@@ -1,4 +1,5 @@
 import { AuthProvider, useAuth } from './hooks/useAuth'
+import { ThemeProvider } from './hooks/useTheme'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import LoginForm from './components/auth/LoginForm'
 import Dashboard from './pages/Dashboard'
@@ -89,12 +90,14 @@ function AppContent() {
 function App() {
   console.log('App: Component mounting/rendering')
   return (
-    <AuthProvider>
-      <Router>
-        <AppContent />
-        <Toaster />
-      </Router>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <AppContent />
+          <Toaster />
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
 
