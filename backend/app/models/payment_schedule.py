@@ -21,6 +21,6 @@ class PaymentSchedule(Base):
     total_payments_made = Column(Integer, default=0)
     total_amount_paid = Column(Numeric(18, 2), default=0)
     is_active = Column(Boolean, default=True)
-    metadata = Column(JSON, default={})
+    schedule_metadata = Column(JSON, default={})
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

@@ -11,7 +11,7 @@ class PaymentScheduleBase(BaseModel):
     frequency: str
     start_date: date
     end_date: Optional[date] = None
-    metadata: Optional[Dict[str, Any]] = {}
+    schedule_metadata: Optional[Dict[str, Any]] = {}
 
     @validator('related_type')
     def validate_related_type(cls, v):
@@ -45,7 +45,7 @@ class PaymentScheduleUpdate(BaseModel):
     frequency: Optional[str] = None
     end_date: Optional[date] = None
     is_active: Optional[bool] = None
-    metadata: Optional[Dict[str, Any]] = None
+    schedule_metadata: Optional[Dict[str, Any]] = None
 
     @validator('frequency')
     def validate_frequency(cls, v):
