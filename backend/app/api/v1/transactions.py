@@ -210,7 +210,11 @@ async def delete_transaction(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """Delete a transaction."""
+    """
+    Delete a transaction with enhanced logic:
+    - If deleting a 'create' transaction: Delete all transactions for that asset + the asset itself
+    - If deleting any other transaction: Delete only that specific transaction
+    """
     transaction = db.query(Transaction).filter(
         Transaction.id == transaction_id,
         Transaction.user_id == current_user.id
@@ -222,7 +226,57 @@ async def delete_transaction(
             detail="Transaction not found"
         )
     
-    db.delete(transaction)
-    db.commit()
-    return {"message": "Transaction deleted successfully"}
+    if transaction.transaction_type == "create":
+        # For "create" transactions, delete all related transactions and the asset
+        asset_id = transaction.asset_id
+        
+        # Get the asset for response info
+        asset = db.query(Asset).filter(
+            Asset.id == asset_id,
+            Asset.user_id == current_user.id
+        ).first()
+        
+        if not asset:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Associated asset not found"
+            )
+        
+        # Get count of all transactions for this asset
+        total_transactions = db.query(Transaction).filter(
+            Transaction.asset_id == asset_id,
+            Transaction.user_id == current_user.id
+        ).count()
+        
+        # Delete all transactions for this asset
+        db.query(Transaction).filter(
+            Transaction.asset_id == asset_id,
+            Transaction.user_id == current_user.id
+        ).delete()
+        
+        # Delete the asset itself
+        db.delete(asset)
+        db.commit()
+        
+        return {
+            "message": f"Create Asset transaction deleted - removed asset '{asset.name}' and all {total_transactions} related transactions",
+            "transaction_type": "create",
+            "asset_deleted": True,
+            "asset_name": asset.name,
+            "total_transactions_deleted": total_transactions
+        }
+    else:
+        # For other transaction types, delete only the specific transaction
+        transaction_type = transaction.transaction_type
+        asset_name = transaction.asset.name if transaction.asset else "Unknown"
+        
+        db.delete(transaction)
+        db.commit()
+        
+        return {
+            "message": f"Transaction '{transaction_type}' for asset '{asset_name}' deleted successfully",
+            "transaction_type": transaction_type,
+            "asset_deleted": False,
+            "transactions_deleted": 1
+        }
 

@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/use-toast'
+import ConfirmationDialog from '@/components/ui/confirmation-dialog'
 import {
   Table,
   TableBody,
@@ -29,7 +30,9 @@ import {
   RefreshCw,
   FileText,
   DollarSign,
-  AlertTriangle
+  AlertTriangle,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react'
 import { transactionsService } from '@/services/transactions'
 import { assetsService } from '@/services/assets'
@@ -68,6 +71,13 @@ export default function Transactions() {
     amountMax: '',
     sortBy: 'transaction_date',
     sortOrder: 'desc'
+  })
+  
+  // Confirmation dialog state
+  const [confirmationDialog, setConfirmationDialog] = useState({
+    isOpen: false,
+    transaction: null,
+    type: null // 'create' or 'other'
   })
   
   console.log('Transactions: State initialized, loading:', loading)
@@ -375,23 +385,92 @@ export default function Transactions() {
   }
 
   const handleDelete = async (transactionId) => {
-    if (window.confirm('Are you sure you want to delete this transaction? This action cannot be undone.')) {
-      try {
-        await transactionsService.deleteTransaction(transactionId)
-        toast({
-          title: "Success",
-          description: "Transaction deleted successfully"
-        })
-        fetchTransactions()
-      } catch (error) {
-        console.error('Failed to delete transaction:', error)
-        toast({
-          title: "Error",
-          description: "Failed to delete transaction",
-          variant: "destructive"
-        })
-      }
+    // Find the transaction to understand its type
+    const transaction = transactions.find(t => t.id === transactionId)
+    if (!transaction) {
+      toast({
+        title: "Error",
+        description: "Transaction not found",
+        variant: "destructive"
+      })
+      return
     }
+
+    // Open confirmation dialog with appropriate message
+    setConfirmationDialog({
+      isOpen: true,
+      transaction,
+      type: transaction.transaction_type === 'create' ? 'create' : 'other'
+    })
+  }
+
+  const confirmDelete = async () => {
+    try {
+      const result = await transactionsService.deleteTransaction(confirmationDialog.transaction.id)
+      
+      // Close dialog first
+      setConfirmationDialog({ isOpen: false, transaction: null, type: null })
+      
+      // Show appropriate success message
+      toast({
+        title: "Success",
+        description: result.message || "Transaction deleted successfully"
+      })
+      
+      // Refresh data
+      fetchTransactions()
+      fetchAssets() // Also refresh assets if an asset was deleted
+    } catch (error) {
+      console.error('Failed to delete transaction:', error)
+      
+      // Close dialog
+      setConfirmationDialog({ isOpen: false, transaction: null, type: null })
+      
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete transaction",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const cancelDelete = () => {
+    setConfirmationDialog({ isOpen: false, transaction: null, type: null })
+  }
+
+  // Sorting function
+  const handleSort = (sortBy) => {
+    const newSortOrder = filters.sortBy === sortBy && filters.sortOrder === 'asc' ? 'desc' : 'asc'
+    setFilters(prev => ({
+      ...prev,
+      sortBy,
+      sortOrder: newSortOrder
+    }))
+  }
+
+  // Sortable header component
+  const SortableHeader = ({ label, sortKey, className = "" }) => {
+    const isActive = filters.sortBy === sortKey
+    const isAsc = filters.sortOrder === 'asc'
+    
+    return (
+      <TableHead 
+        className={`cursor-pointer hover:bg-gray-50 select-none ${className}`}
+        onClick={() => handleSort(sortKey)}
+      >
+        <div className="flex items-center gap-1">
+          <span>{label}</span>
+          <div className="flex flex-col">
+            <ChevronUp 
+              className={`h-3 w-3 ${isActive && !isAsc ? 'text-blue-600' : 'text-gray-400'}`} 
+            />
+            <ChevronDown 
+              className={`h-3 w-3 -mt-1 ${isActive && isAsc ? 'text-blue-600' : 'text-gray-400'}`} 
+            />
+          </div>
+        </div>
+      </TableHead>
+    )
   }
 
   const formatCurrency = (amount) => {
@@ -1055,10 +1134,10 @@ export default function Transactions() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Asset Details</TableHead>
-                <TableHead>Values</TableHead>
+                <SortableHeader label="Date" sortKey="transaction_date" />
+                <SortableHeader label="Type" sortKey="transaction_type" />
+                <SortableHeader label="Asset Details" sortKey="asset_name" />
+                <SortableHeader label="Values" sortKey="amount" />
                 <TableHead>Quantity & Unit</TableHead>
                 <TableHead>Properties</TableHead>
                 <TableHead>Notes</TableHead>
@@ -1177,6 +1256,27 @@ export default function Transactions() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Enhanced Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={confirmationDialog.isOpen}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title={confirmationDialog.type === 'create' ? "Delete Asset & All Transactions" : "Delete Transaction"}
+        message={
+          confirmationDialog.type === 'create' 
+            ? "You are about to delete a 'Create Asset' transaction. This will permanently remove the entire asset and ALL related transactions from your portfolio."
+            : "You are about to delete this individual transaction. The asset will remain in your portfolio, but this transaction record will be permanently removed."
+        }
+        confirmText={confirmationDialog.type === 'create' ? "Delete Asset & All Transactions" : "Delete Transaction"}
+        cancelText="Cancel"
+        variant={confirmationDialog.type === 'create' ? "danger" : "warning"}
+        asset={confirmationDialog.transaction ? {
+          name: confirmationDialog.transaction.asset_name,
+          asset_type: confirmationDialog.transaction.asset_type,
+          current_value: confirmationDialog.transaction.current_value || confirmationDialog.transaction.amount
+        } : null}
+      />
     </div>
   )
 }
