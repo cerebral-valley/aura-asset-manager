@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     # CORS Configuration
     ALLOWED_ORIGINS: List[str] = [
         "https://aura-asset-manager.vercel.app",
+        "https://aura-asset-manager-git-main-cerebral-valley.vercel.app", 
+        "https://aura-asset-manager-cerebral-valley.vercel.app",
         "http://localhost:5173",
         "http://localhost:3000"
     ]

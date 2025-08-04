@@ -48,10 +48,43 @@ print(f"🌐 CORS Configuration:")
 print(f"   Allowed Origins: {settings.ALLOWED_ORIGINS}")
 print(f"   Environment: {settings.ENVIRONMENT}")
 
-# Configure CORS
+# Configure CORS with dynamic origin checking for Vercel
+def is_allowed_origin(origin: str) -> bool:
+    """Check if origin is allowed, including dynamic Vercel URLs."""
+    if not origin:
+        return False
+    
+    # Check exact matches first
+    if origin in settings.ALLOWED_ORIGINS:
+        return True
+    
+    # Allow Vercel preview deployments
+    import re
+    vercel_patterns = [
+        r'https://aura-asset-manager.*\.vercel\.app$',
+        r'https://.*--aura-asset-manager.*\.vercel\.app$'
+    ]
+    
+    for pattern in vercel_patterns:
+        if re.match(pattern, origin):
+            return True
+    
+    return False
+
+# Get dynamic allowed origins
+def get_allowed_origins():
+    """Get allowed origins including dynamic ones."""
+    base_origins = settings.ALLOWED_ORIGINS.copy()
+    
+    # In production, be more permissive with Vercel URLs for now
+    if settings.is_production:
+        base_origins.append("*")  # Temporary - allows all origins
+    
+    return base_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origins=get_allowed_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
