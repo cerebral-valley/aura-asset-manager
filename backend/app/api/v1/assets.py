@@ -97,7 +97,9 @@ async def delete_asset(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """Delete an asset."""
+    """Delete an asset and all its associated transactions."""
+    from app.models.transaction import Transaction
+    
     asset = db.query(Asset).filter(
         Asset.id == asset_id,
         Asset.user_id == current_user.id
@@ -109,7 +111,25 @@ async def delete_asset(
             detail="Asset not found"
         )
     
+    # Get count of transactions for this asset
+    transaction_count = db.query(Transaction).filter(
+        Transaction.asset_id == asset_id,
+        Transaction.user_id == current_user.id
+    ).count()
+    
+    # Delete all transactions for this asset first (explicit deletion for clarity)
+    db.query(Transaction).filter(
+        Transaction.asset_id == asset_id,
+        Transaction.user_id == current_user.id
+    ).delete()
+    
+    # Delete the asset
     db.delete(asset)
     db.commit()
-    return {"message": "Asset deleted successfully"}
+    
+    return {
+        "message": f"Asset '{asset.name}' deleted successfully",
+        "transactions_deleted": transaction_count,
+        "asset_name": asset.name
+    }
 

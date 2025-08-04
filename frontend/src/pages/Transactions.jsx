@@ -58,6 +58,18 @@ export default function Transactions() {
   const [editingTransaction, setEditingTransaction] = useState(null)
   const [selectedTransactionType, setSelectedTransactionType] = useState('create')
   
+  // Enhanced filtering state
+  const [filters, setFilters] = useState({
+    assetName: '',
+    assetType: 'all',
+    dateFrom: '',
+    dateTo: '',
+    amountMin: '',
+    amountMax: '',
+    sortBy: 'transaction_date',
+    sortOrder: 'desc'
+  })
+  
   console.log('Transactions: State initialized, loading:', loading)
   
   // Form state
@@ -413,16 +425,98 @@ export default function Transactions() {
   }
 
   const filteredTransactions = transactions.filter(transaction => {
-    const matchesSearch = transaction.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transaction.asset_name?.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesType = !selectedType || selectedType === 'all' || transaction.transaction_type === selectedType
-    return matchesSearch && matchesType
+    // Search term matching
+    const matchesSearch = searchTerm === '' || 
+      transaction.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.asset_name?.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    // Transaction type matching
+    const matchesType = selectedType === 'all' || transaction.transaction_type === selectedType
+    
+    // Asset name filter
+    const matchesAssetName = filters.assetName === '' || 
+      transaction.asset_name?.toLowerCase().includes(filters.assetName.toLowerCase())
+    
+    // Asset type filter  
+    const matchesAssetType = filters.assetType === 'all' || 
+      transaction.asset_type === filters.assetType
+    
+    // Date range filter
+    const transactionDate = new Date(transaction.transaction_date)
+    const matchesDateFrom = filters.dateFrom === '' || 
+      transactionDate >= new Date(filters.dateFrom)
+    const matchesDateTo = filters.dateTo === '' || 
+      transactionDate <= new Date(filters.dateTo + 'T23:59:59')
+    
+    // Amount range filter
+    const amount = parseFloat(transaction.amount || 0)
+    const matchesAmountMin = filters.amountMin === '' || 
+      amount >= parseFloat(filters.amountMin)
+    const matchesAmountMax = filters.amountMax === '' || 
+      amount <= parseFloat(filters.amountMax)
+    
+    return matchesSearch && matchesType && matchesAssetName && 
+           matchesAssetType && matchesDateFrom && matchesDateTo && 
+           matchesAmountMin && matchesAmountMax
+  }).sort((a, b) => {
+    // Sorting logic
+    let aVal, bVal
+    
+    switch (filters.sortBy) {
+      case 'transaction_date':
+        aVal = new Date(a.transaction_date)
+        bVal = new Date(b.transaction_date)
+        break
+      case 'asset_name':
+        aVal = a.asset_name?.toLowerCase() || ''
+        bVal = b.asset_name?.toLowerCase() || ''
+        break
+      case 'amount':
+        aVal = parseFloat(a.amount || 0)
+        bVal = parseFloat(b.amount || 0)
+        break
+      case 'transaction_type':
+        aVal = a.transaction_type || ''
+        bVal = b.transaction_type || ''
+        break
+      default:
+        return 0
+    }
+    
+    if (filters.sortOrder === 'asc') {
+      return aVal < bVal ? -1 : aVal > bVal ? 1 : 0
+    } else {
+      return aVal > bVal ? -1 : aVal < bVal ? 1 : 0
+    }
   })
 
   const openNewTransactionDialog = () => {
     resetForm()
     setShowTransactionDialog(true)
   }
+
+  // Filter management functions
+  const updateFilter = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }))
+  }
+
+  const clearAllFilters = () => {
+    setSearchTerm('')
+    setSelectedType('all')
+    setFilters({
+      assetName: '',
+      assetType: 'all',
+      dateFrom: '',
+      dateTo: '',
+      amountMin: '',
+      amountMax: '',
+      sortBy: 'transaction_date',
+      sortOrder: 'desc'
+    })
+  }
+
+  // Get unique asset types for filter dropdown
+  const uniqueAssetTypes = [...new Set(transactions.map(t => t.asset_type).filter(Boolean))]
 
   if (loading) {
     console.log('Transactions: Rendering loading state')
@@ -748,36 +842,203 @@ export default function Transactions() {
         </DialogContent>
       </Dialog>
 
-      {/* Filters */}
+      {/* Enhanced Filters */}
       <Card>
         <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <div className="space-y-4">
+            {/* First row - Search and Type */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <Label htmlFor="search">Search Transactions</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="search"
+                    placeholder="Search by asset name, notes..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              <div className="w-full sm:w-48">
+                <Label htmlFor="type-filter">Transaction Type</Label>
+                <Select value={selectedType} onValueChange={setSelectedType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All types</SelectItem>
+                    {transactionTypes.map((type) => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Second row - Asset filters */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <Label htmlFor="asset-name">Asset Name</Label>
                 <Input
-                  placeholder="Search transactions..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  id="asset-name"
+                  placeholder="Filter by asset name..."
+                  value={filters.assetName}
+                  onChange={(e) => updateFilter('assetName', e.target.value)}
+                />
+              </div>
+              <div className="w-full sm:w-48">
+                <Label htmlFor="asset-type">Asset Type</Label>
+                <Select value={filters.assetType} onValueChange={(value) => updateFilter('assetType', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All asset types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All asset types</SelectItem>
+                    {uniqueAssetTypes.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Third row - Date range */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <Label htmlFor="date-from">From Date</Label>
+                <Input
+                  id="date-from"
+                  type="date"
+                  value={filters.dateFrom}
+                  onChange={(e) => updateFilter('dateFrom', e.target.value)}
+                />
+              </div>
+              <div className="flex-1">
+                <Label htmlFor="date-to">To Date</Label>
+                <Input
+                  id="date-to"
+                  type="date"
+                  value={filters.dateTo}
+                  onChange={(e) => updateFilter('dateTo', e.target.value)}
                 />
               </div>
             </div>
-            <div className="w-full sm:w-48">
-              <Select value={selectedType} onValueChange={setSelectedType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All types" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All types</SelectItem>
-                  {transactionTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+
+            {/* Fourth row - Amount range */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <Label htmlFor="amount-min">Min Amount ($)</Label>
+                <Input
+                  id="amount-min"
+                  type="number"
+                  placeholder="0"
+                  value={filters.amountMin}
+                  onChange={(e) => updateFilter('amountMin', e.target.value)}
+                />
+              </div>
+              <div className="flex-1">
+                <Label htmlFor="amount-max">Max Amount ($)</Label>
+                <Input
+                  id="amount-max"
+                  type="number"
+                  placeholder="No limit"
+                  value={filters.amountMax}
+                  onChange={(e) => updateFilter('amountMax', e.target.value)}
+                />
+              </div>
             </div>
+
+            {/* Fifth row - Sorting and actions */}
+            <div className="flex flex-col sm:flex-row gap-4 items-end">
+              <div className="flex-1">
+                <Label htmlFor="sort-by">Sort By</Label>
+                <Select value={filters.sortBy} onValueChange={(value) => updateFilter('sortBy', value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="transaction_date">Date</SelectItem>
+                    <SelectItem value="asset_name">Asset Name</SelectItem>
+                    <SelectItem value="amount">Amount</SelectItem>
+                    <SelectItem value="transaction_type">Type</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="w-full sm:w-32">
+                <Label htmlFor="sort-order">Order</Label>
+                <Select value={filters.sortOrder} onValueChange={(value) => updateFilter('sortOrder', value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="desc">Newest First</SelectItem>
+                    <SelectItem value="asc">Oldest First</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={clearAllFilters}
+                className="w-full sm:w-auto"
+              >
+                Clear All Filters
+              </Button>
+            </div>
+
+            {/* Filter summary */}
+            {(searchTerm || selectedType !== 'all' || Object.values(filters).some(v => v !== '' && v !== 'all' && v !== 'transaction_date' && v !== 'desc')) && (
+              <div className="pt-2 border-t">
+                <div className="flex flex-wrap gap-2 items-center">
+                  <span className="text-sm text-muted-foreground">Active filters:</span>
+                  {searchTerm && (
+                    <Badge variant="secondary" className="text-xs">
+                      Search: "{searchTerm}"
+                    </Badge>
+                  )}
+                  {selectedType !== 'all' && (
+                    <Badge variant="secondary" className="text-xs">
+                      Type: {transactionTypes.find(t => t.value === selectedType)?.label}
+                    </Badge>
+                  )}
+                  {filters.assetName && (
+                    <Badge variant="secondary" className="text-xs">
+                      Asset: "{filters.assetName}"
+                    </Badge>
+                  )}
+                  {filters.assetType !== 'all' && (
+                    <Badge variant="secondary" className="text-xs">
+                      Asset Type: {filters.assetType}
+                    </Badge>
+                  )}
+                  {filters.dateFrom && (
+                    <Badge variant="secondary" className="text-xs">
+                      From: {filters.dateFrom}
+                    </Badge>
+                  )}
+                  {filters.dateTo && (
+                    <Badge variant="secondary" className="text-xs">
+                      To: {filters.dateTo}
+                    </Badge>
+                  )}
+                  {filters.amountMin && (
+                    <Badge variant="secondary" className="text-xs">
+                      Min: ${filters.amountMin}
+                    </Badge>
+                  )}
+                  {filters.amountMax && (
+                    <Badge variant="secondary" className="text-xs">
+                      Max: ${filters.amountMax}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

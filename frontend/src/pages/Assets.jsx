@@ -8,6 +8,7 @@ Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
 import { assetTypes, getAggregationCategories, getCategoryForAssetType, getAssetTypeLabel, getAllAssetTypes } from '../constants/assetTypes';
 import AnnuityManager from '../components/assets/AnnuityManager';
+import ConfirmationDialog from '../components/ui/confirmation-dialog';
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888'];
 
@@ -39,6 +40,13 @@ const Assets = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [showTimeline, setShowTimeline] = useState(true);
   const [expandedAsset, setExpandedAsset] = useState(null); // For showing annuity manager
+  
+  // Confirmation dialog state
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    asset: null,
+    onConfirm: null
+  });
 
   const fetchAssets = () => {
     setLoading(true);
@@ -561,18 +569,32 @@ const Assets = () => {
     setActionLoading(false);
   };
 
-  // Delete asset
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this asset?')) return;
+  // Delete asset with confirmation
+  const handleDelete = async (asset) => {
+    setConfirmDialog({
+      isOpen: true,
+      asset: asset,
+      onConfirm: () => confirmDeleteAsset(asset.id)
+    });
+  };
+
+  const confirmDeleteAsset = async (id) => {
     setActionLoading(true);
     setActionError(null);
     try {
-      await assetsService.deleteAsset(id);
+      const response = await assetsService.deleteAsset(id);
       fetchAssets();
-      toast.success('Asset deleted successfully');
+      
+      // Show detailed success message
+      const message = response.transactions_deleted > 0 
+        ? `Asset "${response.asset_name}" and ${response.transactions_deleted} related transactions deleted successfully`
+        : `Asset "${response.asset_name}" deleted successfully`;
+      
+      toast.success(message);
+      setConfirmDialog({ isOpen: false, asset: null, onConfirm: null });
     } catch (err) {
       setActionError('Failed to delete asset');
-      toast.error('Failed to delete asset');
+      toast.error('Failed to delete asset: ' + (err.response?.data?.detail || err.message));
     }
     setActionLoading(false);
   };
@@ -982,7 +1004,7 @@ const Assets = () => {
                               </button>
                             )}
                             <button
-                              onClick={() => deleteAsset(asset.id)}
+                              onClick={() => handleDelete(asset)}
                               className="text-red-600 hover:text-red-800 text-sm"
                               title="Delete Asset"
                             >
@@ -1197,6 +1219,19 @@ const Assets = () => {
           </div>
         </div>
       )}
+      
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog({ isOpen: false, asset: null, onConfirm: null })}
+        onConfirm={confirmDialog.onConfirm}
+        title="Delete Asset"
+        message="Are you sure you want to permanently delete this asset? This action cannot be undone and will remove all associated transaction history."
+        confirmText="Delete Asset"
+        cancelText="Cancel"
+        variant="danger"
+        asset={confirmDialog.asset}
+      />
     </div>
   );
 };
