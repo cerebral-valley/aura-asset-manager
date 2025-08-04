@@ -6,9 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.api.deps import get_current_user
-from app.models.user_settings import UserSettings
-from app.schemas.user_settings import UserSettingsCreate, UserSettingsUpdate, UserSettingsResponse
 from app.models.user import User
+from app.schemas.user_settings import UserSettingsCreate, UserSettingsUpdate, UserSettingsResponse
 import logging
 
 logger = logging.getLogger(__name__)
@@ -20,23 +19,22 @@ async def get_user_settings(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get user settings."""
+    """Get user settings from the user record."""
     try:
-        settings = db.query(UserSettings).filter(UserSettings.user_id == current_user.id).first()
-        
-        if not settings:
-            # Create default settings if none exist
-            settings = UserSettings(
-                user_id=current_user.id,
-                currency="USD",
-                date_format="MM/DD/YYYY",
-                dark_mode=False
-            )
-            db.add(settings)
-            db.commit()
-            db.refresh(settings)
-        
-        return settings
+        # Return the current user with settings fields
+        return UserSettingsResponse(
+            id=str(current_user.id),
+            user_id=str(current_user.id),
+            first_name=current_user.first_name,
+            last_name=current_user.last_name,
+            recovery_email=current_user.recovery_email,
+            country=current_user.country,
+            currency=current_user.currency or "USD",
+            date_format=current_user.date_format or "MM/DD/YYYY",
+            dark_mode=current_user.dark_mode or False,
+            created_at=current_user.created_at,
+            updated_at=current_user.updated_at
+        )
     except Exception as e:
         logger.error(f"Error fetching user settings: {e}")
         raise HTTPException(
@@ -50,28 +48,29 @@ async def create_user_settings(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Create or update user settings."""
+    """Create or update user settings in the user record."""
     try:
-        # Check if settings already exist
-        existing_settings = db.query(UserSettings).filter(UserSettings.user_id == current_user.id).first()
+        # Update the current user record with the settings
+        for field, value in settings_data.dict(exclude_unset=True).items():
+            if hasattr(current_user, field):
+                setattr(current_user, field, value)
         
-        if existing_settings:
-            # Update existing settings
-            for field, value in settings_data.dict(exclude_unset=True).items():
-                setattr(existing_settings, field, value)
-            db.commit()
-            db.refresh(existing_settings)
-            return existing_settings
-        else:
-            # Create new settings
-            settings = UserSettings(
-                user_id=current_user.id,
-                **settings_data.dict(exclude_unset=True)
-            )
-            db.add(settings)
-            db.commit()
-            db.refresh(settings)
-            return settings
+        db.commit()
+        db.refresh(current_user)
+        
+        return UserSettingsResponse(
+            id=str(current_user.id),
+            user_id=str(current_user.id),
+            first_name=current_user.first_name,
+            last_name=current_user.last_name,
+            recovery_email=current_user.recovery_email,
+            country=current_user.country,
+            currency=current_user.currency or "USD",
+            date_format=current_user.date_format or "MM/DD/YYYY",
+            dark_mode=current_user.dark_mode or False,
+            created_at=current_user.created_at,
+            updated_at=current_user.updated_at
+        )
     except Exception as e:
         logger.error(f"Error creating user settings: {e}")
         raise HTTPException(
@@ -85,25 +84,29 @@ async def update_user_settings(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Update user settings."""
+    """Update user settings in the user record."""
     try:
-        settings = db.query(UserSettings).filter(UserSettings.user_id == current_user.id).first()
-        
-        if not settings:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User settings not found"
-            )
-        
-        # Update settings
+        # Update the current user record with the settings
         for field, value in settings_data.dict(exclude_unset=True).items():
-            setattr(settings, field, value)
+            if hasattr(current_user, field):
+                setattr(current_user, field, value)
         
         db.commit()
-        db.refresh(settings)
-        return settings
-    except HTTPException:
-        raise
+        db.refresh(current_user)
+        
+        return UserSettingsResponse(
+            id=str(current_user.id),
+            user_id=str(current_user.id),
+            first_name=current_user.first_name,
+            last_name=current_user.last_name,
+            recovery_email=current_user.recovery_email,
+            country=current_user.country,
+            currency=current_user.currency or "USD",
+            date_format=current_user.date_format or "MM/DD/YYYY",
+            dark_mode=current_user.dark_mode or False,
+            created_at=current_user.created_at,
+            updated_at=current_user.updated_at
+        )
     except Exception as e:
         logger.error(f"Error updating user settings: {e}")
         raise HTTPException(

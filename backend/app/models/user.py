@@ -2,7 +2,7 @@
 User model for SQLAlchemy.
 """
 
-from sqlalchemy import Column, String, DateTime, Text
+from sqlalchemy import Column, String, DateTime, Text, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -18,6 +18,15 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     theme = Column(Text, default="sanctuary_builder")
+    
+    # User settings fields
+    first_name = Column(String(100))
+    last_name = Column(String(100))
+    recovery_email = Column(String(255))
+    country = Column(String(100))
+    currency = Column(String(10), default="USD")
+    date_format = Column(String(20), default="MM/DD/YYYY")
+    dark_mode = Column(Boolean, default=False)
     
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email})>"

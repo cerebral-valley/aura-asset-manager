@@ -10,7 +10,6 @@ class UserSettingsBase(BaseModel):
     """Base user settings schema."""
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    username: Optional[str] = None
     recovery_email: Optional[EmailStr] = None
     country: Optional[str] = None
     currency: str = "USD"
