@@ -48,6 +48,9 @@ const Assets = () => {
     onConfirm: null
   });
 
+  // Global preferences trigger for re-renders
+  const [globalPreferencesVersion, setGlobalPreferencesVersion] = useState(0);
+
   const fetchAssets = () => {
     setLoading(true);
     
@@ -73,6 +76,19 @@ const Assets = () => {
     fetchAssets();
   }, []);
 
+  // Listen for global preferences changes
+  useEffect(() => {
+    const handlePreferencesChanged = () => {
+      setGlobalPreferencesVersion(prev => prev + 1);
+    };
+
+    window.addEventListener('globalPreferencesChanged', handlePreferencesChanged);
+    
+    return () => {
+      window.removeEventListener('globalPreferencesChanged', handlePreferencesChanged);
+    };
+  }, []);
+
   // Helper functions for display formatting
   const formatCurrency = (amount) => {
     if (!amount || amount === 0 || amount === '0' || amount === '') return '-';
@@ -82,9 +98,12 @@ const Assets = () => {
 
     if (isNaN(numAmount) || numAmount === 0) return '-';
 
+    // Get global currency preference
+    const globalCurrency = localStorage.getItem('globalCurrency') || 'USD';
+
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: globalCurrency,
       minimumFractionDigits: 2
     }).format(numAmount);
   };
@@ -98,9 +117,12 @@ const Assets = () => {
 
     if (isNaN(numAmount) || numAmount === 0) return '$0';
 
+    // Get global currency preference
+    const globalCurrency = localStorage.getItem('globalCurrency') || 'USD';
+
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: globalCurrency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(numAmount);

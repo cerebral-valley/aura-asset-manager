@@ -73,6 +73,9 @@ export default function Transactions() {
     sortOrder: 'desc'
   })
   
+  // Global preferences trigger for re-renders
+  const [globalPreferencesVersion, setGlobalPreferencesVersion] = useState(0);
+  
   // Confirmation dialog state
   const [confirmationDialog, setConfirmationDialog] = useState({
     isOpen: false,
@@ -112,6 +115,19 @@ export default function Transactions() {
     fetchTransactions()
     fetchAssets()
   }, [])
+
+  // Listen for global preferences changes
+  useEffect(() => {
+    const handlePreferencesChanged = () => {
+      setGlobalPreferencesVersion(prev => prev + 1);
+    };
+
+    window.addEventListener('globalPreferencesChanged', handlePreferencesChanged);
+    
+    return () => {
+      window.removeEventListener('globalPreferencesChanged', handlePreferencesChanged);
+    };
+  }, []);
 
   const fetchTransactions = async () => {
     console.log('Transactions: fetchTransactions called')
@@ -474,9 +490,12 @@ export default function Transactions() {
   }
 
   const formatCurrency = (amount) => {
+    // Get global currency preference
+    const globalCurrency = localStorage.getItem('globalCurrency') || 'USD';
+    
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD'
+      currency: globalCurrency
     }).format(amount || 0)
   }
 

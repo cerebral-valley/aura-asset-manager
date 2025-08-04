@@ -6,6 +6,7 @@ import Assets from './pages/Assets'
 import Transactions from './pages/Transactions'
 import Insurance from './pages/Insurance'
 import Annuities from './pages/Annuities'
+import UserSettings from './pages/UserSettings'
 import AppLayout from './components/layout/AppLayout'
 import { Toaster } from './components/ui/toaster'
 import './App.css'
@@ -78,6 +79,7 @@ function AppContent() {
         <Route path="/annuities" element={<Annuities />} />
         <Route path="/transactions" element={<TransactionsPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="/settings" element={<UserSettings />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppLayout>

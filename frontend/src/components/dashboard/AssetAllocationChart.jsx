@@ -32,10 +32,10 @@ const AssetAllocationChart = ({ data, title = "Asset Allocation" }) => {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-4">
         <CardTitle>{title}</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6 pb-8">
         <ResponsiveContainer width="100%" height={250}>
           <PieChart>
             <Pie

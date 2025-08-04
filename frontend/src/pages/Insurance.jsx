@@ -17,6 +17,9 @@ const Insurance = () => {
   const [actionError, setActionError] = useState(null);
   const modalRef = useRef(null);
 
+  // Global preferences trigger for re-renders
+  const [globalPreferencesVersion, setGlobalPreferencesVersion] = useState(0);
+
   const fetchPolicies = () => {
     setLoading(true);
     insuranceService.getPolicies()
@@ -36,6 +39,19 @@ const Insurance = () => {
     fetchPolicies();
   }, []);
 
+  // Listen for global preferences changes
+  useEffect(() => {
+    const handlePreferencesChanged = () => {
+      setGlobalPreferencesVersion(prev => prev + 1);
+    };
+
+    window.addEventListener('globalPreferencesChanged', handlePreferencesChanged);
+    
+    return () => {
+      window.removeEventListener('globalPreferencesChanged', handlePreferencesChanged);
+    };
+  }, []);
+
   // Helper functions for display formatting
   const formatCurrency = (amount) => {
     if (!amount || amount === 0 || amount === '0' || amount === '') return '-';
@@ -45,9 +61,12 @@ const Insurance = () => {
 
     if (isNaN(numAmount) || numAmount === 0) return '-';
 
+    // Get global currency preference
+    const globalCurrency = localStorage.getItem('globalCurrency') || 'USD';
+
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: globalCurrency,
       minimumFractionDigits: 2
     }).format(numAmount);
   };

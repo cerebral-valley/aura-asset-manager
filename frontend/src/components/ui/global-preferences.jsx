@@ -25,10 +25,26 @@ const GlobalPreferences = ({ className = "" }) => {
 
   // Load preferences from localStorage on mount
   useEffect(() => {
-    const savedCurrency = localStorage.getItem('user_currency') || 'USD'
-    const savedDateFormat = localStorage.getItem('user_date_format') || 'DD-MM-YYYY'
+    // Load saved preferences
+    const savedCurrency = localStorage.getItem('globalCurrency') || 'USD'
+    const savedDateFormat = localStorage.getItem('globalDateFormat') || 'MM/DD/YYYY'
+    
     setCurrency(savedCurrency)
     setDateFormat(savedDateFormat)
+
+    // Listen for changes from UserSettings page
+    const handlePreferencesChanged = (event) => {
+      if (event.detail) {
+        setCurrency(event.detail.currency || savedCurrency)
+        setDateFormat(event.detail.dateFormat || savedDateFormat)
+      }
+    }
+
+    window.addEventListener('globalPreferencesChanged', handlePreferencesChanged)
+    
+    return () => {
+      window.removeEventListener('globalPreferencesChanged', handlePreferencesChanged)
+    }
   }, [])
 
   // Save currency preference
@@ -96,7 +112,7 @@ export default GlobalPreferences
 
 // Utility functions for formatting
 export const formatCurrency = (amount, currencyCode = null) => {
-  const currency = currencyCode || localStorage.getItem('user_currency') || 'USD'
+  const currency = currencyCode || localStorage.getItem('globalCurrency') || 'USD'
   const config = CURRENCIES[currency]
   
   if (!config) return `$${amount?.toLocaleString() || 0}`
@@ -109,8 +125,8 @@ export const formatCurrency = (amount, currencyCode = null) => {
   }).format(amount || 0)
 }
 
-export const formatDate = (date, formatType = null) => {
-  const format = formatType || localStorage.getItem('user_date_format') || 'DD-MM-YYYY'
+export const formatDate = (date, formatCode = null) => {
+  const format = formatCode || localStorage.getItem('globalDateFormat') || 'MM/DD/YYYY'
   const dateObj = new Date(date)
   
   if (isNaN(dateObj.getTime())) return 'Invalid Date'

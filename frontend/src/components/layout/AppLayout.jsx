@@ -11,7 +11,8 @@ import {
   LogOut,
   Menu,
   X,
-  Coins
+  Coins,
+  Settings
 } from 'lucide-react'
 import './AppLayout.css'
 
@@ -31,6 +32,7 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
     { name: 'Annuities', href: '/annuities', icon: Coins, id: 'annuities' },
     { name: 'Transactions', href: '/transactions', icon: ArrowRightLeft, id: 'transactions' },
     { name: 'Analytics', href: '/analytics', icon: BarChart3, id: 'analytics' },
+    { name: 'Settings', href: '/settings', icon: Settings, id: 'settings' },
   ]
 
   const handleSignOut = async () => {
