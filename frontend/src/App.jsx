@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard'
 import Assets from './pages/Assets'
 import Transactions from './pages/Transactions'
 import Insurance from './pages/Insurance'
+import Annuities from './pages/Annuities'
 import AppLayout from './components/layout/AppLayout'
 import { Toaster } from './components/ui/toaster'
 import './App.css'
@@ -74,6 +75,7 @@ function AppContent() {
         <Route path="/dashboard" element={<Navigate to="/" replace />} />
         <Route path="/assets" element={<AssetsPage />} />
         <Route path="/insurance" element={<Insurance />} />
+        <Route path="/annuities" element={<Annuities />} />
         <Route path="/transactions" element={<TransactionsPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />

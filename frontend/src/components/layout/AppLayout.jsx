@@ -10,7 +10,8 @@ import {
   BarChart3, 
   LogOut,
   Menu,
-  X
+  X,
+  Coins
 } from 'lucide-react'
 import './AppLayout.css'
 
@@ -27,6 +28,7 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
     { name: 'Dashboard', href: '/', icon: Home, id: 'dashboard' },
     { name: 'Assets', href: '/assets', icon: Briefcase, id: 'assets' },
     { name: 'Insurance', href: '/insurance', icon: Shield, id: 'insurance' },
+    { name: 'Annuities', href: '/annuities', icon: Coins, id: 'annuities' },
     { name: 'Transactions', href: '/transactions', icon: ArrowRightLeft, id: 'transactions' },
     { name: 'Analytics', href: '/analytics', icon: BarChart3, id: 'analytics' },
   ]
