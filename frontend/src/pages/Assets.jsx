@@ -625,7 +625,7 @@ const Assets = () => {
   if (loading) return <div>Loading assets...</div>;
 
   return (
-    <div className={`p-6 min-h-screen ${isDark ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
+    <div className={`p-6 min-h-screen ${isDark ? 'bg-black text-neutral-100' : 'bg-gray-50'}`}>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Assets</h1>
         <button
@@ -646,9 +646,9 @@ const Assets = () => {
 
       {/* If no error and no assets, show empty state */}
       {!error && activeAssets.length === 0 && (
-        <div className={`${isDark ? 'bg-gray-800 text-white' : 'bg-white'} rounded shadow p-6 flex flex-col items-center justify-center`}>
+        <div className={`${isDark ? 'bg-neutral-900 text-neutral-100' : 'bg-white'} rounded shadow p-6 flex flex-col items-center justify-center`}>
           <h2 className="font-semibold mb-2">No assets found</h2>
-          <p className="mb-4 text-gray-500">You have not added any assets yet. Click "New Transaction" above to create your first asset.</p>
+          <p className="mb-4 text-neutral-400">You have not added any assets yet. Click "New Transaction" above to create your first asset.</p>
         </div>
       )}
 
@@ -656,7 +656,7 @@ const Assets = () => {
       {activeAssets.length > 0 && (
         <>
           {/* Control Panel */}
-          <div className={`${isDark ? 'bg-gray-800 text-white' : 'bg-white'} rounded shadow p-4 mb-6`}>
+          <div className={`${isDark ? 'bg-neutral-900 text-neutral-100' : 'bg-white'} rounded shadow p-4 mb-6`}>
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <h3 className="font-semibold">Dashboard Controls</h3>
@@ -669,7 +669,7 @@ const Assets = () => {
                   <select
                     value={chartTimeRange}
                     onChange={(e) => setChartTimeRange(e.target.value)}
-                    className={`px-2 py-1 rounded border text-sm ${isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                    className={`px-2 py-1 rounded border text-sm ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-gray-300'}`}
                   >
                     <option value="1M">1 Month</option>
                     <option value="3M">3 Months</option>
@@ -686,7 +686,7 @@ const Assets = () => {
                     onClick={() => setShowProjections(!showProjections)}
                     className={`px-3 py-1 rounded text-sm ${showProjections 
                       ? 'bg-blue-500 text-white' 
-                      : isDark ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'
+                      : isDark ? 'bg-neutral-800 hover:bg-neutral-700' : 'bg-gray-200 hover:bg-gray-300'
                     }`}
                   >
                     {showProjections ? 'Hide' : 'Show'}
@@ -700,7 +700,7 @@ const Assets = () => {
                       <select
                         value={projectionTimeframe}
                         onChange={(e) => setProjectionTimeframe(Number(e.target.value))}
-                        className={`px-2 py-1 rounded border text-sm ${isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                        className={`px-2 py-1 rounded border text-sm ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-gray-300'}`}
                       >
                         <option value={1}>1 Year</option>
                         <option value={3}>3 Years</option>
@@ -714,7 +714,7 @@ const Assets = () => {
                         type="number"
                         value={projectionGrowthRate}
                         onChange={(e) => setProjectionGrowthRate(Number(e.target.value))}
-                        className={`w-16 px-2 py-1 rounded border text-sm ${isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                        className={`w-16 px-2 py-1 rounded border text-sm ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-gray-300'}`}
                         min="0"
                         max="100"
                         step="0.1"
@@ -729,7 +729,7 @@ const Assets = () => {
           {/* Charts Grid */}
           <div className={`grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8`}>
             {/* Asset Value Over Time */}
-            <div className={`${isDark ? 'bg-gray-800 text-white' : 'bg-white'} rounded shadow p-4`}>
+            <div className={`${isDark ? 'bg-neutral-900 text-neutral-100' : 'bg-white'} rounded shadow p-4`}>
               <h2 className="font-semibold mb-2">Asset Value Over Time</h2>
               <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={getEnhancedChartData()}>
@@ -753,7 +753,7 @@ const Assets = () => {
             </div>
 
             {/* Asset Distribution */}
-            <div className={`${isDark ? 'bg-gray-800 text-white' : 'bg-white'} rounded shadow p-4`}>
+            <div className={`${isDark ? 'bg-neutral-900 text-neutral-100' : 'bg-white'} rounded shadow p-4`}>
               <h2 className="font-semibold mb-2">Asset Distribution</h2>
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
@@ -777,7 +777,7 @@ const Assets = () => {
             </div>
 
             {/* Asset Timeline */}
-            <div className={`${isDark ? 'bg-gray-800 text-white' : 'bg-white'} rounded shadow p-4`}>
+            <div className={`${isDark ? 'bg-neutral-900 text-neutral-100' : 'bg-white'} rounded shadow p-4`}>
               <h2 className="font-semibold mb-2">Asset Timeline</h2>
               <div className="h-64 overflow-y-auto pr-2">
                 {activeAssets
@@ -822,7 +822,7 @@ const Assets = () => {
           <div className="mb-8">
             <h2 className="text-xl font-bold mb-4">Asset Aggregates</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded shadow p-4 overflow-x-auto`}>
+              <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded shadow p-4 overflow-x-auto`}>
                 <h3 className="font-semibold mb-2">Aggregate by Asset Type</h3>
                 <table className="min-w-full text-sm">
                   <thead>
@@ -857,7 +857,7 @@ const Assets = () => {
                   </tbody>
                 </table>
               </div>
-              <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded shadow p-4 overflow-x-auto`}>
+              <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded shadow p-4 overflow-x-auto`}>
                 <h3 className="font-semibold mb-2">Detailed Asset Breakdown</h3>
                 <div className="max-h-80 overflow-y-auto">
                   <table className="min-w-full text-sm">
@@ -876,7 +876,7 @@ const Assets = () => {
                           <td className="py-2 px-4">
                             <div>
                               <div className="font-medium">{item.assetType}</div>
-                              <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{item.category}</div>
+                              <div className={`text-xs ${isDark ? 'text-neutral-400' : 'text-gray-500'}`}>{item.category}</div>
                             </div>
                           </td>
                           <td className="py-2 px-4">{formatCurrency(item.acquisitionValue)}</td>
@@ -885,7 +885,7 @@ const Assets = () => {
                           <td className="py-2 px-4">{item.presentPercentage.toFixed(1)}%</td>
                         </tr>
                       ))}
-                      <tr className={`border-t-2 font-bold ${isDark ? 'border-gray-600 bg-gray-700' : 'border-gray-300 bg-gray-50'}`}>
+                      <tr className={`border-t-2 font-bold ${isDark ? 'border-neutral-700 bg-neutral-950' : 'border-gray-300 bg-gray-50'}`}>
                         <td className="py-2 px-4">Total</td>
                         <td className="py-2 px-4">{formatCurrency(detailedTotalAcquisition)}</td>
                         <td className="py-2 px-4">{formatCurrency(detailedTotalPresent)}</td>
@@ -900,7 +900,7 @@ const Assets = () => {
           </div>
 
           {/* Assets Table */}
-          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded shadow p-4`}>
+          <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded shadow p-4`}>
             <div className="mb-4">
               <h2 className="font-semibold mb-3">All Assets</h2>
               
@@ -912,7 +912,7 @@ const Assets = () => {
                     type="text"
                     placeholder="Search asset name..."
                     className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'
+                      isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'
                     }`}
                     value={nameFilter}
                     onChange={(e) => setNameFilter(e.target.value)}
@@ -924,7 +924,7 @@ const Assets = () => {
                     type="text"
                     placeholder="Search asset type..."
                     className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'
+                      isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'
                     }`}
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
@@ -935,7 +935,7 @@ const Assets = () => {
                   <input
                     type="date"
                     className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
+                      isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100' : 'bg-white border-gray-300'
                     }`}
                     value={dateFromFilter}
                     onChange={(e) => setDateFromFilter(e.target.value)}
@@ -946,7 +946,7 @@ const Assets = () => {
                   <input
                     type="date"
                     className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
+                      isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100' : 'bg-white border-gray-300'
                     }`}
                     value={dateToFilter}
                     onChange={(e) => setDateToFilter(e.target.value)}
@@ -1203,7 +1203,7 @@ const Assets = () => {
                   <textarea
                     id="description"
                     rows="3"
-                    className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-400' : ''}`}
                     {...register('description')}
                     disabled={actionLoading}
                   />
@@ -1245,6 +1245,7 @@ const Assets = () => {
         cancelText="Cancel"
         variant="danger"
         asset={confirmDialog.asset}
+        className={isDark ? 'bg-neutral-900 text-neutral-100' : ''}
       />
     </div>
   );
