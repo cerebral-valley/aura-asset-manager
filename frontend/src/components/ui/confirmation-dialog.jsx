@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertTriangle, X } from 'lucide-react';
+import { useTheme } from '../../hooks/useTheme';
 
 const ConfirmationDialog = ({ 
   isOpen, 
@@ -12,6 +13,7 @@ const ConfirmationDialog = ({
   variant = "danger", // "danger" | "warning" | "info"
   asset = null
 }) => {
+  const { theme } = useTheme();
   if (!isOpen) return null;
 
   const variantStyles = {
@@ -51,7 +53,7 @@ const ConfirmationDialog = ({
         {/* Header */}
         <div className="flex items-center gap-3 mb-4">
           <AlertTriangle className={`h-6 w-6 ${styles.icon}`} />
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          <h3 className="text-lg font-semibold text-foreground">{title}</h3>
         </div>
 
         {/* Message */}
@@ -59,9 +61,9 @@ const ConfirmationDialog = ({
           <p className="text-gray-700 mb-3">{message}</p>
           
           {asset && (
-            <div className="bg-white border border-gray-200 rounded-md p-3">
+            <div className="bg-card border border-input rounded-md p-3">
               <div className="text-sm">
-                <div className="font-medium text-gray-900 mb-1">Asset Details:</div>
+                <div className="font-medium text-foreground mb-1">Asset Details:</div>
                 <div className="text-gray-600">
                   <div><strong>Name:</strong> {asset.name}</div>
                   <div><strong>Type:</strong> {asset.asset_type}</div>
@@ -82,7 +84,7 @@ const ConfirmationDialog = ({
         <div className="flex gap-3 justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 text-foreground bg-card border border-input rounded-md hover:bg-muted transition-colors"
           >
             {cancelText}
           </button>

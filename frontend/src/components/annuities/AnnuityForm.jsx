@@ -6,6 +6,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Checkbox } from '../ui/checkbox';
+import { useTheme } from '../../hooks/useTheme';
 import { 
   ANNUITY_TYPES, 
   FUNDING_TYPES, 
@@ -17,6 +18,7 @@ import {
 } from '../../constants/annuityTypes';
 
 const AnnuityForm = ({ annuity = null, onSubmit, onCancel }) => {
+  const { theme } = useTheme();
   const [formData, setFormData] = useState({
     // Basic Information
     contract_number: annuity?.contract_number || '',
@@ -165,7 +167,7 @@ const AnnuityForm = ({ annuity = null, onSubmit, onCancel }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+      <div className="bg-card rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
         <Card className="border-0 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
             <CardTitle className="text-xl font-bold">
@@ -231,7 +233,7 @@ const AnnuityForm = ({ annuity = null, onSubmit, onCancel }) => {
                     id="annuity_type"
                     value={formData.annuity_type}
                     onChange={(e) => handleInputChange('annuity_type', e.target.value)}
-                    className={`w-full px-3 py-2 border border-gray-300 rounded-md ${errors.annuity_type ? 'border-red-500' : ''}`}
+                    className={`w-full px-3 py-2 border border-input rounded-md bg-background text-foreground ${errors.annuity_type ? 'border-red-500' : ''}`}
                   >
                     <option value="">Select annuity type...</option>
                     {Object.entries(annuityTypesByCategory).map(([category, types]) => (
@@ -290,7 +292,7 @@ const AnnuityForm = ({ annuity = null, onSubmit, onCancel }) => {
                       id="funding_type"
                       value={formData.funding_type}
                       onChange={(e) => handleInputChange('funding_type', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
                     >
                       <option value="">Select funding type...</option>
                       {Object.entries(FUNDING_TYPES).map(([value, info]) => (
@@ -396,7 +398,7 @@ const AnnuityForm = ({ annuity = null, onSubmit, onCancel }) => {
                       id="tax_qualification"
                       value={formData.tax_qualification}
                       onChange={(e) => handleInputChange('tax_qualification', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
                     >
                       <option value="">Select qualification...</option>
                       {Object.entries(TAX_QUALIFICATIONS).map(([value, info]) => (

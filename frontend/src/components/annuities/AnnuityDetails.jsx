@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { useTheme } from '../../hooks/useTheme';
 import annuityService from '../../services/annuities';
 import AnnuityForm from './AnnuityForm';
 import { 
@@ -17,6 +18,7 @@ import {
 } from '../../constants/annuityTypes';
 
 const AnnuityDetails = ({ annuity, onUpdate, onDelete, onClose }) => {
+  const { theme } = useTheme();
   const [showEditForm, setShowEditForm] = useState(false);
   const [contributions, setContributions] = useState([]);
   const [valuations, setValuations] = useState([]);
@@ -64,7 +66,7 @@ const AnnuityDetails = ({ annuity, onUpdate, onDelete, onClose }) => {
   return (
     <>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg max-w-6xl w-full max-h-screen overflow-y-auto">
+        <div className="bg-card rounded-lg max-w-6xl w-full max-h-screen overflow-y-auto">
           <Card className="border-0 shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
               <div className="flex items-center space-x-4">

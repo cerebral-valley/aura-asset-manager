@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
+import { useTheme } from '../hooks/useTheme';
 import annuityService from '../services/annuities';
 import AnnuityForm from '../components/annuities/AnnuityForm';
 import AnnuityDetails from '../components/annuities/AnnuityDetails';
@@ -17,6 +18,7 @@ import {
 } from '../constants/annuityTypes';
 
 const AnnuitiesPage = () => {
+  const { theme } = useTheme();
   const [annuities, setAnnuities] = useState([]);
   const [portfolioSummary, setPortfolioSummary] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -189,7 +191,7 @@ const AnnuitiesPage = () => {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md"
+          className="px-3 py-2 border border-input rounded-md bg-background text-foreground"
         >
           <option value="">All Statuses</option>
           {Object.entries(CONTRACT_STATUSES).map(([value, info]) => (
@@ -200,7 +202,7 @@ const AnnuitiesPage = () => {
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md"
+          className="px-3 py-2 border border-input rounded-md bg-background text-foreground"
         >
           <option value="">All Types</option>
           {Object.entries(ANNUITY_TYPES).map(([value, info]) => (

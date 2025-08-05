@@ -1066,12 +1066,12 @@ const Assets = () => {
           }}
         >
           <div
-            className="bg-white rounded shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto relative"
+            className="bg-card rounded shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto relative"
             ref={modalRef}
             tabIndex={0}
             aria-label={editAsset ? 'Edit Asset Modal' : 'Add Asset Modal'}
           >
-            <div className="sticky top-0 bg-white border-b p-6 pb-4">
+            <div className="sticky top-0 bg-card border-b p-6 pb-4">
               <button
                 className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
                 onClick={closeModal}
@@ -1209,7 +1209,7 @@ const Assets = () => {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50"
+                    className="flex-1 border border-input text-foreground px-4 py-2 rounded hover:bg-muted"
                     disabled={actionLoading}
                   >
                     Cancel
