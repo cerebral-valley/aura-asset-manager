@@ -1040,7 +1040,7 @@ const Assets = () => {
                       )}
                     </React.Fragment>
                   ))}
-                  <tr className="border-t-2 font-bold bg-gray-50">
+                  <tr className={`border-t-2 font-bold ${isDark ? 'bg-neutral-950 text-neutral-100' : 'bg-gray-50'}`}>
                     <td className="py-2 px-4">Total</td>
                     <td className="py-2 px-4">-</td>
                     <td className="py-2 px-4">{formatCurrency(filteredTotalAcquisition)}</td>
