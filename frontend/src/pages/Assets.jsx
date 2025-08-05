@@ -53,6 +53,7 @@ const Assets = () => {
   const [globalPreferencesVersion, setGlobalPreferencesVersion] = useState(0);
 
   const fetchAssets = () => {
+    console.log('Assets: fetchAssets() called');
     setLoading(true);
     
     // Fetch both assets and transactions
@@ -61,8 +62,9 @@ const Assets = () => {
       transactionsService.getTransactions()
     ])
       .then(([assetsData, transactionsData]) => {
-        setAssets(assetsData);
-        setTransactions(transactionsData);
+        console.log('Assets: API calls successful', { assetsData, transactionsData });
+        setAssets(assetsData || []);
+        setTransactions(transactionsData || []);
         setLoading(false);
       })
       .catch(err => {
@@ -622,7 +624,19 @@ const Assets = () => {
     setActionLoading(false);
   };
 
-  if (loading) return <div>Loading assets...</div>;
+  console.log('Assets: Component render - loading:', loading, 'error:', error, 'assets count:', assets.length);
+  
+  if (loading) return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Assets</h1>
+      <div className="bg-card p-4 rounded">
+        <p>Loading assets... Please wait.</p>
+        <p className="text-sm text-muted-foreground mt-2">
+          If this takes too long, there might be an API connectivity issue.
+        </p>
+      </div>
+    </div>
+  );
 
   return (
     <div className="p-6 min-h-screen bg-background text-foreground">
