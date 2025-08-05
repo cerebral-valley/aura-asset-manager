@@ -648,7 +648,7 @@ const Assets = () => {
       {!error && activeAssets.length === 0 && (
         <div className="bg-card text-card-foreground rounded shadow p-6 flex flex-col items-center justify-center">
           <h2 className="font-semibold mb-2">No assets found</h2>
-          <p className="mb-4 text-gray-500">You have not added any assets yet. Click "New Transaction" above to create your first asset.</p>
+          <p className="mb-4 text-muted-foreground">You have not added any assets yet. Click "New Transaction" above to create your first asset.</p>
         </div>
       )}
 
@@ -801,7 +801,7 @@ const Assets = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <p className="text-sm font-medium truncate">{asset.name}</p>
-                          <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                          <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
                             {formatDate(asset.purchase_date)}
                           </span>
                         </div>
@@ -826,7 +826,7 @@ const Assets = () => {
                 <h3 className="font-semibold mb-2">Aggregate by Asset Type</h3>
                 <table className="min-w-full text-sm">
                   <thead>
-                    <tr className={isDark ? 'border-gray-600' : ''}>
+                    <tr className="border-b border-border">
                       <th className="text-left py-2 px-4">Asset Type</th>
                       <th className="text-left py-2 px-4">Latest Acquisition Value</th>
                       <th className="text-left py-2 px-4">% Share (Acq)</th>
@@ -1073,7 +1073,7 @@ const Assets = () => {
           >
             <div className="sticky top-0 bg-card border-b p-6 pb-4">
               <button
-                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
                 onClick={closeModal}
                 aria-label="Close"
               >✕</button>
