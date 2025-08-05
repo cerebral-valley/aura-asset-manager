@@ -441,9 +441,9 @@ const Insurance = () => {
 
       {/* If no error and no policies, show empty state */}
       {!error && policies.length === 0 && (
-        <div className="bg-white rounded shadow p-6 flex flex-col items-center justify-center">
-          <h2 className="font-semibold mb-2">No policies found</h2>
-          <p className="mb-4 text-gray-500">You have not added any insurance policies yet. Click "Add Policy" above to get started.</p>
+                <div className="bg-card rounded shadow p-6 flex flex-col items-center justify-center">
+          <h2 className="text-xl font-bold text-foreground mb-4">No Insurance Policies Found</h2>
+          <p className="text-muted-foreground mb-4">Start by adding your first insurance policy.</p>
         </div>
       )}
 
@@ -452,19 +452,26 @@ const Insurance = () => {
         <>
           {/* KPIs & Charts */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-white rounded shadow p-4">
+            <div className="bg-card text-card-foreground rounded shadow p-4">
               <h2 className="font-semibold mb-2">Annual Premiums Overview</h2>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={chartData}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
+                  <XAxis dataKey="name" stroke="currentColor" />
+                  <YAxis stroke="currentColor" />
+                  <Tooltip 
+                    formatter={(value) => formatCurrency(value)}
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      color: 'hsl(var(--card-foreground))'
+                    }} 
+                  />
                   <Legend />
                   <Bar dataKey="premium" fill="#8884d8" name="Annual Premium" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div className="bg-white rounded shadow p-4">
+            <div className="bg-card text-card-foreground rounded shadow p-4">
               <h2 className="font-semibold mb-2">Policy Type Breakdown</h2>
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
@@ -473,7 +480,13 @@ const Insurance = () => {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      color: 'hsl(var(--card-foreground))'
+                    }} 
+                  />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
@@ -484,7 +497,7 @@ const Insurance = () => {
           <div className="mb-8">
             <h2 className="text-xl font-bold mb-4">Policy Aggregates</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white rounded shadow p-4 overflow-x-auto">
+              <div className="bg-card text-card-foreground rounded shadow p-4 overflow-x-auto">
                 <h3 className="font-semibold mb-2">Aggregate by Active Policy Type</h3>
                 <table className="min-w-full text-sm">
                   <thead>
@@ -496,13 +509,13 @@ const Insurance = () => {
                   </thead>
                   <tbody>
                     {aggregateByType.map((row, idx) => (
-                      <tr key={row.type} className="border-t">
+                      <tr key={row.type} className="border-t border-border">
                         <td className="py-2 px-4">{row.type}</td>
                         <td className="py-2 px-4">{formatCurrency(row.annualPremium)}</td>
                         <td className="py-2 px-4">{formatCurrency(row.totalCoverage)}</td>
                       </tr>
                     ))}
-                    <tr className="border-t font-bold">
+                    <tr className="border-t border-border font-bold">
                       <td className="py-2 px-4">Total</td>
                       <td className="py-2 px-4">{formatCurrency(totalAnnualPremium)}</td>
                       <td className="py-2 px-4">{formatCurrency(totalCoverage)}</td>
@@ -510,7 +523,7 @@ const Insurance = () => {
                   </tbody>
                 </table>
               </div>
-              <div className="bg-white rounded shadow p-4 overflow-x-auto">
+              <div className="bg-card text-card-foreground rounded shadow p-4 overflow-x-auto">
                 <h3 className="font-semibold mb-2">Policy Type Counts</h3>
                 <table className="min-w-full text-sm">
                   <thead>
@@ -533,7 +546,7 @@ const Insurance = () => {
           </div>
 
           {/* Policies Table & Actions */}
-          <div className="bg-white rounded shadow p-4">
+          <div className="bg-card text-card-foreground rounded shadow p-4">
             <div className="flex justify-between items-center mb-2">
               <h2 className="font-semibold">All Policies</h2>
               <button
@@ -624,14 +637,14 @@ const Insurance = () => {
           }}
         >
           <div
-            className="bg-white rounded shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto relative"
+            className="bg-card text-card-foreground rounded shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto relative"
             ref={modalRef}
             tabIndex={0}
             aria-label={editPolicy ? 'Edit Policy Modal' : 'Add Policy Modal'}
           >
-            <div className="sticky top-0 bg-white border-b p-6 pb-4">
+            <div className="sticky top-0 bg-card text-card-foreground border-b border-border p-6 pb-4">
               <button
-                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
                 onClick={closeModal}
                 aria-label="Close"
               >✕</button>
@@ -830,13 +843,13 @@ const Insurance = () => {
                   />
                 </div>
 
-                {actionError && <div className="text-red-600 bg-red-50 p-3 rounded">{actionError}</div>}
+                {actionError && <div className="text-destructive bg-destructive/10 p-3 rounded">{actionError}</div>}
 
                 <div className="flex gap-3 pt-4">
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50"
+                    className="border border-input text-foreground px-4 py-2 rounded hover:bg-accent hover:text-accent-foreground"
                     disabled={actionLoading}
                   >
                     Cancel
