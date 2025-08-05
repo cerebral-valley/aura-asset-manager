@@ -52,27 +52,24 @@ const Assets = () => {
   // Global preferences trigger for re-renders
   const [globalPreferencesVersion, setGlobalPreferencesVersion] = useState(0);
 
-  const fetchAssets = () => {
+  const fetchAssets = async () => {
     console.log('Assets: fetchAssets() called');
     setLoading(true);
-    
-    // Fetch both assets and transactions
-    Promise.all([
-      assetsService.getAssets(),
-      transactionsService.getTransactions()
-    ])
-      .then(([assetsData, transactionsData]) => {
-        console.log('Assets: API calls successful', { assetsData, transactionsData });
-        setAssets(assetsData || []);
-        setTransactions(transactionsData || []);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('❌ Error fetching assets or transactions:', err);
-        setError('Failed to fetch data');
-        setLoading(false);
-        toast.error('Failed to fetch data');
-      });
+    try {
+      const [assetsData, transactionsData] = await Promise.all([
+        assetsService.getAssets(),
+        transactionsService.getTransactions()
+      ]);
+      console.log('Assets: API calls successful', { assetsData, transactionsData });
+      setAssets(assetsData || []);
+      setTransactions(transactionsData || []);
+    } catch (err) {
+      console.error('❌ Error fetching assets or transactions:', err);
+      setError('Failed to fetch data');
+      toast.error('Failed to fetch data');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
