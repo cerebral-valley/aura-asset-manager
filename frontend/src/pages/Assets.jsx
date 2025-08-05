@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../hooks/useTheme.jsx';
 import { assetsService } from '../services/assets';
 import { transactionsService } from '../services/transactions';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
@@ -15,7 +14,6 @@ const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888'];
 
 const Assets = () => {
   const navigate = useNavigate();
-  const { isDark } = useTheme();
   const [assets, setAssets] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,6 +37,7 @@ const Assets = () => {
   const [projectionGrowthRate, setProjectionGrowthRate] = useState(7); // Default 7% annual growth
   const [showProjections, setShowProjections] = useState(false);
   const [chartTimeRange, setChartTimeRange] = useState('all'); // 1M, 3M, 6M, 1Y, all
+  const [darkMode, setDarkMode] = useState(false);
   const [showTimeline, setShowTimeline] = useState(true);
   const [expandedAsset, setExpandedAsset] = useState(null); // For showing annuity manager
   
@@ -52,24 +51,25 @@ const Assets = () => {
   // Global preferences trigger for re-renders
   const [globalPreferencesVersion, setGlobalPreferencesVersion] = useState(0);
 
-  const fetchAssets = async () => {
-    console.log('Assets: fetchAssets() called');
+  const fetchAssets = () => {
     setLoading(true);
-    try {
-      const [assetsData, transactionsData] = await Promise.all([
-        assetsService.getAssets(),
-        transactionsService.getTransactions()
-      ]);
-      console.log('Assets: API calls successful', { assetsData, transactionsData });
-      setAssets(assetsData || []);
-      setTransactions(transactionsData || []);
-    } catch (err) {
-      console.error('❌ Error fetching assets or transactions:', err);
-      setError('Failed to fetch data');
-      toast.error('Failed to fetch data');
-    } finally {
-      setLoading(false);
-    }
+    
+    // Fetch both assets and transactions
+    Promise.all([
+      assetsService.getAssets(),
+      transactionsService.getTransactions()
+    ])
+      .then(([assetsData, transactionsData]) => {
+        setAssets(assetsData);
+        setTransactions(transactionsData);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('❌ Error fetching assets or transactions:', err);
+        setError('Failed to fetch data');
+        setLoading(false);
+        toast.error('Failed to fetch data');
+      });
   };
 
   useEffect(() => {
@@ -186,13 +186,16 @@ const Assets = () => {
   };
 
   // Filter out sold assets (but be permissive with null/undefined quantities)
-  // More permissive: consider asset active unless explicitly marked as sold and quantity is zero
   const activeAssets = assets.filter(asset => {
-    const status = asset?.asset_metadata?.status ? String(asset.asset_metadata.status).toLowerCase() : '';
-    const quantity = asset?.quantity;
-    // If status is 'sold' and quantity is 0, exclude. Otherwise, include.
-    if (status === 'sold' && (quantity === 0 || quantity === '0')) return false;
-    return true;
+    const quantity = asset.quantity;
+    const status = asset.asset_metadata?.status || 'active';
+    
+    // Consider asset active if:
+    // 1. Status is not 'sold'
+    // 2. AND (quantity is null/undefined OR quantity > 0)
+    const isActive = status !== 'sold' && (quantity === null || quantity === undefined || Number(quantity) > 0);
+    
+    return isActive;
   });
 
   console.log('🔍 Active assets count:', activeAssets.length);
@@ -618,10 +621,10 @@ const Assets = () => {
     setActionLoading(false);
   };
 
-  console.log('Assets: Component render - loading:', loading, 'error:', error, 'assets count:', assets.length);
-  
+  if (loading) return <div>Loading assets...</div>;
+
   return (
-    <div className="p-6 min-h-screen bg-background text-foreground">
+    <div className={`p-6 min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Assets</h1>
         <button
@@ -640,29 +643,28 @@ const Assets = () => {
         <div className="text-red-600 mb-4">{error}</div>
       )}
 
-      {/* If no error and no assets, show empty state, but add error boundary to prevent blank screen */}
-      {!error && activeAssets.length === 0 ? (
-        <div className="bg-card text-card-foreground rounded shadow p-6 flex flex-col items-center justify-center">
+      {/* If no error and no assets, show empty state */}
+      {!error && activeAssets.length === 0 && (
+        <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded shadow p-6 flex flex-col items-center justify-center`}>
           <h2 className="font-semibold mb-2">No assets found</h2>
-          <p className="mb-4 text-muted-foreground">You have not added any assets yet. Click "New Transaction" above to create your first asset.</p>
-          {/* Error boundary: show all assets for debugging if activeAssets is empty but assets exist */}
-          {assets.length > 0 && (
-            <div className="mt-4 p-4 bg-yellow-100 text-yellow-800 rounded">
-              <strong>Debug:</strong> Assets exist but are not shown as active.<br />
-              <pre className="text-xs overflow-x-auto max-h-40">{JSON.stringify(assets, null, 2)}</pre>
-            </div>
-          )}
+          <p className="mb-4 text-gray-500">You have not added any assets yet. Click "New Transaction" above to create your first asset.</p>
         </div>
-      ) : null}
+      )}
 
       {/* If assets exist, show charts and table */}
       {activeAssets.length > 0 && (
         <>
           {/* Control Panel */}
-          <div className={`bg-card text-card-foreground rounded shadow p-4 mb-6`}>
+          <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded shadow p-4 mb-6`}>
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <h3 className="font-semibold">Dashboard Controls</h3>
+                <button
+                  onClick={() => setDarkMode(!darkMode)}
+                  className={`px-3 py-1 rounded ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'}`}
+                >
+                  {darkMode ? '☀️ Light' : '🌙 Dark'}
+                </button>
               </div>
               
               <div className="flex items-center gap-4">
@@ -672,7 +674,7 @@ const Assets = () => {
                   <select
                     value={chartTimeRange}
                     onChange={(e) => setChartTimeRange(e.target.value)}
-                    className="px-2 py-1 rounded border text-sm bg-background border-input text-foreground"
+                    className={`px-2 py-1 rounded border text-sm ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
                   >
                     <option value="1M">1 Month</option>
                     <option value="3M">3 Months</option>
@@ -689,7 +691,7 @@ const Assets = () => {
                     onClick={() => setShowProjections(!showProjections)}
                     className={`px-3 py-1 rounded text-sm ${showProjections 
                       ? 'bg-blue-500 text-white' 
-                      : "bg-secondary hover:bg-secondary/80"
+                      : darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'
                     }`}
                   >
                     {showProjections ? 'Hide' : 'Show'}
@@ -703,7 +705,7 @@ const Assets = () => {
                       <select
                         value={projectionTimeframe}
                         onChange={(e) => setProjectionTimeframe(Number(e.target.value))}
-                        className={`px-2 py-1 rounded border text-sm bg-background border-input`}
+                        className={`px-2 py-1 rounded border text-sm ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
                       >
                         <option value={1}>1 Year</option>
                         <option value={3}>3 Years</option>
@@ -717,7 +719,7 @@ const Assets = () => {
                         type="number"
                         value={projectionGrowthRate}
                         onChange={(e) => setProjectionGrowthRate(Number(e.target.value))}
-                        className={`w-16 px-2 py-1 rounded border text-sm bg-background border-input`}
+                        className={`w-16 px-2 py-1 rounded border text-sm ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
                         min="0"
                         max="100"
                         step="0.1"
@@ -732,7 +734,7 @@ const Assets = () => {
           {/* Charts Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
             {/* Asset Value Over Time */}
-            <div className={`bg-card text-card-foreground rounded shadow p-4`}>
+            <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded shadow p-4`}>
               <h2 className="font-semibold mb-2">Asset Value Over Time</h2>
               <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={getEnhancedChartData()}>
@@ -756,7 +758,7 @@ const Assets = () => {
             </div>
 
             {/* Asset Distribution */}
-            <div className={`bg-card text-card-foreground rounded shadow p-4`}>
+            <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded shadow p-4`}>
               <h2 className="font-semibold mb-2">Asset Distribution</h2>
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
@@ -780,7 +782,7 @@ const Assets = () => {
             </div>
 
             {/* Asset Timeline */}
-            <div className={`bg-card text-card-foreground rounded shadow p-4`}>
+            <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded shadow p-4`}>
               <h2 className="font-semibold mb-2">Asset Timeline</h2>
               <div className="h-64 overflow-y-auto pr-2">
                 {activeAssets
@@ -796,7 +798,7 @@ const Assets = () => {
                           index % 4 === 2 ? 'bg-purple-500' : 'bg-orange-500'
                         }`}></div>
                         {index < activeAssets.filter(a => a.purchase_date).length - 1 && (
-                          <div className={`w-0.5 h-8 ${bg-border} mt-1`}></div>
+                          <div className={`w-0.5 h-8 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} mt-1`}></div>
                         )}
                       </div>
                       
@@ -804,11 +806,11 @@ const Assets = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <p className="text-sm font-medium truncate">{asset.name}</p>
-                          <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                          <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
                             {formatDate(asset.purchase_date)}
                           </span>
                         </div>
-                        <p className={`text-xs text-muted-foreground capitalize`}>
+                        <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} capitalize`}>
                           {getAssetTypeLabel(asset.asset_type)}
                         </p>
                         <p className="text-sm font-semibold text-green-600">
@@ -825,11 +827,11 @@ const Assets = () => {
           <div className="mb-8">
             <h2 className="text-xl font-bold mb-4">Asset Aggregates</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className={`bg-card rounded shadow p-4 overflow-x-auto`}>
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded shadow p-4 overflow-x-auto`}>
                 <h3 className="font-semibold mb-2">Aggregate by Asset Type</h3>
                 <table className="min-w-full text-sm">
                   <thead>
-                    <tr className="border-b border-border">
+                    <tr className={darkMode ? 'border-gray-600' : ''}>
                       <th className="text-left py-2 px-4">Asset Type</th>
                       <th className="text-left py-2 px-4">Latest Acquisition Value</th>
                       <th className="text-left py-2 px-4">% Share (Acq)</th>
@@ -840,7 +842,7 @@ const Assets = () => {
                   </thead>
                   <tbody>
                     {aggregateByType.map((row, idx) => (
-                      <tr key={row.type} className={`border-t border-border`}>
+                      <tr key={row.type} className={`border-t ${darkMode ? 'border-gray-600' : ''}`}>
                         <td className="py-2 px-4">{row.type}</td>
                         <td className="py-2 px-4">{formatCurrency(row.acquisitionValue)}</td>
                         <td className="py-2 px-4">{formatPercentage(row.acquisitionValue, totalAcquisitionValue)}</td>
@@ -849,7 +851,7 @@ const Assets = () => {
                         <td className="py-2 px-4">{row.displayValue}</td>
                       </tr>
                     ))}
-                    <tr className={`border-t font-bold border-border`}>
+                    <tr className={`border-t font-bold ${darkMode ? 'border-gray-600' : ''}`}>
                       <td className="py-2 px-4">Total</td>
                       <td className="py-2 px-4">{formatCurrency(totalAcquisitionValue)}</td>
                       <td className="py-2 px-4">100%</td>
@@ -860,12 +862,12 @@ const Assets = () => {
                   </tbody>
                 </table>
               </div>
-              <div className={`bg-card rounded shadow p-4 overflow-x-auto`}>
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded shadow p-4 overflow-x-auto`}>
                 <h3 className="font-semibold mb-2">Detailed Asset Breakdown</h3>
                 <div className="max-h-80 overflow-y-auto">
                   <table className="min-w-full text-sm">
                     <thead className="sticky top-0 bg-inherit">
-                      <tr className={`border-border border-b`}>
+                      <tr className={`${darkMode ? 'border-gray-600' : 'border-gray-200'} border-b`}>
                         <th className="text-left py-2 px-4 font-medium">Asset Type</th>
                         <th className="text-left py-2 px-4 font-medium">Invested Value</th>
                         <th className="text-left py-2 px-4 font-medium">Present Value</th>
@@ -875,11 +877,11 @@ const Assets = () => {
                     </thead>
                     <tbody>
                       {detailedAssetBreakdown.map((item, idx) => (
-                        <tr key={item.assetType} className={`border-t border-border`}>
+                        <tr key={item.assetType} className={`border-t ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
                           <td className="py-2 px-4">
                             <div>
                               <div className="font-medium">{item.assetType}</div>
-                              <div className={`text-xs text-muted-foreground`}>
+                              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                 {item.category}
                               </div>
                             </div>
@@ -890,7 +892,7 @@ const Assets = () => {
                           <td className="py-2 px-4">{item.presentPercentage.toFixed(1)}%</td>
                         </tr>
                       ))}
-                      <tr className={`border-t-2 font-bold border-border bg-muted`}>
+                      <tr className={`border-t-2 font-bold ${darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-300 bg-gray-50'}`}>
                         <td className="py-2 px-4">Total</td>
                         <td className="py-2 px-4">{formatCurrency(detailedTotalAcquisition)}</td>
                         <td className="py-2 px-4">{formatCurrency(detailedTotalPresent)}</td>
@@ -905,7 +907,7 @@ const Assets = () => {
           </div>
 
           {/* Assets Table */}
-          <div className={`bg-card rounded shadow p-4`}>
+          <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded shadow p-4`}>
             <div className="mb-4">
               <h2 className="font-semibold mb-3">All Assets</h2>
               
@@ -916,7 +918,9 @@ const Assets = () => {
                   <input
                     type="text"
                     placeholder="Search asset name..."
-                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-background border-input text-foreground placeholder:text-muted-foreground"
+                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'
+                    }`}
                     value={nameFilter}
                     onChange={(e) => setNameFilter(e.target.value)}
                   />
@@ -926,7 +930,9 @@ const Assets = () => {
                   <input
                     type="text"
                     placeholder="Search asset type..."
-                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-background border-input text-foreground placeholder:text-muted-foreground"
+                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'
+                    }`}
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
                   />
@@ -935,7 +941,9 @@ const Assets = () => {
                   <label className="block text-sm font-medium mb-1">Date From</label>
                   <input
                     type="date"
-                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-background border-input text-foreground"
+                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
+                    }`}
                     value={dateFromFilter}
                     onChange={(e) => setDateFromFilter(e.target.value)}
                   />
@@ -944,7 +952,9 @@ const Assets = () => {
                   <label className="block text-sm font-medium mb-1">Date To</label>
                   <input
                     type="date"
-                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-background border-input text-foreground"
+                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
+                    }`}
                     value={dateToFilter}
                     onChange={(e) => setDateToFilter(e.target.value)}
                   />
@@ -958,27 +968,27 @@ const Assets = () => {
               <table className="min-w-full text-sm" aria-label="Assets Table">
                 <thead>
                   <tr>
-                    <th className={`text-left py-2 px-4 cursor-pointer hover:bg-accent`} onClick={() => handleSort('name')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('name')}>
                       Name {sortField === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className={`text-left py-2 px-4 cursor-pointer hover:bg-accent`} onClick={() => handleSort('type')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('type')}>
                       Type {sortField === 'type' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className={`text-left py-2 px-4 cursor-pointer hover:bg-accent`} onClick={() => handleSort('acquisition_value')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('acquisition_value')}>
                       Acquisition Value {sortField === 'acquisition_value' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className={`text-left py-2 px-4 cursor-pointer hover:bg-accent`} onClick={() => handleSort('present_value')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('present_value')}>
                       Present Value {sortField === 'present_value' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className={`text-left py-2 px-4 cursor-pointer hover:bg-accent`} onClick={() => handleSort('quantity')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('quantity')}>
                       Quantity {sortField === 'quantity' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
                     <th className="text-left py-2 px-4">Unit</th>
-                    <th className={`text-left py-2 px-4 cursor-pointer hover:bg-accent`} onClick={() => handleSort('purchase_date')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('purchase_date')}>
                       Purchase Date {sortField === 'purchase_date' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
                     <th className="text-left py-2 px-4">Notes</th>
-                    <th className={`text-left py-2 px-4 cursor-pointer hover:bg-accent`} onClick={() => handleSort('share_percentage')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('share_percentage')}>
                       % Share {sortField === 'share_percentage' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
                     <th className="text-left py-2 px-4">Actions</th>
@@ -987,7 +997,7 @@ const Assets = () => {
                 <tbody>
                   {filteredAndSortedAssets.map((asset, idx) => (
                     <React.Fragment key={asset.id || idx}>
-                      <tr className={`border-t border-border`}>
+                      <tr className={`border-t ${darkMode ? 'border-gray-600' : ''}`}>
                         <td className="py-2 px-4">{asset.name || 'Asset'}</td>
                         <td className="py-2 px-4">{getAssetTypeLabel(asset.asset_type)}</td>
                         <td className="py-2 px-4">{formatCurrency(getAcquisitionValue(asset))}</td>
@@ -1069,14 +1079,14 @@ const Assets = () => {
           }}
         >
           <div
-            className="bg-card rounded shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto relative"
+            className="bg-white rounded shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto relative"
             ref={modalRef}
             tabIndex={0}
             aria-label={editAsset ? 'Edit Asset Modal' : 'Add Asset Modal'}
           >
-            <div className="sticky top-0 bg-card border-b p-6 pb-4">
+            <div className="sticky top-0 bg-white border-b p-6 pb-4">
               <button
-                className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
                 onClick={closeModal}
                 aria-label="Close"
               >✕</button>
@@ -1212,7 +1222,7 @@ const Assets = () => {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="flex-1 border border-input text-foreground px-4 py-2 rounded hover:bg-muted"
+                    className="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50"
                     disabled={actionLoading}
                   >
                     Cancel
