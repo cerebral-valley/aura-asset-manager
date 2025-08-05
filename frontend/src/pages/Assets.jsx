@@ -186,16 +186,13 @@ const Assets = () => {
   };
 
   // Filter out sold assets (but be permissive with null/undefined quantities)
+  // More permissive: consider asset active unless explicitly marked as sold and quantity is zero
   const activeAssets = assets.filter(asset => {
-    const quantity = asset.quantity;
-    const status = asset.asset_metadata?.status || 'active';
-    
-    // Consider asset active if:
-    // 1. Status is not 'sold'
-    // 2. AND (quantity is null/undefined OR quantity > 0)
-    const isActive = status !== 'sold' && (quantity === null || quantity === undefined || Number(quantity) > 0);
-    
-    return isActive;
+    const status = asset?.asset_metadata?.status ? String(asset.asset_metadata.status).toLowerCase() : '';
+    const quantity = asset?.quantity;
+    // If status is 'sold' and quantity is 0, exclude. Otherwise, include.
+    if (status === 'sold' && (quantity === 0 || quantity === '0')) return false;
+    return true;
   });
 
   console.log('🔍 Active assets count:', activeAssets.length);
@@ -623,8 +620,6 @@ const Assets = () => {
 
   console.log('Assets: Component render - loading:', loading, 'error:', error, 'assets count:', assets.length);
   
-  // ...existing code...
-
   return (
     <div className="p-6 min-h-screen bg-background text-foreground">
       <div className="flex justify-between items-center mb-4">
@@ -645,13 +640,20 @@ const Assets = () => {
         <div className="text-red-600 mb-4">{error}</div>
       )}
 
-      {/* If no error and no assets, show empty state */}
-      {!error && activeAssets.length === 0 && (
+      {/* If no error and no assets, show empty state, but add error boundary to prevent blank screen */}
+      {!error && activeAssets.length === 0 ? (
         <div className="bg-card text-card-foreground rounded shadow p-6 flex flex-col items-center justify-center">
           <h2 className="font-semibold mb-2">No assets found</h2>
           <p className="mb-4 text-muted-foreground">You have not added any assets yet. Click "New Transaction" above to create your first asset.</p>
+          {/* Error boundary: show all assets for debugging if activeAssets is empty but assets exist */}
+          {assets.length > 0 && (
+            <div className="mt-4 p-4 bg-yellow-100 text-yellow-800 rounded">
+              <strong>Debug:</strong> Assets exist but are not shown as active.<br />
+              <pre className="text-xs overflow-x-auto max-h-40">{JSON.stringify(assets, null, 2)}</pre>
+            </div>
+          )}
         </div>
-      )}
+      ) : null}
 
       {/* If assets exist, show charts and table */}
       {activeAssets.length > 0 && (
