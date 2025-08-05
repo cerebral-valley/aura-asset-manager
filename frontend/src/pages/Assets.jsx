@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme } from '../hooks/useTheme.jsx';
 import { assetsService } from '../services/assets';
 import { transactionsService } from '../services/transactions';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
