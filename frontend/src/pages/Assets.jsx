@@ -669,7 +669,7 @@ const Assets = () => {
                   <select
                     value={chartTimeRange}
                     onChange={(e) => setChartTimeRange(e.target.value)}
-                    className="px-2 py-1 rounded border text-sm "bg-background border-input text-foreground""
+                    className="px-2 py-1 rounded border text-sm bg-background border-input text-foreground"
                   >
                     <option value="1M">1 Month</option>
                     <option value="3M">3 Months</option>
@@ -913,9 +913,7 @@ const Assets = () => {
                   <input
                     type="text"
                     placeholder="Search asset name..."
-                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      ""bg-background border-input text-foreground" placeholder:text-muted-foreground"
-                    }`}
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-background border-input text-foreground placeholder:text-muted-foreground"
                     value={nameFilter}
                     onChange={(e) => setNameFilter(e.target.value)}
                   />
@@ -925,9 +923,7 @@ const Assets = () => {
                   <input
                     type="text"
                     placeholder="Search asset type..."
-                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      ""bg-background border-input text-foreground" placeholder:text-muted-foreground"
-                    }`}
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-background border-input text-foreground placeholder:text-muted-foreground"
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
                   />
@@ -936,9 +932,7 @@ const Assets = () => {
                   <label className="block text-sm font-medium mb-1">Date From</label>
                   <input
                     type="date"
-                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      "bg-background border-input text-foreground"
-                    }`}
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-background border-input text-foreground"
                     value={dateFromFilter}
                     onChange={(e) => setDateFromFilter(e.target.value)}
                   />
@@ -947,9 +941,7 @@ const Assets = () => {
                   <label className="block text-sm font-medium mb-1">Date To</label>
                   <input
                     type="date"
-                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      "bg-background border-input text-foreground"
-                    }`}
+                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-background border-input text-foreground"
                     value={dateToFilter}
                     onChange={(e) => setDateToFilter(e.target.value)}
                   />
