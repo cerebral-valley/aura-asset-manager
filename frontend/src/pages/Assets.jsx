@@ -16,7 +16,7 @@ const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888'];
 
 const Assets = () => {
   const navigate = useNavigate();
-  const { formatCurrency } = useCurrency();
+  const { formatCurrency, getCurrencySymbol } = useCurrency();
   const [assets, setAssets] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -101,6 +101,28 @@ const Assets = () => {
     if (isNaN(numAmount) || numAmount === 0) return formatCurrency(0);
 
     return formatCurrency(numAmount);
+  };
+
+  // Y-axis formatter with abbreviations for large numbers
+  const formatYAxisCurrency = (amount) => {
+    if (!amount || amount === 0 || amount === '0' || amount === '') return '0';
+
+    // Convert string to number if needed
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+
+    if (isNaN(numAmount) || numAmount === 0) return '0';
+
+    // Get currency symbol
+    const symbol = getCurrencySymbol();
+
+    // Format with abbreviations for better readability
+    if (Math.abs(numAmount) >= 1000000) {
+      return `${symbol}${(numAmount / 1000000).toFixed(1)}M`;
+    } else if (Math.abs(numAmount) >= 1000) {
+      return `${symbol}${(numAmount / 1000).toFixed(0)}K`;
+    } else {
+      return `${symbol}${numAmount.toFixed(0)}`;
+    }
   };
 
   // Projection calculation functions
@@ -472,7 +494,7 @@ const Assets = () => {
       value: item.presentValue
     }));
 
-  // Value over time chart data (simplified - using purchase dates)
+  // Value over time chart data (cumulative - showing portfolio growth over time)
   const valueOverTimeData = activeAssets
     .filter(asset => asset.purchase_date && (getAcquisitionValue(asset) > 0 || getPresentValue(asset) > 0))
     .map(asset => ({
@@ -484,16 +506,32 @@ const Assets = () => {
     }))
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  // Group by year for chart
-  const yearlyData = valueOverTimeData.reduce((acc, asset) => {
-    const year = asset.year;
-    if (!acc[year]) {
-      acc[year] = { year, acquisitionValue: 0, presentValue: 0 };
-    }
-    acc[year].acquisitionValue += asset.acquisitionValue;
-    acc[year].presentValue += asset.presentValue;
-    return acc;
-  }, {});
+  // Create cumulative chart data - shows how portfolio built up over time
+  const yearlyData = {};
+  let cumulativeAcquisition = 0;
+  let cumulativePresent = 0;
+
+  // Get all unique years from earliest to latest
+  const allYears = [...new Set(valueOverTimeData.map(asset => asset.year))].sort();
+  
+  allYears.forEach(year => {
+    // Add acquisition values for assets purchased in this year
+    const assetsThisYear = valueOverTimeData.filter(asset => asset.year === year);
+    const yearAcquisition = assetsThisYear.reduce((sum, asset) => sum + asset.acquisitionValue, 0);
+    
+    cumulativeAcquisition += yearAcquisition;
+    
+    // For present value, we show current total value of all assets purchased up to this year
+    cumulativePresent = valueOverTimeData
+      .filter(asset => asset.year <= year)
+      .reduce((sum, asset) => sum + asset.presentValue, 0);
+    
+    yearlyData[year] = { 
+      year, 
+      acquisitionValue: cumulativeAcquisition, 
+      presentValue: cumulativePresent 
+    };
+  });
 
   const chartData = Object.values(yearlyData).sort((a, b) => a.year - b.year);
 
@@ -699,7 +737,7 @@ const Assets = () => {
               <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={getEnhancedChartData()}>
                   <XAxis dataKey="year" />
-                  <YAxis tickFormatter={formatChartCurrency} />
+                  <YAxis tickFormatter={formatYAxisCurrency} />
                   <Tooltip formatter={(value) => formatChartCurrency(value)} />
                   <Legend />
                   <Line type="monotone" dataKey="acquisitionValue" stroke="#8884d8" name="Acquisition Value" />
@@ -793,7 +831,7 @@ const Assets = () => {
                   <thead>
                     <tr className={isDark ? 'border-gray-600' : ''}>
                       <th className="text-left py-2 px-4">Asset Type</th>
-                      <th className="text-left py-2 px-4">Latest Acquisition Value</th>
+                      <th className="text-left py-2 px-4">Acquisition Value</th>
                       <th className="text-left py-2 px-4">% Share (Acq)</th>
                       <th className="text-left py-2 px-4">Latest Market Value</th>
                       <th className="text-left py-2 px-4">% Share (Market)</th>
