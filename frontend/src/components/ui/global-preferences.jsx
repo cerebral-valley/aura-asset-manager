@@ -115,14 +115,16 @@ export const formatCurrency = (amount, currencyCode = null) => {
   const currency = currencyCode || localStorage.getItem('globalCurrency') || 'USD'
   const config = CURRENCIES[currency]
   
-  if (!config) return `$${amount?.toLocaleString() || 0}`
+  if (!config || amount === null || amount === undefined || isNaN(amount)) {
+    return `${CURRENCIES[currency]?.symbol || '$'}${amount?.toLocaleString() || 0}`
+  }
   
   return new Intl.NumberFormat(config.format, {
     style: 'currency',
     currency: currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount || 0)
+  }).format(amount)
 }
 
 export const formatDate = (date, formatCode = null) => {

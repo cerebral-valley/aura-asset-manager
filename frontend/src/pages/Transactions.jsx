@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/hooks/useAuth'
+import { useCurrency } from '@/hooks/useCurrency'
 import { useToast } from '@/hooks/use-toast'
 import ConfirmationDialog from '@/components/ui/confirmation-dialog'
 import {
@@ -52,6 +53,7 @@ const transactionTypes = [
 export default function Transactions() {
   console.log('Transactions: Component initializing')
   
+  const { formatCurrency } = useCurrency()
   const [transactions, setTransactions] = useState([])
   const [assets, setAssets] = useState([])
   const [loading, setLoading] = useState(true)
@@ -571,16 +573,6 @@ export default function Transactions() {
         </div>
       </TableHead>
     )
-  }
-
-  const formatCurrency = (amount) => {
-    // Get global currency preference
-    const globalCurrency = localStorage.getItem('globalCurrency') || 'USD';
-    
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: globalCurrency
-    }).format(amount || 0)
   }
 
   const getTransactionTypeInfo = (type) => {

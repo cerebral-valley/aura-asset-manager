@@ -1,17 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTheme } from '../hooks/useTheme';
+import { useCurrency } from '../hooks/useCurrency';
 import { assetsService } from '../services/assets';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { formatCurrency } from '@/components/ui/global-preferences';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Calculator, TrendingUp, Info } from 'lucide-react';
 import { Tooltip as InfoTooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 const Analytics = () => {
   const { isDark } = useTheme();
+  const { formatCurrency } = useCurrency();
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(true);
   const currentYear = new Date().getFullYear();
@@ -55,9 +57,12 @@ const Analytics = () => {
 
   // Calculate current portfolio value
   const currentPortfolioValue = useMemo(() => {
+    if (!assets || assets.length === 0) return 0;
+    
     return assets.reduce((total, asset) => {
-      const currentValue = asset.current_value || asset.initial_value || 0;
-      return total + currentValue;
+      // Use current_value if available, otherwise fall back to initial_value, then 0
+      const currentValue = asset.current_value ?? asset.initial_value ?? 0;
+      return total + (isNaN(currentValue) ? 0 : currentValue);
     }, 0);
   }, [assets]);
 
@@ -210,34 +215,52 @@ const Analytics = () => {
                 </TooltipContent>
               </InfoTooltip>
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {assets.map(asset => {
-                const currentValue = asset.current_value || asset.initial_value || 0;
-                return (
-                  <div key={asset.id} className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <Label className="text-sm font-medium">
-                        {asset.name}
-                      </Label>
-                      <span className="text-xs text-muted-foreground">
-                        {formatCurrency(currentValue)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        step="0.1"
-                        value={assetGrowthRates[asset.id] || 5.0}
-                        onChange={(e) => handleGrowthRateChange(asset.id, e.target.value)}
-                        min="0"
-                        max="50"
-                        className="flex-1"
-                      />
-                      <span className="text-sm text-muted-foreground">%</span>
-                    </div>
-                  </div>
-                );
-              })}
+            
+            {/* Assets Table */}
+            <div className="border rounded-lg">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[300px]">Asset Name</TableHead>
+                    <TableHead className="text-right">Market Value</TableHead>
+                    <TableHead className="text-center w-[150px]">Growth Rate (%)</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {assets.map(asset => {
+                    const currentValue = asset.current_value ?? asset.initial_value ?? 0;
+                    return (
+                      <TableRow key={asset.id}>
+                        <TableCell className="font-medium">
+                          <div className="flex flex-col">
+                            <span>{asset.name}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {asset.asset_type} • Qty: {asset.quantity}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          {formatCurrency(currentValue)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <Input
+                              type="number"
+                              step="0.1"
+                              value={assetGrowthRates[asset.id] || 5.0}
+                              onChange={(e) => handleGrowthRateChange(asset.id, e.target.value)}
+                              min="0"
+                              max="50"
+                              className="w-20 text-center"
+                            />
+                            <span className="text-sm text-muted-foreground">%</span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </div>
           </div>
         </CardContent>

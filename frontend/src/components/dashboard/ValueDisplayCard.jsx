@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card.jsx'
 import { TrendingUp, TrendingDown, Info } from 'lucide-react'
-import { formatCurrency } from '../ui/global-preferences.jsx'
+import { useCurrency } from '../../hooks/useCurrency.jsx'
 import { Tooltip, TooltipTrigger, TooltipContent } from '../ui/tooltip.jsx'
 
 const ValueDisplayCard = ({ 
@@ -13,6 +13,8 @@ const ValueDisplayCard = ({
   className = '',
   tooltip = null // New tooltip prop
 }) => {
+  const { formatCurrency } = useCurrency()
+  
   const formatValue = (val) => {
     if (typeof val === 'number') {
       return formatCurrency(val)

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useTheme } from '../hooks/useTheme';
+import { useCurrency } from '../hooks/useCurrency';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { assetsService } from '../services/assets';
@@ -15,6 +16,7 @@ const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888'];
 
 const Assets = () => {
   const navigate = useNavigate();
+  const { formatCurrency } = useCurrency();
   const [assets, setAssets] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -89,43 +91,16 @@ const Assets = () => {
     };
   }, []);
 
-  // Helper functions for display formatting
-  const formatCurrency = (amount) => {
-    if (!amount || amount === 0 || amount === '0' || amount === '') return '-';
-
-    // Convert string to number if needed
-    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-
-    if (isNaN(numAmount) || numAmount === 0) return '-';
-
-    // Get global currency preference
-    const globalCurrency = localStorage.getItem('globalCurrency') || 'USD';
-
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: globalCurrency,
-      minimumFractionDigits: 2
-    }).format(numAmount);
-  };
-
   // Currency formatter for charts (no decimals)
   const formatChartCurrency = (amount) => {
-    if (!amount || amount === 0 || amount === '0' || amount === '') return '$0';
+    if (!amount || amount === 0 || amount === '0' || amount === '') return formatCurrency(0);
 
     // Convert string to number if needed
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
 
-    if (isNaN(numAmount) || numAmount === 0) return '$0';
+    if (isNaN(numAmount) || numAmount === 0) return formatCurrency(0);
 
-    // Get global currency preference
-    const globalCurrency = localStorage.getItem('globalCurrency') || 'USD';
-
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: globalCurrency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(numAmount);
+    return formatCurrency(numAmount);
   };
 
   // Projection calculation functions

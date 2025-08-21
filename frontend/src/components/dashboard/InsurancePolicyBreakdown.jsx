@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card.jsx'
-import { formatCurrency } from '../ui/global-preferences.jsx'
+import { useCurrency } from '../../hooks/useCurrency.jsx'
 import apiClient from '@/lib/api'
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888']
 
 const InsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown" }) => {
+  const { formatCurrency } = useCurrency()
   const [policies, setPolicies] = useState([])
   const [loading, setLoading] = useState(true)
 
