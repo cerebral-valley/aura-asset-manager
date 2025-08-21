@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -102,7 +102,9 @@ export default function Transactions() {
     custom_properties: '',
     // Transaction fields
     amount: '',
-    notes: ''
+    notes: '',
+    // Bank/Cash selection for sales
+    bank_cash_id: ''
   })
   
   const { toast } = useToast()
@@ -173,7 +175,8 @@ export default function Transactions() {
       description: '',
       custom_properties: '',
       amount: '',
-      notes: ''
+      notes: '',
+      bank_cash_id: ''
     })
     setSelectedTransactionType('create')
     setEditingTransaction(null)
@@ -296,36 +299,78 @@ export default function Transactions() {
             assetId: transactionForm.asset_id,
             code: 'UPDATE_001'
           })
-          
+
           if (!transactionForm.asset_id) {
             throw new Error('VALIDATION_ERROR_004: Asset selection is required for updates')
           }
-          
-          // For other transaction types, just create the transaction
-          const transactionData = {
-            asset_id: transactionForm.asset_id,
-            transaction_type: transactionForm.transaction_type,
-            transaction_date: new Date().toISOString().split('T')[0],
-            amount: parseFloat(transactionForm.amount) || 0,
-            notes: transactionForm.notes?.trim() || ''
+
+          // Sale logic: create two transactions
+          if (transactionForm.transaction_type === 'sale') {
+            if (!transactionForm.bank_cash_id) {
+              throw new Error('VALIDATION_ERROR_005: Please select a bank or cash account to deposit sale amount')
+            }
+
+            // 1. Record asset sale transaction
+            const saleTransaction = {
+              asset_id: transactionForm.asset_id,
+              transaction_type: 'sale',
+              transaction_date: new Date().toISOString().split('T')[0],
+              amount: parseFloat(transactionForm.amount) || 0,
+              notes: transactionForm.notes?.trim() || ''
+            }
+            await transactionsService.createTransaction(saleTransaction)
+
+            // 2. Record cash/bank increase transaction
+            const cashTransaction = {
+              asset_id: transactionForm.bank_cash_id,
+              transaction_type: 'update_market_value',
+              transaction_date: new Date().toISOString().split('T')[0],
+              amount: parseFloat(transactionForm.amount) || 0,
+              notes: `Asset sale proceeds from asset ID ${transactionForm.asset_id}`
+            }
+            await transactionsService.createTransaction(cashTransaction)
+
+            toast({
+              title: "Sale recorded!",
+              description: "Asset marked as sold and sale amount deposited to selected account.",
+            })
+          } else {
+            // For other transaction types, just create the transaction
+            const transactionData = {
+              asset_id: transactionForm.asset_id,
+              transaction_type: transactionForm.transaction_type,
+              transaction_date: new Date().toISOString().split('T')[0],
+              amount: parseFloat(transactionForm.amount) || 0,
+              notes: transactionForm.notes?.trim() || ''
+            }
+
+            // Add asset_name for update_name transactions
+            if (transactionForm.transaction_type === 'update_name' && transactionForm.asset_name) {
+              transactionData.asset_name = transactionForm.asset_name.trim()
+            }
+
+            // Add asset_type for update_type transactions  
+            if (transactionForm.transaction_type === 'update_type' && transactionForm.asset_type) {
+              transactionData.asset_type = transactionForm.asset_type
+            }
+
+            console.log('📋 UPDATE_TRANSACTION_DATA: Update transaction data', {
+              transactionData,
+              code: 'UPDATE_002'
+            })
+
+            await transactionsService.createTransaction(transactionData)
+
+            console.log('✅ UPDATE_SUCCESS: Transaction updated', {
+              transactionType: transactionForm.transaction_type,
+              code: 'UPDATE_003'
+            })
+
+            toast({
+              title: "Transaction recorded successfully!",
+              description: "The transaction has been processed.",
+            })
           }
-          
-          console.log('📋 UPDATE_TRANSACTION_DATA: Update transaction data', {
-            transactionData,
-            code: 'UPDATE_002'
-          })
-          
-          await transactionsService.createTransaction(transactionData)
-          
-          console.log('✅ UPDATE_SUCCESS: Transaction updated', {
-            transactionType: transactionForm.transaction_type,
-            code: 'UPDATE_003'
-          })
-          
-          toast({
-            title: "Transaction recorded successfully!",
-            description: "The transaction has been processed.",
-          })
         }
       }
       
@@ -772,13 +817,14 @@ export default function Transactions() {
                       </SelectTrigger>
                       <SelectContent>
                         {Object.entries(assetTypes).map(([category, types]) => (
-                          <React.Fragment key={category}>
-                            {types.map((type) => (
-                              <SelectItem key={type.value} value={type.value}>
-                                {category} - {type.label}
-                              </SelectItem>
-                            ))}
-                          </React.Fragment>
+                          // Exclude annuities from dropdown
+                          category.includes('Annuities')
+                            ? null
+                            : types.map((type) => (
+                                <SelectItem key={type.value} value={type.value}>
+                                  {category} - {type.label}
+                                </SelectItem>
+                              ))
                         ))}
                       </SelectContent>
                     </Select>
@@ -898,11 +944,9 @@ export default function Transactions() {
             )}
 
             {/* Amount field for value updates */}
-            {['update_acquisition_value', 'update_market_value', 'sale'].includes(selectedTransactionType) && (
+            {['update_acquisition_value', 'update_market_value'].includes(selectedTransactionType) && (
               <div className="space-y-2">
-                <Label htmlFor="amount">
-                  {selectedTransactionType === 'sale' ? 'Sale Amount' : 'New Value'} *
-                </Label>
+                <Label htmlFor="amount">New Value *</Label>
                 <Input
                   id="amount"
                   type="number"
@@ -912,6 +956,89 @@ export default function Transactions() {
                   placeholder="0.00"
                   required
                 />
+              </div>
+            )}
+
+            {/* Sale flow: Sale Amount and Bank/Cash selection */}
+            {selectedTransactionType === 'sale' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="amount">Sale Amount *</Label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    step="0.01"
+                    value={transactionForm.amount}
+                    onChange={(e) => setTransactionForm({...transactionForm, amount: e.target.value})}
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="bank_cash_select">Deposit To *</Label>
+                  <Select
+                    value={transactionForm.bank_cash_id || ''}
+                    onValueChange={(value) => setTransactionForm({...transactionForm, bank_cash_id: value})}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Bank or Cash" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {/* List all assets of type 'bank' or 'cash_in_hand' */}
+                      {assets
+                        .filter(asset => ['bank', 'cash_in_hand'].includes(asset.asset_type))
+                        .map(asset => (
+                          <SelectItem key={asset.id} value={asset.id}>
+                            {asset.name} ({asset.asset_type === 'bank' ? 'Bank Account' : 'Cash in Hand'})
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+
+            {/* Asset Name Input for Update Name */}
+            {selectedTransactionType === 'update_name' && (
+              <div className="space-y-2">
+                <Label htmlFor="asset_name">New Asset Name *</Label>
+                <Input
+                  id="asset_name"
+                  type="text"
+                  placeholder="Enter new asset name"
+                  value={transactionForm.asset_name || ''}
+                  onChange={(e) => setTransactionForm({...transactionForm, asset_name: e.target.value})}
+                  required
+                />
+              </div>
+            )}
+
+            {/* Asset Type Select for Update Type */}
+            {selectedTransactionType === 'update_type' && (
+              <div className="space-y-2">
+                <Label htmlFor="asset_type">New Asset Type *</Label>
+                <Select 
+                  value={transactionForm.asset_type || ''} 
+                  onValueChange={(value) => setTransactionForm({...transactionForm, asset_type: value})}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select new asset type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(transactionAssetTypes).map(([category, types]) => (
+                      <SelectGroup key={category}>
+                        <SelectLabel>{category.charAt(0).toUpperCase() + category.slice(1)}</SelectLabel>
+                        {types.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             )}
 

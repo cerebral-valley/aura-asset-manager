@@ -28,7 +28,7 @@ async def get_transactions(
     # Add asset information to transactions
     result = []
     for transaction in transactions:
-        transaction_dict = TransactionSchema.from_orm(transaction).dict()
+        transaction_dict = TransactionSchema.model_validate(transaction).model_dump()
         transaction_dict['asset_name'] = transaction.asset.name
         transaction_dict['asset_type'] = transaction.asset.asset_type
         result.append(transaction_dict)
@@ -42,6 +42,9 @@ async def create_transaction(
     db: Session = Depends(get_db)
 ):
     """Create a new transaction. For 'create' type, also creates the asset."""
+    
+    # Initialize asset variable
+    asset = None
     
     # 🎯 HANDLE ASSET CREATION FOR 'CREATE' TRANSACTION TYPE
     if transaction.transaction_type == "create":
@@ -75,8 +78,11 @@ async def create_transaction(
         db.add(db_asset)
         db.flush()  # Get the asset ID without committing
         
+        # Set asset reference for later use
+        asset = db_asset
+        
         # Now create the transaction with the new asset_id
-        transaction_data = transaction.dict()
+        transaction_data = transaction.model_dump()
         transaction_data["asset_id"] = db_asset.id
         db_transaction = Transaction(**transaction_data, user_id=current_user.id)
         
@@ -99,34 +105,34 @@ async def create_transaction(
                 detail="Asset not found"
             )
         
-        db_transaction = Transaction(**transaction.dict(), user_id=current_user.id)
+        db_transaction = Transaction(**transaction.model_dump(), user_id=current_user.id)
     
     db.add(db_transaction)
-    
+
     # Update asset values based on transaction type
-    # For 'create' transactions, the asset is already properly initialized
-    if transaction.transaction_type == "create":
-        # Asset values are already set during creation, no additional updates needed
-        pass
-    elif transaction.transaction_type == "purchase" and transaction.quantity_change:
-        if asset.quantity:
-            asset.quantity += transaction.quantity_change
-        else:
-            asset.quantity = transaction.quantity_change
-    elif transaction.transaction_type == "sale" and transaction.quantity_change:
-        if asset.quantity:
-            asset.quantity += transaction.quantity_change  # quantity_change should be negative for sales
-        else:
-            asset.quantity = 0
-    elif transaction.transaction_type == "value_update" and transaction.amount:
-        asset.current_value = transaction.amount
-    elif transaction.transaction_type == "update_market_value" and transaction.amount:
-        # Update the asset's current market value
-        asset.current_value = transaction.amount
-    elif transaction.transaction_type == "update_acquisition_value" and transaction.amount:
-        # Update the asset's initial/acquisition value
-        asset.initial_value = transaction.amount
-    
+    # Skip updates for create transactions as asset is already properly initialized
+    if transaction.transaction_type != "create" and asset:
+        if transaction.transaction_type == "purchase" and transaction.quantity_change:
+            current_quantity = getattr(asset, 'quantity', None)
+            if current_quantity is not None:
+                setattr(asset, 'quantity', current_quantity + transaction.quantity_change)
+            else:
+                setattr(asset, 'quantity', transaction.quantity_change)
+        elif transaction.transaction_type == "sale":
+            # For sale transactions, just record the sale
+            # Frontend handles dual transactions (sale + cash deposit)
+            pass
+        elif transaction.transaction_type == "value_update" and transaction.amount:
+            setattr(asset, 'current_value', transaction.amount)
+        elif transaction.transaction_type == "update_market_value" and transaction.amount:
+            setattr(asset, 'current_value', transaction.amount)
+        elif transaction.transaction_type == "update_acquisition_value" and transaction.amount:
+            setattr(asset, 'initial_value', transaction.amount)
+        elif transaction.transaction_type == "update_name" and transaction.asset_name:
+            setattr(asset, 'name', transaction.asset_name)
+        elif transaction.transaction_type == "update_type" and transaction.asset_type:
+            setattr(asset, 'asset_type', transaction.asset_type)
+
     db.commit()
     db.refresh(db_transaction)
     return db_transaction
@@ -196,7 +202,7 @@ async def update_transaction(
             detail="Transaction not found"
         )
     
-    update_data = transaction_update.dict(exclude_unset=True)
+    update_data = transaction_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(transaction, field, value)
     
@@ -226,7 +232,7 @@ async def delete_transaction(
             detail="Transaction not found"
         )
     
-    if transaction.transaction_type == "create":
+    if getattr(transaction, 'transaction_type', None) == "create":
         # For "create" transactions, delete all related transactions and the asset
         asset_id = transaction.asset_id
         
@@ -259,16 +265,16 @@ async def delete_transaction(
         db.commit()
         
         return {
-            "message": f"Create Asset transaction deleted - removed asset '{asset.name}' and all {total_transactions} related transactions",
+            "message": f"Create Asset transaction deleted - removed asset '{getattr(asset, 'name', 'Unknown')}' and all {total_transactions} related transactions",
             "transaction_type": "create",
             "asset_deleted": True,
-            "asset_name": asset.name,
+            "asset_name": getattr(asset, 'name', 'Unknown'),
             "total_transactions_deleted": total_transactions
         }
     else:
         # For other transaction types, delete only the specific transaction
-        transaction_type = transaction.transaction_type
-        asset_name = transaction.asset.name if transaction.asset else "Unknown"
+        transaction_type = getattr(transaction, 'transaction_type', 'Unknown')
+        asset_name = getattr(transaction.asset, 'name', 'Unknown') if transaction.asset else "Unknown"
         
         db.delete(transaction)
         db.commit()
