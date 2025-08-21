@@ -237,7 +237,7 @@ const Analytics = () => {
                           <div className="flex flex-col">
                             <span>{asset.name}</span>
                             <span className="text-xs text-muted-foreground">
-                              {getAssetTypeLabel(asset.asset_type)} • {asset.quantity} {asset.units} • ID: {asset.id}
+                              {getAssetTypeLabel(asset.asset_type)} • Quantity: {asset.quantity} • Unit: {asset.unit_of_measure || 'units'} • Purchase Date: {asset.purchase_date || 'N/A'} • Description: {asset.description || 'N/A'} • Asset ID: {asset.id}
                             </span>
                           </div>
                         </TableCell>
@@ -269,7 +269,7 @@ const Analytics = () => {
       </Card>
 
       {/* Portfolio Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -285,21 +285,6 @@ const Analytics = () => {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Projected Value ({endYear})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(projectionData[projectionData.length - 1]?.nominal || 0)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Nominal value
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
               Growth Value ({endYear})
             </CardTitle>
           </CardHeader>
@@ -308,7 +293,7 @@ const Analytics = () => {
               {formatCurrency(projectionData[projectionData.length - 1]?.realGrowth || 0)}
             </div>
             <p className="text-xs text-muted-foreground">
-              Real value (not inflation-adjusted)
+              NOT Adjusted for inflation
             </p>
           </CardContent>
         </Card>
@@ -323,7 +308,7 @@ const Analytics = () => {
               {formatCurrency(projectionData[projectionData.length - 1]?.real || 0)}
             </div>
             <p className="text-xs text-muted-foreground">
-              Inflation-adjusted (PPP)
+              Adjusted for inflation
             </p>
           </CardContent>
         </Card>
