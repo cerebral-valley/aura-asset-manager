@@ -984,7 +984,6 @@ const Assets = () => {
                     <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('share_percentage')}>
                       % Share {sortField === 'share_percentage' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className="text-left py-2 px-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1000,37 +999,10 @@ const Assets = () => {
                         <td className="py-2 px-4">{formatDate(asset.purchase_date)}</td>
                         <td className="py-2 px-4">{asset.description || '-'}</td>
                         <td className="py-2 px-4">{formatPercentage(getPresentValue(asset), filteredTotalPresent)}</td>
-                        <td className="py-2 px-4">
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => openModal(asset)}
-                              className="text-blue-600 hover:text-blue-800 text-sm"
-                              title="Edit Asset"
-                            >
-                              Edit
-                            </button>
-                            {(asset.asset_type?.includes('annuity') || asset.has_payment_schedule) && (
-                              <button
-                                onClick={() => setExpandedAsset(expandedAsset === asset.id ? null : asset.id)}
-                                className="text-green-600 hover:text-green-800 text-sm"
-                                title="Manage Annuity"
-                              >
-                                {expandedAsset === asset.id ? 'Hide' : 'Manage'}
-                              </button>
-                            )}
-                            <button
-                              onClick={() => handleDelete(asset)}
-                              className="text-red-600 hover:text-red-800 text-sm"
-                              title="Delete Asset"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </td>
                       </tr>
                       {expandedAsset === asset.id && (asset.asset_type?.includes('annuity') || asset.has_payment_schedule) && (
                         <tr>
-                          <td colSpan="10" className="py-4 px-4 bg-gray-50">
+                          <td colSpan="9" className="py-4 px-4 bg-gray-50">
                             <AnnuityManager 
                               asset={asset} 
                               onUpdate={fetchAssets}

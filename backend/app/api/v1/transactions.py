@@ -110,6 +110,42 @@ async def create_transaction(
         
         db_transaction = Transaction(**transaction.model_dump(), user_id=current_user.id)
     
+    # 🗑️ HANDLE DELETE TRANSACTION TYPE - IMMEDIATE ASSET DELETION
+    if transaction.transaction_type == "delete":
+        print(f"🗑️ DELETE_ASSET: Processing delete transaction for asset {asset.name}")
+        
+        # Get count of all transactions for this asset before deletion
+        total_transactions = db.query(Transaction).filter(
+            Transaction.asset_id == asset.id,
+            Transaction.user_id == current_user.id
+        ).count()
+        
+        # Delete all existing transactions for this asset
+        db.query(Transaction).filter(
+            Transaction.asset_id == asset.id,
+            Transaction.user_id == current_user.id
+        ).delete()
+        
+        # Delete the asset itself
+        asset_name = asset.name
+        db.delete(asset)
+        db.commit()
+        
+        print(f"🗑️ DELETE_COMPLETE: Deleted asset '{asset_name}' and {total_transactions} related transactions")
+        
+        # Create a response without creating the delete transaction since asset is gone
+        return {
+            "id": None,  # No transaction created since asset was deleted
+            "message": f"Asset '{asset_name}' and all {total_transactions} related transactions have been permanently deleted",
+            "asset_deleted": True,
+            "asset_name": asset_name,
+            "total_transactions_deleted": total_transactions,
+            "transaction_type": "delete",
+            "user_id": current_user.id,
+            "created_at": None,
+            "updated_at": None
+        }
+
     db.add(db_transaction)
 
     # Update asset values based on transaction type
@@ -130,6 +166,12 @@ async def create_transaction(
             asset.current_value = transaction.amount  # type: ignore
         elif transaction.transaction_type == "update_market_value" and transaction.amount:
             asset.current_value = transaction.amount  # type: ignore
+        elif transaction.transaction_type == "cash_deposit" and transaction.amount:
+            # For cash deposits, ADD to the current value instead of replacing it
+            current_value = asset.current_value or 0
+            new_value = current_value + transaction.amount
+            asset.current_value = new_value  # type: ignore
+            print(f"💰 CASH_DEPOSIT: Added ${transaction.amount} to asset {asset.name} - old: ${current_value}, new: ${new_value}")
         elif transaction.transaction_type == "update_acquisition_value" and transaction.amount:
             asset.initial_value = transaction.amount  # type: ignore
         elif transaction.transaction_type == "update_name" and transaction.asset_name:
@@ -276,6 +318,45 @@ async def delete_transaction(
         return {
             "message": f"Create Asset transaction deleted - removed asset '{getattr(asset, 'name', 'Unknown')}' and all {total_transactions} related transactions",
             "transaction_type": "create",
+            "asset_deleted": True,
+            "asset_name": getattr(asset, 'name', 'Unknown'),
+            "total_transactions_deleted": total_transactions
+        }
+    elif getattr(transaction, 'transaction_type', None) == "delete":
+        # For "delete" transactions, also delete all related transactions and the asset
+        asset_id = transaction.asset_id
+        
+        # Get the asset for response info
+        asset = db.query(Asset).filter(
+            Asset.id == asset_id,
+            Asset.user_id == current_user.id
+        ).first()
+        
+        if not asset:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Associated asset not found"
+            )
+        
+        # Get count of all transactions for this asset
+        total_transactions = db.query(Transaction).filter(
+            Transaction.asset_id == asset_id,
+            Transaction.user_id == current_user.id
+        ).count()
+        
+        # Delete all transactions for this asset
+        db.query(Transaction).filter(
+            Transaction.asset_id == asset_id,
+            Transaction.user_id == current_user.id
+        ).delete()
+        
+        # Delete the asset itself
+        db.delete(asset)
+        db.commit()
+        
+        return {
+            "message": f"Delete Asset transaction executed - removed asset '{getattr(asset, 'name', 'Unknown')}' and all {total_transactions} related transactions",
+            "transaction_type": "delete",
             "asset_deleted": True,
             "asset_name": getattr(asset, 'name', 'Unknown'),
             "total_transactions_deleted": total_transactions

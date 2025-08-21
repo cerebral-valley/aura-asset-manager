@@ -353,7 +353,7 @@ export default function Transactions() {
             // 2. Record cash/bank increase transaction
             const cashTransaction = {
               asset_id: transactionForm.bank_cash_id,
-              transaction_type: 'update_market_value',
+              transaction_type: 'cash_deposit',
               transaction_date: new Date().toISOString().split('T')[0],
               amount: parseFloat(transactionForm.amount) || 0,
               notes: `Asset sale proceeds from asset ID ${transactionForm.asset_id}`
@@ -1324,6 +1324,8 @@ export default function Transactions() {
           <Table>
             <TableHeader>
               <TableRow>
+                <SortableHeader label="TXN ID" sortKey="id" className="w-24" />
+                <SortableHeader label="Asset ID" sortKey="asset_id" className="w-24" />
                 <SortableHeader label="Date" sortKey="transaction_date" />
                 <SortableHeader label="Type" sortKey="transaction_type" />
                 <SortableHeader label="Asset Details" sortKey="asset_name" />
@@ -1342,6 +1344,12 @@ export default function Transactions() {
                   
                   return (
                     <TableRow key={transaction.id}>
+                      <TableCell className="font-mono text-xs">
+                        {transaction.id ? transaction.id.substring(0, 8) : 'N/A'}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs">
+                        {transaction.asset_id ? transaction.asset_id.substring(0, 8) : 'N/A'}
+                      </TableCell>
                       <TableCell>
                         {new Date(transaction.transaction_date || transaction.created_at).toLocaleDateString()}
                       </TableCell>
