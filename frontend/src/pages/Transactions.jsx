@@ -55,6 +55,7 @@ export default function Transactions() {
   const [transactions, setTransactions] = useState([])
   const [assets, setAssets] = useState([])
   const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedType, setSelectedType] = useState('all')
   const [showTransactionDialog, setShowTransactionDialog] = useState(false)
@@ -189,6 +190,13 @@ export default function Transactions() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    if (submitting) {
+      console.log('🚫 SUBMIT_BLOCKED: Form submission already in progress')
+      return
+    }
+    
+    setSubmitting(true)
     console.log('🚀 TRANSACTION_SUBMIT_START: Form submission initiated', {
       transactionType: transactionForm.transaction_type,
       formData: transactionForm,
@@ -429,6 +437,8 @@ export default function Transactions() {
         description: errorMessage,
         variant: "destructive",
       })
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -1027,15 +1037,20 @@ export default function Transactions() {
                     <SelectValue placeholder="Select new asset type" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(transactionAssetTypes).map(([category, types]) => (
-                      <SelectGroup key={category}>
-                        <SelectLabel>{category.charAt(0).toUpperCase() + category.slice(1)}</SelectLabel>
-                        {types.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
+                    {Object.entries(assetTypes).map(([category, types]) => (
+                      // Exclude annuities from dropdown for transactions
+                      category.includes('Annuities')
+                        ? null
+                        : (
+                          <SelectGroup key={category}>
+                            <SelectLabel>{category.charAt(0).toUpperCase() + category.slice(1)}</SelectLabel>
+                            {types.map((type) => (
+                              <SelectItem key={type.value} value={type.value}>
+                                {type.label}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        )
                     ))}
                   </SelectContent>
                 </Select>
@@ -1059,8 +1074,8 @@ export default function Transactions() {
               <Button type="button" variant="outline" onClick={() => setShowTransactionDialog(false)}>
                 Cancel
               </Button>
-              <Button type="submit">
-                {editingTransaction ? 'Update Transaction' : 'Record Transaction'}
+              <Button type="submit" disabled={submitting}>
+                {submitting ? 'Processing...' : (editingTransaction ? 'Update Transaction' : 'Record Transaction')}
               </Button>
             </div>
           </form>

@@ -119,9 +119,10 @@ async def create_transaction(
             else:
                 setattr(asset, 'quantity', transaction.quantity_change)
         elif transaction.transaction_type == "sale":
-            # For sale transactions, just record the sale
-            # Frontend handles dual transactions (sale + cash deposit)
-            pass
+            # For sale transactions, mark the asset as sold by setting quantity to 0
+            # This effectively removes it from the active assets list
+            setattr(asset, 'quantity', 0)
+            setattr(asset, 'current_value', 0)  # Optional: set value to 0 when sold
         elif transaction.transaction_type == "value_update" and transaction.amount:
             setattr(asset, 'current_value', transaction.amount)
         elif transaction.transaction_type == "update_market_value" and transaction.amount:

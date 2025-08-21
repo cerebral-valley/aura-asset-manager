@@ -20,7 +20,11 @@ async def get_assets(
     db: Session = Depends(get_db)
 ):
     """Get all assets for the current user."""
-    assets = db.query(Asset).filter(Asset.user_id == current_user.id).all()
+    # Filter out sold assets (quantity = 0 or None indicates sold/inactive assets)
+    assets = db.query(Asset).filter(
+        Asset.user_id == current_user.id,
+        Asset.quantity > 0  # Only show assets with positive quantity
+    ).all()
     
     # Debug logging
     print(f"🔍 Found {len(assets)} assets for user {current_user.id}")
@@ -38,7 +42,7 @@ async def create_asset(
     db: Session = Depends(get_db)
 ):
     """Create a new asset."""
-    db_asset = Asset(**asset.dict(), user_id=current_user.id)
+    db_asset = Asset(**asset.model_dump(), user_id=current_user.id)
     db.add(db_asset)
     db.commit()
     db.refresh(db_asset)
@@ -83,7 +87,7 @@ async def update_asset(
             detail="Asset not found"
         )
     
-    update_data = asset_update.dict(exclude_unset=True)
+    update_data = asset_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(asset, field, value)
     
