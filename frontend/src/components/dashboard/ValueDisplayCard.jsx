@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card.jsx'
-import { TrendingUp, TrendingDown } from 'lucide-react'
+import { TrendingUp, TrendingDown, Info } from 'lucide-react'
 import { formatCurrency } from '../ui/global-preferences.jsx'
+import { Tooltip, TooltipTrigger, TooltipContent } from '../ui/tooltip.jsx'
 
 const ValueDisplayCard = ({ 
   title, 
@@ -9,7 +10,8 @@ const ValueDisplayCard = ({
   trend, 
   trendValue, 
   icon: Icon,
-  className = '' 
+  className = '',
+  tooltip = null // New tooltip prop
 }) => {
   const formatValue = (val) => {
     if (typeof val === 'number') {
@@ -21,8 +23,18 @@ const ValueDisplayCard = ({
   return (
     <Card className={`${className}`}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
           {title}
+          {tooltip && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-3 w-3 text-muted-foreground hover:text-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs">
+                <p className="text-xs">{tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
         </CardTitle>
         {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
       </CardHeader>

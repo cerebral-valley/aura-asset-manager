@@ -130,6 +130,7 @@ const Dashboard = () => {
           subtitle="Progress toward financial freedom"
           icon={TrendingUp}
           className="md:col-span-1 lg:col-span-1"
+          tooltip="Growth Potential is calculated as a percentage of your net worth towards a $1M financial independence target. Formula: (Net Worth / $1,000,000) × 100%. This helps track your progress towards financial freedom."
         />
       </div>
 

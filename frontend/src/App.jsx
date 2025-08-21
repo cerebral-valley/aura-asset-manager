@@ -7,6 +7,7 @@ import Assets from './pages/Assets'
 import Transactions from './pages/Transactions'
 import Insurance from './pages/Insurance'
 import Annuities from './pages/Annuities'
+import Analytics from './pages/Analytics'
 import UserSettings from './pages/UserSettings'
 import AppLayout from './components/layout/AppLayout'
 import { Toaster } from './components/ui/toaster'
@@ -37,7 +38,12 @@ function TransactionsPage() {
 
 function AnalyticsPage() {
   console.log('AnalyticsPage: Rendering Analytics page')
-  return <div className="p-6"><h1 className="text-2xl font-bold">Analytics Page</h1><p>Coming Soon</p></div>
+  try {
+    return <Analytics />
+  } catch (error) {
+    console.error('AnalyticsPage: Error rendering Analytics:', error)
+    return <div className="p-6"><h1 className="text-2xl font-bold text-red-500">Error loading Analytics</h1><p>{error.message}</p></div>
+  }
 }
 
 function DebugLocation() {

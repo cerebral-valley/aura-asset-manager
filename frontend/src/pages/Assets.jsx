@@ -37,7 +37,6 @@ const Assets = () => {
   const [projectionTimeframe, setProjectionTimeframe] = useState(5); // Default 5 years
   const [projectionGrowthRate, setProjectionGrowthRate] = useState(7); // Default 7% annual growth
   const [showProjections, setShowProjections] = useState(false);
-  const [chartTimeRange, setChartTimeRange] = useState('all'); // 1M, 3M, 6M, 1Y, all
   const { isDark } = useTheme();
   const [showTimeline, setShowTimeline] = useState(true);
   const [expandedAsset, setExpandedAsset] = useState(null); // For showing annuity manager
@@ -141,6 +140,13 @@ const Assets = () => {
     const currentYear = new Date().getFullYear();
     const currentValue = totalPresentValue;
     
+    // Add current year as the starting point for projections
+    projectionData.push({
+      year: currentYear,
+      projectedValue: currentValue // Starting point for projection line
+    });
+    
+    // Generate future projections
     for (let i = 1; i <= projectionTimeframe; i++) {
       projectionData.push({
         year: currentYear + i,
@@ -663,22 +669,6 @@ const Assets = () => {
               </div>
               
               <div className="flex items-center gap-4">
-                {/* Chart Time Range Selector */}
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium">Chart Range:</label>
-                  <select
-                    value={chartTimeRange}
-                    onChange={(e) => setChartTimeRange(e.target.value)}
-                    className={`px-2 py-1 rounded border text-sm ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-gray-300'}`}
-                  >
-                    <option value="1M">1 Month</option>
-                    <option value="3M">3 Months</option>
-                    <option value="6M">6 Months</option>
-                    <option value="1Y">1 Year</option>
-                    <option value="all">All Time</option>
-                  </select>
-                </div>
-
                 {/* Projection Controls */}
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium">Projections:</label>
