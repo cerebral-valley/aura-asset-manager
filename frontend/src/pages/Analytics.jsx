@@ -13,7 +13,7 @@ import { Tooltip as InfoTooltip, TooltipTrigger, TooltipContent } from '@/compon
 
 const Analytics = () => {
   const { isDark } = useTheme();
-  const { formatCurrency } = useCurrency();
+  const { formatCurrency, getCurrencySymbol } = useCurrency();
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(true);
   const currentYear = new Date().getFullYear();
@@ -60,8 +60,8 @@ const Analytics = () => {
     if (!assets || assets.length === 0) return 0;
     
     return assets.reduce((total, asset) => {
-      // Use current_value if available, otherwise fall back to initial_value, then 0
-      const currentValue = asset.current_value ?? asset.initial_value ?? 0;
+      // Ensure proper number conversion to avoid concatenation
+      const currentValue = parseFloat(asset.current_value) || parseFloat(asset.initial_value) || 0;
       return total + (isNaN(currentValue) ? 0 : currentValue);
     }, 0);
   }, [assets]);
@@ -76,14 +76,18 @@ const Analytics = () => {
     for (let year = 0; year <= years; year++) {
       const targetYear = currentYear + year;
       
-      // Calculate portfolio value without inflation adjustment
+      // Calculate portfolio value without inflation adjustment (nominal)
       let portfolioValueNominal = 0;
+      // Calculate real value not adjusted for inflation (pure growth)
+      let portfolioValueRealGrowth = 0;
       
       assets.forEach(asset => {
-        const currentValue = asset.current_value || asset.initial_value || 0;
+        // Ensure proper number conversion
+        const currentValue = parseFloat(asset.current_value) || parseFloat(asset.initial_value) || 0;
         const growthRate = assetGrowthRates[asset.id] || 5.0;
         const futureValue = currentValue * Math.pow(1 + (growthRate / 100), year);
         portfolioValueNominal += futureValue;
+        portfolioValueRealGrowth += futureValue; // Same calculation for pure growth
       });
 
       // Calculate inflation-adjusted value (PPP)
@@ -93,6 +97,7 @@ const Analytics = () => {
       data.push({
         year: targetYear,
         nominal: portfolioValueNominal,
+        realGrowth: portfolioValueRealGrowth, // New line for real value not adjusted for inflation
         real: portfolioValueReal
       });
     }
@@ -267,7 +272,7 @@ const Analytics = () => {
       </Card>
 
       {/* Portfolio Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -298,6 +303,21 @@ const Analytics = () => {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
+              Growth Value ({endYear})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(projectionData[projectionData.length - 1]?.realGrowth || 0)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Real value (not inflation-adjusted)
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Real Value ({endYear})
             </CardTitle>
           </CardHeader>
@@ -320,7 +340,7 @@ const Analytics = () => {
             Portfolio Growth Projection
           </CardTitle>
           <CardDescription>
-            Portfolio value growth from {currentYear} to {endYear} with and without inflation adjustment
+            Portfolio value growth from {currentYear} to {endYear} showing nominal, real growth, and inflation-adjusted values
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -335,7 +355,7 @@ const Analytics = () => {
                 <YAxis 
                   tick={{ fontSize: 12 }}
                   stroke={isDark ? '#64748b' : '#475569'}
-                  tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
+                  tickFormatter={(value) => `${getCurrencySymbol()}${(value / 1000000).toFixed(1)}M`}
                 />
                 <Tooltip 
                   content={({ active, payload, label }) => {
@@ -364,6 +384,14 @@ const Analytics = () => {
                   strokeWidth={2}
                   dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
                   name="Nominal Value (0% inflation)"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="realGrowth"
+                  stroke="#10b981"
+                  strokeWidth={2}
+                  dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                  name="Real Value (not adjusted for inflation)"
                 />
                 <Line
                   type="monotone"
