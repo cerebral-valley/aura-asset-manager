@@ -92,10 +92,15 @@ const Analytics = () => {
       const inflationAdjustmentFactor = Math.pow(1 + (inflationRate / 100), year);
       const portfolioValueReal = portfolioValueRealGrowth / inflationAdjustmentFactor;
 
+      // Calculate inflation depreciated value (Portfolio Value depreciated by inflation)
+      const inflationDepreciationFactor = Math.pow(1 - (inflationRate / 100), year);
+      const portfolioValueInflationDepreciated = currentPortfolioValue * inflationDepreciationFactor;
+
       data.push({
         year: targetYear,
         realGrowth: portfolioValueRealGrowth, // Real value not adjusted for inflation
-        real: portfolioValueReal
+        real: portfolioValueReal,
+        inflationDepreciated: portfolioValueInflationDepreciated // New line for inflation depreciated value
       });
     }
 
@@ -269,7 +274,7 @@ const Analytics = () => {
       </Card>
 
       {/* Portfolio Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -280,6 +285,21 @@ const Analytics = () => {
             <div className="text-2xl font-bold">
               {formatCurrency(currentPortfolioValue)}
             </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Inflation Depreciated Value ({endYear})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(projectionData[projectionData.length - 1]?.inflationDepreciated || 0)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Portfolio value depreciated by inflation
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -374,6 +394,14 @@ const Analytics = () => {
                   strokeWidth={2}
                   dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
                   name="Portfolio Value (Adjusted for inflation)"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="inflationDepreciated"
+                  stroke="#ef4444"
+                  strokeWidth={2}
+                  dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
+                  name="Inflation Depreciated Value"
                 />
               </LineChart>
             </ResponsiveContainer>
