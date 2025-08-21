@@ -2,8 +2,8 @@
 Transactions API endpoints for transaction management.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException, status  # type: ignore
+from sqlalchemy.orm import Session  # type: ignore
 from app.core.database import get_db
 from app.api.deps import get_current_active_user
 from app.models.user import User
@@ -42,6 +42,9 @@ async def create_transaction(
     db: Session = Depends(get_db)
 ):
     """Create a new transaction. For 'create' type, also creates the asset."""
+    
+    print(f"🚀 TRANSACTION_CREATE_START: {transaction.transaction_type} for user {current_user.id}")
+    print(f"📋 Transaction data: {transaction.model_dump()}")
     
     # Initialize asset variable
     asset = None
@@ -113,29 +116,34 @@ async def create_transaction(
     # Skip updates for create transactions as asset is already properly initialized
     if transaction.transaction_type != "create" and asset:
         if transaction.transaction_type == "purchase" and transaction.quantity_change:
-            current_quantity = getattr(asset, 'quantity', None)
-            if current_quantity is not None:
-                setattr(asset, 'quantity', current_quantity + transaction.quantity_change)
-            else:
-                setattr(asset, 'quantity', transaction.quantity_change)
+            current_quantity = asset.quantity or 0
+            asset.quantity = current_quantity + transaction.quantity_change  # type: ignore
+            print(f"🔄 PURCHASE: Updated asset {asset.name} quantity: {current_quantity} + {transaction.quantity_change} = {asset.quantity}")
         elif transaction.transaction_type == "sale":
             # For sale transactions, mark the asset as sold by setting quantity to 0
             # This effectively removes it from the active assets list
-            setattr(asset, 'quantity', 0)
-            setattr(asset, 'current_value', 0)  # Optional: set value to 0 when sold
+            print(f"🔥 SALE: Marking asset {asset.name} as sold (was quantity: {asset.quantity}, value: {asset.current_value})")
+            asset.quantity = 0  # type: ignore
+            asset.current_value = 0  # type: ignore # Set value to 0 when sold
+            print(f"🔥 SALE: Asset {asset.name} now has quantity: {asset.quantity}, value: {asset.current_value}")
         elif transaction.transaction_type == "value_update" and transaction.amount:
-            setattr(asset, 'current_value', transaction.amount)
+            asset.current_value = transaction.amount  # type: ignore
         elif transaction.transaction_type == "update_market_value" and transaction.amount:
-            setattr(asset, 'current_value', transaction.amount)
+            asset.current_value = transaction.amount  # type: ignore
         elif transaction.transaction_type == "update_acquisition_value" and transaction.amount:
-            setattr(asset, 'initial_value', transaction.amount)
+            asset.initial_value = transaction.amount  # type: ignore
         elif transaction.transaction_type == "update_name" and transaction.asset_name:
-            setattr(asset, 'name', transaction.asset_name)
+            asset.name = transaction.asset_name  # type: ignore
         elif transaction.transaction_type == "update_type" and transaction.asset_type:
-            setattr(asset, 'asset_type', transaction.asset_type)
+            asset.asset_type = transaction.asset_type  # type: ignore
 
     db.commit()
     db.refresh(db_transaction)
+    
+    print(f"✅ TRANSACTION_CREATE_SUCCESS: {transaction.transaction_type} transaction created with ID {db_transaction.id}")
+    if asset:
+        print(f"✅ Asset {asset.name} updated - quantity: {asset.quantity}, current_value: {asset.current_value}")
+    
     return db_transaction
 
 @router.get("/{transaction_id}", response_model=TransactionSchema)

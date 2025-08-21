@@ -2,8 +2,9 @@
 Assets API endpoints for asset management.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException, status  # type: ignore
+from sqlalchemy.orm import Session  # type: ignore
+from sqlalchemy import and_, or_  # type: ignore
 from app.core.database import get_db
 from app.api.deps import get_current_active_user
 from app.models.user import User
@@ -20,17 +21,30 @@ async def get_assets(
     db: Session = Depends(get_db)
 ):
     """Get all assets for the current user."""
-    # Filter out sold assets (quantity = 0 or None indicates sold/inactive assets)
+    # Filter out sold assets (quantity = 0 or NULL indicates sold/inactive assets)
+    # Use explicit NULL handling to ensure proper filtering
     assets = db.query(Asset).filter(
         Asset.user_id == current_user.id,
-        Asset.quantity > 0  # Only show assets with positive quantity
+        and_(
+            Asset.quantity.isnot(None),  # Not NULL
+            Asset.quantity > 0  # Greater than 0
+        )
     ).all()
     
+    # Debug logging to track asset filtering
+    all_assets = db.query(Asset).filter(Asset.user_id == current_user.id).all()
+    print(f"🔍 ASSETS_FILTER: Total assets for user: {len(all_assets)}")
+    print(f"🔍 ASSETS_FILTER: Active assets (quantity > 0): {len(assets)}")
+    
+    for asset in all_assets:
+        status = "ACTIVE" if asset.quantity and asset.quantity > 0 else "SOLD/INACTIVE"  # type: ignore
+        print(f"🔍 Asset: {asset.name}, quantity: {asset.quantity}, value: {asset.current_value}, status: {status}")
+    
     # Debug logging
-    print(f"🔍 Found {len(assets)} assets for user {current_user.id}")
+    print(f"🔍 Found {len(assets)} active assets for user {current_user.id}")
     for asset in assets:
-        print(f"🔍 Asset: {asset.name}, type: {asset.asset_type}, current_value: {asset.current_value}, initial_value: {asset.initial_value}, quantity: {asset.quantity}")
-        if asset.asset_metadata:
+        print(f"🔍 Active Asset: {asset.name}, type: {asset.asset_type}, current_value: {asset.current_value}, initial_value: {asset.initial_value}, quantity: {asset.quantity}")
+        if asset.asset_metadata:  # type: ignore
             print(f"🔍   Metadata: {asset.asset_metadata}")
     
     return assets

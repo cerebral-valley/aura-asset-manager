@@ -56,6 +56,7 @@ export default function Transactions() {
   const [assets, setAssets] = useState([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [lastSubmissionTime, setLastSubmissionTime] = useState(0)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedType, setSelectedType] = useState('all')
   const [showTransactionDialog, setShowTransactionDialog] = useState(false)
@@ -191,16 +192,27 @@ export default function Transactions() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
+    const currentTime = Date.now()
+    
+    // Prevent duplicate submissions with both state and timing checks
     if (submitting) {
       console.log('🚫 SUBMIT_BLOCKED: Form submission already in progress')
       return
     }
     
+    // Prevent rapid successive submissions (within 2 seconds)
+    if (currentTime - lastSubmissionTime < 2000) {
+      console.log('🚫 SUBMIT_BLOCKED: Too soon after last submission')
+      return
+    }
+    
     setSubmitting(true)
+    setLastSubmissionTime(currentTime)
     console.log('🚀 TRANSACTION_SUBMIT_START: Form submission initiated', {
       transactionType: transactionForm.transaction_type,
       formData: transactionForm,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      submissionId: currentTime
     })
     
     try {
@@ -318,6 +330,13 @@ export default function Transactions() {
               throw new Error('VALIDATION_ERROR_005: Please select a bank or cash account to deposit sale amount')
             }
 
+            console.log('🔥 SALE_START: Beginning dual transaction process', {
+              soldAssetId: transactionForm.asset_id,
+              saleAmount: transactionForm.amount,
+              bankAccountId: transactionForm.bank_cash_id,
+              submissionId: currentTime
+            })
+
             // 1. Record asset sale transaction
             const saleTransaction = {
               asset_id: transactionForm.asset_id,
@@ -326,7 +345,10 @@ export default function Transactions() {
               amount: parseFloat(transactionForm.amount) || 0,
               notes: transactionForm.notes?.trim() || ''
             }
+            
+            console.log('🔥 SALE_STEP_1: Creating sale transaction', saleTransaction)
             await transactionsService.createTransaction(saleTransaction)
+            console.log('✅ SALE_STEP_1_COMPLETE: Sale transaction created successfully')
 
             // 2. Record cash/bank increase transaction
             const cashTransaction = {
@@ -336,7 +358,14 @@ export default function Transactions() {
               amount: parseFloat(transactionForm.amount) || 0,
               notes: `Asset sale proceeds from asset ID ${transactionForm.asset_id}`
             }
+            
+            console.log('🔥 SALE_STEP_2: Creating cash deposit transaction', cashTransaction)
             await transactionsService.createTransaction(cashTransaction)
+            console.log('✅ SALE_STEP_2_COMPLETE: Cash deposit transaction created successfully')
+
+            console.log('🎉 SALE_COMPLETE: Dual transaction process completed successfully', {
+              submissionId: currentTime
+            })
 
             toast({
               title: "Sale recorded!",
