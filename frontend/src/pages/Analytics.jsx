@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useTheme } from '../hooks/useTheme';
 import { useCurrency } from '../hooks/useCurrency';
 import { assetsService } from '../services/assets';
+import { getAssetTypeLabel } from '../constants/assetTypes';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -76,8 +77,6 @@ const Analytics = () => {
     for (let year = 0; year <= years; year++) {
       const targetYear = currentYear + year;
       
-      // Calculate portfolio value without inflation adjustment (nominal)
-      let portfolioValueNominal = 0;
       // Calculate real value not adjusted for inflation (pure growth)
       let portfolioValueRealGrowth = 0;
       
@@ -86,18 +85,16 @@ const Analytics = () => {
         const currentValue = parseFloat(asset.current_value) || parseFloat(asset.initial_value) || 0;
         const growthRate = assetGrowthRates[asset.id] || 5.0;
         const futureValue = currentValue * Math.pow(1 + (growthRate / 100), year);
-        portfolioValueNominal += futureValue;
-        portfolioValueRealGrowth += futureValue; // Same calculation for pure growth
+        portfolioValueRealGrowth += futureValue;
       });
 
       // Calculate inflation-adjusted value (PPP)
       const inflationAdjustmentFactor = Math.pow(1 + (inflationRate / 100), year);
-      const portfolioValueReal = portfolioValueNominal / inflationAdjustmentFactor;
+      const portfolioValueReal = portfolioValueRealGrowth / inflationAdjustmentFactor;
 
       data.push({
         year: targetYear,
-        nominal: portfolioValueNominal,
-        realGrowth: portfolioValueRealGrowth, // New line for real value not adjusted for inflation
+        realGrowth: portfolioValueRealGrowth, // Real value not adjusted for inflation
         real: portfolioValueReal
       });
     }
@@ -139,7 +136,7 @@ const Analytics = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Portfolio Analytics</h1>
-          <p className="text-muted-foreground">Advanced portfolio growth projections and analysis</p>
+          <p className="text-muted-foreground">Advanced portfolio growth projections and analysis - CASH IN HAND AND BANK BALANCES NOT CONSIDERED</p>
         </div>
         <Button onClick={resetToDefaults} variant="outline">
           Reset to Defaults
@@ -199,7 +196,7 @@ const Analytics = () => {
                 type="number"
                 step="0.1"
                 value={inflationRate}
-                onChange={(e) => setInflationRate(parseFloat(e.target.value) || 1.0)}
+                onChange={(e) => setInflationRate(parseFloat(e.target.value) || 0.0)}
                 min="0"
                 max="20"
                 className="mt-1"
@@ -226,7 +223,7 @@ const Analytics = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[300px]">Asset Name</TableHead>
+                    <TableHead className="w-[350px]">Asset Details</TableHead>
                     <TableHead className="text-right">Market Value</TableHead>
                     <TableHead className="text-center w-[150px]">Growth Rate (%)</TableHead>
                   </TableRow>
@@ -240,7 +237,7 @@ const Analytics = () => {
                           <div className="flex flex-col">
                             <span>{asset.name}</span>
                             <span className="text-xs text-muted-foreground">
-                              {asset.asset_type} • Qty: {asset.quantity}
+                              {getAssetTypeLabel(asset.asset_type)} • {asset.quantity} {asset.units} • ID: {asset.id}
                             </span>
                           </div>
                         </TableCell>
@@ -379,19 +376,11 @@ const Analytics = () => {
                 <Legend />
                 <Line
                   type="monotone"
-                  dataKey="nominal"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                  name="Nominal Value (0% inflation)"
-                />
-                <Line
-                  type="monotone"
                   dataKey="realGrowth"
                   stroke="#10b981"
                   strokeWidth={2}
                   dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
-                  name="Real Value (not adjusted for inflation)"
+                  name="Portfolio Value (NOT Adjusted for inflation)"
                 />
                 <Line
                   type="monotone"
@@ -399,7 +388,7 @@ const Analytics = () => {
                   stroke="#f59e0b"
                   strokeWidth={2}
                   dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
-                  name="Real Value (inflation-adjusted PPP)"
+                  name="Portfolio Value (Adjusted for inflation)"
                 />
               </LineChart>
             </ResponsiveContainer>
