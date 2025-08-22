@@ -17,3 +17,7 @@ Refer to the `docs/` directory for detailed setup and usage instructions.
 
 
 # aura-asset-manager
+
+<!-- Updated to force Vercel redeployment after git reset -->
+
+```
