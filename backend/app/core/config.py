@@ -10,16 +10,23 @@ import os
 class Settings(BaseSettings):
     """Application settings."""
     
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "case_sensitive": False,
+        "extra": "ignore"
+    }
+    
     # Supabase Configuration
-    SUPABASE_URL: str
-    SUPABASE_KEY: str
-    SUPABASE_SERVICE_KEY: str
+    SUPABASE_URL: str = "https://placeholder.supabase.co"
+    SUPABASE_KEY: str = "placeholder_anon_key"
+    SUPABASE_SERVICE_KEY: str = "placeholder_service_key"
     
     # Database Configuration
-    DATABASE_URL: str
+    DATABASE_URL: str = "postgresql://user:password@localhost:5432/aura_db"
     
     # Security Configuration
-    SECRET_KEY: str
+    SECRET_KEY: str = "your_very_secure_secret_key_here_minimum_32_characters_long"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     

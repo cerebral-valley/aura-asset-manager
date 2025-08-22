@@ -29,18 +29,22 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     print(f"   URL: {request.url}")
     print(f"   Method: {request.method}")
     print(f"   Headers: {dict(request.headers)}")
+    
+    body_content = None
     try:
         body = await request.body()
-        print(f"   Body: {body.decode()}")
+        body_content = body.decode() if body else None
+        print(f"   Body: {body_content}")
     except Exception as e:
         print(f"   Body read error: {e}")
+    
     print(f"   Validation errors: {exc.errors()}")
     print(f"   Full exception: {exc}")
     
     # Return the default FastAPI validation error response
     return JSONResponse(
         status_code=422,
-        content={"detail": exc.errors(), "body": body.decode() if body else None}
+        content={"detail": exc.errors(), "body": body_content}
     )
 
 # Debug: Log CORS configuration
