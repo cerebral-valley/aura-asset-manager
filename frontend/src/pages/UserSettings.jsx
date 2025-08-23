@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '../components/ui/alert.jsx'
 import { CheckCircle, AlertCircle, User, Globe, Palette } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth.jsx'
 import { userSettingsService } from '../services/user-settings.js'
+import { feedbackService } from '../services/feedback.js'
 
 const UserSettings = () => {
   const { user } = useAuth()
@@ -16,7 +17,7 @@ const UserSettings = () => {
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
-  
+
   const [settings, setSettings] = useState({
     first_name: '',
     last_name: '',
@@ -26,6 +27,31 @@ const UserSettings = () => {
     date_format: 'MM/DD/YYYY',
     dark_mode: false
   })
+
+  // Feedback state and handlers
+  const [feedbackText, setFeedbackText] = useState('')
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false)
+  const [feedbackSuccess, setFeedbackSuccess] = useState('')
+  const [feedbackError, setFeedbackError] = useState('')
+
+  const handleFeedbackChange = (e) => {
+    setFeedbackText(e.target.value)
+  }
+
+  const handleFeedbackSubmit = async () => {
+    setFeedbackSubmitting(true)
+    setFeedbackSuccess('')
+    setFeedbackError('')
+    try {
+      await feedbackService.submitFeedback(user.id, feedbackText)
+      setFeedbackSuccess('Thank you for your feedback!')
+      setFeedbackText('')
+    } catch (err) {
+      setFeedbackError('Failed to submit feedback. Please try again.')
+    } finally {
+      setFeedbackSubmitting(false)
+    }
+  }
 
   const currencies = [
     { value: 'USD', label: '$ US Dollar' },
@@ -300,8 +326,46 @@ const UserSettings = () => {
           )}
         </Button>
       </div>
+
+    {/* Feedback Section */}
+    <div className="mt-10">
+      <Card>
+        <CardHeader>
+          <CardTitle>Send Feedback</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Label htmlFor="feedback">Your feedback (max 500 words)</Label>
+          <textarea
+            id="feedback"
+            className="w-full border rounded p-2 mt-2"
+            rows={6}
+            maxLength={2500}
+            value={feedbackText}
+            onChange={handleFeedbackChange}
+            placeholder="Share your thoughts, suggestions, or issues..."
+          />
+          <div className="flex justify-end mt-2">
+            <Button onClick={handleFeedbackSubmit} disabled={feedbackSubmitting || feedbackText.trim().length === 0}>
+              {feedbackSubmitting ? 'Submitting...' : 'Submit Feedback'}
+            </Button>
+          </div>
+          {feedbackSuccess && (
+            <Alert className="mt-2" variant="success">
+              <CheckCircle className="mr-2 h-4 w-4" />
+              <AlertDescription>{feedbackSuccess}</AlertDescription>
+            </Alert>
+          )}
+          {feedbackError && (
+            <Alert className="mt-2" variant="destructive">
+              <AlertCircle className="mr-2 h-4 w-4" />
+              <AlertDescription>{feedbackError}</AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
     </div>
-  )
+  </div>
+ )
 }
 
 export default UserSettings
