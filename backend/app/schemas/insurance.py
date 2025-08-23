@@ -118,7 +118,7 @@ class InsurancePolicyResponse(BaseModel):
     status: Optional[str] = "active"
     created_at: datetime
     updated_at: datetime
-        modified_at: Optional[datetime] = None
+    modified_at: Optional[datetime] = None
     
     class Config:
         from_attributes = True

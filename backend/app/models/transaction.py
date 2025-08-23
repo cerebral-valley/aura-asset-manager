@@ -24,7 +24,7 @@ class Transaction(Base):
     notes = Column(Text)
     transaction_metadata = Column(JSONB)  # Flexible JSON field for transaction-specific details
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-        modified_at = Column(DateTime(timezone=True), nullable=True)
+    modified_at = Column(DateTime(timezone=True), nullable=True)
     
     # NEW FIELDS - Added to match Supabase structure and frontend requirements
     asset_name = Column(Text)  # Asset name at time of transaction

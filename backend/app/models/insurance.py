@@ -29,7 +29,7 @@ class InsurancePolicy(Base):
     policy_metadata = Column('metadata', JSONB)  # Map to 'metadata' column in DB but use different attribute name
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-        modified_at = Column(DateTime(timezone=True), nullable=True)
+    modified_at = Column(DateTime(timezone=True), nullable=True)
     status = Column(Text, default='active')  # e.g., 'active', 'expired', 'cancelled'
     
     def __repr__(self):

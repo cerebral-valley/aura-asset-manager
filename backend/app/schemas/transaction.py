@@ -72,7 +72,7 @@ class TransactionInDB(TransactionBase):
     id: UUID
     user_id: UUID
     created_at: datetime
-        modified_at: Optional[datetime] = None
+    modified_at: Optional[datetime] = None
     
     class Config:
         from_attributes = True
@@ -83,9 +83,6 @@ class Transaction(TransactionInDB):
 
 class TransactionWithAsset(Transaction):
     """Transaction schema with asset information."""
-    asset_name: str
-    asset_type: str
-    
-    class Config:
-        from_attributes = True
+    asset_name: Optional[str] = None
+    asset_type: Optional[str] = None
 

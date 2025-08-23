@@ -74,7 +74,7 @@ class AssetInDB(AssetBase):
     user_id: UUID
     created_at: datetime
     updated_at: datetime
-        modified_at: Optional[datetime] = None
+    modified_at: Optional[datetime] = None
     
     class Config:
         from_attributes = True
