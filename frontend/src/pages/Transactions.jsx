@@ -1325,6 +1325,7 @@ export default function Transactions() {
                 <TableHead>Quantity & Unit</TableHead>
                 <TableHead>Properties</TableHead>
                 <TableHead>Notes</TableHead>
+                 <TableHead>Last Modified</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -1420,6 +1421,9 @@ export default function Transactions() {
                           )}
                         </div>
                       </TableCell>
+                       <TableCell>
+                         {transaction.modified_at ? new Date(transaction.modified_at).toLocaleDateString() : '-'}
+                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end space-x-2">
                           <Button variant="ghost" size="sm" onClick={() => handleEdit(transaction)}>

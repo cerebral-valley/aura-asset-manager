@@ -987,6 +987,7 @@ const Assets = () => {
                     <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('share_percentage')}>
                       % Share {sortField === 'share_percentage' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
+                     <th className="text-left py-2 px-4">Last Modified</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1002,6 +1003,7 @@ const Assets = () => {
                         <td className="py-2 px-4">{formatDate(asset.purchase_date)}</td>
                         <td className="py-2 px-4">{asset.description || '-'}</td>
                         <td className="py-2 px-4">{formatPercentage(getPresentValue(asset), filteredTotalPresent)}</td>
+                         <td className="py-2 px-4">{asset.modified_at ? formatDate(asset.modified_at) : '-'}</td>
                       </tr>
                       {expandedAsset === asset.id && (asset.asset_type?.includes('annuity') || asset.has_payment_schedule) && (
                         <tr>

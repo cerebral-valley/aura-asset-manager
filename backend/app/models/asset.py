@@ -35,6 +35,7 @@ class Asset(Base):
     asset_metadata = Column("metadata", JSONB)  # Flexible JSON field for asset-specific characteristics
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+        modified_at = Column(DateTime(timezone=True), nullable=True)
     
     # Relationships
     transactions = relationship("Transaction", back_populates="asset", cascade="all, delete-orphan")

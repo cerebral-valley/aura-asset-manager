@@ -72,6 +72,7 @@ class TransactionInDB(TransactionBase):
     id: UUID
     user_id: UUID
     created_at: datetime
+        modified_at: Optional[datetime] = None
     
     class Config:
         from_attributes = True

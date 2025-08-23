@@ -571,6 +571,7 @@ const Insurance = () => {
                   <th className="text-left py-2 px-4">Start Date</th>
                   <th className="text-left py-2 px-4">End Date</th>
                   <th className="text-left py-2 px-4">Next Renewal</th>
+                   <th className="text-left py-2 px-4">Last Modified</th>
                   <th className="text-left py-2 px-4">Actions</th>
                 </tr>
               </thead>
@@ -602,6 +603,7 @@ const Insurance = () => {
                       <td className="py-2 px-4">{formatDate(p.start_date)}</td>
                       <td className="py-2 px-4">{formatDate(p.end_date)}</td>
                       <td className="py-2 px-4">{getNextRenewalDate(p.renewal_date)}</td>
+                       <td className="py-2 px-4">{p.modified_at ? formatDate(p.modified_at) : '-'}</td>
                       <td className="py-2 px-4">
                         <button
                           className="text-blue-600 hover:underline mr-2"
