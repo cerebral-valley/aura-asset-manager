@@ -105,7 +105,7 @@ app.include_router(annuities.router, prefix="/api/v1/annuities", tags=["annuitie
 app.include_router(user_settings.router, prefix="/api/v1/user-settings", tags=["user-settings"])
 # TODO: Re-enable after fixing metadata column name issue
 # app.include_router(payment_schedules.router, prefix="/api/v1/payment-schedules", tags=["payment-schedules"])
-app.include_router(feedback.router, prefix="/api/v1/feedback", tags=["feedback"])
+app.include_router(feedback.router, prefix="/api/v1", tags=["feedback"])
 
 @app.get("/")
 async def root():
