@@ -132,10 +132,17 @@ if __name__ == "__main__":
     import uvicorn
     # Change directory to backend before running uvicorn
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True if settings.ENVIRONMENT == "development" else False
-    )
+    if settings.ENVIRONMENT == "development":
+        uvicorn.run(
+            "main:app",
+            host="0.0.0.0",
+            port=8000,
+            reload=True
+        )
+    else:
+        uvicorn.run(
+            "main:app",
+            host="0.0.0.0",
+            port=8000
+        )
 
