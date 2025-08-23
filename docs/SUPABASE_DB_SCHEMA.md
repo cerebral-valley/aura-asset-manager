@@ -1,3 +1,10 @@
+## Table: feedback
+| Column        | Type      | Description                       |
+|--------------|-----------|-----------------------------------|
+| feedback_id   | uuid      | Primary key                       |
+| user_id      | uuid      | FK to users                       |
+| feedback_text| text      | Feedback text (max 500 words)     |
+| feedback_date| timestamptz| Submission timestamp (default now)|
 ---
 title: Supabase Database Schema Reference
 description: Aura Asset Manager - Supabase DB Schema
