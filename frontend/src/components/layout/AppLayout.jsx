@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth.jsx'
+import { userSettingsService } from '../../services/user-settings.js'
 import { Button } from '../ui/button.jsx'
 import { 
   Home, 
@@ -12,18 +13,61 @@ import {
   Menu,
   X,
   Coins,
-  Settings
+  Settings,
+  BookOpen
 } from 'lucide-react'
 import './AppLayout.css'
 
 const AppLayout = ({ children, currentPage = 'dashboard' }) => {
   const { user, signOut } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [userSettings, setUserSettings] = useState(null)
   const location = useLocation()
   
   console.log('🏗️ AppLayout: Rendering with location:', location.pathname)
   console.log('🏗️ AppLayout: User:', user?.email || 'No user')
   console.log('🏗️ AppLayout: Children:', !!children)
+
+  // Fetch user settings for display name
+  useEffect(() => {
+    const fetchUserSettings = async () => {
+      if (user) {
+        try {
+          const settings = await userSettingsService.getSettings()
+          setUserSettings(settings)
+        } catch (error) {
+          console.log('Could not fetch user settings:', error.message)
+          // This is OK - we'll fall back to email
+        }
+      }
+    }
+
+    fetchUserSettings()
+  }, [user])
+
+  // Get display name - prioritize first/last name, fallback to email
+  const getUserDisplayName = () => {
+    if (userSettings?.first_name && userSettings?.last_name) {
+      return `${userSettings.first_name} ${userSettings.last_name}`
+    } else if (userSettings?.first_name) {
+      return userSettings.first_name
+    } else if (userSettings?.last_name) {
+      return userSettings.last_name
+    }
+    return user?.email || 'User'
+  }
+
+  // Get initials for avatar - prioritize name initials, fallback to email
+  const getUserInitials = () => {
+    if (userSettings?.first_name && userSettings?.last_name) {
+      return `${userSettings.first_name.charAt(0)}${userSettings.last_name.charAt(0)}`.toUpperCase()
+    } else if (userSettings?.first_name) {
+      return userSettings.first_name.charAt(0).toUpperCase()
+    } else if (userSettings?.last_name) {
+      return userSettings.last_name.charAt(0).toUpperCase()
+    }
+    return user?.email?.charAt(0).toUpperCase() || 'U'
+  }
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: Home, id: 'dashboard' },
@@ -32,6 +76,7 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
     { name: 'Annuities', href: '/annuities', icon: Coins, id: 'annuities' },
     { name: 'Transactions', href: '/transactions', icon: ArrowRightLeft, id: 'transactions' },
     { name: 'Analytics', href: '/analytics', icon: BarChart3, id: 'analytics' },
+    { name: 'User Guide', href: '/guide', icon: BookOpen, id: 'guide' },
     { name: 'Settings', href: '/settings', icon: Settings, id: 'settings' },
   ]
 
@@ -101,12 +146,12 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                   <span className="text-primary-foreground text-sm font-medium">
-                    {user?.email?.charAt(0).toUpperCase()}
+                    {getUserInitials()}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">
-                    {user?.email}
+                    {getUserDisplayName()}
                   </p>
                 </div>
               </div>

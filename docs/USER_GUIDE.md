@@ -1,6 +1,19 @@
-# Aura Asset Manager - User Guide
+# Aura Asset Manager - Complete User Guide
 
 Welcome to Aura, your personal financial sanctuary. This comprehensive guide will help you understand and make the most of all the features available in the Aura Asset Manager application. Whether you're just starting your financial journey or managing a substantial portfolio, Aura is designed to help you feel secure, accomplished, and confident about your financial position.
+
+## Table of Contents
+
+1. [Getting Started with Aura](#getting-started-with-aura)
+2. [Navigating the Dashboard](#navigating-the-dashboard)
+3. [Managing Your Assets](#managing-your-assets)
+4. [Export & Analysis Features](#export--analysis-features)
+5. [Insurance Management](#insurance-management)
+6. [Annuity Planning](#annuity-planning)
+7. [Advanced Features](#advanced-features)
+8. [AI-Powered Portfolio Analysis](#ai-powered-portfolio-analysis)
+
+---
 
 ## Getting Started with Aura
 
@@ -21,6 +34,8 @@ The **Growth Chaser** theme appeals to those who are actively accumulating wealt
 The **Empire Builder** theme is designed for those with ambitious financial goals who think strategically about wealth building. This theme presents your assets as dominions in your growing empire, with each acquisition strengthening your financial kingdom. Your net worth becomes your "Empire Value," and transactions are framed as strategic moves to expand your influence and power.
 
 You can change your theme at any time through your profile settings, allowing you to adapt the application as your financial situation and mindset evolve.
+
+---
 
 ## Navigating the Dashboard
 
@@ -47,6 +62,213 @@ This visualization helps you understand the balance and diversification of your 
 The dashboard includes a feed of your recent financial activities, but rather than calling them "transactions," Aura frames these as "milestones" or "achievements." This section shows your latest asset acquisitions, value updates, and other significant financial events, helping you see the steady progress you're making over time.
 
 Each milestone is presented with context that makes it feel meaningful rather than mundane. Instead of simply showing "Purchased 100 shares of AAPL," Aura might display "Strengthened alliance with Apple Inc." or "Added to technology holdings," depending on your theme preference.
+
+---
+
+## Managing Your Assets
+
+The Assets page is where you'll spend most of your time in Aura, providing detailed views of your complete portfolio with powerful analysis and visualization tools.
+
+### Asset Categories and Types
+
+Aura supports a comprehensive range of asset types, organized into logical categories:
+
+- **Real Estate**: Primary residence, investment properties, land, REITs
+- **Investments**: Stocks, bonds, mutual funds, ETFs, crypto currencies
+- **Precious Metals**: Gold, silver, platinum, collectible coins
+- **Vehicles**: Cars, motorcycles, boats, recreational vehicles
+- **Business Assets**: Business ownership, equipment, inventory
+- **Cash & Equivalents**: Savings, checking, money market accounts
+- **Collectibles**: Art, antiques, memorabilia, luxury items
+- **Other Assets**: Any other valuable possessions
+
+### Interactive Charts and Analysis
+
+The Assets page features three main interactive charts that provide different perspectives on your portfolio:
+
+1. **Asset Value Over Time**: A line chart showing the evolution of your acquisition value versus current portfolio value, with optional future projections
+2. **Asset Distribution**: A pie chart displaying how your wealth is allocated across different asset categories
+3. **Asset Timeline**: A visual timeline showing when each asset was acquired, helping you track your investment journey
+
+### Advanced Filtering and Sorting
+
+Use the powerful filtering tools to analyze specific portions of your portfolio:
+- **Name Filter**: Search for specific assets by name
+- **Type Filter**: Focus on particular asset categories
+- **Date Range**: Filter by acquisition date periods
+- **Sorting Options**: Sort by name, value, return percentage, or acquisition date
+
+---
+
+## Export & Analysis Features
+
+Aura provides sophisticated export capabilities designed for both personal record-keeping and professional financial analysis.
+
+### Terminal-Style PDF Reports
+
+The **Download PDF** button generates a comprehensive portfolio report with terminal-style formatting that's optimized for AI analysis:
+
+**Features:**
+- **ASCII Art Tables**: Professional terminal-style tables with clean borders and structured data
+- **Executive Summary**: Key portfolio metrics including total value, returns, and risk assessment
+- **Portfolio Distribution Chart**: ASCII bar chart showing asset allocation by category
+- **Individual Asset Performance**: Detailed performance table for all assets
+- **Risk Analysis Matrix**: Comprehensive risk assessment with recommendations
+- **LLM Analysis Prompts**: Ready-to-use prompts for AI portfolio analysis
+
+**Report Sections:**
+1. Document metadata for AI processing
+2. Executive summary with key metrics
+3. ASCII portfolio distribution chart
+4. Asset performance table
+5. Risk analysis matrix
+6. AI analysis prompts page
+
+### Excel Spreadsheet Export
+
+The **Download Excel** button creates a comprehensive multi-sheet Excel workbook perfect for detailed analysis:
+
+**Excel Sheets:**
+1. **Executive Summary**: Portfolio overview and key metrics
+2. **Portfolio Distribution**: Category-wise breakdown with calculations
+3. **Individual Assets**: Complete asset details with performance metrics
+4. **Performance Analysis**: ROI analysis and performance ratings
+5. **Risk Analysis**: Diversification metrics and risk assessment
+6. **AI Analysis Prompts**: Copy-paste prompts for AI assistance
+
+**Excel Features:**
+- Pre-formatted tables with proper column widths
+- Calculated fields for returns and percentages
+- Performance ratings and risk assessments
+- Ready-to-use formulas for additional analysis
+
+### AI-Powered Analysis Integration
+
+Both export formats are specifically designed to work with AI assistants like ChatGPT, Claude, and other LLMs:
+
+**Included AI Prompts:**
+1. **Portfolio Diversification Analysis**: Evaluate asset distribution and concentration risk
+2. **Performance Optimization Review**: Identify underperforming assets and optimization strategies
+3. **Risk Assessment & Mitigation**: Analyze portfolio risk levels and mitigation strategies
+4. **Rebalancing Strategy**: Get specific recommendations for portfolio rebalancing
+5. **Comprehensive Portfolio Audit**: Full portfolio review with actionable recommendations
+
+**How to Use with AI:**
+1. Export your portfolio data (PDF or Excel)
+2. Upload the file to your preferred AI assistant
+3. Copy one of the included analysis prompts
+4. Paste the prompt and request analysis
+5. Receive detailed, actionable financial advice
+
+---
+
+## Insurance Management
+
+Aura helps you track and visualize your insurance portfolio as a crucial component of your financial security.
+
+### Insurance Types Supported
+- Life Insurance (Term, Whole, Universal)
+- Health Insurance
+- Auto Insurance
+- Homeowners/Renters Insurance
+- Disability Insurance
+- Umbrella Policies
+- Business Insurance
+
+### Coverage Visualization
+View your total insurance coverage value alongside your asset portfolio to understand your complete financial protection strategy.
+
+---
+
+## Annuity Planning
+
+Advanced annuity management features help you plan for retirement income:
+
+### Annuity Types
+- Fixed Annuities
+- Variable Annuities
+- Indexed Annuities
+- Immediate vs. Deferred
+
+### Payment Schedule Planning
+- Customizable payment frequencies
+- Growth projections
+- Income planning tools
+
+---
+
+## Advanced Features
+
+### Portfolio Projections
+Use the projection tools to model future portfolio growth:
+- Adjustable growth rate assumptions
+- Customizable time horizons
+- Visual projection overlays on charts
+
+### Data Import/Export
+- Bulk asset import capabilities
+- Multiple export formats (PDF, Excel)
+- Data backup and restore
+
+### Multi-Currency Support
+- Track assets in different currencies
+- Automatic currency conversion
+- Regional formatting preferences
+
+---
+
+## AI-Powered Portfolio Analysis
+
+### Getting Started with AI Analysis
+
+1. **Export Your Data**: Use either the PDF or Excel export to download your portfolio data
+2. **Choose Your AI Platform**: ChatGPT, Claude, Gemini, or any other AI assistant
+3. **Upload Your Report**: Upload the exported file to your chosen AI platform
+4. **Use Provided Prompts**: Copy and paste the analysis prompts included in your export
+5. **Get Professional Insights**: Receive detailed analysis and recommendations
+
+### Sample AI Interaction
+
+```
+"I've uploaded my Aura Asset Manager portfolio report. Please analyze my investment portfolio for diversification effectiveness. Based on the asset categories, concentration percentages, and distribution data provided, assess my diversification level and suggest improvements to reduce concentration risk while maintaining growth potential."
+```
+
+### What AI Analysis Can Provide
+
+- **Diversification Assessment**: Evaluate how well your assets are spread across categories
+- **Risk Analysis**: Identify concentration risks and suggest mitigation strategies
+- **Performance Review**: Compare asset performance and identify optimization opportunities
+- **Rebalancing Recommendations**: Get specific advice on portfolio adjustments
+- **Tax Optimization**: Suggestions for tax-efficient portfolio management
+- **Goal-Based Planning**: Align your portfolio with specific financial objectives
+
+---
+
+## Tips for Success
+
+### Best Practices
+
+1. **Regular Updates**: Keep your asset values current for accurate analysis
+2. **Detailed Records**: Add notes and context to make your assets more meaningful
+3. **Regular Analysis**: Use the export features monthly or quarterly for review
+4. **AI Assistance**: Leverage AI analysis for professional-grade insights
+5. **Theme Alignment**: Choose and maintain a theme that motivates you
+
+### Personalizing Your Experience
+
+For example, instead of listing "2019 Honda Civic," you might call it "My First New Car" and add a note about how proud you were to buy your first brand-new vehicle. A stock holding might be called "Tech Growth Fund" with a note about your belief in the technology sector's long-term potential.
+
+These personal touches make your financial information feel more meaningful and help reinforce the emotional connection between your assets and your life goals and achievements.
+
+### Dashboard Customization
+
+While Aura's dashboard is designed to provide the most important information prominently, you have some control over how information is organized and displayed. You can choose which metrics are most important to you and adjust the dashboard layout accordingly.
+
+Some users prefer to emphasize their insurance coverage prominently, while others focus primarily on asset growth. The dashboard can be customized to reflect your priorities and the aspects of your financial position that are most important to your sense of security and accomplishment.
+
+---
+
+This user guide provides a comprehensive overview of Aura's features and philosophy. Remember that Aura is designed to be your financial sanctuary—a place where you can feel proud of your achievements and confident about your future. Take time to explore the features, personalize your experience, and most importantly, take a moment to appreciate the financial foundation you're building for yourself and your loved ones.
 
 ## Managing Your Assets
 

@@ -9,6 +9,7 @@ import Insurance from './pages/Insurance'
 import Annuities from './pages/Annuities'
 import Analytics from './pages/Analytics'
 import UserSettings from './pages/UserSettings'
+import UserGuide from './pages/UserGuide'
 import AppLayout from './components/layout/AppLayout'
 import { Toaster } from './components/ui/toaster'
 import './App.css'
@@ -87,6 +88,7 @@ function AppContent() {
         <Route path="/transactions" element={<TransactionsPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/settings" element={<UserSettings />} />
+        <Route path="/guide" element={<UserGuide />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppLayout>

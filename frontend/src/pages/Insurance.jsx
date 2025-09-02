@@ -4,10 +4,21 @@ import { insuranceService } from '../services/insurance';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
 Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
+import { exportInsuranceToPDF } from '../utils/pdfExportTerminalInsurance';
+import { exportInsuranceToExcel } from '../utils/excelExportInsurance';
+import { 
+  aggregateInsuranceByType, 
+  calculateInsuranceTotals, 
+  createDetailedInsuranceBreakdown,
+  calculateProtectionMetrics,
+  prepareInsuranceChartData
+} from '../utils/insuranceAggregation';
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888'];
 
 const Insurance = () => {
+  console.log('Insurance component: Starting to render...');
+  
   const [policies, setPolicies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,21 +28,37 @@ const Insurance = () => {
   const [actionError, setActionError] = useState(null);
   const modalRef = useRef(null);
 
+  // Export loading states
+  const [pdfExporting, setPdfExporting] = useState(false);
+  const [excelExporting, setExcelExporting] = useState(false);
+
   // Global preferences trigger for re-renders
   const [globalPreferencesVersion, setGlobalPreferencesVersion] = useState(0);
 
   const fetchPolicies = () => {
+    console.log('Insurance: fetchPolicies called...');
     setLoading(true);
+    setError(null); // Clear any previous errors
+    
     insuranceService.getPolicies()
       .then(data => {
-        setPolicies(data);
+        console.log('Insurance: Successfully fetched policies:', data);
+        setPolicies(data || []); // Ensure we have an array
         setLoading(false);
       })
       .catch(err => {
         console.error('❌ Error fetching policies:', err);
+        console.error('❌ Error details:', err.response?.data);
+        console.error('❌ Error message:', err.message);
+        console.error('❌ Full error object:', err);
+        
+        // Set empty array and continue with the page load
+        setPolicies([]);
         setError('Failed to fetch insurance policies');
         setLoading(false);
-        toast.error('Failed to fetch insurance policies');
+        
+        // Don't show toast for now during debugging
+        // toast.error('Failed to fetch insurance policies');
       });
   };
 
@@ -201,74 +228,6 @@ const Insurance = () => {
     }
   };
 
-  // Only show non-sensitive, necessary fields in charts and table
-  // Annualize premium values for the chart
-  const chartData = policies
-    .map(p => {
-      let premium = Number(p.premium_amount) || 0;
-      let freq = (p.premium_frequency || '').toLowerCase();
-      if (freq === 'monthly') premium = premium * 12;
-      else if (freq === 'quarterly') premium = premium * 4;
-      // Annually or unknown: leave as is
-      return {
-        name: p.policy_name || 'Policy',
-        premium,
-        coverage: typeof p.coverage_amount === 'number' ? p.coverage_amount : 0,
-        type: p.policy_type || 'Unknown',
-        status: p.status || 'active',
-      };
-    })
-    .filter(p => p.premium > 0);
-
-  // --- NEW: Aggregate KPIs for each active policy type ---
-  const POLICY_TYPES = [
-    { key: 'life', label: 'Life Insurance' },
-    { key: 'health', label: 'Health Insurance' },
-    { key: 'auto', label: 'Auto Insurance' },
-    { key: 'home', label: 'Home Insurance' },
-    { key: 'loan', label: 'Loan Insurance' },
-    { key: 'travel', label: 'Travel Insurance' },
-    { key: 'asset', label: 'Asset Insurance' },
-    { key: 'factory', label: 'Factory Insurance' },
-    { key: 'fire', label: 'Fire Insurance' },
-  ];
-
-  // Aggregate by type for active policies
-  const aggregateByType = POLICY_TYPES.map(({ key, label }) => {
-    let annualPremium = 0;
-    let totalCoverage = 0;
-    policies.forEach(p => {
-      if ((p.policy_type || '').toLowerCase() === key && (p.status || 'active') === 'active') {
-        let premium = Number(p.premium_amount) || 0;
-        let freq = (p.premium_frequency || '').toLowerCase();
-        if (freq === 'monthly') premium = premium * 12;
-        else if (freq === 'quarterly') premium = premium * 4;
-        // Annually or unknown: leave as is
-        annualPremium += premium;
-        totalCoverage += Number(p.coverage_amount) || 0;
-      }
-    });
-    return { type: label, annualPremium, totalCoverage };
-  });
-
-  // Total row
-  const totalAnnualPremium = aggregateByType.reduce((sum, t) => sum + t.annualPremium, 0);
-  const totalCoverage = aggregateByType.reduce((sum, t) => sum + t.totalCoverage, 0);
-
-  // --- NEW: Policy type counts (show 0 for missing types) ---
-  const policyTypeCounts = POLICY_TYPES.map(({ key, label }) => {
-    const count = policies.filter(p => (p.policy_type || '').toLowerCase() === key).length;
-    return { type: label, count };
-  });
-
-  // Example pie chart data (policy type breakdown)
-  const pieData = Object.entries(
-    policies.reduce((acc, p) => {
-      acc[p.policy_type] = (acc[p.policy_type] || 0) + 1;
-      return acc;
-    }, {})
-  ).map(([name, value]) => ({ name, value }));
-
   // Form setup
   const { register, handleSubmit, reset, formState: { errors }, watch } = useForm();
 
@@ -420,18 +379,255 @@ const Insurance = () => {
     setActionLoading(false);
   };
 
-  if (loading) return <div>Loading insurance policies...</div>;
+  // Data aggregation using new utility functions with error handling
+  let aggregateByType = {};
+  let totals = { totalCoverage: 0, totalAnnualPremium: 0, totalMonthlyPremium: 0 };
+  let detailedInsuranceBreakdown = [];
+  let protectionMetrics = {};
+  let newChartData = [];
+  let newPieData = [];
+  
+  // Legacy format for existing UI compatibility
+  let aggregateByTypeArray = [];
+  let policyTypeCounts = [];
+  let totalAnnualPremium = 0;
+  let totalCoverage = 0;
+  
+  try {
+    console.log('Insurance: Processing policies data...', policies);
+    
+    // Ensure policies is an array
+    const validPolicies = Array.isArray(policies) ? policies : [];
+    console.log('Insurance: Valid policies array length:', validPolicies.length);
+    
+    if (validPolicies.length > 0) {
+      aggregateByType = aggregateInsuranceByType(validPolicies);
+      console.log('Insurance: aggregateByType completed');
+      
+      totals = calculateInsuranceTotals(validPolicies);
+      console.log('Insurance: totals completed');
+      
+      detailedInsuranceBreakdown = createDetailedInsuranceBreakdown(aggregateByType);
+      console.log('Insurance: detailedBreakdown completed');
+      
+      protectionMetrics = calculateProtectionMetrics(validPolicies);
+      console.log('Insurance: protectionMetrics completed');
+      
+      const chartResult = prepareInsuranceChartData(aggregateByType);
+      newChartData = chartResult.chartData;
+      newPieData = chartResult.pieData;
+      console.log('Insurance: chart data completed');
+      
+      // Convert new format to legacy format for existing UI
+      aggregateByTypeArray = Object.entries(aggregateByType)
+        .filter(([category, data]) => data.count > 0)
+        .map(([category, data]) => ({
+          type: category,
+          annualPremium: data.totalAnnualPremium,
+          totalCoverage: data.totalCoverage
+        }));
+      
+      // Create policy type counts for summary table
+      policyTypeCounts = Object.entries(aggregateByType)
+        .filter(([category, data]) => data.count > 0)
+        .map(([category, data]) => ({
+          type: category,
+          count: data.count
+        }));
+      
+      totalAnnualPremium = totals.totalAnnualPremium;
+      totalCoverage = totals.totalCoverage;
+      
+    } else {
+      // Create simple fallback chart data if no policies
+      newChartData = [];
+      newPieData = [];
+      aggregateByTypeArray = [];
+      policyTypeCounts = [];
+      console.log('Insurance: No policies, using empty chart data');
+    }
+    
+  } catch (error) {
+    console.error('Insurance: Error in data processing:', error);
+    console.error('Insurance: Error stack:', error.stack);
+    // Fallback to empty data to prevent page crash
+    aggregateByType = {};
+    totals = { totalCoverage: 0, totalAnnualPremium: 0, totalMonthlyPremium: 0 };
+    detailedInsuranceBreakdown = [];
+    protectionMetrics = {};
+    newChartData = [];
+    newPieData = [];
+    aggregateByTypeArray = [];
+    policyTypeCounts = [];
+    totalAnnualPremium = 0;
+    totalCoverage = 0;
+  }
+
+  // Export handlers
+  const handleExportToPDF = async () => {
+    if (pdfExporting) return;
+
+    try {
+      console.log('Insurance: Starting PDF export...');
+      setPdfExporting(true);
+
+      // Get user settings
+      const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+      const firstName = userSettings?.first_name || '';
+      const lastName = userSettings?.last_name || '';
+      const userName = firstName && lastName ? `${firstName} ${lastName}` : 
+                     firstName || lastName || 'Insurance Portfolio Holder';
+
+      // Get current currency
+      const currency = localStorage.getItem('globalCurrency') || 'USD';
+
+      // Prepare data for PDF export
+      const pdfData = {
+        userName,
+        policies,
+        aggregateByType,
+        totals,
+        detailedInsuranceBreakdown,
+        protectionMetrics,
+        currency,
+        formatCurrency,
+        formatDate,
+        pieData: newPieData,
+        chartData: newChartData
+      };
+
+      console.log('Insurance: PDF data prepared, calling export function...');
+      await exportInsuranceToPDF(pdfData);
+      toast.success('Insurance PDF report generated successfully!');
+      
+    } catch (error) {
+      console.error('Error exporting insurance to PDF:', error);
+      toast.error(error.message || 'Failed to generate PDF report. Please try again.');
+    } finally {
+      setPdfExporting(false);
+    }
+  };
+
+  const handleExportToExcel = async () => {
+    if (excelExporting) return;
+
+    try {
+      console.log('Insurance: Starting Excel export...');
+      setExcelExporting(true);
+
+      // Get user settings
+      const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+      const firstName = userSettings?.first_name || '';
+      const lastName = userSettings?.last_name || '';
+      const userName = firstName && lastName ? `${firstName} ${lastName}` : 
+                     firstName || lastName || 'Insurance Portfolio Holder';
+
+      // Get current currency
+      const currency = localStorage.getItem('globalCurrency') || 'USD';
+
+      // Prepare data for Excel export
+      const excelData = {
+        userName,
+        policies,
+        aggregateByType: aggregateByTypeArray, // Use array format for Excel export
+        totals,
+        detailedInsuranceBreakdown,
+        protectionMetrics,
+        currency,
+        formatCurrency,
+        formatDate,
+        pieData: newPieData,
+        chartData: newChartData
+      };
+
+      console.log('Insurance: Excel data prepared, calling export function...');
+      await exportInsuranceToExcel(excelData);
+      toast.success('Insurance Excel report generated successfully!');
+      
+    } catch (error) {
+      console.error('Error exporting insurance to Excel:', error);
+      toast.error(error.message || 'Failed to generate Excel report. Please try again.');
+    } finally {
+      setExcelExporting(false);
+    }
+  };
+
+  if (loading) {
+    console.log('Insurance: Still loading...');
+    return <div>Loading insurance policies...</div>;
+  }
+
+  console.log('Insurance: About to render main component...', {
+    policies: policies?.length || 0,
+    error,
+    loading
+  });
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Insurance Policies</h1>
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          onClick={() => openModal()}
-        >
-          Add Policy
-        </button>
+        <div className="flex items-center gap-3">
+          {/* PDF Download Button */}
+          {policies.length > 0 && (
+            <button
+              className={`bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${pdfExporting ? 'cursor-not-allowed' : ''}`}
+              onClick={handleExportToPDF}
+              disabled={pdfExporting}
+              title="Download complete insurance report as PDF"
+            >
+              {pdfExporting ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Download PDF
+                </>
+              )}
+            </button>
+          )}
+
+          {/* Excel Download Button */}
+          {policies.length > 0 && (
+            <button
+              className={`bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${excelExporting ? 'cursor-not-allowed' : ''}`}
+              onClick={handleExportToExcel}
+              disabled={excelExporting}
+              title="Download complete insurance report as Excel spreadsheet"
+            >
+              {excelExporting ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                  </svg>
+                  Download Excel
+                </>
+              )}
+            </button>
+          )}
+
+          {/* Add Policy Button */}
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            onClick={() => openModal()}
+          >
+            Add Policy
+          </button>
+        </div>
       </div>
 
       {/* Error message if fetch fails */}
@@ -455,7 +651,7 @@ const Insurance = () => {
             <div className="bg-card text-card-foreground rounded shadow p-4">
               <h2 className="font-semibold mb-2">Annual Premiums Overview</h2>
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={chartData}>
+                <BarChart data={newChartData}>
                   <XAxis dataKey="name" stroke="currentColor" />
                   <YAxis stroke="currentColor" />
                   <Tooltip 
@@ -475,8 +671,8 @@ const Insurance = () => {
               <h2 className="font-semibold mb-2">Policy Type Breakdown</h2>
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
-                  <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                    {pieData.map((entry, index) => (
+                  <Pie data={newPieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                    {newPieData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -508,7 +704,7 @@ const Insurance = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {aggregateByType.map((row, idx) => (
+                    {aggregateByTypeArray.map((row, idx) => (
                       <tr key={row.type} className="border-t border-border">
                         <td className="py-2 px-4">{row.type}</td>
                         <td className="py-2 px-4">{formatCurrency(row.annualPremium)}</td>

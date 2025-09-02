@@ -5,14 +5,15 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { assetsService } from '../services/assets';
 import { transactionsService } from '../services/transactions';
+import { userSettingsService } from '../services/user-settings';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
 Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
-import { assetTypes, getAggregationCategories, getCategoryForAssetType, getAssetTypeLabel, getAllAssetTypes } from '../constants/assetTypes';
+import { assetTypes, getAggregationCategories, getAssetTypeLabel, getAllAssetTypes } from '../constants/assetTypes';
 import AnnuityManager from '../components/assets/AnnuityManager';
 import ConfirmationDialog from '../components/ui/confirmation-dialog';
-
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888'];
+  import { exportAssetsToPDF } from '../utils/pdfExportTerminal';
+  import { exportToExcel } from '../utils/excelExport';const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888'];
 
 const Assets = () => {
   const navigate = useNavigate();
@@ -40,7 +41,6 @@ const Assets = () => {
   const [projectionGrowthRate, setProjectionGrowthRate] = useState(7); // Default 7% annual growth
   const [showProjections, setShowProjections] = useState(false);
   const { isDark } = useTheme();
-  const [showTimeline, setShowTimeline] = useState(true);
   const [expandedAsset, setExpandedAsset] = useState(null); // For showing annuity manager
   
   // Confirmation dialog state
@@ -53,17 +53,28 @@ const Assets = () => {
   // Global preferences trigger for re-renders
   const [globalPreferencesVersion, setGlobalPreferencesVersion] = useState(0);
 
+  // User settings for PDF export
+  const [userSettings, setUserSettings] = useState(null);
+  // Export states
+  const [pdfExporting, setPdfExporting] = useState(false);
+  const [excelExporting, setExcelExporting] = useState(false);
+
   const fetchAssets = () => {
     setLoading(true);
     
-    // Fetch both assets and transactions
+    // Fetch assets, transactions, and user settings
     Promise.all([
       assetsService.getAssets(),
-      transactionsService.getTransactions()
+      transactionsService.getTransactions(),
+      userSettingsService.getSettings().catch(err => {
+        console.warn('Could not fetch user settings:', err);
+        return null; // Return null if user settings fail, don't break the entire page
+      })
     ])
-      .then(([assetsData, transactionsData]) => {
+      .then(([assetsData, transactionsData, settingsData]) => {
         setAssets(assetsData);
         setTransactions(transactionsData);
+        setUserSettings(settingsData);
         setLoading(false);
       })
       .catch(err => {
@@ -641,21 +652,164 @@ const Assets = () => {
     setActionLoading(false);
   };
 
+  // PDF Export Function
+  const handleExportToPDF = async () => {
+    if (pdfExporting) return; // Prevent multiple clicks
+
+    try {
+      setPdfExporting(true);
+      
+      // Get user's full name
+      const firstName = userSettings?.first_name || '';
+      const lastName = userSettings?.last_name || '';
+      const userName = firstName && lastName ? `${firstName} ${lastName}` : 
+                     firstName || lastName || 'Asset Portfolio Holder';
+
+      // Get current currency symbol
+      const currency = userSettings?.currency || 'USD';
+
+      // Prepare data for PDF export
+      const pdfData = {
+        userName,
+        assets: filteredAndSortedAssets,
+        aggregateByType,
+        totals: {
+          totalAcquisitionValue,
+          totalPresentValue
+        },
+        detailedAssetBreakdown,
+        currency,
+        formatCurrency,
+        formatDate,
+        pieData,
+        valueOverTimeData: chartData
+      };
+
+      await exportAssetsToPDF(pdfData);
+      toast.success('PDF report generated successfully!');
+      
+    } catch (error) {
+      console.error('Error exporting to PDF:', error);
+      toast.error(error.message || 'Failed to generate PDF report. Please try again.');
+    } finally {
+      setPdfExporting(false);
+    }
+  };
+
+  // Excel Export Function
+  const handleExportToExcel = async () => {
+    if (excelExporting) return; // Prevent multiple clicks
+
+    try {
+      setExcelExporting(true);
+      
+      // Get user's full name
+      const firstName = userSettings?.first_name || '';
+      const lastName = userSettings?.last_name || '';
+      const userName = firstName && lastName ? `${firstName} ${lastName}` : 
+                     firstName || lastName || 'Asset Portfolio Holder';
+
+      // Get current currency symbol
+      const currency = userSettings?.currency || 'USD';
+
+      // Prepare data for Excel export
+      const excelData = {
+        userName,
+        assets: filteredAndSortedAssets,
+        aggregateByType,
+        totals: {
+          totalAcquisitionValue,
+          totalPresentValue
+        },
+        detailedAssetBreakdown,
+        currency,
+        formatCurrency,
+        formatDate,
+        pieData,
+        valueOverTimeData: chartData
+      };
+
+      await exportToExcel(excelData);
+      toast.success('Excel report generated successfully!');
+      
+    } catch (error) {
+      console.error('Error exporting to Excel:', error);
+      toast.error(error.message || 'Failed to generate Excel report. Please try again.');
+    } finally {
+      setExcelExporting(false);
+    }
+  };
+
   if (loading) return <div>Loading assets...</div>;
 
   return (
     <div className={`p-6 min-h-screen ${isDark ? 'bg-black text-neutral-100' : 'bg-gray-50'}`}>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Assets</h1>
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2"
-          onClick={() => navigate('/transactions')}
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          New Transaction
-        </button>
+        <div className="flex items-center gap-3">
+          {/* PDF Download Button */}
+          {activeAssets.length > 0 && (
+            <button
+              className={`bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${pdfExporting ? 'cursor-not-allowed' : ''}`}
+              onClick={handleExportToPDF}
+              disabled={pdfExporting}
+              title="Download complete asset report as PDF"
+            >
+              {pdfExporting ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Download PDF
+                </>
+              )}
+            </button>
+          )}
+
+          {/* Excel Download Button */}
+          {activeAssets.length > 0 && (
+            <button
+              className={`bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${excelExporting ? 'cursor-not-allowed' : ''}`}
+              onClick={handleExportToExcel}
+              disabled={excelExporting}
+              title="Download complete asset report as Excel spreadsheet"
+            >
+              {excelExporting ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                  </svg>
+                  Download Excel
+                </>
+              )}
+            </button>
+          )}
+          
+          {/* New Transaction Button */}
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2"
+            onClick={() => navigate('/transactions')}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            New Transaction
+          </button>
+        </div>
       </div>
 
       {/* Error message if fetch fails */}
