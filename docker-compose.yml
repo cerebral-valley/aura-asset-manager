@@ -10,11 +10,11 @@ services:
       - "8000:8000"
     environment:
       - ENVIRONMENT=development
-      - DATABASE_URL=postgresql://postgres.buuyvrysvjwqqfoyfbdr:gandhibagh123@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
-      - SECRET_KEY=sb_secret_6xkXGfhSWLi01Y9ijbe4TA_mj6xruay
-      - SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1dXl2cnlzdmp3cXFmb3lmYmRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyMDQ2MjQsImV4cCI6MjA2ODc4MDYyNH0.ZQOOenYbhJkBeFj_yfDXP22qEeRnqUfa8yObHNHl5sg
-      - SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1dXl2cnlzdmp3cXFmb3lmYmRyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MzIwNDYyNCwiZXhwIjoyMDY4NzgwNjI0fQ.GIDseoi-MZROFkmZ7ZNEXuH6d1-k3oi7WkcljwKRiPQ
-      - SUPABASE_URL=https://buuyvrysvjwqqfoyfbdr.supabase.co
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - SUPABASE_URL=${SUPABASE_URL}
     env_file:
       - ./backend/.env
     volumes:

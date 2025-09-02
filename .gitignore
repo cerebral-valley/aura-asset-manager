@@ -2,13 +2,60 @@
 node_modules/
 */node_modules/
 
-# Environment variables
+# Environment variables (CRITICAL: Never commit these!)
 .env
+.env.*
 .env.local
+.env.development
 .env.development.local
+.env.test
 .env.test.local
-.env.production.local
 .env.production
+.env.production.local
+*.env
+*/.env
+*/.env.*
+
+# Security & Credentials (CRITICAL: Never commit these!)
+**/secrets/
+**/credentials/
+**/*secret*
+**/*credential*
+**/*password*
+**/*key*.json
+**/*key*.txt
+**/api-keys/
+**/tokens/
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Debug files that may contain sensitive data
+debug-*.js
+debug-*.ts
+debug-*.py
+*-debug.*
+**/debug/
+test-*.js
+test-*.ts
+*-test.js
+*-test.ts
+*.test.local.*
+**/*-credentials.*
+
+# Configuration files that may contain secrets
+config.production.js
+config.production.json
+secrets.json
+credentials.json
+*-secrets.*
+*-credentials.*
+
+# Supabase local development
+.supabase/
+supabase/.env
 
 # Python
 __pycache__/
