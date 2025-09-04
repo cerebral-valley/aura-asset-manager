@@ -33,3 +33,48 @@ class User(UserInDB):
     """Public user schema."""
     pass
 
+
+# Profile schemas
+from decimal import Decimal
+from datetime import date
+
+class ProfileUpdate(BaseModel):
+    """Schema for updating user profile."""
+    full_name: Optional[str] = None
+    marital_status: Optional[str] = None
+    gender: Optional[str] = None
+    date_of_birth: Optional[date] = None
+    children: Optional[int] = None
+    dependents: Optional[int] = None
+    city: Optional[str] = None
+    pin_code: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = None
+    nationality: Optional[str] = None
+    phone: Optional[str] = None
+    annual_income: Optional[Decimal] = None
+    occupation: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class UserProfile(UserInDB):
+    """Schema for complete user profile."""
+    full_name: Optional[str] = None
+    marital_status: Optional[str] = None
+    gender: Optional[str] = None
+    date_of_birth: Optional[date] = None
+    children: Optional[int] = None
+    dependents: Optional[int] = None
+    city: Optional[str] = None
+    pin_code: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = None
+    nationality: Optional[str] = None
+    phone: Optional[str] = None
+    annual_income: Optional[Decimal] = None
+    occupation: Optional[str] = None
+    
+    class Config:
+        from_attributes = True

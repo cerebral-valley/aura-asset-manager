@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from app.core.config import settings
-from app.api.v1 import auth, dashboard, assets, transactions, insurance, transaction_create, annuities, user_settings, feedback
+from app.api.v1 import auth, dashboard, assets, transactions, insurance, transaction_create, annuities, user_settings, feedback, profile
 # TODO: Re-enable after fixing metadata column name issue
 # from app.api.v1 import payment_schedules
 
@@ -103,6 +103,7 @@ app.include_router(transaction_create.router, prefix="/api/v1/transaction_create
 app.include_router(insurance.router, prefix="/api/v1/insurance", tags=["insurance"])
 app.include_router(annuities.router, prefix="/api/v1/annuities", tags=["annuities"])
 app.include_router(user_settings.router, prefix="/api/v1/user-settings", tags=["user-settings"])
+app.include_router(profile.router, prefix="/api/v1/profile", tags=["profile"])
 # TODO: Re-enable after fixing metadata column name issue
 # app.include_router(payment_schedules.router, prefix="/api/v1/payment-schedules", tags=["payment-schedules"])
 app.include_router(feedback.router, prefix="/api/v1", tags=["feedback"])
