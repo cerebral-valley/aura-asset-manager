@@ -39,7 +39,7 @@ class User(Base):
     pin_code = Column(String(20))
     state = Column(String(100))
     nationality = Column(String(100))
-    phone = Column(String(50))
+    phone_number = Column(String(50))
     annual_income = Column(Text)  # Using Text to store Decimal as string
     occupation = Column(String(100))
     

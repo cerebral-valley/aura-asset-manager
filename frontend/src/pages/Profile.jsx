@@ -28,7 +28,7 @@ const Profile = () => {
     state: '',
     country: '',
     nationality: '',
-    phone: '',
+    phone_number: '',
     annual_income: '',
     occupation: ''
   })
@@ -69,7 +69,7 @@ const Profile = () => {
         state: profileData.state || '',
         country: profileData.country || '',
         nationality: profileData.nationality || '',
-        phone: profileData.phone || '',
+        phone_number: profileData.phone_number || '',
         annual_income: profileData.annual_income || '',
         occupation: profileData.occupation || ''
       })
@@ -225,11 +225,11 @@ const Profile = () => {
               </div>
 
               <div>
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone_number">Phone Number</Label>
                 <Input
-                  id="phone"
-                  value={profile.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  id="phone_number"
+                  value={profile.phone_number}
+                  onChange={(e) => handleInputChange('phone_number', e.target.value)}
                   placeholder="Enter your phone number"
                 />
               </div>

@@ -51,7 +51,7 @@ class ProfileUpdate(BaseModel):
     state: Optional[str] = None
     country: Optional[str] = None
     nationality: Optional[str] = None
-    phone: Optional[str] = None
+    phone_number: Optional[str] = None
     annual_income: Optional[Decimal] = None
     occupation: Optional[str] = None
 
@@ -72,7 +72,7 @@ class UserProfile(UserInDB):
     state: Optional[str] = None
     country: Optional[str] = None
     nationality: Optional[str] = None
-    phone: Optional[str] = None
+    phone_number: Optional[str] = None
     annual_income: Optional[Decimal] = None
     occupation: Optional[str] = None
     
