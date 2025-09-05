@@ -52,6 +52,22 @@ wc -l filename && head -3 filename  # Verify content exists
 # Full stack: docker-compose up --build
 ```
 
+### Post-Push Deployment Monitoring
+After any GitHub push, **always verify deployment status**:
+```bash
+# Railway backend status
+railway logs  # Check recent deployment logs
+railway status  # Check service status
+
+# Vercel frontend status  
+vercel ls  # List recent deployments
+vercel logs [deployment-url]  # Get deployment logs
+
+# Report findings (don't troubleshoot, just report)
+# ✅ SUCCESS: Backend deployed, logs show server running
+# ❌ FAILED: Frontend build error in logs, needs investigation
+```
+
 ### Domain Models
 **Financial platform**: Assets (real_estate, stocks, annuities), Insurance, Transactions
 - UUID primary keys, JSONB metadata, payment schedules for annuities

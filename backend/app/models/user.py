@@ -2,7 +2,7 @@
 User model for SQLAlchemy.
 """
 
-from sqlalchemy import Column, String, DateTime, Text, Boolean
+from sqlalchemy import Column, String, DateTime, Text, Boolean, Date, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -27,6 +27,21 @@ class User(Base):
     currency = Column(String(10), default="USD")
     date_format = Column(String(20), default="MM/DD/YYYY")
     dark_mode = Column(Boolean, default=False)
+    
+    # Profile fields
+    full_name = Column(String(200))
+    marital_status = Column(String(50))
+    gender = Column(String(50))
+    date_of_birth = Column(Date)
+    children = Column(Integer)
+    dependents = Column(Integer)
+    city = Column(String(100))
+    pin_code = Column(String(20))
+    state = Column(String(100))
+    nationality = Column(String(100))
+    phone = Column(String(50))
+    annual_income = Column(Text)  # Using Text to store Decimal as string
+    occupation = Column(String(100))
     
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email})>"
