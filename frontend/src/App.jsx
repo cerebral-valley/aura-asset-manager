@@ -1,5 +1,5 @@
 import { AuthProvider, useAuth } from './hooks/useAuth'
-import { ThemeProvider } from './hooks/useTheme'
+import { ThemeProvider } from './contexts/ThemeContext'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import LoginForm from './components/auth/LoginForm'
 import Dashboard from './pages/Dashboard'
