@@ -663,7 +663,7 @@ const Insurance = () => {
                     }} 
                   />
                   <Legend />
-                  <Bar dataKey="premium" fill="#8884d8" name="Annual Premium" />
+                  <Bar dataKey="premium" fill="hsl(var(--chart-1))" name="Annual Premium" />
                 </BarChart>
               </ResponsiveContainer>
             </div>

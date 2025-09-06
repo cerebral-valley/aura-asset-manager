@@ -41,8 +41,8 @@ const AssetValueOverTimeChart = ({ data, title = 'Asset Value Over Time' }) => {
             <YAxis tickFormatter={formatChartCurrency} />
             <Tooltip formatter={(value) => formatChartCurrency(value)} />
             <Legend />
-            <Line type="monotone" dataKey="acquisitionValue" stroke="#8884d8" name="Acquisition Value" />
-            <Line type="monotone" dataKey="presentValue" stroke="#82ca9d" name="Present Value" />
+            <Line type="monotone" dataKey="acquisitionValue" stroke="hsl(var(--chart-1))" name="Acquisition Value" />
+            <Line type="monotone" dataKey="presentValue" stroke="hsl(var(--chart-2))" name="Present Value" />
           </LineChart>
         </ResponsiveContainer>
       </CardContent>

@@ -2,8 +2,17 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recha
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card.jsx'
 import { useCurrency } from '../../hooks/useCurrency.jsx'
 
-// Same color scheme as Assets page for consistency
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888']
+// Function to get theme-aware colors
+const getThemeColors = () => {
+  const colors = [];
+  for (let i = 1; i <= 5; i++) {
+    const color = getComputedStyle(document.documentElement).getPropertyValue(`--chart-${i}`).trim();
+    if (color) {
+      colors.push(`hsl(${color})`);
+    }
+  }
+  return colors.length > 0 ? colors : ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888']; // fallback
+};
 
 const AssetAllocationChart = ({ data, title = "Asset Allocation" }) => {
   const { formatCurrency } = useCurrency()
@@ -47,12 +56,15 @@ const AssetAllocationChart = ({ data, title = "Asset Allocation" }) => {
               cx="50%"
               cy="50%"
               outerRadius={100}
-              fill="#8884d8"
+              fill="hsl(var(--chart-1))"
               label={renderCustomLabel}
             >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
+              {data.map((entry, index) => {
+                const colors = getThemeColors();
+                return (
+                  <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                );
+              })}
             </Pie>
             <Tooltip formatter={formatTooltip} />
             <Legend 

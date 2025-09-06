@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme } from '../contexts/ThemeContext';
 import { useCurrency } from '../hooks/useCurrency';
 import { assetsService } from '../services/assets';
 import { getAssetTypeLabel } from '../constants/assetTypes';
@@ -382,25 +382,25 @@ const Analytics = () => {
                 <Line
                   type="monotone"
                   dataKey="realGrowth"
-                  stroke="#10b981"
+                  stroke="hsl(var(--chart-1))"
                   strokeWidth={2}
-                  dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                  dot={{ fill: 'hsl(var(--chart-1))', strokeWidth: 2, r: 4 }}
                   name="Portfolio Value (NOT Adjusted for inflation)"
                 />
                 <Line
                   type="monotone"
                   dataKey="real"
-                  stroke="#f59e0b"
+                  stroke="hsl(var(--chart-2))"
                   strokeWidth={2}
-                  dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
+                  dot={{ fill: 'hsl(var(--chart-2))', strokeWidth: 2, r: 4 }}
                   name="Portfolio Value (Adjusted for inflation)"
                 />
                 <Line
                   type="monotone"
                   dataKey="inflationDepreciated"
-                  stroke="#ef4444"
+                  stroke="hsl(var(--chart-3))"
                   strokeWidth={2}
-                  dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
+                  dot={{ fill: 'hsl(var(--chart-3))', strokeWidth: 2, r: 4 }}
                   name="Inflation Depreciated Value"
                 />
               </LineChart>

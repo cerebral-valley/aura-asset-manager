@@ -4,7 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card.jsx'
 import { useCurrency } from '../../hooks/useCurrency.jsx'
 import apiClient from '@/lib/api'
 
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888']
+// Function to get theme-aware colors
+const getThemeColors = () => {
+  const colors = [];
+  for (let i = 1; i <= 5; i++) {
+    const color = getComputedStyle(document.documentElement).getPropertyValue(`--chart-${i}`).trim();
+    if (color) {
+      colors.push(`hsl(${color})`);
+    }
+  }
+  return colors.length > 0 ? colors : ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888']; // fallback
+};
 
 const InsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown" }) => {
   const { formatCurrency } = useCurrency()
@@ -91,15 +101,18 @@ const InsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown" }) => {
               cx="50%"
               cy="50%"
               outerRadius={100}
-              fill="#8884d8"
+              fill="hsl(var(--chart-1))"
               dataKey="value"
               label={({ name, value, percent }) => 
                 percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
               }
             >
-              {pieData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
+              {pieData.map((entry, index) => {
+                const colors = getThemeColors();
+                return (
+                  <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                );
+              })}
             </Pie>
             <Tooltip formatter={formatTooltip} />
             <Legend />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme } from '../contexts/ThemeContext';
 import { useCurrency } from '../hooks/useCurrency';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +13,19 @@ import { assetTypes, getAggregationCategories, getAssetTypeLabel, getAllAssetTyp
 import AnnuityManager from '../components/assets/AnnuityManager';
 import ConfirmationDialog from '../components/ui/confirmation-dialog';
   import { exportAssetsToPDF } from '../utils/pdfExportTerminal';
-  import { exportToExcel } from '../utils/excelExport';const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888'];
+  import { exportToExcel } from '../utils/excelExport';
+
+// Function to get theme-aware colors
+const getThemeColors = () => {
+  const colors = [];
+  for (let i = 1; i <= 5; i++) {
+    const color = getComputedStyle(document.documentElement).getPropertyValue(`--chart-${i}`).trim();
+    if (color) {
+      colors.push(`hsl(${color})`);
+    }
+  }
+  return colors.length > 0 ? colors : ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888']; // fallback
+};
 
 const Assets = () => {
   const navigate = useNavigate();
@@ -894,13 +906,13 @@ const Assets = () => {
                   <YAxis tickFormatter={formatYAxisCurrency} />
                   <Tooltip formatter={(value) => formatChartCurrency(value)} />
                   <Legend />
-                  <Line type="monotone" dataKey="acquisitionValue" stroke="#8884d8" name="Acquisition Value" />
-                  <Line type="monotone" dataKey="presentValue" stroke="#82ca9d" name="Present Value" />
+                  <Line type="monotone" dataKey="acquisitionValue" stroke="hsl(var(--chart-1))" name="Acquisition Value" />
+                  <Line type="monotone" dataKey="presentValue" stroke="hsl(var(--chart-2))" name="Present Value" />
                   {showProjections && (
                     <Line 
                       type="monotone" 
                       dataKey="projectedValue" 
-                      stroke="#ff7300" 
+                      stroke="hsl(var(--chart-3))" 
                       strokeDasharray="5 5"
                       name="Projected Value" 
                     />
@@ -923,9 +935,12 @@ const Assets = () => {
                     outerRadius={80} 
                     label={({ value, percent }) => `${formatChartCurrency(value)} (${(percent * 100).toFixed(1)}%)`}
                   >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
+                    {pieData.map((entry, index) => {
+                      const colors = getThemeColors();
+                      return (
+                        <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                      );
+                    })}
                   </Pie>
                   <Tooltip formatter={(value) => formatChartCurrency(value)} />
                   <Legend />

@@ -6,13 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card.
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select.jsx'
 import { Switch } from '../components/ui/switch.jsx'
 import { Alert, AlertDescription } from '../components/ui/alert.jsx'
+import { ThemeSelector } from '../components/ui/ThemeSelector.jsx'
 import { CheckCircle, AlertCircle, User, Globe, Palette } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth.jsx'
+import { useTheme } from '../contexts/ThemeContext.jsx'
 import { userSettingsService } from '../services/user-settings.js'
 import { feedbackService } from '../services/feedback.js'
 
 const UserSettings = () => {
   const { user } = useAuth()
+  const { darkMode, setDarkMode } = useTheme()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState('')
@@ -86,6 +89,10 @@ const UserSettings = () => {
       setError('')
       const data = await userSettingsService.getSettings()
       setSettings(data)
+      // Sync dark mode with theme context
+      if (data && typeof data.dark_mode === 'boolean') {
+        setDarkMode(data.dark_mode)
+      }
     } catch (err) {
       console.error('Error fetching settings:', err)
       if (err.message.includes('authentication') || err.message.includes('Invalid')) {
@@ -143,6 +150,10 @@ const UserSettings = () => {
   }
 
   const handleInputChange = (field, value) => {
+    if (field === 'dark_mode') {
+      // Update the global theme context immediately
+      setDarkMode(value)
+    }
     setSettings(prev => ({
       ...prev,
       [field]: value
@@ -296,6 +307,9 @@ const UserSettings = () => {
               </Select>
             </div>
 
+            {/* Theme Selector */}
+            <ThemeSelector />
+
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="dark_mode" className="text-base">Dark Mode</Label>
@@ -305,7 +319,7 @@ const UserSettings = () => {
               </div>
               <Switch
                 id="dark_mode"
-                checked={settings.dark_mode}
+                checked={darkMode}
                 onCheckedChange={(checked) => handleInputChange('dark_mode', checked)}
               />
             </div>

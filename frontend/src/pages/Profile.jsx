@@ -6,7 +6,6 @@ import { Input } from '../components/ui/input.jsx'
 import { Label } from '../components/ui/label.jsx'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select.jsx'
 import { Alert, AlertDescription } from '../components/ui/alert.jsx'
-import { ThemeSelector } from '../components/ui/ThemeSelector.jsx'
 import { User, MapPin, Users, Briefcase, CheckCircle, AlertCircle, Calendar } from 'lucide-react'
 import { profileService } from '../services/profile.js'
 
@@ -417,9 +416,6 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
-
-        {/* Appearance Settings */}
-        <ThemeSelector className="col-span-full" />
       </div>
 
       {/* Save Button */}
