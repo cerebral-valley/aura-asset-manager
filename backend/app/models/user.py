@@ -29,7 +29,6 @@ class User(Base):
     dark_mode = Column(Boolean, default=False)
     
     # Profile fields
-    full_name = Column(String(200))
     marital_status = Column(String(50))
     gender = Column(String(50))
     date_of_birth = Column(Date)

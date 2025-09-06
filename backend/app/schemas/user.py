@@ -40,7 +40,6 @@ from datetime import date
 
 class ProfileUpdate(BaseModel):
     """Schema for updating user profile."""
-    full_name: Optional[str] = None
     marital_status: Optional[str] = None
     gender: Optional[str] = None
     date_of_birth: Optional[date] = None
@@ -61,7 +60,6 @@ class ProfileUpdate(BaseModel):
 
 class UserProfile(UserInDB):
     """Schema for complete user profile."""
-    full_name: Optional[str] = None
     marital_status: Optional[str] = None
     gender: Optional[str] = None
     date_of_birth: Optional[date] = None

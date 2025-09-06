@@ -17,7 +17,8 @@ const Profile = () => {
   const [error, setError] = useState('')
   
   const [profile, setProfile] = useState({
-    full_name: '',
+    first_name: '',
+    last_name: '',
     marital_status: '',
     gender: '',
     date_of_birth: '',
@@ -58,7 +59,8 @@ const Profile = () => {
       ])
 
       setProfile({
-        full_name: profileData.full_name || '',
+        first_name: profileData.first_name || '',
+        last_name: profileData.last_name || '',
         marital_status: profileData.marital_status || '',
         gender: profileData.gender || '',
         date_of_birth: profileData.date_of_birth || '',
@@ -169,14 +171,25 @@ const Profile = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="full_name">Full Name</Label>
-              <Input
-                id="full_name"
-                value={profile.full_name}
-                onChange={(e) => handleInputChange('full_name', e.target.value)}
-                placeholder="Enter your full name"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="first_name">First Name</Label>
+                <Input
+                  id="first_name"
+                  value={profile.first_name}
+                  onChange={(e) => handleInputChange('first_name', e.target.value)}
+                  placeholder="Enter your first name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="last_name">Last Name</Label>
+                <Input
+                  id="last_name"
+                  value={profile.last_name}
+                  onChange={(e) => handleInputChange('last_name', e.target.value)}
+                  placeholder="Enter your last name"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
