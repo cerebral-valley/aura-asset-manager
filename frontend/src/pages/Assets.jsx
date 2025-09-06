@@ -15,18 +15,6 @@ import ConfirmationDialog from '../components/ui/confirmation-dialog';
   import { exportAssetsToPDF } from '../utils/pdfExportTerminal';
   import { exportToExcel } from '../utils/excelExport';
 
-// Function to get theme-aware colors
-const getThemeColors = () => {
-  const colors = [];
-  for (let i = 1; i <= 5; i++) {
-    const color = getComputedStyle(document.documentElement).getPropertyValue(`--chart-${i}`).trim();
-    if (color) {
-      colors.push(`hsl(${color})`);
-    }
-  }
-  return colors.length > 0 ? colors : ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888']; // fallback
-};
-
 const Assets = () => {
   const navigate = useNavigate();
   const { formatCurrency, getCurrencySymbol } = useCurrency();
@@ -935,12 +923,12 @@ const Assets = () => {
                     outerRadius={80} 
                     label={({ value, percent }) => `${formatChartCurrency(value)} (${(percent * 100).toFixed(1)}%)`}
                   >
-                    {pieData.map((entry, index) => {
-                      const colors = getThemeColors();
-                      return (
-                        <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
-                      );
-                    })}
+                    {pieData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={`hsl(var(--chart-${(index % 5) + 1}))`} 
+                      />
+                    ))}
                   </Pie>
                   <Tooltip formatter={(value) => formatChartCurrency(value)} />
                   <Legend />

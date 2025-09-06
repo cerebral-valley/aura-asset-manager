@@ -36,6 +36,7 @@ class Settings(BaseSettings):
         "https://aura-asset-manager-git-main-cerebral-valley.vercel.app", 
         "https://aura-asset-manager-cerebral-valley.vercel.app",
         "http://localhost:5173",
+        "http://localhost:5176",
         "http://localhost:3000"
     ]
     

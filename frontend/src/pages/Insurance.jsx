@@ -14,8 +14,6 @@ import {
   prepareInsuranceChartData
 } from '../utils/insuranceAggregation';
 
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#888888'];
-
 const Insurance = () => {
   console.log('Insurance component: Starting to render...');
   
@@ -673,7 +671,10 @@ const Insurance = () => {
                 <PieChart>
                   <Pie data={newPieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
                     {newPieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={`hsl(var(--chart-${(index % 5) + 1}))`} 
+                      />
                     ))}
                   </Pie>
                   <Tooltip 
