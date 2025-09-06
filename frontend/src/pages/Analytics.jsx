@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { useChartColors } from '../hooks/useChartColors';
 import { useCurrency } from '../hooks/useCurrency';
 import { assetsService } from '../services/assets';
 import { getAssetTypeLabel } from '../constants/assetTypes';
@@ -14,6 +15,7 @@ import { Tooltip as InfoTooltip, TooltipTrigger, TooltipContent } from '@/compon
 
 const Analytics = () => {
   const { isDark } = useTheme();
+  const { colors, getColor } = useChartColors();
   const { formatCurrency, getCurrencySymbol } = useCurrency();
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -382,25 +384,25 @@ const Analytics = () => {
                 <Line
                   type="monotone"
                   dataKey="realGrowth"
-                  stroke="hsl(var(--chart-1))"
+                  stroke={getColor(0)}
                   strokeWidth={2}
-                  dot={{ fill: 'hsl(var(--chart-1))', strokeWidth: 2, r: 4 }}
+                  dot={{ fill: getColor(0), strokeWidth: 2, r: 4 }}
                   name="Portfolio Value (NOT Adjusted for inflation)"
                 />
                 <Line
                   type="monotone"
                   dataKey="real"
-                  stroke="hsl(var(--chart-2))"
+                  stroke={getColor(1)}
                   strokeWidth={2}
-                  dot={{ fill: 'hsl(var(--chart-2))', strokeWidth: 2, r: 4 }}
+                  dot={{ fill: getColor(1), strokeWidth: 2, r: 4 }}
                   name="Portfolio Value (Adjusted for inflation)"
                 />
                 <Line
                   type="monotone"
                   dataKey="inflationDepreciated"
-                  stroke="hsl(var(--chart-3))"
+                  stroke={getColor(2)}
                   strokeWidth={2}
-                  dot={{ fill: 'hsl(var(--chart-3))', strokeWidth: 2, r: 4 }}
+                  dot={{ fill: getColor(2), strokeWidth: 2, r: 4 }}
                   name="Inflation Depreciated Value"
                 />
               </LineChart>

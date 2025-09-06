@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
+import { useChartColors } from '../hooks/useChartColors';
 import { insuranceService } from '../services/insurance';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
 Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
@@ -17,6 +18,7 @@ import {
 const Insurance = () => {
   console.log('Insurance component: Starting to render...');
   
+  const { colors, getColor } = useChartColors();
   const [policies, setPolicies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -661,7 +663,7 @@ const Insurance = () => {
                     }} 
                   />
                   <Legend />
-                  <Bar dataKey="premium" fill="hsl(var(--chart-1))" name="Annual Premium" />
+                  <Bar dataKey="premium" fill={getColor(0)} name="Annual Premium" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -673,7 +675,7 @@ const Insurance = () => {
                     {newPieData.map((entry, index) => (
                       <Cell 
                         key={`cell-${index}`} 
-                        fill={`hsl(var(--chart-${(index % 5) + 1}))`} 
+                        fill={getColor(index)} 
                       />
                     ))}
                   </Pie>

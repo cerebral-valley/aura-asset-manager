@@ -1,9 +1,11 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card.jsx'
 import { useCurrency } from '../../hooks/useCurrency.jsx'
+import { useChartColors } from '../../hooks/useChartColors'
 
 const AssetAllocationChart = ({ data, title = "Asset Allocation" }) => {
   const { formatCurrency } = useCurrency()
+  const { getColor } = useChartColors()
   
   const formatTooltip = (value, name) => {
     return [formatCurrency(value), name]
@@ -44,13 +46,13 @@ const AssetAllocationChart = ({ data, title = "Asset Allocation" }) => {
               cx="50%"
               cy="50%"
               outerRadius={100}
-              fill="hsl(var(--chart-1))"
+              fill={getColor(0)}
               label={renderCustomLabel}
             >
               {data.map((entry, index) => (
                 <Cell 
                   key={`cell-${index}`} 
-                  fill={`hsl(var(--chart-${(index % 5) + 1}))`} 
+                  fill={getColor(index)} 
                 />
               ))}
             </Pie>

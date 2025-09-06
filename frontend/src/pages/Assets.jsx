@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { useChartColors } from '../hooks/useChartColors';
 import { useCurrency } from '../hooks/useCurrency';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -41,6 +42,7 @@ const Assets = () => {
   const [projectionGrowthRate, setProjectionGrowthRate] = useState(7); // Default 7% annual growth
   const [showProjections, setShowProjections] = useState(false);
   const { isDark } = useTheme();
+  const { colors, getColor } = useChartColors();
   const [expandedAsset, setExpandedAsset] = useState(null); // For showing annuity manager
   
   // Confirmation dialog state
@@ -894,13 +896,13 @@ const Assets = () => {
                   <YAxis tickFormatter={formatYAxisCurrency} />
                   <Tooltip formatter={(value) => formatChartCurrency(value)} />
                   <Legend />
-                  <Line type="monotone" dataKey="acquisitionValue" stroke="hsl(var(--chart-1))" name="Acquisition Value" />
-                  <Line type="monotone" dataKey="presentValue" stroke="hsl(var(--chart-2))" name="Present Value" />
+                  <Line type="monotone" dataKey="acquisitionValue" stroke={getColor(0)} name="Acquisition Value" />
+                  <Line type="monotone" dataKey="presentValue" stroke={getColor(1)} name="Present Value" />
                   {showProjections && (
                     <Line 
                       type="monotone" 
                       dataKey="projectedValue" 
-                      stroke="hsl(var(--chart-3))" 
+                      stroke={getColor(2)} 
                       strokeDasharray="5 5"
                       name="Projected Value" 
                     />
@@ -926,7 +928,7 @@ const Assets = () => {
                     {pieData.map((entry, index) => (
                       <Cell 
                         key={`cell-${index}`} 
-                        fill={`hsl(var(--chart-${(index % 5) + 1}))`} 
+                        fill={getColor(index)} 
                       />
                     ))}
                   </Pie>

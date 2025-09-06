@@ -1,8 +1,10 @@
 import React from 'react';
+import { useChartColors } from '../../hooks/useChartColors';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card.jsx';
 
 const AssetValueOverTimeChart = ({ data, title = 'Asset Value Over Time' }) => {
+  const { getColor } = useChartColors();
   // Get global currency preference for formatting
   const savedCurrency = localStorage.getItem('globalCurrency') || 'USD';
   
@@ -41,8 +43,8 @@ const AssetValueOverTimeChart = ({ data, title = 'Asset Value Over Time' }) => {
             <YAxis tickFormatter={formatChartCurrency} />
             <Tooltip formatter={(value) => formatChartCurrency(value)} />
             <Legend />
-            <Line type="monotone" dataKey="acquisitionValue" stroke="hsl(var(--chart-1))" name="Acquisition Value" />
-            <Line type="monotone" dataKey="presentValue" stroke="hsl(var(--chart-2))" name="Present Value" />
+            <Line type="monotone" dataKey="acquisitionValue" stroke={getColor(0)} name="Acquisition Value" />
+            <Line type="monotone" dataKey="presentValue" stroke={getColor(1)} name="Present Value" />
           </LineChart>
         </ResponsiveContainer>
       </CardContent>

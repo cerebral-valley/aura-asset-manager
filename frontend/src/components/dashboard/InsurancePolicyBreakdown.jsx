@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card.jsx'
 import { useCurrency } from '../../hooks/useCurrency.jsx'
+import { useChartColors } from '../../hooks/useChartColors'
 import apiClient from '@/lib/api'
 
 const InsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown" }) => {
   const { formatCurrency } = useCurrency()
+  const { getColor } = useChartColors()
   const [policies, setPolicies] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -89,7 +91,7 @@ const InsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown" }) => {
               cx="50%"
               cy="50%"
               outerRadius={100}
-              fill="hsl(var(--chart-1))"
+              fill={getColor(0)}
               dataKey="value"
               label={({ name, value, percent }) => 
                 percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
@@ -98,7 +100,7 @@ const InsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown" }) => {
               {pieData.map((entry, index) => (
                 <Cell 
                   key={`cell-${index}`} 
-                  fill={`hsl(var(--chart-${(index % 5) + 1}))`} 
+                  fill={getColor(index)} 
                 />
               ))}
             </Pie>
