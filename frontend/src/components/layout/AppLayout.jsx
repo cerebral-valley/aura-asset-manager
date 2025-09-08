@@ -78,8 +78,12 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
     { name: 'Annuities', href: '/annuities', icon: Coins, id: 'annuities' },
     { name: 'Transactions', href: '/transactions', icon: ArrowRightLeft, id: 'transactions' },
     { name: 'Analytics', href: '/analytics', icon: BarChart3, id: 'analytics' },
-    { name: 'Your Profile', href: '/profile', icon: User, id: 'profile' },    { name: 'User Guide', href: '/guide', icon: BookOpen, id: 'guide' },
-    { name: 'Settings', href: '/settings', icon: Settings, id: 'settings' },
+  ]
+
+  const accountNavigation = [
+    { name: 'Your Profile', href: '/profile', icon: User, id: 'profile' },
+    { name: 'User Guide', href: '/guide', icon: BookOpen, id: 'guide' },
+    { name: 'Settings and Subscription', href: '/settings', icon: Settings, id: 'settings' },
   ]
 
   const handleSignOut = async () => {
@@ -117,6 +121,7 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-2">
+            {/* Main Navigation */}
             {navigation.map((item) => {
               const Icon = item.icon
               const isActive = location.pathname === item.href
@@ -127,6 +132,41 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
                   to={item.href}
                   onClick={() => {
                     console.log(`🔗 Navigation CLICK: ${item.name} -> ${item.href}`)
+                    setSidebarOpen(false)
+                  }}
+                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                    isActive
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                  }`}
+                >
+                  <Icon className="mr-3 h-5 w-5" />
+                  {item.name}
+                </Link>
+              )
+            })}
+            
+            {/* Separator */}
+            <div className="py-4">
+              <div className="border-t border-border opacity-50"></div>
+              <div className="mt-4 mb-2 px-4">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Account & App
+                </span>
+              </div>
+            </div>
+            
+            {/* Account & App Navigation */}
+            {accountNavigation.map((item) => {
+              const Icon = item.icon
+              const isActive = location.pathname === item.href
+              console.log(`🔗 Account Navigation: ${item.name} - current: ${location.pathname}, href: ${item.href}, active: ${isActive}`)
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  onClick={() => {
+                    console.log(`🔗 Account Navigation CLICK: ${item.name} -> ${item.href}`)
                     setSidebarOpen(false)
                   }}
                   className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${

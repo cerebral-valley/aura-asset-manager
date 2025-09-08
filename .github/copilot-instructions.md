@@ -93,3 +93,73 @@ vercel logs [deployment-url]  # Get deployment logs
 - **Asset Types**: Real estate, stocks, annuities, insurance with JSONB metadata
 - **UX Principle**: Simplicity over complexity, visual security, peace of mind
 - **Technical**: Supabase PostgreSQL, UUID primary keys, Railway deployment
+
+## 🔬 PROVEN DEBUGGING & TESTING METHODOLOGY
+
+### Phase 1: Deep Analysis & Planning
+1. **Use Sequential Thinking Tool First**: Break down complex problems systematically
+2. **Root Cause Analysis**: Focus on underlying issues, not just symptoms
+3. **Create TODO Lists**: Track progress with markdown checkboxes for accountability
+
+### Phase 2: Code Implementation
+1. **Incremental Changes**: Make small, testable modifications
+2. **Context Architecture**: Watch for duplicate providers/contexts (major React pitfall)
+3. **Verify File Content**: Always check files contain actual code after creation/editing
+
+### Phase 3: Deployment Verification (CRITICAL)
+**After every GitHub push, ALWAYS verify deployments:**
+
+```bash
+# Backend Railway Status
+railway logs --build    # Check build logs for errors
+railway logs --app      # Check runtime logs
+curl -s "https://[app].up.railway.app/docs" | head -10  # API health check
+
+# Frontend Vercel Status  
+vercel ls                # List recent deployments
+vercel logs [deployment] # Check build/runtime logs
+```
+
+**Report deployment status before proceeding:**
+- ✅ SUCCESS: Both services deployed, logs clean
+- ❌ FAILED: [Service] failed - [specific error from logs]
+
+### Phase 4: Live Application Testing (MANDATORY)
+**Never rely on local testing alone - always test live deployment:**
+
+```bash
+# Use Playwright MCP for comprehensive live testing
+mcp_playwright_browser_navigate("https://aura-asset-manager.vercel.app/")
+mcp_playwright_browser_snapshot()  # Get accessibility snapshot
+mcp_playwright_browser_console_messages()  # Check for JS errors
+```
+
+**Testing Protocol:**
+1. **Authenticate**: Use Google OAuth on live site for realistic user flow
+2. **Navigate**: Test affected pages/features systematically  
+3. **Console Analysis**: Monitor browser console for errors during navigation
+4. **Visual Verification**: Take screenshots of key functionality working
+5. **Cross-Feature Testing**: Verify changes don't break unrelated features
+
+### Phase 5: Comprehensive Validation
+**For theme/UI changes specifically:**
+1. Test ALL theme options (not just the changed ones)
+2. Test light AND dark mode for each theme
+3. Verify charts/visualizations render correctly
+4. Check for React Context errors in console
+5. Validate responsive design on different viewport sizes
+
+### Critical Lessons Learned
+- **ThemeProvider Conflicts**: Multiple React contexts cause "must be used within provider" errors
+- **OKLCH vs HSL**: Chart libraries often require HSL format for colors
+- **Context Calls**: Minimize useContext calls - pass theme data through props when possible
+- **Live Testing**: Local development can mask deployment-specific issues
+- **Console Logs**: Browser console often reveals issues not visible in UI
+
+### Emergency Response Protocol
+**When pages break after deployment:**
+1. Check browser console for React errors
+2. Verify all imports resolve correctly
+3. Look for duplicate context providers
+4. Test API endpoints independently via `/docs`
+5. Roll back if necessary, debug systematically

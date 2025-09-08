@@ -64,5 +64,23 @@ A powerful, unified interface for recording all financial activities including p
 ### Analytics and Insights
 Visual representations of portfolio growth, asset allocation, and long-term trends designed to inspire confidence rather than anxiety.
 
+### Personalization & Theme System
+
+**Advanced Theme Architecture**: Comprehensive theming system with 5 carefully crafted color schemes:
+
+- **Orange**: Warm, energetic tones for growth-focused users
+- **Yellow**: Bright, optimistic palette for positive financial outlook
+- **Blue**: Professional, trustworthy colors for conservative users
+- **Violet**: Creative, sophisticated hues for modern aesthetics
+- **Green**: Nature-inspired, balanced tones for stability-minded users
+
+**Key Theme Features**:
+
+- Full dark/light mode support for all themes
+- Chart integration with theme-aware color palettes
+- Unified React Context architecture for performance
+- OKLCH to HSL color conversion for chart compatibility
+- Responsive design consistency across all color schemes
+
 This project overview serves as the foundation for understanding Aura's mission, approach, and technical implementation. The following documentation will provide detailed specifications for each component of the system.
 
