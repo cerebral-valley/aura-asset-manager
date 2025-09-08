@@ -1,6 +1,6 @@
 import React from 'react';
 import { AlertTriangle, X } from 'lucide-react';
-import { useTheme } from '../../hooks/useTheme.jsx';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const ConfirmationDialog = ({ 
   isOpen, 
