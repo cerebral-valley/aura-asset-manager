@@ -149,6 +149,9 @@ export function useChartColors() {
     secondary: colors[1], 
     tertiary: colors[2],
     accent1: colors[3],
-    accent2: colors[4]
+    accent2: colors[4],
+    // Expose theme data to avoid double useTheme calls
+    isDark,
+    theme
   }
 }

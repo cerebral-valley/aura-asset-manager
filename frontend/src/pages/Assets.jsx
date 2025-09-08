@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { useTheme } from '../contexts/ThemeContext';
 import { useChartColors } from '../hooks/useChartColors';
 import { useCurrency } from '../hooks/useCurrency';
 import { useForm } from 'react-hook-form';
@@ -41,8 +40,7 @@ const Assets = () => {
   const [projectionTimeframe, setProjectionTimeframe] = useState(5); // Default 5 years
   const [projectionGrowthRate, setProjectionGrowthRate] = useState(7); // Default 7% annual growth
   const [showProjections, setShowProjections] = useState(false);
-  const { isDark } = useTheme();
-  const { colors, getColor } = useChartColors();
+  const { colors, getColor, isDark } = useChartColors();
   const [expandedAsset, setExpandedAsset] = useState(null); // For showing annuity manager
   
   // Confirmation dialog state
