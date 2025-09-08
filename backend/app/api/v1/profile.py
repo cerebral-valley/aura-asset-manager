@@ -65,6 +65,23 @@ async def get_profile_options():
             {"value": "student", "label": "Student"},
             {"value": "homemaker", "label": "Homemaker"},
             {"value": "other", "label": "Other"}
+        ],
+        "risk_appetite_options": [
+            {
+                "value": "Low", 
+                "label": "Low", 
+                "description": "Conservative approach, prioritizing capital preservation over growth"
+            },
+            {
+                "value": "Moderate", 
+                "label": "Moderate", 
+                "description": "Balanced approach between growth potential and risk management"
+            },
+            {
+                "value": "High", 
+                "label": "High", 
+                "description": "Aggressive approach, accepting higher risk for potential greater returns"
+            }
         ]
     }
 

@@ -41,6 +41,7 @@ class User(Base):
     phone_number = Column(String(50))
     annual_income = Column(Text)  # Using Text to store Decimal as string
     occupation = Column(String(100))
+    risk_appetite = Column(String(20))  # Low, Moderate, High
     
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email})>"

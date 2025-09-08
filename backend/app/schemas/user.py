@@ -55,6 +55,7 @@ class ProfileUpdate(BaseModel):
     phone_number: Optional[str] = None
     annual_income: Optional[Decimal] = None
     occupation: Optional[str] = None
+    risk_appetite: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -77,6 +78,7 @@ class UserProfile(UserInDB):
     phone_number: Optional[str] = None
     annual_income: Optional[Decimal] = None
     occupation: Optional[str] = None
+    risk_appetite: Optional[str] = None
     
     class Config:
         from_attributes = True

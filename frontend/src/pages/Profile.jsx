@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth.jsx'
+import { useProfileValidation } from '../hooks/useProfileValidation.js'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card.jsx'
 import { Button } from '../components/ui/button.jsx'
 import { Input } from '../components/ui/input.jsx'
 import { Label } from '../components/ui/label.jsx'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select.jsx'
 import { Alert, AlertDescription } from '../components/ui/alert.jsx'
-import { User, MapPin, Users, Briefcase, CheckCircle, AlertCircle, Calendar } from 'lucide-react'
+import { Badge } from '../components/ui/badge.jsx'
+import { User, MapPin, Users, Briefcase, CheckCircle, AlertCircle, Calendar, Target, Shield } from 'lucide-react'
+import SensitiveInput from '../components/ui/SensitiveInput.jsx'
+import ProfileProgressIndicator from '../components/profile/ProfileProgressIndicator.jsx'
+import { formatPhoneNumber } from '../utils/profileUtils.js'
 import { profileService } from '../services/profile.js'
 
 const Profile = () => {
@@ -31,16 +36,27 @@ const Profile = () => {
     nationality: '',
     phone_number: '',
     annual_income: '',
-    occupation: ''
+    occupation: '',
+    risk_appetite: ''
   })
 
   const [options, setOptions] = useState({
     marital_status_options: [],
     gender_options: [],
-    occupation_options: []
+    occupation_options: [],
+    risk_appetite_options: []
   })
 
   const [countries, setCountries] = useState([])
+  
+  // Initialize validation hook
+  const {
+    handleFieldBlur,
+    handleFieldChange,
+    getFieldError,
+    hasFieldError,
+    isFormValid
+  } = useProfileValidation(profile)
 
   useEffect(() => {
     fetchProfileData()
@@ -73,7 +89,8 @@ const Profile = () => {
         nationality: profileData.nationality || '',
         phone_number: profileData.phone_number || '',
         annual_income: profileData.annual_income || '',
-        occupation: profileData.occupation || ''
+        occupation: profileData.occupation || '',
+        risk_appetite: profileData.risk_appetite || ''
       })
 
       setOptions(optionsData)
@@ -113,10 +130,22 @@ const Profile = () => {
   }
 
   const handleInputChange = (field, value) => {
+    // Handle phone number formatting
+    if (field === 'phone_number') {
+      value = formatPhoneNumber(value)
+    }
+    
     setProfile(prev => ({
       ...prev,
       [field]: value
     }))
+    
+    // Trigger validation on change
+    handleFieldChange(field, value)
+  }
+
+  const handleInputBlur = (field, value) => {
+    handleFieldBlur(field, value)
   }
 
   if (loading) {
@@ -142,6 +171,9 @@ const Profile = () => {
           Manage your personal information and preferences
         </p>
       </div>
+
+      {/* Progress Indicator */}
+      <ProfileProgressIndicator profile={profile} className="mb-6" />
 
       {/* Alerts */}
       {success && (
@@ -173,22 +205,36 @@ const Profile = () => {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="first_name">First Name</Label>
+                <Label htmlFor="first_name">
+                  First Name <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="first_name"
                   value={profile.first_name}
                   onChange={(e) => handleInputChange('first_name', e.target.value)}
+                  onBlur={(e) => handleInputBlur('first_name', e.target.value)}
                   placeholder="Enter your first name"
+                  className={hasFieldError('first_name') ? 'border-red-500' : ''}
                 />
+                {getFieldError('first_name') && (
+                  <p className="text-sm text-red-600 mt-1">{getFieldError('first_name')}</p>
+                )}
               </div>
               <div>
-                <Label htmlFor="last_name">Last Name</Label>
+                <Label htmlFor="last_name">
+                  Last Name <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="last_name"
                   value={profile.last_name}
                   onChange={(e) => handleInputChange('last_name', e.target.value)}
+                  onBlur={(e) => handleInputBlur('last_name', e.target.value)}
                   placeholder="Enter your last name"
+                  className={hasFieldError('last_name') ? 'border-red-500' : ''}
                 />
+                {getFieldError('last_name') && (
+                  <p className="text-sm text-red-600 mt-1">{getFieldError('last_name')}</p>
+                )}
               </div>
             </div>
 
@@ -228,34 +274,51 @@ const Profile = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="date_of_birth">Date of Birth</Label>
+                <Label htmlFor="date_of_birth">
+                  Date of Birth <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="date_of_birth"
                   type="date"
                   value={profile.date_of_birth}
                   onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
+                  onBlur={(e) => handleInputBlur('date_of_birth', e.target.value)}
+                  max={new Date().toISOString().split('T')[0]} // Prevent future dates
+                  className={hasFieldError('date_of_birth') ? 'border-red-500' : ''}
                 />
+                {getFieldError('date_of_birth') && (
+                  <p className="text-sm text-red-600 mt-1">{getFieldError('date_of_birth')}</p>
+                )}
               </div>
 
               <div>
-                <Label htmlFor="phone_number">Phone Number</Label>
-                <Input
+                <Label htmlFor="phone_number">
+                  Phone Number <span className="text-red-500">*</span>
+                </Label>
+                <SensitiveInput
                   id="phone_number"
+                  type="phone"
                   value={profile.phone_number}
                   onChange={(e) => handleInputChange('phone_number', e.target.value)}
+                  onBlur={(e) => handleInputBlur('phone_number', e.target.value)}
                   placeholder="Enter your phone number"
+                  error={getFieldError('phone_number')}
                 />
               </div>
             </div>
 
             <div>
               <Label htmlFor="current_email">Email (Account)</Label>
-              <Input
+              <SensitiveInput
                 id="current_email"
+                type="email"
                 value={user?.email || ''}
-                disabled
-                className="bg-muted"
+                disabled={true}
+                placeholder="Your account email"
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                This is your account email and cannot be changed here
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -314,11 +377,14 @@ const Profile = () => {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="city">City</Label>
+                <Label htmlFor="city">
+                  City <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="city"
                   value={profile.city}
                   onChange={(e) => handleInputChange('city', e.target.value)}
+                  onBlur={(e) => handleInputBlur('city', e.target.value)}
                   placeholder="Enter your city"
                 />
               </div>
@@ -329,6 +395,7 @@ const Profile = () => {
                   id="state"
                   value={profile.state}
                   onChange={(e) => handleInputChange('state', e.target.value)}
+                  onBlur={(e) => handleInputBlur('state', e.target.value)}
                   placeholder="Enter your state/province"
                 />
               </div>
@@ -341,12 +408,19 @@ const Profile = () => {
                   id="pin_code"
                   value={profile.pin_code}
                   onChange={(e) => handleInputChange('pin_code', e.target.value)}
+                  onBlur={(e) => handleInputBlur('pin_code', e.target.value)}
                   placeholder="Enter your PIN/zip code"
+                  className={hasFieldError('pin_code') ? 'border-red-500' : ''}
                 />
+                {getFieldError('pin_code') && (
+                  <p className="text-sm text-red-600 mt-1">{getFieldError('pin_code')}</p>
+                )}
               </div>
 
               <div>
-                <Label htmlFor="country">Country</Label>
+                <Label htmlFor="country">
+                  Country <span className="text-red-500">*</span>
+                </Label>
                 <Select value={profile.country} onValueChange={(value) => handleInputChange('country', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select your country" />
@@ -387,7 +461,9 @@ const Profile = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="occupation">Occupation</Label>
+              <Label htmlFor="occupation">
+                Occupation <span className="text-red-500">*</span>
+              </Label>
               <Select value={profile.occupation} onValueChange={(value) => handleInputChange('occupation', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select your occupation" />
@@ -408,28 +484,104 @@ const Profile = () => {
                 id="annual_income"
                 value={profile.annual_income}
                 onChange={(e) => handleInputChange('annual_income', e.target.value)}
+                onBlur={(e) => handleInputBlur('annual_income', e.target.value)}
                 placeholder="Enter your annual income"
+                type="number"
+                min="0"
+                className={hasFieldError('annual_income') ? 'border-red-500' : ''}
               />
+              {getFieldError('annual_income') && (
+                <p className="text-sm text-red-600 mt-1">{getFieldError('annual_income')}</p>
+              )}
               <p className="text-xs text-muted-foreground mt-1">
                 Optional: This helps us provide better financial insights
               </p>
             </div>
           </CardContent>
         </Card>
+
+        {/* Risk Appetite */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5" />
+              Investment Risk Appetite
+            </CardTitle>
+            <CardDescription>
+              Help us understand your investment preferences
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="risk_appetite">
+                Risk Appetite <span className="text-red-500">*</span>
+              </Label>
+              <Select value={profile.risk_appetite} onValueChange={(value) => handleInputChange('risk_appetite', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your risk appetite" />
+                </SelectTrigger>
+                <SelectContent>
+                  {options.risk_appetite_options.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium">{option.label}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {option.description}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {profile.risk_appetite && (
+                <div className="mt-2 p-3 rounded-lg bg-muted">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    <Badge variant={
+                      profile.risk_appetite === 'Low' ? 'secondary' :
+                      profile.risk_appetite === 'Moderate' ? 'default' : 'destructive'
+                    }>
+                      {profile.risk_appetite} Risk
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {options.risk_appetite_options.find(o => o.value === profile.risk_appetite)?.description}
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Save Button */}
-      <div className="flex justify-end mt-6">
-        <Button onClick={handleSave} disabled={saving} size="lg">
-          {saving ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
-              Saving...
-            </>
-          ) : (
-            'Save Profile'
-          )}
-        </Button>
+      <div className="flex flex-col gap-4 mt-6">
+        {!isFormValid && (
+          <Alert className="border-yellow-200 bg-yellow-50">
+            <AlertCircle className="h-4 w-4 text-yellow-600" />
+            <AlertDescription className="text-yellow-800">
+              Please fix the validation errors above before saving.
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        <div className="flex justify-end">
+          <Button 
+            onClick={handleSave} 
+            disabled={saving || !isFormValid} 
+            size="lg"
+            className="min-w-[120px]"
+          >
+            {saving ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
+                Saving...
+              </>
+            ) : (
+              'Save Profile'
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   )
