@@ -64,20 +64,20 @@ const ProfileProgressIndicator = ({ profile, className = '' }) => {
 
   return (
     <Card className={`${status.borderColor} border-2 ${className}`}>
-      <CardContent className={`p-4 ${status.bgColor}`}>
-        <div className="flex items-center justify-between mb-3">
+      <CardContent className={`p-3 ${status.bgColor}`}>
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">{status.emoji}</span>
+            <span className="text-xl">{status.emoji}</span>
             <div>
-              <h3 className={`font-semibold ${status.color}`}>
+              <h3 className={`text-sm font-semibold ${status.color}`}>
                 {completion.percentage}% Profile Complete
               </h3>
-              <p className={`text-sm ${status.color} opacity-80`}>
+              <p className={`text-xs ${status.color} opacity-80`}>
                 {status.message}
               </p>
             </div>
           </div>
-          <div className={`text-right text-sm ${status.color}`}>
+          <div className={`text-right text-xs ${status.color}`}>
             <div className="font-medium">
               {completion.requiredFilled}/{completion.requiredTotal} Required
             </div>
@@ -87,19 +87,19 @@ const ProfileProgressIndicator = ({ profile, className = '' }) => {
           </div>
         </div>
         
-        <div className="space-y-2">
+        <div className="space-y-1">
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>Progress</span>
             <span>{completion.percentage}%</span>
           </div>
           <Progress 
             value={completion.percentage} 
-            className="h-3"
+            className="h-2"
           />
         </div>
         
         {completion.requiredMissing.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-current border-opacity-20">
+          <div className="mt-2 pt-2 border-t border-current border-opacity-20">
             <p className={`text-xs ${status.color} opacity-80 mb-1`}>
               Missing required fields:
             </p>
@@ -119,7 +119,7 @@ const ProfileProgressIndicator = ({ profile, className = '' }) => {
                 return (
                   <span 
                     key={field}
-                    className={`text-xs px-2 py-1 rounded-full ${status.color} bg-white bg-opacity-50`}
+                    className={`text-xs px-1.5 py-0.5 rounded-full ${status.color} bg-white bg-opacity-50`}
                   >
                     {fieldLabels[field] || field}
                   </span>

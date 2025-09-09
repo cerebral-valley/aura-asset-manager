@@ -193,7 +193,7 @@ const Profile = () => {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Personal Information */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
               Personal Information
@@ -202,7 +202,7 @@ const Profile = () => {
               Your basic personal details
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-0">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="first_name">
@@ -325,7 +325,7 @@ const Profile = () => {
 
         {/* Family Information */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
               Family Information
@@ -334,7 +334,7 @@ const Profile = () => {
               Details about your family and dependents
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-0">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="children">Number of Children</Label>
@@ -365,7 +365,7 @@ const Profile = () => {
 
         {/* Location Information */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2">
               <MapPin className="h-5 w-5" />
               Location Information
@@ -374,7 +374,7 @@ const Profile = () => {
               Your residential and nationality details
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-0">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="city">
@@ -450,7 +450,7 @@ const Profile = () => {
 
         {/* Financial Information */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2">
               <Briefcase className="h-5 w-5" />
               Financial Information
@@ -459,7 +459,7 @@ const Profile = () => {
               Your professional and financial details
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-0">
             <div>
               <Label htmlFor="occupation">
                 Occupation <span className="text-red-500">*</span>
@@ -502,7 +502,7 @@ const Profile = () => {
 
         {/* Risk Appetite */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2">
               <Target className="h-5 w-5" />
               Investment Risk Appetite
@@ -511,7 +511,7 @@ const Profile = () => {
               Help us understand your investment preferences
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-0">
             <div>
               <Label htmlFor="risk_appetite">
                 Risk Appetite <span className="text-red-500">*</span>

@@ -30,33 +30,31 @@ const SensitiveInput = ({
 
   return (
     <div className="relative">
-      <div className="flex">
-        <Input
-          id={id}
-          value={displayValue}
-          onChange={isRevealed ? onChange : () => {}} // Only allow editing when revealed
-          onBlur={onBlur}
-          placeholder={placeholder}
-          disabled={disabled || !isRevealed}
-          className={`pr-12 ${error ? 'border-red-500' : ''} ${className}`}
-          readOnly={!isRevealed}
-        />
-        {!disabled && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent"
-            onClick={toggleReveal}
-          >
-            {isRevealed ? (
-              <EyeOff className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <Eye className="h-4 w-4 text-muted-foreground" />
-            )}
-          </Button>
-        )}
-      </div>
+      <Input
+        id={id}
+        value={displayValue}
+        onChange={isRevealed ? onChange : () => {}} // Only allow editing when revealed
+        onBlur={onBlur}
+        placeholder={placeholder}
+        disabled={disabled || !isRevealed}
+        className={`pr-10 ${error ? 'border-red-500' : ''} ${className}`}
+        readOnly={!isRevealed}
+      />
+      {!disabled && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="absolute right-0 top-0 h-full w-10 px-0 hover:bg-transparent flex items-center justify-center"
+          onClick={toggleReveal}
+        >
+          {isRevealed ? (
+            <EyeOff className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <Eye className="h-4 w-4 text-muted-foreground" />
+          )}
+        </Button>
+      )}
       {error && (
         <p className="text-sm text-red-600 mt-1">{error}</p>
       )}

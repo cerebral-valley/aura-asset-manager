@@ -45,6 +45,18 @@ wc -l filename && head -3 filename  # Verify content exists
 - `frontend/src/lib/api.js` - Axios instance with auth interceptors
 - `backend/app/core/config.py` - Environment-aware Pydantic settings
 
+### MCP Configuration & Usage
+**🔧 Model Context Protocol (MCP) Tools Available:**
+- **Playwright MCP**: Browser automation for live testing
+- **Supabase MCP**: Database operations and queries
+- **Vercel MCP**: Frontend deployment monitoring (when needed)
+- **Configuration**: Located in `.vscode/mcp.json`
+
+**📋 MCP Usage Guidelines:**
+- ✅ **USE MCP**: For browser testing, database operations, structured operations
+- ✅ **Live Testing**: Playwright MCP for comprehensive end-to-end testing
+- 🚫 **Railway Deployment**: Manual log analysis - logs will be provided by user
+
 ### Development Commands
 ```bash
 # Backend: cd backend && /.../aura-asset-manager/.venv/bin/python -m uvicorn main:app --reload --port 8002
@@ -53,20 +65,27 @@ wc -l filename && head -3 filename  # Verify content exists
 ```
 
 ### Post-Push Deployment Monitoring
-After any GitHub push, **always verify deployment status**:
-```bash
-# Railway backend status
-railway logs  # Check recent deployment logs
-railway status  # Check service status
+After any GitHub push, **deployment verification approach**:
 
-# Vercel frontend status  
-vercel ls  # List recent deployments
-vercel logs [deployment-url]  # Get deployment logs
+**� Railway Backend Deployment:**
+- **Manual Log Analysis**: User will provide Railway deployment/build logs for analysis
+- **No CLI/MCP required**: Avoid using `railway logs` or Railway MCP tools
+- **Health Check Only**: `curl -s -w "%{http_code}" [URL]` for service verification if needed
 
-# Report findings (don't troubleshoot, just report)
-# ✅ SUCCESS: Backend deployed, logs show server running
-# ❌ FAILED: Frontend build error in logs, needs investigation
-```
+**🔍 Vercel Frontend Deployment:**  
+- **Quick Status Check**: `vercel ls` for recent deployments if needed
+- **Health Check**: `curl -s -w "%{http_code}" [URL]` for service verification
+- **Manual Analysis**: User may provide build logs if issues arise
+
+**📋 Log Analysis Focus:**
+- **Container Startup**: Check for "Starting Container" and server process initialization
+- **API Health**: Look for successful HTTP responses (200 OK)
+- **Error Detection**: Identify deployment failures, runtime exceptions, or configuration issues
+- **Performance**: Note response times and database query efficiency
+
+**Report deployment status after analysis:**
+- ✅ SUCCESS: Services healthy, no errors in provided logs
+- ❌ FAILED: [Specific issue found] - [recommendation for fix]
 
 ### Domain Models
 **Financial platform**: Assets (real_estate, stocks, annuities), Insurance, Transactions
@@ -107,21 +126,29 @@ vercel logs [deployment-url]  # Get deployment logs
 3. **Verify File Content**: Always check files contain actual code after creation/editing
 
 ### Phase 3: Deployment Verification (CRITICAL)
-**After every GitHub push, ALWAYS verify deployments:**
+**After every GitHub push, deployment analysis workflow:**
 
-```bash
-# Backend Railway Status
-railway logs --build    # Check build logs for errors
-railway logs --app      # Check runtime logs
-curl -s "https://[app].up.railway.app/docs" | head -10  # API health check
+**� Manual Log Analysis Approach:**
+- **Railway Logs**: User will provide Railway deployment/build logs for analysis
+- **Log Focus**: Container startup, API responses, error detection, performance metrics
+- **No Automated Tools**: Do not use `railway logs`, Railway MCP, or CLI commands
+- **Health Checks**: Optional `curl` health checks for service verification only
 
-# Frontend Vercel Status  
-vercel ls                # List recent deployments
-vercel logs [deployment] # Check build/runtime logs
-```
+**🔍 Log Analysis Checklist:**
+- ✅ **Container Status**: "Starting Container" and server initialization
+- ✅ **API Health**: HTTP 200 responses, endpoint functionality
+- ✅ **Error Detection**: Runtime exceptions, configuration issues, build failures
+- ✅ **Database**: Query performance, connection status, data validation
+- ✅ **CORS/Auth**: Proper configuration for production environment
 
-**Report deployment status before proceeding:**
-- ✅ SUCCESS: Both services deployed, logs clean
+**🚨 ANALYSIS EFFICIENCY REQUIREMENT:**
+- **Focus on Issues**: Identify specific problems from provided logs
+- **Actionable Insights**: Provide clear recommendations for any problems found
+- **Performance Notes**: Comment on response times and system health
+- **No CLI Execution**: All analysis based on user-provided log content
+
+**Report deployment status after analysis:**
+- ✅ SUCCESS: Services healthy, no errors in provided logs
 - ❌ FAILED: [Service] failed - [specific error from logs]
 
 ### Phase 4: Live Application Testing (MANDATORY)
@@ -155,6 +182,8 @@ mcp_playwright_browser_console_messages()  # Check for JS errors
 - **Context Calls**: Minimize useContext calls - pass theme data through props when possible
 - **Live Testing**: Local development can mask deployment-specific issues
 - **Console Logs**: Browser console often reveals issues not visible in UI
+- **Manual Log Analysis**: User provides deployment logs for expert analysis
+- **Timeout Discipline**: Never run deployment commands without timeouts (max 60s)
 
 ### Emergency Response Protocol
 **When pages break after deployment:**
