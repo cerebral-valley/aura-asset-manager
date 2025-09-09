@@ -2,10 +2,11 @@
 User Pydantic schemas for API serialization.
 """
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from datetime import datetime, date
-from typing import Optional, List
+from typing import Optional, List, Union
 from uuid import UUID
+from decimal import Decimal
 
 class UserBase(BaseModel):
     """Base user schema."""
@@ -53,7 +54,7 @@ class ProfileUpdate(BaseModel):
     country: Optional[str] = None
     nationality: Optional[str] = None
     phone_number: Optional[str] = None
-    annual_income: Optional[Decimal] = None
+    annual_income: Optional[Union[Decimal, str]] = None
     occupation: Optional[str] = None
     risk_appetite: Optional[str] = None
     
@@ -64,6 +65,16 @@ class ProfileUpdate(BaseModel):
     children_age_groups: Optional[List[str]] = None  # Array of age group strings
     emergency_contact_name: Optional[str] = None
     emergency_contact_phone: Optional[str] = None
+
+    @field_validator('annual_income', mode='before')
+    @classmethod
+    def validate_annual_income(cls, v):
+        if v is None or v == '' or v == 'null':
+            return None
+        try:
+            return Decimal(str(v))
+        except (ValueError, TypeError):
+            return None
 
     class Config:
         from_attributes = True

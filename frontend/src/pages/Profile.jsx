@@ -128,6 +128,7 @@ const Profile = () => {
         ...profile,
         children: profile.children ? parseInt(profile.children) : null,
         dependents: profile.dependents ? parseInt(profile.dependents) : null,
+        annual_income: profile.annual_income ? parseFloat(profile.annual_income) : null,
         date_of_birth: profile.date_of_birth || null
       }
 
