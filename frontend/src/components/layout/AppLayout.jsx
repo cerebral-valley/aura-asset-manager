@@ -20,6 +20,49 @@ import {
 } from 'lucide-react'
 import './AppLayout.css'
 
+const ProfileAvatar = ({ user, userSettings, getUserInitials }) => {
+  const [imageError, setImageError] = useState(false)
+  const [imageLoading, setImageLoading] = useState(true)
+  
+  // Get profile image URL from Google OAuth metadata
+  const profileImageUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture
+  
+  // Show initials if no image URL, image failed to load, or still loading
+  const showInitials = !profileImageUrl || imageError || imageLoading
+  
+  const handleImageLoad = () => {
+    setImageLoading(false)
+    setImageError(false)
+  }
+  
+  const handleImageError = () => {
+    setImageLoading(false)
+    setImageError(true)
+  }
+  
+  return (
+    <div className="relative w-8 h-8">
+      {profileImageUrl && !imageError && (
+        <img
+          src={profileImageUrl}
+          alt="Profile"
+          className="w-8 h-8 rounded-full object-cover"
+          onLoad={handleImageLoad}
+          onError={handleImageError}
+          style={{ display: showInitials ? 'none' : 'block' }}
+        />
+      )}
+      {showInitials && (
+        <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+          <span className="text-primary-foreground text-sm font-medium">
+            {getUserInitials()}
+          </span>
+        </div>
+      )}
+    </div>
+  )
+}
+
 const AppLayout = ({ children, currentPage = 'dashboard' }) => {
   const { user, signOut } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -186,11 +229,11 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
           <div className="p-4 border-t">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-primary-foreground text-sm font-medium">
-                    {getUserInitials()}
-                  </span>
-                </div>
+                <ProfileAvatar 
+                  user={user} 
+                  userSettings={userSettings} 
+                  getUserInitials={getUserInitials} 
+                />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">
                     {getUserDisplayName()}

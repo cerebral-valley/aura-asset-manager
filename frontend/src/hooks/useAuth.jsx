@@ -24,6 +24,9 @@ export const AuthProvider = ({ children }) => {
       console.log('🔐 AuthProvider: Calling supabase.auth.getSession()')
       const { data: { session } } = await supabase.auth.getSession()
       console.log('🔐 AuthProvider: Session received:', !!session, 'user:', !!session?.user)
+      if (session?.user) {
+        console.log('🔐 User metadata:', session.user.user_metadata)
+      }
       setUser(session?.user ?? null)
       setLoading(false)
       console.log('🔐 AuthProvider: Loading set to false')
@@ -36,6 +39,9 @@ export const AuthProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('🔐 AuthProvider: Auth state changed - event:', event, 'session:', !!session)
+        if (session?.user) {
+          console.log('🔐 User metadata:', session.user.user_metadata)
+        }
         setUser(session?.user ?? null)
         setLoading(false)
       }
