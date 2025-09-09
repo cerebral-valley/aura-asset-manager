@@ -37,7 +37,14 @@ const Profile = () => {
     phone_number: '',
     annual_income: '',
     occupation: '',
-    risk_appetite: ''
+    risk_appetite: '',
+    // Family Information fields
+    partner: false,
+    partner_name: '',
+    elderly_dependents: false,
+    children_age_groups: [],
+    emergency_contact_name: '',
+    emergency_contact_phone: ''
   })
 
   const [options, setOptions] = useState({
@@ -90,7 +97,14 @@ const Profile = () => {
         phone_number: profileData.phone_number || '',
         annual_income: profileData.annual_income || '',
         occupation: profileData.occupation || '',
-        risk_appetite: profileData.risk_appetite || ''
+        risk_appetite: profileData.risk_appetite || '',
+        // Family Information fields
+        partner: profileData.partner || false,
+        partner_name: profileData.partner_name || '',
+        elderly_dependents: profileData.elderly_dependents || false,
+        children_age_groups: profileData.children_age_groups || [],
+        emergency_contact_name: profileData.emergency_contact_name || '',
+        emergency_contact_phone: profileData.emergency_contact_phone || ''
       })
 
       setOptions(optionsData)
@@ -131,8 +145,17 @@ const Profile = () => {
 
   const handleInputChange = (field, value) => {
     // Handle phone number formatting
-    if (field === 'phone_number') {
+    if (field === 'phone_number' || field === 'emergency_contact_phone') {
       value = formatPhoneNumber(value)
+    }
+    
+    // Handle children_age_groups toggle
+    if (field === 'children_age_groups' && Array.isArray(profile.children_age_groups)) {
+      const currentGroups = profile.children_age_groups
+      const updatedGroups = currentGroups.includes(value) 
+        ? currentGroups.filter(g => g !== value)
+        : [...currentGroups, value]
+      value = updatedGroups
     }
     
     setProfile(prev => ({
@@ -160,7 +183,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto pb-20 md:pb-6">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -336,7 +359,7 @@ const Profile = () => {
               Details about your family and dependents
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 pt-0">
+          <CardContent className="space-y-6 pt-0">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="children">Number of Children</Label>
@@ -360,6 +383,133 @@ const Profile = () => {
                   onChange={(e) => handleInputChange('dependents', e.target.value)}
                   placeholder="0"
                 />
+              </div>
+            </div>
+
+            {/* Partner/Spouse */}
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label>Partner/Spouse</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className={`px-4 ${profile.partner ? 'bg-primary text-primary-foreground' : ''}`}
+                    onClick={() => handleInputChange('partner', true)}
+                  >
+                    Yes
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className={`px-4 ${!profile.partner ? 'bg-primary text-primary-foreground' : ''}`}
+                    onClick={() => handleInputChange('partner', false)}
+                  >
+                    No
+                  </Button>
+                </div>
+              </div>
+              {profile.partner && (
+                <div className="space-y-2">
+                  <Label htmlFor="partner_name">Partner Name (Optional)</Label>
+                  <Input
+                    id="partner_name"
+                    value={profile.partner_name}
+                    onChange={(e) => handleInputChange('partner_name', e.target.value)}
+                    placeholder="Enter partner's name"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Elderly Dependents */}
+            <div className="space-y-2">
+              <Label>Elderly Dependents</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className={`px-4 ${profile.elderly_dependents ? 'bg-primary text-primary-foreground' : ''}`}
+                  onClick={() => handleInputChange('elderly_dependents', true)}
+                >
+                  Yes
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className={`px-4 ${!profile.elderly_dependents ? 'bg-primary text-primary-foreground' : ''}`}
+                  onClick={() => handleInputChange('elderly_dependents', false)}
+                >
+                  No
+                </Button>
+              </div>
+            </div>
+
+            {/* Children Age Groups */}
+            <div className="space-y-2">
+              <Label>Children Age Groups</Label>
+              <div className="flex flex-wrap gap-2">
+                {['0–5', '6–12', '13–18', '18+'].map((ageGroup) => (
+                  <Button
+                    key={ageGroup}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className={`px-3 py-1 text-xs rounded-full ${
+                      profile.children_age_groups.includes(ageGroup) 
+                        ? 'bg-primary text-primary-foreground' 
+                        : ''
+                    }`}
+                    onClick={() => handleInputChange('children_age_groups', ageGroup)}
+                  >
+                    {ageGroup}
+                  </Button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Used for education planning & insurance suggestions
+              </p>
+            </div>
+
+            {/* Emergency Contact */}
+            <div className="space-y-3">
+              <Label>Emergency Contact</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="emergency_contact_name" className="text-sm">Name</Label>
+                  <Input
+                    id="emergency_contact_name"
+                    value={profile.emergency_contact_name}
+                    onChange={(e) => handleInputChange('emergency_contact_name', e.target.value)}
+                    placeholder="Contact name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="emergency_contact_phone" className="text-sm">Phone</Label>
+                  <Input
+                    id="emergency_contact_phone"
+                    value={profile.emergency_contact_phone}
+                    onChange={(e) => handleInputChange('emergency_contact_phone', e.target.value)}
+                    placeholder="Contact phone"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Household Size Summary */}
+            <div className="border-t pt-4">
+              <div className="flex justify-between items-center bg-muted/50 rounded-lg p-3">
+                <div>
+                  <span className="font-medium">Household Size:</span>
+                  <span className="ml-2 text-lg font-semibold">
+                    {1 + (profile.partner ? 1 : 0) + (parseInt(profile.children) || 0) + (parseInt(profile.dependents) || 0)} people
+                  </span>
+                </div>
+                <span className="text-xs text-muted-foreground">Auto-calculated</span>
               </div>
             </div>
           </CardContent>
@@ -514,41 +664,98 @@ const Profile = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-0">
-            <div className="space-y-2">
-              <Label htmlFor="risk_appetite">
-                Risk Appetite <span className="text-red-500">*</span>
-              </Label>
-              <Select value={profile.risk_appetite} onValueChange={(value) => handleInputChange('risk_appetite', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your risk appetite" />
-                </SelectTrigger>
-                <SelectContent>
-                  {options.risk_appetite_options.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      <div className="flex flex-col items-start">
-                        <span className="font-medium">{option.label}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {option.description}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {profile.risk_appetite && (
-                <div className="mt-2 p-3 rounded-lg bg-muted">
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4" />
-                    <Badge variant={
-                      profile.risk_appetite === 'Low' ? 'secondary' :
-                      profile.risk_appetite === 'Moderate' ? 'default' : 'destructive'
-                    }>
-                      {profile.risk_appetite} Risk
-                    </Badge>
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Left Column: Risk Selection */}
+              <div className="space-y-2">
+                <Label htmlFor="risk_appetite">
+                  Risk Appetite <span className="text-red-500">*</span>
+                </Label>
+                <Select value={profile.risk_appetite} onValueChange={(value) => handleInputChange('risk_appetite', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your risk appetite" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {options.risk_appetite_options.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">{option.label}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {option.description}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {profile.risk_appetite && (
+                  <div className="mt-3 p-3 rounded-lg bg-muted/50">
+                    <p className="text-sm text-muted-foreground">
+                      {options.risk_appetite_options.find(o => o.value === profile.risk_appetite)?.description}
+                    </p>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {options.risk_appetite_options.find(o => o.value === profile.risk_appetite)?.description}
-                  </p>
+                )}
+              </div>
+
+              {/* Right Column: Gauge and Projection */}
+              {profile.risk_appetite && (
+                <div className="flex flex-col items-center space-y-4">
+                  {/* Semi-circular Gauge */}
+                  <div className="relative">
+                    <svg width="160" height="100" className="overflow-visible">
+                      {/* Background Arc */}
+                      <path
+                        d="M 20 80 A 60 60 0 0 1 140 80"
+                        stroke="currentColor"
+                        strokeWidth="8"
+                        fill="none"
+                        className="text-muted-foreground/30"
+                      />
+                      {/* Foreground Arc */}
+                      <path
+                        d="M 20 80 A 60 60 0 0 1 140 80"
+                        stroke="currentColor"
+                        strokeWidth="8"
+                        fill="none"
+                        className="text-primary"
+                        strokeDasharray={`${
+                          profile.risk_appetite === 'Low' ? 188.5 * 0.25 :
+                          profile.risk_appetite === 'Moderate' ? 188.5 * 0.55 :
+                          188.5 * 0.85
+                        } 188.5`}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <div className="absolute inset-x-0 bottom-0 text-center">
+                      <span className="text-sm font-medium">
+                        Risk: {
+                          profile.risk_appetite === 'Low' ? '25' :
+                          profile.risk_appetite === 'Moderate' ? '55' :
+                          '85'
+                        }%
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Projection Block */}
+                  <div className="text-center space-y-2 bg-muted/30 rounded-lg p-4 w-full">
+                    <h4 className="text-sm font-medium">Illustrative 10-yr projection (₹)</h4>
+                    <div className="text-2xl font-bold text-primary">
+                      {(() => {
+                        const start = 100000
+                        const rate = profile.risk_appetite === 'Low' ? 0.06 : 
+                                   profile.risk_appetite === 'Moderate' ? 0.10 : 0.14
+                        const projected = Math.round(start * Math.pow(1 + rate, 10))
+                        return projected.toLocaleString('en-IN')
+                      })()}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      From a starting ₹1,00,000 at {
+                        profile.risk_appetite === 'Low' ? '6' :
+                        profile.risk_appetite === 'Moderate' ? '10' :
+                        '14'
+                      }% CAGR
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -584,6 +791,25 @@ const Profile = () => {
             )}
           </Button>
         </div>
+      </div>
+
+      {/* Mobile Sticky Save Button */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t md:hidden">
+        <Button
+          onClick={handleSave}
+          disabled={saving || !isFormValid}
+          size="lg"
+          className="w-full"
+        >
+          {saving ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
+              Saving...
+            </>
+          ) : (
+            'Save Profile'
+          )}
+        </Button>
       </div>
     </div>
   )
