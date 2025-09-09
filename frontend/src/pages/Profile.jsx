@@ -396,7 +396,7 @@ const Profile = () => {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className={`px-4 ${profile.partner ? 'bg-primary text-primary-foreground' : ''}`}
+                    className={`px-4 ${profile.partner ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-muted'}`}
                     onClick={() => handleInputChange('partner', true)}
                   >
                     Yes
@@ -405,7 +405,7 @@ const Profile = () => {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className={`px-4 ${!profile.partner ? 'bg-primary text-primary-foreground' : ''}`}
+                    className={`px-4 ${!profile.partner ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-muted'}`}
                     onClick={() => handleInputChange('partner', false)}
                   >
                     No
@@ -433,7 +433,7 @@ const Profile = () => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className={`px-4 ${profile.elderly_dependents ? 'bg-primary text-primary-foreground' : ''}`}
+                  className={`px-4 ${profile.elderly_dependents ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-muted'}`}
                   onClick={() => handleInputChange('elderly_dependents', true)}
                 >
                   Yes
@@ -442,7 +442,7 @@ const Profile = () => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className={`px-4 ${!profile.elderly_dependents ? 'bg-primary text-primary-foreground' : ''}`}
+                  className={`px-4 ${!profile.elderly_dependents ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-muted'}`}
                   onClick={() => handleInputChange('elderly_dependents', false)}
                 >
                   No
@@ -462,8 +462,8 @@ const Profile = () => {
                     size="sm"
                     className={`px-3 py-1 text-xs rounded-full ${
                       profile.children_age_groups.includes(ageGroup) 
-                        ? 'bg-primary text-primary-foreground' 
-                        : ''
+                        ? 'bg-primary text-primary-foreground border-primary' 
+                        : 'hover:bg-muted'
                     }`}
                     onClick={() => handleInputChange('children_age_groups', ageGroup)}
                   >
@@ -665,8 +665,7 @@ const Profile = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-0">
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Left Column: Risk Selection */}
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="risk_appetite">
                   Risk Appetite <span className="text-red-500">*</span>
@@ -696,69 +695,6 @@ const Profile = () => {
                   </div>
                 )}
               </div>
-
-              {/* Right Column: Gauge and Projection */}
-              {profile.risk_appetite && (
-                <div className="flex flex-col items-center space-y-4">
-                  {/* Semi-circular Gauge */}
-                  <div className="relative">
-                    <svg width="160" height="100" className="overflow-visible">
-                      {/* Background Arc */}
-                      <path
-                        d="M 20 80 A 60 60 0 0 1 140 80"
-                        stroke="currentColor"
-                        strokeWidth="8"
-                        fill="none"
-                        className="text-muted-foreground/30"
-                      />
-                      {/* Foreground Arc */}
-                      <path
-                        d="M 20 80 A 60 60 0 0 1 140 80"
-                        stroke="currentColor"
-                        strokeWidth="8"
-                        fill="none"
-                        className="text-primary"
-                        strokeDasharray={`${
-                          profile.risk_appetite === 'Low' ? 188.5 * 0.25 :
-                          profile.risk_appetite === 'Moderate' ? 188.5 * 0.55 :
-                          188.5 * 0.85
-                        } 188.5`}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <div className="absolute inset-x-0 bottom-0 text-center">
-                      <span className="text-sm font-medium">
-                        Risk: {
-                          profile.risk_appetite === 'Low' ? '25' :
-                          profile.risk_appetite === 'Moderate' ? '55' :
-                          '85'
-                        }%
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Projection Block */}
-                  <div className="text-center space-y-2 bg-muted/30 rounded-lg p-4 w-full">
-                    <h4 className="text-sm font-medium">Illustrative 10-yr projection (₹)</h4>
-                    <div className="text-2xl font-bold text-primary">
-                      {(() => {
-                        const start = 100000
-                        const rate = profile.risk_appetite === 'Low' ? 0.06 : 
-                                   profile.risk_appetite === 'Moderate' ? 0.10 : 0.14
-                        const projected = Math.round(start * Math.pow(1 + rate, 10))
-                        return projected.toLocaleString('en-IN')
-                      })()}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      From a starting ₹1,00,000 at {
-                        profile.risk_appetite === 'Low' ? '6' :
-                        profile.risk_appetite === 'Moderate' ? '10' :
-                        '14'
-                      }% CAGR
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>
