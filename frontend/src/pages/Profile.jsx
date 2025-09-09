@@ -394,18 +394,18 @@ const Profile = () => {
                 <div className="flex gap-2">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant={profile.partner ? "default" : "outline"}
                     size="sm"
-                    className={`px-4 ${profile.partner ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-muted'}`}
+                    className="px-4"
                     onClick={() => handleInputChange('partner', true)}
                   >
                     Yes
                   </Button>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant={!profile.partner ? "default" : "outline"}
                     size="sm"
-                    className={`px-4 ${!profile.partner ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-muted'}`}
+                    className="px-4"
                     onClick={() => handleInputChange('partner', false)}
                   >
                     No
@@ -431,18 +431,18 @@ const Profile = () => {
               <div className="flex gap-2">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant={profile.elderly_dependents ? "default" : "outline"}
                   size="sm"
-                  className={`px-4 ${profile.elderly_dependents ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-muted'}`}
+                  className="px-4"
                   onClick={() => handleInputChange('elderly_dependents', true)}
                 >
                   Yes
                 </Button>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant={!profile.elderly_dependents ? "default" : "outline"}
                   size="sm"
-                  className={`px-4 ${!profile.elderly_dependents ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-muted'}`}
+                  className="px-4"
                   onClick={() => handleInputChange('elderly_dependents', false)}
                 >
                   No
@@ -458,13 +458,9 @@ const Profile = () => {
                   <Button
                     key={ageGroup}
                     type="button"
-                    variant="outline"
+                    variant={profile.children_age_groups.includes(ageGroup) ? "default" : "outline"}
                     size="sm"
-                    className={`px-3 py-1 text-xs rounded-full ${
-                      profile.children_age_groups.includes(ageGroup) 
-                        ? 'bg-primary text-primary-foreground border-primary' 
-                        : 'hover:bg-muted'
-                    }`}
+                    className="px-3 py-1 text-xs rounded-full"
                     onClick={() => handleInputChange('children_age_groups', ageGroup)}
                   >
                     {ageGroup}
