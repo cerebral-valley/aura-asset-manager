@@ -56,6 +56,14 @@ class ProfileUpdate(BaseModel):
     annual_income: Optional[Decimal] = None
     occupation: Optional[str] = None
     risk_appetite: Optional[str] = None
+    
+    # Enhanced family information fields
+    partner: Optional[bool] = None
+    partner_name: Optional[str] = None
+    elderly_dependents: Optional[int] = None
+    children_age_groups: Optional[str] = None  # JSON string of age group array
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -79,6 +87,14 @@ class UserProfile(UserInDB):
     annual_income: Optional[Decimal] = None
     occupation: Optional[str] = None
     risk_appetite: Optional[str] = None
+    
+    # Enhanced family information fields
+    partner: Optional[bool] = None
+    partner_name: Optional[str] = None
+    elderly_dependents: Optional[int] = None
+    children_age_groups: Optional[str] = None  # JSON string of age group array
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
     
     class Config:
         from_attributes = True
