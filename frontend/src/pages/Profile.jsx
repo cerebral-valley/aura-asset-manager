@@ -792,25 +792,6 @@ const Profile = () => {
           </Button>
         </div>
       </div>
-
-      {/* Mobile Sticky Save Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t md:hidden">
-        <Button
-          onClick={handleSave}
-          disabled={saving || !isFormValid}
-          size="lg"
-          className="w-full"
-        >
-          {saving ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
-              Saving...
-            </>
-          ) : (
-            'Save Profile'
-          )}
-        </Button>
-      </div>
     </div>
   )
 }
