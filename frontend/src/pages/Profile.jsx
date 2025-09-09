@@ -7,8 +7,7 @@ import { Input } from '../components/ui/input.jsx'
 import { Label } from '../components/ui/label.jsx'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select.jsx'
 import { Alert, AlertDescription } from '../components/ui/alert.jsx'
-import { Badge } from '../components/ui/badge.jsx'
-import { User, MapPin, Users, Briefcase, CheckCircle, AlertCircle, Calendar, Target, Shield } from 'lucide-react'
+import { User, MapPin, Users, Briefcase, CheckCircle, AlertCircle, Calendar, Target } from 'lucide-react'
 import SensitiveInput from '../components/ui/SensitiveInput.jsx'
 import ProfileProgressIndicator from '../components/profile/ProfileProgressIndicator.jsx'
 import { formatPhoneNumber } from '../utils/profileUtils.js'
@@ -39,12 +38,8 @@ const Profile = () => {
     occupation: '',
     risk_appetite: '',
     // Family Information fields
-    partner: false,
-    partner_name: '',
     elderly_dependents: false,
-    children_age_groups: [],
-    emergency_contact_name: '',
-    emergency_contact_phone: ''
+    children_age_groups: []
   })
 
   const [options, setOptions] = useState({
@@ -99,12 +94,8 @@ const Profile = () => {
         occupation: profileData.occupation || '',
         risk_appetite: profileData.risk_appetite || '',
         // Family Information fields
-        partner: profileData.partner || false,
-        partner_name: profileData.partner_name || '',
         elderly_dependents: profileData.elderly_dependents || false,
-        children_age_groups: profileData.children_age_groups || [],
-        emergency_contact_name: profileData.emergency_contact_name || '',
-        emergency_contact_phone: profileData.emergency_contact_phone || ''
+        children_age_groups: profileData.children_age_groups || []
       })
 
       setOptions(optionsData)
@@ -146,7 +137,7 @@ const Profile = () => {
 
   const handleInputChange = (field, value) => {
     // Handle phone number formatting
-    if (field === 'phone_number' || field === 'emergency_contact_phone') {
+    if (field === 'phone_number') {
       value = formatPhoneNumber(value)
     }
     
@@ -360,7 +351,7 @@ const Profile = () => {
               Details about your family and dependents
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6 pt-0">
+          <CardContent className="space-y-4 pt-0">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="children">Number of Children</Label>
@@ -387,113 +378,51 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Partner/Spouse */}
-            <div className="space-y-3">
+            {/* Compact row: Elderly + Children Age Groups */}
+            <div className="grid grid-cols-2 gap-4 items-start">
+              {/* Elderly Dependents */}
               <div className="space-y-2">
-                <Label>Partner/Spouse</Label>
+                <Label>Elderly Dependents</Label>
                 <div className="flex gap-2">
                   <Button
                     type="button"
-                    variant={profile.partner ? "default" : "outline"}
+                    variant={profile.elderly_dependents ? "default" : "outline"}
                     size="sm"
                     className="px-4"
-                    onClick={() => handleInputChange('partner', true)}
+                    onClick={() => handleInputChange('elderly_dependents', true)}
                   >
                     Yes
                   </Button>
                   <Button
                     type="button"
-                    variant={!profile.partner ? "default" : "outline"}
+                    variant={!profile.elderly_dependents ? "default" : "outline"}
                     size="sm"
                     className="px-4"
-                    onClick={() => handleInputChange('partner', false)}
+                    onClick={() => handleInputChange('elderly_dependents', false)}
                   >
                     No
                   </Button>
                 </div>
               </div>
-              {profile.partner && (
-                <div className="space-y-2">
-                  <Label htmlFor="partner_name">Partner Name (Optional)</Label>
-                  <Input
-                    id="partner_name"
-                    value={profile.partner_name}
-                    onChange={(e) => handleInputChange('partner_name', e.target.value)}
-                    placeholder="Enter partner's name"
-                  />
-                </div>
-              )}
-            </div>
 
-            {/* Elderly Dependents */}
-            <div className="space-y-2">
-              <Label>Elderly Dependents</Label>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant={profile.elderly_dependents ? "default" : "outline"}
-                  size="sm"
-                  className="px-4"
-                  onClick={() => handleInputChange('elderly_dependents', true)}
-                >
-                  Yes
-                </Button>
-                <Button
-                  type="button"
-                  variant={!profile.elderly_dependents ? "default" : "outline"}
-                  size="sm"
-                  className="px-4"
-                  onClick={() => handleInputChange('elderly_dependents', false)}
-                >
-                  No
-                </Button>
-              </div>
-            </div>
-
-            {/* Children Age Groups */}
-            <div className="space-y-2">
-              <Label>Children Age Groups</Label>
-              <div className="flex flex-wrap gap-2">
-                {['0–5', '6–12', '13–18', '18+'].map((ageGroup) => (
-                  <Button
-                    key={ageGroup}
-                    type="button"
-                    variant={profile.children_age_groups.includes(ageGroup) ? "default" : "outline"}
-                    size="sm"
-                    className="px-3 py-1 text-xs rounded-full"
-                    onClick={() => handleInputChange('children_age_groups', ageGroup)}
-                  >
-                    {ageGroup}
-                  </Button>
-                ))}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Used for education planning & insurance suggestions
-              </p>
-            </div>
-
-            {/* Emergency Contact */}
-            <div className="space-y-3">
-              <Label>Emergency Contact</Label>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="emergency_contact_name" className="text-sm">Name</Label>
-                  <Input
-                    id="emergency_contact_name"
-                    value={profile.emergency_contact_name}
-                    onChange={(e) => handleInputChange('emergency_contact_name', e.target.value)}
-                    placeholder="Contact name"
-                  />
+              {/* Children Age Groups */}
+              <div className="space-y-2">
+                <Label>Children Age Groups</Label>
+                <div className="flex flex-wrap gap-2">
+                  {['0–5', '6–12', '13–18', '18+'].map((ageGroup) => (
+                    <Button
+                      key={ageGroup}
+                      type="button"
+                      variant={profile.children_age_groups.includes(ageGroup) ? "default" : "outline"}
+                      size="sm"
+                      className="px-3 py-1 text-xs rounded-full"
+                      onClick={() => handleInputChange('children_age_groups', ageGroup)}
+                    >
+                      {ageGroup}
+                    </Button>
+                  ))}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="emergency_contact_phone" className="text-sm">Phone</Label>
-                  <Input
-                    id="emergency_contact_phone"
-                    value={profile.emergency_contact_phone}
-                    onChange={(e) => handleInputChange('emergency_contact_phone', e.target.value)}
-                    placeholder="Contact phone"
-                  />
-                </div>
+                <p className="text-xs text-muted-foreground">Used for education planning & insurance suggestions</p>
               </div>
             </div>
 
@@ -503,7 +432,7 @@ const Profile = () => {
                 <div>
                   <span className="font-medium">Household Size:</span>
                   <span className="ml-2 text-lg font-semibold">
-                    {1 + (profile.partner ? 1 : 0) + (parseInt(profile.children) || 0) + (parseInt(profile.dependents) || 0)} people
+                    {1 + (parseInt(profile.children) || 0) + (parseInt(profile.dependents) || 0)} people
                   </span>
                 </div>
                 <span className="text-xs text-muted-foreground">Auto-calculated</span>
