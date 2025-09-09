@@ -3,7 +3,7 @@ User model for SQLAlchemy.
 """
 
 from sqlalchemy import Column, String, DateTime, Text, Boolean, Date, Integer
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.sql import func
 from app.core.database import Base
 import uuid
@@ -47,7 +47,7 @@ class User(Base):
     partner = Column(Boolean, default=False)  # Yes/No for having a partner/spouse
     partner_name = Column(String(100))  # Partner's name
     elderly_dependents = Column(Integer, default=0)  # Number of elderly dependents
-    children_age_groups = Column(Text)  # JSON array of age groups: "0-2", "3-5", "6-12", "13-17", "18+"
+    children_age_groups = Column(ARRAY(String))  # Array of age groups: ["0-5", "6-12", "13-18", "18+"]
     emergency_contact_name = Column(String(100))  # Emergency contact name
     emergency_contact_phone = Column(String(50))  # Emergency contact phone
     

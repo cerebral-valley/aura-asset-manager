@@ -3,8 +3,8 @@ User Pydantic schemas for API serialization.
 """
 
 from pydantic import BaseModel, EmailStr
-from datetime import datetime
-from typing import Optional
+from datetime import datetime, date
+from typing import Optional, List
 from uuid import UUID
 
 class UserBase(BaseModel):
@@ -61,7 +61,7 @@ class ProfileUpdate(BaseModel):
     partner: Optional[bool] = None
     partner_name: Optional[str] = None
     elderly_dependents: Optional[int] = None
-    children_age_groups: Optional[str] = None  # JSON string of age group array
+    children_age_groups: Optional[List[str]] = None  # Array of age group strings
     emergency_contact_name: Optional[str] = None
     emergency_contact_phone: Optional[str] = None
 
@@ -92,7 +92,7 @@ class UserProfile(UserInDB):
     partner: Optional[bool] = None
     partner_name: Optional[str] = None
     elderly_dependents: Optional[int] = None
-    children_age_groups: Optional[str] = None  # JSON string of age group array
+    children_age_groups: Optional[List[str]] = None  # Array of age group strings
     emergency_contact_name: Optional[str] = None
     emergency_contact_phone: Optional[str] = None
     
