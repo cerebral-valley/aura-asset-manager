@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Switch } from '../components/ui/switch.jsx'
 import { Alert, AlertDescription } from '../components/ui/alert.jsx'
 import { ThemeSelector } from '../components/ui/ThemeSelector.jsx'
-import { CheckCircle, AlertCircle, User, Globe, Palette } from 'lucide-react'
+import { CheckCircle, AlertCircle, User, Globe, Palette, Trash2, AlertTriangle } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth.jsx'
 import { useTheme } from '../contexts/ThemeContext.jsx'
 import { userSettingsService } from '../services/user-settings.js'
@@ -37,11 +37,17 @@ const UserSettings = () => {
   const [feedbackSuccess, setFeedbackSuccess] = useState('')
   const [feedbackError, setFeedbackError] = useState('')
 
+  // Data reset state and handlers
+  const [showResetModal, setShowResetModal] = useState(false)
+  const [resetConfirmText, setResetConfirmText] = useState('')
+  const [resetCountdown, setResetCountdown] = useState(0)
+  const [resetInProgress, setResetInProgress] = useState(false)
+
   const handleFeedbackChange = (e) => {
     setFeedbackText(e.target.value)
   }
 
-  const handleFeedbackSubmit = async () => {
+    const handleFeedbackSubmit = async () => {
     setFeedbackSubmitting(true)
     setFeedbackSuccess('')
     setFeedbackError('')
@@ -49,10 +55,127 @@ const UserSettings = () => {
       await feedbackService.submitFeedback(user.id, feedbackText)
       setFeedbackSuccess('Thank you for your feedback!')
       setFeedbackText('')
+      setTimeout(() => setFeedbackSuccess(''), 3000)
     } catch (err) {
+      console.error('Error submitting feedback:', err)
       setFeedbackError('Failed to submit feedback. Please try again.')
+      setTimeout(() => setFeedbackError(''), 3000)
     } finally {
       setFeedbackSubmitting(false)
+    }
+  }
+
+  // Data reset handlers
+  const handleResetDataClick = () => {
+    setShowResetModal(true)
+    setResetConfirmText('')
+    setError('')
+    setSuccess('')
+  }
+
+  const handleResetCancel = () => {
+    setShowResetModal(false)
+    setResetConfirmText('')
+    setResetCountdown(0)
+  }
+
+  const handleResetConfirm = () => {
+    if (resetConfirmText === "I want to delete my data") {
+      setResetCountdown(10)
+      // Start countdown
+      const interval = setInterval(() => {
+        setResetCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(interval)
+            executeDataReset()
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    }
+  }
+
+  const executeDataReset = async () => {
+    setResetInProgress(true)
+    try {
+      // Call the data reset service (we'll create this)
+      await resetAllUserData()
+      setSuccess('All your data has been permanently deleted and your account has been reset.')
+      setShowResetModal(false)
+      setResetConfirmText('')
+      
+      // Optionally redirect to dashboard or refresh page
+      setTimeout(() => {
+        window.location.href = '/'
+      }, 2000)
+    } catch (err) {
+      console.error('Error resetting data:', err)
+      setError('Failed to reset data. Please try again or contact support.')
+      setShowResetModal(false)
+    } finally {
+      setResetInProgress(false)
+    }
+  }
+
+  // Service to reset all user data
+  const resetAllUserData = async () => {
+    const { assetsService } = await import('../services/assets.js')
+    const { transactionsService } = await import('../services/transactions.js')
+    const { insuranceService } = await import('../services/insurance.js')
+    const { annuitiesService } = await import('../services/annuities.js')
+    const { profileService } = await import('../services/profile.js')
+
+    // Delete all data in sequence
+    try {
+      // Delete assets
+      const assets = await assetsService.getAssets()
+      for (const asset of assets) {
+        await assetsService.deleteAsset(asset.id)
+      }
+
+      // Delete transactions
+      const transactions = await transactionsService.getTransactions()
+      for (const transaction of transactions) {
+        await transactionsService.deleteTransaction(transaction.id)
+      }
+
+      // Delete insurance
+      const insurancePolicies = await insuranceService.getInsurancePolicies()
+      for (const policy of insurancePolicies) {
+        await insuranceService.deleteInsurance(policy.id)
+      }
+
+      // Delete annuities
+      const annuities = await annuitiesService.getAnnuities()
+      for (const annuity of annuities) {
+        await annuitiesService.deleteAnnuity(annuity.id)
+      }
+
+      // Reset profile to default values
+      const defaultProfile = {
+        first_name: '',
+        last_name: '',
+        marital_status: '',
+        gender: '',
+        date_of_birth: '',
+        children: '',
+        dependents: '',
+        city: '',
+        pin_code: '',
+        state: '',
+        country: '',
+        nationality: '',
+        phone_number: '',
+        annual_income: '',
+        occupation: '',
+        risk_appetite: '',
+        elderly_dependents: false,
+        children_age_groups: []
+      }
+      await profileService.updateProfile(defaultProfile)
+    } catch (error) {
+      throw new Error('Failed to reset all data: ' + error.message)
     }
   }
 
@@ -378,6 +501,118 @@ const UserSettings = () => {
         </CardContent>
       </Card>
     </div>
+
+    {/* Data Management Section */}
+    <div className="mt-10">
+      <Card className="border-red-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-red-600">
+            <Trash2 className="h-5 w-5" />
+            Data Management
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Permanently delete all your data and reset your account
+          </p>
+        </CardHeader>
+        <CardContent>
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Warning:</strong> This action cannot be undone. All your assets, transactions, 
+              insurance policies, annuities, and family data will be permanently deleted.
+            </AlertDescription>
+          </Alert>
+          
+          <Button 
+            variant="destructive"
+            onClick={handleResetDataClick}
+            disabled={resetInProgress}
+            className="w-full"
+          >
+            {resetInProgress ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Resetting Data...
+              </>
+            ) : (
+              <>
+                <Trash2 className="h-4 w-4 mr-2" />
+                Reset All Data
+              </>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+
+    {/* Reset Data Modal */}
+    {showResetModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+          <div className="flex items-center gap-2 mb-4">
+            <AlertTriangle className="h-6 w-6 text-red-600" />
+            <h3 className="text-lg font-semibold text-red-600">Confirm Data Reset</h3>
+          </div>
+          
+          {resetCountdown === 0 ? (
+            <>
+              <p className="text-sm text-muted-foreground mb-4">
+                This will permanently delete all your data including:
+              </p>
+              <ul className="text-sm text-muted-foreground mb-4 list-disc list-inside space-y-1">
+                <li>All assets and their details</li>
+                <li>All transaction records</li>
+                <li>All insurance policies</li>
+                <li>All annuity contracts</li>
+                <li>All family information</li>
+                <li>Profile data (except login credentials)</li>
+              </ul>
+              
+              <p className="text-sm font-medium mb-4">
+                To confirm, please type: <code className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">I want to delete my data</code>
+              </p>
+              
+              <Input
+                value={resetConfirmText}
+                onChange={(e) => setResetConfirmText(e.target.value)}
+                placeholder="Type the confirmation text..."
+                className="mb-4"
+              />
+              
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={handleResetCancel}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleResetConfirm}
+                  disabled={resetConfirmText !== "I want to delete my data"}
+                  className="flex-1"
+                >
+                  Delete Permanently
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="text-center">
+              <div className="text-6xl font-bold text-red-600 mb-4">
+                {resetCountdown}
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Your data will be permanently deleted in {resetCountdown} seconds...
+              </p>
+              <p className="text-xs text-muted-foreground">
+                This action cannot be undone
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    )}
   </div>
  )
 }
