@@ -12,6 +12,7 @@ import { useAuth } from '../hooks/useAuth.jsx'
 import { useTheme } from '../contexts/ThemeContext.jsx'
 import { userSettingsService } from '../services/user-settings.js'
 import { feedbackService } from '../services/feedback.js'
+import apiClient from '../lib/api.js'
 
 const UserSettings = () => {
   const { user } = useAuth()
@@ -188,20 +189,8 @@ const UserSettings = () => {
   const fetchUserCode = async () => {
     setUserCodeLoading(true)
     try {
-      const response = await fetch('/api/v1/user-settings/user-code', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      })
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch user code')
-      }
-      
-      const data = await response.json()
-      setUserCode(data.user_code)
+      const response = await apiClient.get('/user-settings/user-code')
+      setUserCode(response.data.user_code)
     } catch (err) {
       console.error('Error fetching user code:', err)
       setError('Failed to fetch user code. Please try again.')
