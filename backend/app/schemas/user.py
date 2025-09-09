@@ -61,7 +61,7 @@ class ProfileUpdate(BaseModel):
     # Enhanced family information fields
     partner: Optional[bool] = None
     partner_name: Optional[str] = None
-    elderly_dependents: Optional[int] = None
+    elderly_dependents: Optional[bool] = None
     children_age_groups: Optional[List[str]] = None  # Array of age group strings
     emergency_contact_name: Optional[str] = None
     emergency_contact_phone: Optional[str] = None
@@ -102,7 +102,7 @@ class UserProfile(UserInDB):
     # Enhanced family information fields
     partner: Optional[bool] = None
     partner_name: Optional[str] = None
-    elderly_dependents: Optional[int] = None
+    elderly_dependents: Optional[bool] = None
     children_age_groups: Optional[List[str]] = None  # Array of age group strings
     emergency_contact_name: Optional[str] = None
     emergency_contact_phone: Optional[str] = None

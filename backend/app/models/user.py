@@ -46,7 +46,7 @@ class User(Base):
     # Enhanced family information fields
     partner = Column(Boolean, default=False)  # Yes/No for having a partner/spouse
     partner_name = Column(String(100))  # Partner's name
-    elderly_dependents = Column(Integer, default=0)  # Number of elderly dependents
+    elderly_dependents = Column(Boolean, default=False)  # Yes/No for having elderly dependents
     children_age_groups = Column(ARRAY(String))  # Array of age groups: ["0-5", "6-12", "13-18", "18+"]
     emergency_contact_name = Column(String(100))  # Emergency contact name
     emergency_contact_phone = Column(String(50))  # Emergency contact phone
