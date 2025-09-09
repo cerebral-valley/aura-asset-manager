@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Switch } from '../components/ui/switch.jsx'
 import { Alert, AlertDescription } from '../components/ui/alert.jsx'
 import { ThemeSelector } from '../components/ui/ThemeSelector.jsx'
-import { CheckCircle, AlertCircle, User, Globe, Palette, Trash2, AlertTriangle } from 'lucide-react'
+import { CheckCircle, AlertCircle, User, Globe, Palette, Trash2, AlertTriangle, Eye, EyeOff, Copy } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth.jsx'
 import { useTheme } from '../contexts/ThemeContext.jsx'
 import { userSettingsService } from '../services/user-settings.js'
@@ -42,6 +42,11 @@ const UserSettings = () => {
   const [resetConfirmText, setResetConfirmText] = useState('')
   const [resetCountdown, setResetCountdown] = useState(0)
   const [resetInProgress, setResetInProgress] = useState(false)
+
+  // User Code state and handlers
+  const [userCode, setUserCode] = useState('')
+  const [userCodeVisible, setUserCodeVisible] = useState(false)
+  const [userCodeLoading, setUserCodeLoading] = useState(false)
 
   const handleFeedbackChange = (e) => {
     setFeedbackText(e.target.value)
@@ -177,6 +182,53 @@ const UserSettings = () => {
     } catch (error) {
       throw new Error('Failed to reset all data: ' + error.message)
     }
+  }
+
+  // User Code functions
+  const fetchUserCode = async () => {
+    setUserCodeLoading(true)
+    try {
+      const response = await fetch('/api/v1/user-settings/user-code', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch user code')
+      }
+      
+      const data = await response.json()
+      setUserCode(data.user_code)
+    } catch (err) {
+      console.error('Error fetching user code:', err)
+      setError('Failed to fetch user code. Please try again.')
+    } finally {
+      setUserCodeLoading(false)
+    }
+  }
+
+  const copyUserCode = async () => {
+    if (userCode) {
+      try {
+        await navigator.clipboard.writeText(userCode)
+        setSuccess('User code copied to clipboard!')
+        // Clear success message after 3 seconds
+        setTimeout(() => setSuccess(''), 3000)
+      } catch (err) {
+        console.error('Error copying to clipboard:', err)
+        setError('Failed to copy user code to clipboard.')
+      }
+    }
+  }
+
+  const toggleUserCodeVisibility = () => {
+    if (!userCode && !userCodeLoading) {
+      fetchUserCode()
+    }
+    setUserCodeVisible(!userCodeVisible)
   }
 
   const currencies = [
@@ -385,6 +437,54 @@ const UserSettings = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* User Code Section */}
+            <div>
+              <Label htmlFor="user_code" className="flex items-center gap-2">
+                User Code
+                <span className="text-sm text-muted-foreground font-normal">
+                  (Your unique 8-character identifier)
+                </span>
+              </Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    id="user_code"
+                    value={userCodeVisible ? userCode : '********'}
+                    disabled
+                    className="bg-muted pr-20"
+                    placeholder={userCodeLoading ? 'Loading...' : '********'}
+                  />
+                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 hover:bg-background/10"
+                      onClick={toggleUserCodeVisibility}
+                      disabled={userCodeLoading}
+                      title={userCodeVisible ? 'Hide user code' : 'Show user code'}
+                    >
+                      {userCodeVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 hover:bg-background/10"
+                      onClick={copyUserCode}
+                      disabled={!userCode || userCodeLoading}
+                      title="Copy user code"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                This unique code identifies your account and can be used for sharing or support purposes.
+              </p>
             </div>
           </CardContent>
         </Card>

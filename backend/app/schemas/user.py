@@ -24,6 +24,7 @@ class UserUpdate(BaseModel):
 class UserInDB(UserBase):
     """Schema for user in database."""
     id: UUID
+    user_code: Optional[str] = None  # 8-character unique user code
     created_at: datetime
     updated_at: datetime
     
@@ -82,6 +83,7 @@ class ProfileUpdate(BaseModel):
 
 class UserProfile(UserInDB):
     """Schema for complete user profile."""
+    user_code: Optional[str] = None  # 8-character unique user code
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     marital_status: Optional[str] = None

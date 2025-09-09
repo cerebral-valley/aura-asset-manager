@@ -15,6 +15,7 @@ class User(Base):
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = Column(String, unique=True, nullable=False, index=True)
+    user_code = Column(String(8), unique=True, nullable=True, index=True)  # Unique 8-char code for user identification
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     theme = Column(Text, default="sanctuary_builder")
