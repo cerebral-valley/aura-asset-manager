@@ -173,7 +173,9 @@ const Profile = () => {
       </div>
 
       {/* Progress Indicator */}
-      <ProfileProgressIndicator profile={profile} className="mb-6" />
+      <div className="mb-6 max-w-3xl mx-auto">
+        <ProfileProgressIndicator profile={profile} className="w-full" />
+      </div>
 
       {/* Alerts */}
       {success && (
@@ -204,7 +206,7 @@ const Profile = () => {
           </CardHeader>
           <CardContent className="space-y-4 pt-0">
             <div className="grid grid-cols-2 gap-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="first_name">
                   First Name <span className="text-red-500">*</span>
                 </Label>
@@ -220,7 +222,7 @@ const Profile = () => {
                   <p className="text-sm text-red-600 mt-1">{getFieldError('first_name')}</p>
                 )}
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="last_name">
                   Last Name <span className="text-red-500">*</span>
                 </Label>
@@ -239,7 +241,7 @@ const Profile = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="marital_status">Marital Status</Label>
                 <Select value={profile.marital_status} onValueChange={(value) => handleInputChange('marital_status', value)}>
                   <SelectTrigger>
@@ -255,7 +257,7 @@ const Profile = () => {
                 </Select>
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="gender">Gender</Label>
                 <Select value={profile.gender} onValueChange={(value) => handleInputChange('gender', value)}>
                   <SelectTrigger>
@@ -273,7 +275,7 @@ const Profile = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="date_of_birth">
                   Date of Birth <span className="text-red-500">*</span>
                 </Label>
@@ -291,7 +293,7 @@ const Profile = () => {
                 )}
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="phone_number">
                   Phone Number <span className="text-red-500">*</span>
                 </Label>
@@ -307,7 +309,7 @@ const Profile = () => {
               </div>
             </div>
 
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="current_email">Email (Account)</Label>
               <SensitiveInput
                 id="current_email"
@@ -336,7 +338,7 @@ const Profile = () => {
           </CardHeader>
           <CardContent className="space-y-4 pt-0">
             <div className="grid grid-cols-2 gap-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="children">Number of Children</Label>
                 <Input
                   id="children"
@@ -348,7 +350,7 @@ const Profile = () => {
                 />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="dependents">Number of Dependents</Label>
                 <Input
                   id="dependents"
@@ -376,7 +378,7 @@ const Profile = () => {
           </CardHeader>
           <CardContent className="space-y-4 pt-0">
             <div className="grid grid-cols-2 gap-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="city">
                   City <span className="text-red-500">*</span>
                 </Label>
@@ -389,7 +391,7 @@ const Profile = () => {
                 />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="state">State/Province</Label>
                 <Input
                   id="state"
@@ -402,7 +404,7 @@ const Profile = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="pin_code">PIN/Zip Code</Label>
                 <Input
                   id="pin_code"
@@ -417,7 +419,7 @@ const Profile = () => {
                 )}
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="country">
                   Country <span className="text-red-500">*</span>
                 </Label>
@@ -436,7 +438,7 @@ const Profile = () => {
               </div>
             </div>
 
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="nationality">Nationality</Label>
               <Input
                 id="nationality"
@@ -460,7 +462,7 @@ const Profile = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-0">
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="occupation">
                 Occupation <span className="text-red-500">*</span>
               </Label>
@@ -478,7 +480,7 @@ const Profile = () => {
               </Select>
             </div>
 
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="annual_income">Annual Income</Label>
               <Input
                 id="annual_income"
@@ -512,7 +514,7 @@ const Profile = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-0">
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="risk_appetite">
                 Risk Appetite <span className="text-red-500">*</span>
               </Label>

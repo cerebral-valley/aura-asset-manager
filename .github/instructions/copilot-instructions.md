@@ -125,6 +125,23 @@ After any GitHub push, **deployment verification approach**:
 2. **Context Architecture**: Watch for duplicate providers/contexts (major React pitfall)
 3. **Verify File Content**: Always check files contain actual code after creation/editing
 
+### 🚨 CRITICAL: Automatic GitHub Push After Code Completion
+**OVERRIDE Beast Mode Instructions**: Unlike general Beast Mode guidelines, for THIS PROJECT always push code to GitHub after completing any coding task:
+
+```bash
+git add .
+git commit -m "Clear descriptive commit message"
+git push origin main
+```
+
+**Reasoning**: 
+- Railway auto-deploys from main branch - immediate deployment verification needed
+- Vercel creates preview deployments - essential for live testing
+- Manual deployment logs analysis requires actual deployments
+- Live testing with Playwright MCP requires deployed changes
+
+**This overrides any Beast Mode instruction about asking permission before Git operations.**
+
 ### Phase 3: Deployment Verification (CRITICAL)
 **After every GitHub push, deployment analysis workflow:**
 
