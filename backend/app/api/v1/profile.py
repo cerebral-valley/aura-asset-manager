@@ -92,7 +92,38 @@ async def get_profile(
     db: Session = Depends(get_db)
 ):
     """Get current user's profile."""
-    return current_user
+    try:
+        # Add debug logging
+        print(f"DEBUG: Getting profile for user {current_user.id}")
+        print(f"DEBUG: User email: {current_user.email}")
+        
+        # Check if user has new family fields
+        print(f"DEBUG: Has partner: {hasattr(current_user, 'partner')}")
+        print(f"DEBUG: Has partner_name: {hasattr(current_user, 'partner_name')}")
+        print(f"DEBUG: Has elderly_dependents: {hasattr(current_user, 'elderly_dependents')}")
+        print(f"DEBUG: Has children_age_groups: {hasattr(current_user, 'children_age_groups')}")
+        print(f"DEBUG: Has emergency_contact_name: {hasattr(current_user, 'emergency_contact_name')}")
+        print(f"DEBUG: Has emergency_contact_phone: {hasattr(current_user, 'emergency_contact_phone')}")
+        
+        if hasattr(current_user, 'partner'):
+            print(f"DEBUG: Partner value: {current_user.partner}")
+        if hasattr(current_user, 'elderly_dependents'):
+            print(f"DEBUG: Elderly dependents value: {current_user.elderly_dependents}")
+        if hasattr(current_user, 'children_age_groups'):
+            print(f"DEBUG: Children age groups value: {current_user.children_age_groups}")
+            print(f"DEBUG: Children age groups type: {type(current_user.children_age_groups)}")
+        
+        return current_user
+        
+    except Exception as e:
+        print(f"DEBUG: Error in get_profile: {str(e)}")
+        print(f"DEBUG: Error type: {type(e)}")
+        import traceback
+        print(f"DEBUG: Traceback: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get profile: {str(e)}"
+        )
 
 
 @router.put("", response_model=UserProfile)
