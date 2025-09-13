@@ -14,6 +14,7 @@ import Profile from './pages/Profile'
 import AppLayout from './components/layout/AppLayout'
 import { Toaster } from './components/ui/toaster'
 import './App.css'
+import Loading from './components/ui/Loading'
 
 // Page Components
 function AssetsPage() {
@@ -61,14 +62,7 @@ function AppContent() {
 
   if (loading) {
     console.log('AppContent: Showing loading state')
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading Aura...</p>
-        </div>
-      </div>
-    )
+    return <Loading label={"Loading Aura..."} variant={"center"} />
   }
 
   if (!user) {

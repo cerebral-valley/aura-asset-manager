@@ -13,6 +13,7 @@ import { useTheme } from '../contexts/ThemeContext.jsx'
 import { userSettingsService } from '../services/user-settings.js'
 import { feedbackService } from '../services/feedback.js'
 import apiClient from '../lib/api.js'
+import Loading from '../components/ui/Loading'
 
 const UserSettings = () => {
   const { user } = useAuth()
@@ -325,14 +326,7 @@ const UserSettings = () => {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading settings...</p>
-        </div>
-      </div>
-    )
+    return <Loading label={"Loading settings..."} variant={"center"} />
   }
 
   return (

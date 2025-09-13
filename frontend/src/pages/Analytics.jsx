@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Calculator, TrendingUp, Info } from 'lucide-react';
 import { Tooltip as InfoTooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import Loading from '../components/ui/Loading';
 
 const Analytics = () => {
   const { isDark } = useTheme();
@@ -128,12 +129,7 @@ const Analytics = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading analytics...</p>
-        </div>
-      </div>
+      <Loading label={"Loading analytics..."} variant={"center"} />
     );
   }
 

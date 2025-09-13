@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useChartColors } from '../hooks/useChartColors';
+import Loading from '../components/ui/Loading'
 import { insuranceService } from '../services/insurance';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
 Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
@@ -101,7 +102,6 @@ const Insurance = () => {
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     try {
-      // Handle both YYYY-MM-DD format from DB and Date objects
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return '-';
       return date.toLocaleDateString('en-US', {

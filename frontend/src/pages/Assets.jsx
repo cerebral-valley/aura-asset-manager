@@ -14,6 +14,7 @@ import AnnuityManager from '../components/assets/AnnuityManager';
 import ConfirmationDialog from '../components/ui/confirmation-dialog';
   import { exportAssetsToPDF } from '../utils/pdfExportTerminal';
   import { exportToExcel } from '../utils/excelExport';
+import Loading from '../components/ui/Loading';
 
 const Assets = () => {
   const navigate = useNavigate();
@@ -88,6 +89,8 @@ const Assets = () => {
   useEffect(() => {
     fetchAssets();
   }, []);
+
+  if (loading) return <Loading label={"Loading assets..."} variant={"center"} />;
 
   // Listen for global preferences changes
   useEffect(() => {

@@ -12,6 +12,7 @@ import SensitiveInput from '../components/ui/SensitiveInput.jsx'
 import ProfileProgressIndicator from '../components/profile/ProfileProgressIndicator.jsx'
 import { formatPhoneNumber } from '../utils/profileUtils.js'
 import { profileService } from '../services/profile.js'
+import Loading from '../components/ui/Loading'
 
 const Profile = () => {
   const { user } = useAuth()
@@ -164,14 +165,7 @@ const Profile = () => {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading profile...</p>
-        </div>
-      </div>
-    )
+    return <Loading label={"Loading profile..."} variant={"center"} />
   }
 
   return (
