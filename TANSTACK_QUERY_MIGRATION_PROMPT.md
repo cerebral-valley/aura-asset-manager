@@ -72,8 +72,21 @@ npm install localforage @tanstack/query-persist-client-core @tanstack/query-pers
 // Define in: frontend/src/lib/queryKeys.js
 export const queryKeys = {
   assets: ['assets'],
-  // For lists with params, prefer a factory
-  transactions: (params) => ['transactions', params],
+  transactions: {
+    all: ['transactions'],
+    page: (params) => ['transactions', params],
+  },
+  insurance: ['insurance'],
+  annuities: ['annuities'],
+  dashboardSummary: ['dashboard-summary'],
+  userSettings: ['user-settings'],
+  profile: ['profile']
+}
+
+// Base keys for invalidation and cross-tab sync
+export const baseKeys = {
+  assets: ['assets'],
+  transactions: ['transactions'],
   insurance: ['insurance'],
   annuities: ['annuities'],
   dashboardSummary: ['dashboard-summary'],
@@ -128,17 +141,27 @@ queryClient.invalidateQueries({ queryKey: queryKeys.assets })
 ```javascript
 // Simple cross-tab invalidation bus
 const bc = new BroadcastChannel('aura-cache')
+
 // Emit after successful mutations
 bc.postMessage({ type: 'invalidate', keys: ['assets', 'transactions'] })
+
 // Listen in other tabs
 bc.onmessage = (e) => {
   if (e?.data?.type === 'invalidate') {
-    e.data.keys.forEach((k) => {
-      const key = queryKeys[k]
+    e.data.keys.forEach((keyName) => {
+      // Use baseKeys for invalidation, not factory functions
+      const key = baseKeys[keyName]
       if (key) queryClient.invalidateQueries({ queryKey: key })
     })
   }
 }
+
+// ⚠️ IMPORTANT: Clean up on unmount
+// useEffect(() => {
+//   return () => {
+//     bc.close()
+//   }
+// }, [])
 ```
 
 #### **4.2 Background Refresh Strategy**
@@ -183,6 +206,23 @@ persistQueryClient({
 
 // Optional: Clear cache on logout or user change
 // auth.onLogout(() => { queryClient.clear(); sessionStorage.clear(); })
+
+// Add DevTools in development only
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      {/* Your existing app components */}
+      <Router>
+        {/* Routes */}
+      </Router>
+      
+      {/* DevTools only in development */}
+      {import.meta.env.DEV && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
+    </QueryClientProvider>
+  )
+}
 ```
 
 #### **1.2.1 IndexedDB Alternative for Large Datasets**
@@ -221,11 +261,26 @@ persistQueryClient({
 ```javascript
 // After auth success, prefetch core datasets once
 await Promise.all([
-  queryClient.prefetchQuery({ queryKey: queryKeys.assets, queryFn: ({ signal }) => assetsService.getAssets({ signal }) }),
-  queryClient.prefetchQuery({ queryKey: queryKeys.transactions, queryFn: ({ signal }) => transactionsService.getTransactions({ signal }) }),
-  queryClient.prefetchQuery({ queryKey: queryKeys.insurance, queryFn: ({ signal }) => insuranceService.getInsurance({ signal }) }),
-  queryClient.prefetchQuery({ queryKey: queryKeys.annuities, queryFn: ({ signal }) => annuitiesService.getAnnuities({ signal }) }),
-  queryClient.prefetchQuery({ queryKey: queryKeys.dashboardSummary, queryFn: ({ signal }) => dashboardService.getSummary({ signal }) }),
+  queryClient.prefetchQuery({ 
+    queryKey: queryKeys.assets, 
+    queryFn: ({ signal }) => assetsService.getAssets({ signal }) 
+  }),
+  queryClient.prefetchQuery({ 
+    queryKey: queryKeys.transactions.page({ page: 1, pageSize: 20 }), 
+    queryFn: ({ signal }) => transactionsService.getTransactions({ page: 1, pageSize: 20, signal }) 
+  }),
+  queryClient.prefetchQuery({ 
+    queryKey: queryKeys.insurance, 
+    queryFn: ({ signal }) => insuranceService.getInsurance({ signal }) 
+  }),
+  queryClient.prefetchQuery({ 
+    queryKey: queryKeys.annuities, 
+    queryFn: ({ signal }) => annuitiesService.getAnnuities({ signal }) 
+  }),
+  queryClient.prefetchQuery({ 
+    queryKey: queryKeys.dashboardSummary, 
+    queryFn: ({ signal }) => dashboardService.getSummary({ signal }) 
+  }),
 ])
 ```
 
@@ -311,9 +366,9 @@ const createAssetMutation = useMutation({
   },
   onSettled: () => {
     // Ensure fresh data across related sections
-    queryClient.invalidateQueries({ queryKey: queryKeys.assets })
-    queryClient.invalidateQueries({ queryKey: queryKeys.transactions })
-    queryClient.invalidateQueries({ queryKey: queryKeys.dashboardSummary })
+    queryClient.invalidateQueries({ queryKey: baseKeys.assets })
+    queryClient.invalidateQueries({ queryKey: baseKeys.transactions })
+    queryClient.invalidateQueries({ queryKey: baseKeys.dashboardSummary })
   }
 })
 ```
@@ -324,8 +379,29 @@ const createAssetMutation = useMutation({
 ```javascript
 // Query keys encode parameters for correct caching
 export const queryKeys = {
-  transactions: (params) => ['transactions', params],
+  transactions: {
+    all: ['transactions'],
+    page: (params) => ['transactions', normalizeParams(params)],
+  },
   // ... others as above
+}
+
+// Normalize parameters to ensure stable cache keys
+function normalizeParams(params) {
+  const { page = 1, pageSize = 20, filters = {}, sort = {} } = params || {}
+  
+  // Sort filter keys for stability
+  const normalizedFilters = {}
+  Object.keys(filters).sort().forEach(key => {
+    normalizedFilters[key] = filters[key]
+  })
+  
+  return {
+    page,
+    pageSize,
+    filters: normalizedFilters,
+    sort
+  }
 }
 
 // Standard pagination parameters for transactions
@@ -353,7 +429,7 @@ interface TransactionParams {
 
 // Paginated query with smooth transitions
 const { data, isLoading, isFetching } = useQuery({
-  queryKey: queryKeys.transactions({ page, pageSize, filters, sort }),
+  queryKey: queryKeys.transactions.page({ page, pageSize, filters, sort }),
   queryFn: ({ signal, queryKey }) => transactionsService.getTransactions({ ...queryKey[1], signal }),
   keepPreviousData: true,
   placeholderData: (prev) => prev, // keep previous while fetching next
@@ -374,6 +450,10 @@ queryFn: ({ signal }) => assetsService.getAssets({ signal })
 ```
 
 #### **F. Service Layer Enhancement (Recommended Implementation)**
+
+**⚠️ CRITICAL: Service Compatibility Required**
+The code examples assume services accept optional config parameters, but current services don't support this. You MUST update services before using abort signals.
+
 ```javascript
 // Update service methods to accept optional axios config
 // Example: frontend/src/services/assetsService.js
@@ -396,11 +476,18 @@ const createAsset = async (assetData, config = {}) => {
   }
 }
 
-// Pattern for all services:
+// Pattern for ALL services (required):
 // - Add optional config parameter as last argument
 // - Default to empty object for backward compatibility
 // - Forward config directly to axios calls
 // - Enables abort signals: service.getAssets({ signal })
+
+// Apply this pattern to:
+// - frontend/src/services/assetsService.js
+// - frontend/src/services/transactionsService.js  
+// - frontend/src/services/insuranceService.js
+// - frontend/src/services/annuitiesService.js
+// - frontend/src/services/dashboardService.js
 ```
 
 ## ⚠️ **Critical Dos and Don'ts**
@@ -528,11 +615,22 @@ const createMutation = useMutation({
 
 ### **Cache Performance Monitoring**
 ```javascript
-// Prefer lightweight, dev-only checks
-if (process.env.NODE_ENV !== 'production') {
-  const assetsCached = !!queryClient.getQueryData(queryKeys.assets)
-  const transactionsCached = !!queryClient.getQueryData(queryKeys.transactions)
-  log('Cache:status', 'Cache snapshot', { assetsCached, transactionsCached })
+// Prefer lightweight, dev-only checks with better cache indicators
+if (import.meta.env.DEV) {
+  const assetsCached = !!queryClient.getQueryData(baseKeys.assets)
+  const transactionsCached = !!queryClient.getQueryData(baseKeys.transactions)
+  
+  // Better cache state indicators
+  const assetsQuery = queryClient.getQueryState(queryKeys.assets)
+  const cacheInfo = {
+    assetsCached,
+    transactionsCached,
+    assetsStale: assetsQuery?.isStale,
+    assetsFetching: assetsQuery?.isFetching,
+    lastUpdated: assetsQuery?.dataUpdatedAt
+  }
+  
+  log('Cache:status', 'Cache snapshot', cacheInfo)
 }
 ```
 
@@ -553,7 +651,7 @@ git add . && git commit -m "checkpoint: Assets.jsx migrated successfully"
 ### **Feature Flag Pattern**
 ```javascript
 // Add to each page during migration
-const USE_TANSTACK_QUERY = process.env.REACT_APP_USE_TANSTACK_QUERY === 'true'
+const USE_TANSTACK_QUERY = import.meta.env.VITE_USE_TANSTACK_QUERY === 'true'
 
 if (USE_TANSTACK_QUERY) {
   // New TanStack Query implementation
