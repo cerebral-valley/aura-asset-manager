@@ -50,22 +50,30 @@ User Settings/Profile (independent)
 #### **1.1 Package Installation**
 ```bash
 cd frontend
-npm install @tanstack/react-query @tanstack/react-query-persist-client-core
+# Core + Devtools
+npm install @tanstack/react-query
 npm install --save-dev @tanstack/react-query-devtools
+
+# Persistence (sessionStorage/localStorage persister)
+npm install @tanstack/query-persist-client-core @tanstack/query-sync-storage-persister
+
+# Optional: IndexedDB persister for large datasets (>5MB cache, offline support)
+npm install localforage @tanstack/query-persist-client-core @tanstack/query-persist-client-experimental
 ```
 
 #### **1.2 App.jsx QueryClient Setup**
 - Install QueryClient provider at root level
 - Configure cache settings optimized for financial data
-- Add persistence layer with sessionStorage
-- Include devtools for debugging
+- Add persistence layer with sessionStorage (or IndexedDB for larger datasets)
+- Include devtools for debugging (dev only)
 
 #### **1.3 Query Keys Architecture**
 ```javascript
 // Define in: frontend/src/lib/queryKeys.js
 export const queryKeys = {
   assets: ['assets'],
-  transactions: ['transactions'],
+  // For lists with params, prefer a factory
+  transactions: (params) => ['transactions', params],
   insurance: ['insurance'],
   annuities: ['annuities'],
   dashboardSummary: ['dashboard-summary'],
@@ -101,6 +109,12 @@ export const queryKeys = {
 // Annuity mutations → invalidate: annuities, dashboard-summary
 ```
 
+#### **3.1.1 v5 Invalidation Signature**
+```javascript
+// Use object form in v5
+queryClient.invalidateQueries({ queryKey: queryKeys.assets })
+```
+
 #### **3.2 Optimistic Updates**
 - Implement for create/update operations
 - Rollback mechanism for failed mutations
@@ -111,8 +125,24 @@ export const queryKeys = {
 - BroadcastChannel API implementation
 - Storage event listeners for cache sync
 
+```javascript
+// Simple cross-tab invalidation bus
+const bc = new BroadcastChannel('aura-cache')
+// Emit after successful mutations
+bc.postMessage({ type: 'invalidate', keys: ['assets', 'transactions'] })
+// Listen in other tabs
+bc.onmessage = (e) => {
+  if (e?.data?.type === 'invalidate') {
+    e.data.keys.forEach((k) => {
+      const key = queryKeys[k]
+      if (key) queryClient.invalidateQueries({ queryKey: key })
+    })
+  }
+}
+```
+
 #### **4.2 Background Refresh Strategy**
-- Configure stale time and cache time
+- Configure `staleTime` and `gcTime`
 - Background refetch on window focus (optional)
 
 ---
@@ -124,23 +154,79 @@ export const queryKeys = {
 #### **A. App.jsx Changes**
 ```javascript
 // BEFORE: Basic React Router setup
-// AFTER: Add QueryClient provider wrapper
+// AFTER: Add QueryClient provider + persistence
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { persistQueryClient } from '@tanstack/react-query-persist-client-core'
+import { persistQueryClient } from '@tanstack/query-persist-client-core'
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
 
-// Configuration object for cache settings
+// Configuration object for cache settings (v5: gcTime instead of cacheTime)
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
-      refetchOnWindowFocus: false, // Prevent unnecessary refetches
-      retry: 1 // Single retry for financial data
+      staleTime: 30 * 60 * 1000, // 30 minutes; raise to rely on explicit invalidation
+      gcTime: 2 * 60 * 60 * 1000, // 2 hours
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      retry: 1
     }
   }
 })
+
+// Session-scoped persistence (do not persist auth tokens)
+persistQueryClient({
+  queryClient,
+  persister: createSyncStoragePersister({ storage: sessionStorage, throttleTime: 1000 }),
+  maxAge: 60 * 60 * 1000 // 1 hour
+})
+
+// Optional: Clear cache on logout or user change
+// auth.onLogout(() => { queryClient.clear(); sessionStorage.clear(); })
+```
+
+#### **1.2.1 IndexedDB Alternative for Large Datasets**
+```javascript
+// For applications with >5MB cache needs or offline requirements
+import localforage from 'localforage'
+import { experimental_createPersister } from '@tanstack/query-persist-client-experimental'
+
+// Configure localforage for financial data
+localforage.config({
+  name: 'AuraAssetManager',
+  storeName: 'queryCache',
+  version: 1.0,
+  description: 'TanStack Query cache for financial data'
+})
+
+// Use IndexedDB persister instead of sessionStorage
+const indexedDBPersister = experimental_createPersister({
+  storage: localforage,
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours for IndexedDB
+  buster: '', // Change to force cache invalidation
+})
+
+persistQueryClient({
+  queryClient,
+  persister: indexedDBPersister,
+  maxAge: 24 * 60 * 60 * 1000
+})
+
+// When to use each persister:
+// sessionStorage: < 5MB cache, session-only persistence, simple financial data
+// IndexedDB: > 5MB cache, cross-session persistence, complex datasets, offline support
+```
+
+#### **1.3 Prefetch on Login (Initial Hydration)**
+```javascript
+// After auth success, prefetch core datasets once
+await Promise.all([
+  queryClient.prefetchQuery({ queryKey: queryKeys.assets, queryFn: ({ signal }) => assetsService.getAssets({ signal }) }),
+  queryClient.prefetchQuery({ queryKey: queryKeys.transactions, queryFn: ({ signal }) => transactionsService.getTransactions({ signal }) }),
+  queryClient.prefetchQuery({ queryKey: queryKeys.insurance, queryFn: ({ signal }) => insuranceService.getInsurance({ signal }) }),
+  queryClient.prefetchQuery({ queryKey: queryKeys.annuities, queryFn: ({ signal }) => annuitiesService.getAnnuities({ signal }) }),
+  queryClient.prefetchQuery({ queryKey: queryKeys.dashboardSummary, queryFn: ({ signal }) => dashboardService.getSummary({ signal }) }),
+])
 ```
 
 #### **B. Page Migration Pattern**
@@ -164,16 +250,25 @@ useEffect(() => {
 }, [])
 
 // AFTER (TanStack Query pattern):
+// Note: avoid name collision with useQuery's `error` field by aliasing the debug logger
+import { error as logError, log } from '@/lib/debug'
+
 const { 
   data: assets = [], 
   isLoading: loading,
-  error,
+  error: queryError,
   refetch
 } = useQuery({
   queryKey: queryKeys.assets,
-  queryFn: assetsService.getAssets,
-  onError: (error) => {
-    error('Assets:fetch', 'Failed to fetch assets:', error)
+  enabled: !!session, // gate by auth session
+  queryFn: async ({ signal }) => {
+    log('Assets:query', 'Starting assets fetch via TanStack Query')
+    const result = await assetsService.getAssets({ signal }) // pass abort signal to axios
+    log('Assets:query', `Fetched ${result?.length || 0} assets successfully`)
+    return result
+  },
+  onError: (err) => {
+    logError('Assets:fetch', 'Failed to fetch assets:', err)
   }
 })
 ```
@@ -185,27 +280,128 @@ const handleCreateAsset = async (assetData) => {
   try {
     await assetsService.createAsset(assetData)
     fetchAssets() // Manual refetch
-  } catch (error) {
-    console.error('Error:', error)
+  } catch (err) {
+    console.error('Error:', err)
   }
 }
 
-// AFTER (useMutation with smart invalidation):
+// AFTER (useMutation with optimistic update + smart invalidation)
+import { error as logError, log } from '@/lib/debug'
+
 const createAssetMutation = useMutation({
-  mutationFn: assetsService.createAsset,
-  onSuccess: () => {
-    queryClient.invalidateQueries(queryKeys.assets)
-    queryClient.invalidateQueries(queryKeys.transactions) // Related data
-    queryClient.invalidateQueries(queryKeys.dashboardSummary)
-    log('Assets:create', 'Asset created successfully, cache invalidated')
+  mutationFn: (assetData) => assetsService.createAsset(assetData),
+  onMutate: async (newAsset) => {
+    // Cancel outgoing fetches for assets to avoid overwriting optimistic update
+    await queryClient.cancelQueries({ queryKey: queryKeys.assets })
+    // Snapshot previous
+    const previousAssets = queryClient.getQueryData(queryKeys.assets)
+    // Optimistically update
+    queryClient.setQueryData(queryKeys.assets, (old = []) => [newAsset, ...old])
+    return { previousAssets }
   },
-  onError: (error) => {
-    error('Assets:create', 'Failed to create asset:', error)
+  onError: (err, _vars, context) => {
+    // Rollback on error
+    if (context?.previousAssets) {
+      queryClient.setQueryData(queryKeys.assets, context.previousAssets)
+    }
+    logError('Assets:create', 'Failed to create asset:', err)
+  },
+  onSuccess: () => {
+    log('Assets:create', 'Asset created successfully, invalidating related caches')
+  },
+  onSettled: () => {
+    // Ensure fresh data across related sections
+    queryClient.invalidateQueries({ queryKey: queryKeys.assets })
+    queryClient.invalidateQueries({ queryKey: queryKeys.transactions })
+    queryClient.invalidateQueries({ queryKey: queryKeys.dashboardSummary })
   }
 })
 ```
 
 ---
+
+#### **D. Pagination and Filters (Transactions)**
+```javascript
+// Query keys encode parameters for correct caching
+export const queryKeys = {
+  transactions: (params) => ['transactions', params],
+  // ... others as above
+}
+
+// Standard pagination parameters for transactions
+interface TransactionParams {
+  page?: number          // Current page (1-based)
+  pageSize?: number      // Items per page (default: 20)
+  filters?: {            // Filter criteria
+    type?: string        // 'income' | 'expense' | 'transfer'
+    category?: string    // Transaction category
+    dateRange?: {        // Date range filter
+      start: string      // ISO date string
+      end: string        // ISO date string
+    }
+    amountRange?: {      // Amount filter
+      min: number
+      max: number
+    }
+    assetId?: string     // Filter by related asset
+  }
+  sort?: {               // Sorting options
+    field: string        // 'date' | 'amount' | 'category'
+    direction: 'asc' | 'desc'
+  }
+}
+
+// Paginated query with smooth transitions
+const { data, isLoading, isFetching } = useQuery({
+  queryKey: queryKeys.transactions({ page, pageSize, filters, sort }),
+  queryFn: ({ signal, queryKey }) => transactionsService.getTransactions({ ...queryKey[1], signal }),
+  keepPreviousData: true,
+  placeholderData: (prev) => prev, // keep previous while fetching next
+})
+```
+
+#### **E. Abort/Cancel In‑Flight Requests**
+```javascript
+// Option A (non-breaking): add optional axios config param to services
+// assetsService.getAssets(config) → forwards to axios
+// Existing call sites remain valid; queries can pass { signal }
+
+// Option B: add parallel methods that accept options
+// assetsService.getAssetsWithOptions({ signal })
+
+// In queryFn (preferred):
+queryFn: ({ signal }) => assetsService.getAssets({ signal })
+```
+
+#### **F. Service Layer Enhancement (Recommended Implementation)**
+```javascript
+// Update service methods to accept optional axios config
+// Example: frontend/src/services/assetsService.js
+
+const getAssets = async (config = {}) => {
+  try {
+    const response = await apiClient.get('/api/v1/assets', config)
+    return response.data
+  } catch (error) {
+    throw error
+  }
+}
+
+const createAsset = async (assetData, config = {}) => {
+  try {
+    const response = await apiClient.post('/api/v1/assets', assetData, config)
+    return response.data
+  } catch (error) {
+    throw error
+  }
+}
+
+// Pattern for all services:
+// - Add optional config parameter as last argument
+// - Default to empty object for backward compatibility
+// - Forward config directly to axios calls
+// - Enables abort signals: service.getAssets({ signal })
+```
 
 ## ⚠️ **Critical Dos and Don'ts**
 
@@ -214,6 +410,7 @@ const createAssetMutation = useMutation({
 1. **Preserve Existing Service Calls**
    - Keep all `assetsService.getAssets()` calls intact
    - Only change where they're called from (useQuery vs useEffect)
+   - Allow adding an optional axios config param (e.g., `{ signal }`) to service methods for request cancellation
 
 2. **Maintain Error Handling**
    - Keep existing try-catch patterns
@@ -291,11 +488,13 @@ const createAssetMutation = useMutation({
 ### **Debug Logging Pattern**
 ```javascript
 // Query Success Logging
-const { data, isLoading, error } = useQuery({
+import { error as logError, log } from '@/lib/debug'
+
+const { data, isLoading, error: queryError } = useQuery({
   queryKey: queryKeys.assets,
-  queryFn: async () => {
+  queryFn: async ({ signal }) => {
     log('Assets:query', 'Starting assets fetch via TanStack Query')
-    const result = await assetsService.getAssets()
+    const result = await assetsService.getAssets({ signal })
     log('Assets:query', `Fetched ${result?.length || 0} assets successfully`)
     return result
   },
@@ -306,8 +505,8 @@ const { data, isLoading, error } = useQuery({
       timestamp: new Date().toISOString()
     })
   },
-  onError: (error) => {
-    error('Assets:query', 'Assets query failed:', error)
+  onError: (err) => {
+    logError('Assets:query', 'Assets query failed:', err)
   }
 })
 
@@ -329,16 +528,12 @@ const createMutation = useMutation({
 
 ### **Cache Performance Monitoring**
 ```javascript
-// Add to useEffect in each migrated page
-useEffect(() => {
-  const cacheData = queryClient.getQueryCache().getAll()
-  log('Cache:status', 'Current cache state', {
-    totalQueries: cacheData.length,
-    assetsCached: !!queryClient.getQueryData(queryKeys.assets),
-    transactionsCached: !!queryClient.getQueryData(queryKeys.transactions),
-    cacheSize: JSON.stringify(cacheData).length
-  })
-}, [])
+// Prefer lightweight, dev-only checks
+if (process.env.NODE_ENV !== 'production') {
+  const assetsCached = !!queryClient.getQueryData(queryKeys.assets)
+  const transactionsCached = !!queryClient.getQueryData(queryKeys.transactions)
+  log('Cache:status', 'Cache snapshot', { assetsCached, transactionsCached })
+}
 ```
 
 ---
@@ -445,6 +640,14 @@ npm run dev
 - [ ] Cache data clears on session end
 - [ ] XSS prevention measures intact
 
+#### **Logout/Identity Switch Handling**
+- [ ] Clear React Query cache and storage on logout or user change
+  - e.g., `queryClient.clear(); sessionStorage.clear();`
+
+#### **Logout/Identity Switch Handling**
+- [ ] Clear React Query cache and storage on logout or user change
+  - e.g., `queryClient.clear(); sessionStorage.clear();`
+
 ### **Debug Information Verification**
 - [ ] Query success/failure logs appear in console
 - [ ] Cache invalidation events are logged
@@ -456,6 +659,46 @@ npm run dev
 - [ ] Git rollback commands restore functionality
 - [ ] Emergency rollback procedure documented and tested
 - [ ] Backup branch contains working pre-migration state
+
+---
+
+## 🎯 **Implementation Decision Matrix**
+
+### **Persister Selection Guide**
+```
+Dataset Size     | Duration       | Offline Support | Recommended Persister
+-----------------|----------------|-----------------|---------------------
+< 5MB            | Session only   | Not needed      | sessionStorage
+< 5MB            | Cross-session  | Not needed      | localStorage  
+> 5MB            | Session only   | Not needed      | sessionStorage
+> 5MB            | Cross-session  | Not needed      | IndexedDB
+Any size         | Any duration   | Required        | IndexedDB + localforage
+```
+
+### **Service Layer Update Priority**
+```
+Priority | Service            | Complexity | Impact
+---------|-------------------|------------|--------
+High     | assetsService     | Low        | Core functionality
+High     | transactionsService| Medium    | Pagination support
+Medium   | dashboardService  | Low        | Summary data
+Medium   | insuranceService  | Low        | Independent module
+Low      | annuityService    | Low        | Independent module
+Low      | userService       | Low        | Profile/settings
+```
+
+### **Migration Risk Assessment**
+```
+Page            | Risk Level | Complexity | Dependencies
+----------------|------------|------------|-------------
+Dashboard.jsx   | Low        | Medium     | All services
+Assets.jsx      | Medium     | High       | Transactions
+Transactions.jsx| High       | Very High  | Assets, pagination
+Insurance.jsx   | Low        | Low        | Independent
+Annuities.jsx   | Low        | Medium     | Independent
+UserSettings.jsx| Very Low   | Low        | Independent
+Profile.jsx     | Very Low   | Low        | Independent
+```
 
 ---
 
@@ -491,9 +734,14 @@ npm run dev
 
 ### **Post-Migration Optimization**
 - Monitor cache performance metrics
-- Tune stale time and cache time based on usage
+- Tune `staleTime` and `gcTime` based on usage
 - Implement advanced features (prefetching, background sync)
 - Consider server-side optimizations (ETags, compression)
+
+### **Server Support (Optional, Recommended)**
+- Add ETag/Last-Modified for conditional GETs
+- Ensure pagination and minimal field selection on list endpoints
+- Enable gzip/br compression for large JSON payloads
 
 ---
 
