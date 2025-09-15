@@ -58,7 +58,7 @@ npm install --save-dev @tanstack/react-query-devtools
 npm install @tanstack/query-persist-client-core @tanstack/query-sync-storage-persister
 
 # Optional: IndexedDB persister for large datasets (>5MB cache, offline support)
-npm install localforage @tanstack/query-persist-client-core @tanstack/query-persist-client-experimental
+npm install localforage @tanstack/query-async-storage-persister
 ```
 
 #### **1.2 App.jsx QueryClient Setup**
@@ -124,8 +124,8 @@ export const baseKeys = {
 
 #### **3.1.1 v5 Invalidation Signature**
 ```javascript
-// Use object form in v5
-queryClient.invalidateQueries({ queryKey: queryKeys.assets })
+// Use object form in v5 with baseKeys for consistency
+queryClient.invalidateQueries({ queryKey: baseKeys.assets })
 ```
 
 #### **3.2 Optimistic Updates**
@@ -139,6 +139,7 @@ queryClient.invalidateQueries({ queryKey: queryKeys.assets })
 - Storage event listeners for cache sync
 
 ```javascript
+// Mount once at app root, not per page to avoid multiple listeners
 // Simple cross-tab invalidation bus
 const bc = new BroadcastChannel('aura-cache')
 
@@ -229,7 +230,7 @@ function App() {
 ```javascript
 // For applications with >5MB cache needs or offline requirements
 import localforage from 'localforage'
-import { experimental_createPersister } from '@tanstack/query-persist-client-experimental'
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
 
 // Configure localforage for financial data
 localforage.config({
@@ -240,16 +241,16 @@ localforage.config({
 })
 
 // Use IndexedDB persister instead of sessionStorage
-const indexedDBPersister = experimental_createPersister({
+const indexedDBPersister = createAsyncStoragePersister({
   storage: localforage,
-  maxAge: 24 * 60 * 60 * 1000, // 24 hours for IndexedDB
-  buster: '', // Change to force cache invalidation
+  throttleTime: 1000
 })
 
 persistQueryClient({
   queryClient,
   persister: indexedDBPersister,
-  maxAge: 24 * 60 * 60 * 1000
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours for IndexedDB
+  buster: 'v1' // Change to force cache invalidation
 })
 
 // When to use each persister:
@@ -326,6 +327,8 @@ const {
     logError('Assets:fetch', 'Failed to fetch assets:', err)
   }
 })
+
+// ⚠️ NOTE: All queries should use enabled: !!session (or be called after login) to prevent pre-auth fetches
 ```
 
 #### **C. Mutation Pattern**
@@ -405,6 +408,7 @@ function normalizeParams(params) {
 }
 
 // Standard pagination parameters for transactions
+```typescript
 interface TransactionParams {
   page?: number          // Current page (1-based)
   pageSize?: number      // Items per page (default: 20)
@@ -426,6 +430,7 @@ interface TransactionParams {
     direction: 'asc' | 'desc'
   }
 }
+```
 
 // Paginated query with smooth transitions
 const { data, isLoading, isFetching } = useQuery({
@@ -460,7 +465,7 @@ The code examples assume services accept optional config parameters, but current
 
 const getAssets = async (config = {}) => {
   try {
-    const response = await apiClient.get('/api/v1/assets', config)
+    const response = await apiClient.get('/assets', config)
     return response.data
   } catch (error) {
     throw error
@@ -469,7 +474,7 @@ const getAssets = async (config = {}) => {
 
 const createAsset = async (assetData, config = {}) => {
   try {
-    const response = await apiClient.post('/api/v1/assets', assetData, config)
+    const response = await apiClient.post('/assets', assetData, config)
     return response.data
   } catch (error) {
     throw error
@@ -488,6 +493,53 @@ const createAsset = async (assetData, config = {}) => {
 // - frontend/src/services/insuranceService.js
 // - frontend/src/services/annuitiesService.js
 // - frontend/src/services/dashboardService.js
+```
+
+---
+
+## 🔧 **Optional Enhancements (Nice ROI)**
+
+### **Select Queries for Data Transformation**
+```javascript
+// Use select to derive view data and prevent extra fetches
+const { data: assetSummary } = useQuery({
+  queryKey: queryKeys.assets,
+  queryFn: ({ signal }) => assetsService.getAssets({ signal }),
+  select: (assets) => ({
+    totalValue: assets.reduce((sum, asset) => sum + asset.value, 0),
+    count: assets.length,
+    categories: [...new Set(assets.map(a => a.category))]
+  })
+})
+```
+
+### **Auth-Aware Cache Management**
+```javascript
+// Clear and repopulate cache on account switch (multi-tenant support)
+const handleAccountSwitch = async (newUserId) => {
+  queryClient.clear() // Clear all cache
+  sessionStorage.clear() // Clear persistence
+  
+  // Prefetch new user's data
+  await queryClient.prefetchQuery({
+    queryKey: queryKeys.assets,
+    queryFn: ({ signal }) => assetsService.getAssets({ signal })
+  })
+}
+```
+
+### **Axios Abort Example Per Service**
+```javascript
+// Example for assetsService with abort support
+const getAssets = async (config = {}) => {
+  const response = await apiClient.get('/assets', {
+    timeout: 10000,
+    ...config // includes { signal } from TanStack Query
+  })
+  return response.data
+}
+
+// Apply same pattern to transactionsService, insuranceService, etc.
 ```
 
 ## ⚠️ **Critical Dos and Don'ts**
@@ -620,13 +672,14 @@ if (import.meta.env.DEV) {
   const assetsCached = !!queryClient.getQueryData(baseKeys.assets)
   const transactionsCached = !!queryClient.getQueryData(baseKeys.transactions)
   
-  // Better cache state indicators
+  // Better cache state indicators with fetchStatus for clarity
   const assetsQuery = queryClient.getQueryState(queryKeys.assets)
   const cacheInfo = {
     assetsCached,
     transactionsCached,
     assetsStale: assetsQuery?.isStale,
     assetsFetching: assetsQuery?.isFetching,
+    fetchStatus: assetsQuery?.fetchStatus, // idle/paused/fetching for clarity
     lastUpdated: assetsQuery?.dataUpdatedAt
   }
   
@@ -737,10 +790,6 @@ npm run dev
 - [ ] No authentication tokens in client-side storage
 - [ ] Cache data clears on session end
 - [ ] XSS prevention measures intact
-
-#### **Logout/Identity Switch Handling**
-- [ ] Clear React Query cache and storage on logout or user change
-  - e.g., `queryClient.clear(); sessionStorage.clear();`
 
 #### **Logout/Identity Switch Handling**
 - [ ] Clear React Query cache and storage on logout or user change
