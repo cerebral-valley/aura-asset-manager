@@ -157,7 +157,7 @@ bc.onmessage = (e) => {
   }
 }
 
-// ⚠️ IMPORTANT: Clean up on unmount
+// ⚠️ IMPORTANT: Clean up on unmount and initialize once at app root
 // useEffect(() => {
 //   return () => {
 //     bc.close()
@@ -283,6 +283,8 @@ await Promise.all([
     queryFn: ({ signal }) => dashboardService.getSummary({ signal }) 
   }),
 ])
+
+// ⚠️ NOTE: Ensure all prefetched queries are gated by auth (enabled: !!session) or called only after login
 ```
 
 #### **B. Page Migration Pattern**
@@ -465,7 +467,7 @@ The code examples assume services accept optional config parameters, but current
 
 const getAssets = async (config = {}) => {
   try {
-    const response = await apiClient.get('/assets', config)
+    const response = await apiClient.get('/assets/', config)
     return response.data
   } catch (error) {
     throw error
@@ -474,7 +476,7 @@ const getAssets = async (config = {}) => {
 
 const createAsset = async (assetData, config = {}) => {
   try {
-    const response = await apiClient.post('/assets', assetData, config)
+    const response = await apiClient.post('/assets/', assetData, config)
     return response.data
   } catch (error) {
     throw error
@@ -532,7 +534,7 @@ const handleAccountSwitch = async (newUserId) => {
 ```javascript
 // Example for assetsService with abort support
 const getAssets = async (config = {}) => {
-  const response = await apiClient.get('/assets', {
+  const response = await apiClient.get('/assets/', {
     timeout: 10000,
     ...config // includes { signal } from TanStack Query
   })
