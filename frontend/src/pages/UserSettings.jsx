@@ -13,8 +13,18 @@ import { useTheme } from '../contexts/ThemeContext.jsx'
 import { userSettingsService } from '../services/user-settings.js'
 import { feedbackService } from '../services/feedback.js'
 import apiClient from '../lib/api.js'
+import Loading from '../components/ui/Loading'
+import SafeSection from '@/components/util/SafeSection'
+import { log, warn, error } from '@/lib/debug'
 
 const UserSettings = () => {
+  log('UserSettings:init', 'Component initializing');
+  
+  // Import verification
+  if (!userSettingsService) warn('UserSettings:import', 'userSettingsService not available');
+  if (!feedbackService) warn('UserSettings:import', 'feedbackService not available');
+  if (!apiClient) warn('UserSettings:import', 'apiClient not available');
+  
   const { user } = useAuth()
   const { darkMode, setDarkMode } = useTheme()
   const [loading, setLoading] = useState(true)
@@ -244,6 +254,7 @@ const UserSettings = () => {
   ]
 
   useEffect(() => {
+    log('UserSettings:useEffect:init', 'Component mounted, fetching settings');
     fetchSettings()
   }, [])
 
@@ -251,14 +262,20 @@ const UserSettings = () => {
     try {
       setLoading(true)
       setError('')
+      log('UserSettings:fetchSettings', 'Starting to fetch user settings...');
       const data = await userSettingsService.getSettings()
+      log('UserSettings:fetchSettings:success', 'Successfully fetched settings', { hasData: !!data });
       setSettings(data)
       // Sync dark mode with theme context
       if (data && typeof data.dark_mode === 'boolean') {
         setDarkMode(data.dark_mode)
       }
     } catch (err) {
-      console.error('Error fetching settings:', err)
+      error('UserSettings:fetchSettings:error', 'Error fetching settings', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      });
       if (err.message.includes('authentication') || err.message.includes('Invalid')) {
         setError('Please log in to access your settings')
       } else if (err.message.includes('Please log in')) {
@@ -325,15 +342,19 @@ const UserSettings = () => {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading settings...</p>
-        </div>
-      </div>
-    )
+    log('UserSettings:loading', 'Still loading user settings...');
+    return <Loading pageName="UserSettings" />;
   }
+
+  log('UserSettings:render', { 
+    loading,
+    saving,
+    feedbackSubmitting,
+    error: error || null,
+    success: success || null,
+    userCodeVisible,
+    showResetModal
+  });
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -362,13 +383,14 @@ const UserSettings = () => {
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Personal Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Personal Information
-            </CardTitle>
-          </CardHeader>
+        <SafeSection debugId="UserSettings:PersonalInformation">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Personal Information
+              </CardTitle>
+            </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -477,15 +499,17 @@ const UserSettings = () => {
             </div>
           </CardContent>
         </Card>
+        </SafeSection>
 
         {/* Preferences */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe className="h-5 w-5" />
-              Preferences
-            </CardTitle>
-          </CardHeader>
+        <SafeSection debugId="UserSettings:Preferences">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                Preferences
+              </CardTitle>
+            </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="currency">Currency</Label>
@@ -537,6 +561,7 @@ const UserSettings = () => {
             </div>
           </CardContent>
         </Card>
+        </SafeSection>
       </div>
 
       {/* Save Button */}
@@ -555,10 +580,11 @@ const UserSettings = () => {
 
     {/* Feedback Section */}
     <div className="mt-10">
-      <Card>
-        <CardHeader>
-          <CardTitle>Send Feedback</CardTitle>
-        </CardHeader>
+      <SafeSection debugId="UserSettings:FeedbackSection">
+        <Card>
+          <CardHeader>
+            <CardTitle>Send Feedback</CardTitle>
+          </CardHeader>
         <CardContent>
           <Label htmlFor="feedback">Your feedback (max 500 words)</Label>
           <textarea
@@ -589,6 +615,7 @@ const UserSettings = () => {
           )}
         </CardContent>
       </Card>
+      </SafeSection>
     </div>
 
     {/* Data Management Section */}

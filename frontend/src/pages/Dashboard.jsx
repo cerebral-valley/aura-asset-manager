@@ -7,7 +7,7 @@ import { Wallet, Shield, TrendingUp } from 'lucide-react'
 import { Alert, AlertDescription } from '../components/ui/alert.jsx'
 import Loading from '../components/ui/Loading'
 import SafeSection from '../components/util/SafeSection'
-import { log, warn, error } from '../lib/debug'
+import { log, warn, error } from '@/lib/debug'
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null)

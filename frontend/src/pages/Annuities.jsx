@@ -16,8 +16,18 @@ import {
   getAnnuityTypeInfo,
   calculateAnnualizedReturn
 } from '../constants/annuityTypes';
+import Loading from '../components/ui/Loading';
+import SafeSection from '@/components/util/SafeSection'
+import { log, warn, error } from '@/lib/debug';
 
 const AnnuitiesPage = () => {
+  log('Annuities:init', 'Component initializing');
+  
+  // Import verification
+  if (!annuityService) warn('Annuities:import', 'annuityService not available');
+  if (!AnnuityForm) warn('Annuities:import', 'AnnuityForm not available');
+  if (!AnnuityDetails) warn('Annuities:import', 'AnnuityDetails not available');
+  
   const { theme } = useTheme();
   const [annuities, setAnnuities] = useState([]);
   const [portfolioSummary, setPortfolioSummary] = useState(null);
@@ -29,12 +39,14 @@ const AnnuitiesPage = () => {
   const [typeFilter, setTypeFilter] = useState('');
 
   useEffect(() => {
+    log('Annuities:useEffect:init', 'Component mounted, fetching annuities data');
     fetchData();
   }, [statusFilter, typeFilter]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
+      log('Annuities:fetchData', 'Starting to fetch annuities data...', { statusFilter, typeFilter });
       const filters = {};
       if (statusFilter) filters.status = statusFilter;
       if (typeFilter) filters.annuity_type = typeFilter;
@@ -44,10 +56,19 @@ const AnnuitiesPage = () => {
         annuityService.getPortfolioSummary()
       ]);
       
+      log('Annuities:fetchData:success', 'Successfully fetched annuities data', { 
+        annuitiesCount: annuitiesData?.length || 0,
+        hasSummary: !!summaryData
+      });
+      
       setAnnuities(annuitiesData);
       setPortfolioSummary(summaryData);
-    } catch (error) {
-      console.error('Error fetching annuities data:', error);
+    } catch (err) {
+      error('Annuities:fetchData:error', 'Error fetching annuities data', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      });
     } finally {
       setLoading(false);
     }
@@ -108,12 +129,19 @@ const AnnuitiesPage = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading annuities...</div>
-      </div>
-    );
+    log('Annuities:loading', 'Still loading annuities data...');
+    return <Loading pageName="Annuities" />;
   }
+
+  // Add render state logging
+  log(`Annuities component rendering:`, {
+    totalAnnuities: annuities.length,
+    filteredCount: filteredAnnuities.length,
+    searchTerm,
+    showForm,
+    hasSelectedAnnuity: !!selectedAnnuity,
+    selectedAnnuityId: selectedAnnuity?.id
+  });
 
   return (
     <div className="space-y-6">
@@ -131,49 +159,51 @@ const AnnuitiesPage = () => {
 
       {/* Portfolio Summary Cards */}
       {portfolioSummary && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Annuities</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{portfolioSummary.total_annuities}</div>
-            </CardContent>
-          </Card>
+        <SafeSection debugId="Annuities:PortfolioSummaryCards">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Annuities</CardTitle>
+                <BarChart3 className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{portfolioSummary.total_annuities}</div>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Premiums Paid</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatAnnuityValue(portfolioSummary.total_premiums_paid)}</div>
-            </CardContent>
-          </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Premiums Paid</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatAnnuityValue(portfolioSummary.total_premiums_paid)}</div>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Current Value</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatAnnuityValue(portfolioSummary.total_current_value)}</div>
-            </CardContent>
-          </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Current Value</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatAnnuityValue(portfolioSummary.total_current_value)}</div>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Gain/Loss</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${portfolioSummary.total_gain_loss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {formatAnnuityValue(portfolioSummary.total_gain_loss)}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Gain/Loss</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className={`text-2xl font-bold ${portfolioSummary.total_gain_loss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {formatAnnuityValue(portfolioSummary.total_gain_loss)}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </SafeSection>
       )}
 
       {/* Filters and Search */}
@@ -307,19 +337,23 @@ const AnnuitiesPage = () => {
 
       {/* Modals */}
       {showForm && (
-        <AnnuityForm
-          onSubmit={handleCreateAnnuity}
-          onCancel={() => setShowForm(false)}
-        />
+        <SafeSection debugId="Annuities:AnnuityForm">
+          <AnnuityForm
+            onSubmit={handleCreateAnnuity}
+            onCancel={() => setShowForm(false)}
+          />
+        </SafeSection>
       )}
 
       {selectedAnnuity && (
-        <AnnuityDetails
-          annuity={selectedAnnuity}
-          onUpdate={handleUpdateAnnuity}
-          onDelete={handleDeleteAnnuity}
-          onClose={() => setSelectedAnnuity(null)}
-        />
+        <SafeSection debugId="Annuities:AnnuityDetails">
+          <AnnuityDetails
+            annuity={selectedAnnuity}
+            onUpdate={handleUpdateAnnuity}
+            onDelete={handleDeleteAnnuity}
+            onClose={() => setSelectedAnnuity(null)}
+          />
+        </SafeSection>
       )}
     </div>
   );

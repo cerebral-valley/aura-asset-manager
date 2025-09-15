@@ -1,34 +1,33 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import Loading from '@/components/ui/loading'
+import SafeSection from '@/components/util/SafeSection'
+import { log, warn, error } from '@/lib/debug'
 
 export default function TransactionsSimple() {
+  log('TransactionsSimple: Component initializing');
+  
   const [loading, setLoading] = useState(true)
 
-  console.log('TransactionsSimple: Component initializing')
-
   useEffect(() => {
-    console.log('TransactionsSimple: useEffect - simulating data load')
+    log('TransactionsSimple:useEffect', 'Simulating data load without API calls');
     // Simulate loading without API calls
     setTimeout(() => {
-      console.log('TransactionsSimple: Setting loading to false')
-      setLoading(false)
-    }, 1000)
-  }, [])
+      log('TransactionsSimple:useEffect', 'Simulated loading complete');
+      setLoading(false);
+    }, 1000);
+  }, []);
 
   if (loading) {
-    console.log('TransactionsSimple: Rendering loading state')
-    return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-muted rounded w-1/4 mb-4"></div>
-          <div className="h-64 bg-muted rounded"></div>
-        </div>
-      </div>
-    )
+    log('TransactionsSimple:loading', 'Still loading simulated data...');
+    return <Loading pageName="TransactionsSimple" />;
   }
 
-  console.log('TransactionsSimple: Rendering main component')
+  // Add render state logging
+  log('TransactionsSimple component rendering:', {
+    message: 'Simplified transactions page with no API dependencies'
+  });
 
   return (
     <div className="space-y-6">
@@ -46,17 +45,19 @@ export default function TransactionsSimple() {
       </div>
 
       {/* Test Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Test Card</CardTitle>
-          <CardDescription>
-            If you can see this, the basic UI components are working.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p>This is a test to isolate the rendering issue.</p>
-        </CardContent>
-      </Card>
+      <SafeSection debugId="TransactionsSimple:TestCard">
+        <Card>
+          <CardHeader>
+            <CardTitle>Test Card</CardTitle>
+            <CardDescription>
+              If you can see this, the basic UI components are working.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>This is a test to isolate the rendering issue.</p>
+          </CardContent>
+        </Card>
+      </SafeSection>
     </div>
   )
 }

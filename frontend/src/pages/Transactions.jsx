@@ -13,6 +13,9 @@ import { useAuth } from '@/hooks/useAuth'
 import { useCurrency } from '@/hooks/useCurrency'
 import { useToast } from '@/hooks/use-toast'
 import ConfirmationDialog from '@/components/ui/confirmation-dialog'
+import Loading from '@/components/ui/loading'
+import SafeSection from '@/components/util/SafeSection'
+import { log, warn, error } from '@/lib/debug'
 import {
   Table,
   TableBody,
@@ -51,7 +54,18 @@ const transactionTypes = [
 ]
 
 export default function Transactions() {
-  console.log('Transactions: Component initializing')
+  log('Transactions: Component initializing');
+  
+  // Verify critical service availability
+  if (!transactionsService) {
+    warn('Transactions: transactionsService not available, transaction operations may fail');
+  }
+  if (!assetsService) {
+    warn('Transactions: assetsService not available, asset operations may fail');
+  }
+  if (!assetTypes) {
+    warn('Transactions: assetTypes constants not available, asset type options may fail');
+  }
   
   const { formatCurrency } = useCurrency()
   const [transactions, setTransactions] = useState([])
@@ -114,13 +128,13 @@ export default function Transactions() {
   const { toast } = useToast()
   // Note: useAuth provides user info, but authentication is handled by apiClient
 
-  console.log('Transactions: About to set up useEffect')
+  log('Transactions:init', 'Component initialization complete, setting up data fetching');
 
   useEffect(() => {
-    console.log('Transactions: useEffect triggered, calling fetchTransactions and fetchAssets')
-    fetchTransactions()
-    fetchAssets()
-  }, [])
+    log('Transactions:useEffect', 'Initial data fetch triggered');
+    fetchTransactions();
+    fetchAssets();
+  }, []);
 
   // Listen for global preferences changes
   useEffect(() => {
@@ -136,32 +150,34 @@ export default function Transactions() {
   }, []);
 
   const fetchTransactions = async () => {
-    console.log('Transactions: fetchTransactions called')
+    log('Transactions:fetchTransactions', 'Starting transactions data fetch with filters:', filters);
     try {
-      console.log('Transactions: Calling transactionsService.getTransactions()')
-      const data = await transactionsService.getTransactions()
-      console.log('Transactions: Received data:', data)
-      setTransactions(data || [])
-      console.log('Transactions: Set transactions state')
+      log('Transactions:fetchTransactions', 'Calling transactionsService.getTransactions()');
+      const data = await transactionsService.getTransactions();
+      log('Transactions:fetchTransactions', `Received ${data?.length || 0} transactions`);
+      setTransactions(data || []);
+      log('Transactions:fetchTransactions', 'Successfully set transactions state');
     } catch (error) {
-      console.error('Transactions: Failed to fetch transactions:', error)
+      error('Transactions:fetchTransactions', 'Failed to fetch transactions:', error);
       toast({
         title: "Error",
         description: "Failed to fetch transactions",
         variant: "destructive"
-      })
+      });
     } finally {
-      console.log('Transactions: Setting loading to false')
-      setLoading(false)
+      log('Transactions:fetchTransactions', 'Fetch completed, disabling loading state');
+      setLoading(false);
     }
   }
 
   const fetchAssets = async () => {
+    log('Transactions:fetchAssets', 'Starting assets data fetch');
     try {
-      const data = await assetsService.getAssets()
-      setAssets(data || [])
+      const data = await assetsService.getAssets();
+      log('Transactions:fetchAssets', `Received ${data?.length || 0} assets`);
+      setAssets(data || []);
     } catch (error) {
-      console.error('Failed to fetch assets:', error)
+      error('Transactions:fetchAssets', 'Failed to fetch assets:', error);
     }
   }
 
@@ -693,18 +709,20 @@ export default function Transactions() {
   const uniqueAssetTypes = [...new Set(transactions.map(t => t.asset_type).filter(Boolean))]
 
   if (loading) {
-    console.log('Transactions: Rendering loading state')
-    return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-muted rounded w-1/4 mb-4"></div>
-          <div className="h-64 bg-muted rounded"></div>
-        </div>
-      </div>
-    )
+    log('Transactions:loading', 'Still loading transactions data...');
+    return <Loading pageName="Transactions" />;
   }
 
-  console.log('Transactions: Rendering main component')
+  // Add render state logging
+  log('Transactions component rendering:', {
+    totalTransactions: transactions.length,
+    filteredCount: filteredTransactions.length,
+    searchTerm,
+    selectedType,
+    showTransactionDialog,
+    hasEditingTransaction: !!editingTransaction,
+    filtersActive: Object.values(filters).some(value => value && value !== 'all')
+  });
   
   return (
     <div className="space-y-6">
@@ -723,7 +741,8 @@ export default function Transactions() {
       </div>
 
       {/* Transaction Dialog */}
-      <Dialog open={showTransactionDialog} onOpenChange={setShowTransactionDialog}>
+      <SafeSection debugId="Transactions:TransactionDialog">
+        <Dialog open={showTransactionDialog} onOpenChange={setShowTransactionDialog}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
@@ -1102,10 +1121,12 @@ export default function Transactions() {
           </form>
         </DialogContent>
       </Dialog>
+      </SafeSection>
 
       {/* Enhanced Filters */}
-      <Card>
-        <CardContent className="p-6">
+      <SafeSection debugId="Transactions:FiltersCard">
+        <Card>
+          <CardContent className="p-6">
           <div className="space-y-4">
             {/* First row - Search and Type */}
             <div className="flex flex-col sm:flex-row gap-4">
@@ -1303,9 +1324,11 @@ export default function Transactions() {
           </div>
         </CardContent>
       </Card>
+      </SafeSection>
 
       {/* Transactions Table */}
-      <Card>
+      <SafeSection debugId="Transactions:TransactionHistoryCard">
+        <Card>
         <CardHeader>
           <CardTitle>Transaction History ({filteredTransactions.length})</CardTitle>
           <CardDescription>
@@ -1450,6 +1473,7 @@ export default function Transactions() {
           </Table>
         </CardContent>
       </Card>
+      </SafeSection>
 
       {/* Enhanced Confirmation Dialog */}
       <ConfirmationDialog

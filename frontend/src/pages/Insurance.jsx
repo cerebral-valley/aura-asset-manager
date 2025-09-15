@@ -15,8 +15,8 @@ import {
   prepareInsuranceChartData
 } from '../utils/insuranceAggregation';
 import Loading from '../components/ui/Loading';
-import SafeSection from '../components/util/SafeSection';
-import { log, warn, error } from '../lib/debug';
+import SafeSection from '@/components/util/SafeSection'
+import { log, warn, error } from '@/lib/debug';
 
 const Insurance = () => {
   log('Insurance:init', 'Component initializing');

@@ -16,7 +16,7 @@ import { exportAssetsToPDF } from '../utils/pdfExportTerminal';
 import { exportToExcel } from '../utils/excelExport';
 import Loading from '../components/ui/Loading';
 import SafeSection from '../components/util/SafeSection';
-import { log, warn, error } from '../lib/debug';
+import { log, warn, error } from '@/lib/debug';
 
 const Assets = () => {
   const navigate = useNavigate();

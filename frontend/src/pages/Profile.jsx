@@ -12,8 +12,17 @@ import SensitiveInput from '../components/ui/SensitiveInput.jsx'
 import ProfileProgressIndicator from '../components/profile/ProfileProgressIndicator.jsx'
 import { formatPhoneNumber } from '../utils/profileUtils.js'
 import { profileService } from '../services/profile.js'
+import Loading from '../components/ui/Loading'
+import SafeSection from '@/components/util/SafeSection'
+import { log, warn, error } from '@/lib/debug'
 
 const Profile = () => {
+  log('Profile:init', 'Component initializing');
+  
+  // Import verification
+  if (!profileService) warn('Profile:import', 'profileService not available');
+  if (!useProfileValidation) warn('Profile:import', 'useProfileValidation not available');
+  
   const { user } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -61,6 +70,7 @@ const Profile = () => {
   } = useProfileValidation(profile)
 
   useEffect(() => {
+    log('Profile:useEffect:init', 'Component mounted, fetching profile data');
     fetchProfileData()
   }, [])
 
@@ -68,6 +78,7 @@ const Profile = () => {
     try {
       setLoading(true)
       setError('')
+      log('Profile:fetchProfileData', 'Starting to fetch profile data...');
 
       // Fetch profile data, options, and countries in parallel
       const [profileData, optionsData, countriesData] = await Promise.all([
@@ -75,6 +86,12 @@ const Profile = () => {
         profileService.getProfileOptions(),
         profileService.getCountries()
       ])
+
+      log('Profile:fetchProfileData:success', 'Successfully fetched profile data', { 
+        hasProfile: !!profileData,
+        optionsCount: Object.keys(optionsData || {}).length,
+        countriesCount: countriesData?.length || 0
+      });
 
       setProfile({
         first_name: profileData.first_name || '',
@@ -101,7 +118,11 @@ const Profile = () => {
       setOptions(optionsData)
       setCountries(countriesData)
     } catch (err) {
-      console.error('Error fetching profile data:', err)
+      error('Profile:fetchProfileData:error', 'Error fetching profile data', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      });
       setError(err.message || 'Failed to load profile data')
     } finally {
       setLoading(false)
@@ -164,15 +185,18 @@ const Profile = () => {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading profile...</p>
-        </div>
-      </div>
-    )
+    log('Profile:loading', 'Still loading profile data...');
+    return <Loading pageName="Profile" />;
   }
+
+  log('Profile:render', { 
+    loading,
+    saving,
+    error: error || null,
+    success: success || null,
+    isFormValid,
+    hasProfileData: !!profile.first_name
+  });
 
   return (
     <div className="p-6 max-w-6xl mx-auto pb-20 md:pb-6">
@@ -209,16 +233,17 @@ const Profile = () => {
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Personal Information */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Personal Information
-            </CardTitle>
-            <CardDescription>
-              Your basic personal details
-            </CardDescription>
-          </CardHeader>
+        <SafeSection debugId="Profile:PersonalInformation">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Personal Information
+              </CardTitle>
+              <CardDescription>
+                Your basic personal details
+              </CardDescription>
+            </CardHeader>
           <CardContent className="space-y-4 pt-0">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -339,18 +364,20 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
+        </SafeSection>
 
         {/* Family Information */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Family Information
-            </CardTitle>
-            <CardDescription>
-              Details about your family and dependents
-            </CardDescription>
-          </CardHeader>
+        <SafeSection debugId="Profile:FamilyInformation">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Family Information
+              </CardTitle>
+              <CardDescription>
+                Details about your family and dependents
+              </CardDescription>
+            </CardHeader>
           <CardContent className="space-y-4 pt-0">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -440,16 +467,18 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
+        </SafeSection>
 
         {/* Location Information */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="h-5 w-5" />
-              Location Information
-            </CardTitle>
-            <CardDescription>
-              Your residential and nationality details
+        <SafeSection debugId="Profile:LocationInformation">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                Location Information
+              </CardTitle>
+              <CardDescription>
+                Your residential and nationality details
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-0">
@@ -525,18 +554,20 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
+        </SafeSection>
 
         {/* Financial Information */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2">
-              <Briefcase className="h-5 w-5" />
-              Financial Information
-            </CardTitle>
-            <CardDescription>
-              Your professional and financial details
-            </CardDescription>
-          </CardHeader>
+        <SafeSection debugId="Profile:FinancialInformation">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2">
+                <Briefcase className="h-5 w-5" />
+                Financial Information
+              </CardTitle>
+              <CardDescription>
+                Your professional and financial details
+              </CardDescription>
+            </CardHeader>
           <CardContent className="space-y-4 pt-0">
             <div className="space-y-2">
               <Label htmlFor="occupation">
@@ -577,15 +608,17 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
+        </SafeSection>
 
         {/* Risk Appetite */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5" />
-              Investment Risk Appetite
-            </CardTitle>
-            <CardDescription>
+        <SafeSection debugId="Profile:RiskAppetite">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Investment Risk Appetite
+              </CardTitle>
+              <CardDescription>
               Help us understand your investment preferences
             </CardDescription>
           </CardHeader>
@@ -623,6 +656,7 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
+        </SafeSection>
       </div>
 
       {/* Save Button */}

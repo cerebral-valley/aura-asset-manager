@@ -13,8 +13,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Calculator, TrendingUp, Info } from 'lucide-react';
 import { Tooltip as InfoTooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import Loading from '../components/ui/Loading';
-import SafeSection from '../components/util/SafeSection';
-import { log, warn, error } from '../lib/debug';
+import SafeSection from '@/components/util/SafeSection'
+import { log, warn, error } from '@/lib/debug';
 
 const Analytics = () => {
   log('Analytics:init', 'Component initializing');
