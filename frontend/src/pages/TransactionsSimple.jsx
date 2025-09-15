@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import Loading from '@/components/ui/loading'
+import Loading from '@/components/ui/Loading'
 import SafeSection from '@/components/util/SafeSection'
 import { log, warn, error } from '@/lib/debug'
 

@@ -13,7 +13,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useCurrency } from '@/hooks/useCurrency'
 import { useToast } from '@/hooks/use-toast'
 import ConfirmationDialog from '@/components/ui/confirmation-dialog'
-import Loading from '@/components/ui/loading'
+import Loading from '@/components/ui/Loading'
 import SafeSection from '@/components/util/SafeSection'
 import { log, warn, error } from '@/lib/debug'
 import {
