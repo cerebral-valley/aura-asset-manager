@@ -5,41 +5,38 @@ import InsurancePolicyBreakdown from '../components/dashboard/InsurancePolicyBre
 import { dashboardService } from '../services/dashboard.js'
 import { Wallet, Shield, TrendingUp } from 'lucide-react'
 import { Alert, AlertDescription } from '../components/ui/alert.jsx'
+import Loading from '../components/ui/Loading'
+import SafeSection from '../components/util/SafeSection'
+import { log, warn, error } from '../lib/debug'
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  console.log('Dashboard: Component rendering, loading:', loading, 'error:', error)
+  // Import verification
+  if (!dashboardService?.getSummary) warn('Dashboard', 'service missing: getSummary')
+
+  log('Dashboard', 'init', { loading, error })
 
   useEffect(() => {
-    console.log('Dashboard: useEffect triggered - fetching data')
+    log('Dashboard', 'fetch:start')
     const fetchDashboardData = async () => {
       try {
-        console.log('Dashboard: Calling dashboardService.getSummary()')
         const data = await dashboardService.getSummary()
-        console.log('Dashboard: Data received:', data)
+        log('Dashboard', 'fetch:success', { dataKeys: Object.keys(data || {}) })
         setDashboardData(data)
       } catch (err) {
-        console.error('Dashboard: Error occurred:', err)
+        error('Dashboard', 'fetch:error', err)
         if (err.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          console.error('Dashboard: Response error - status:', err.response.status, 'data:', err.response.data)
           setError(`Failed to load dashboard data: ${err.response.status} - ${err.response.data?.detail || err.message}`)
-          console.error('Response data:', err.response.data)
         } else if (err.request) {
-          // The request was made but no response was received
-          console.error('Dashboard: Network error - no response received:', err.request)
           setError(`No response from API server. The backend may not be running or accessible.`)
         } else {
-          // Something happened in setting up the request that triggered an Error
-          console.error('Dashboard: Request setup error:', err.message)
           setError(`Error preparing request: ${err.message}`)
         }
       } finally {
-        console.log('Dashboard: Finished loading, setting loading to false')
+        log('Dashboard', 'fetch:done')
         setLoading(false)
       }
     }
@@ -71,19 +68,12 @@ const Dashboard = () => {
   }
 
   if (loading) {
-    console.log('Dashboard: Rendering loading state')
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading your sanctuary...</p>
-        </div>
-      </div>
-    )
+    log('Dashboard', 'render:loading')
+    return <Loading pageName="Dashboard" />
   }
 
   if (error) {
-    console.log('Dashboard: Rendering error state:', error)
+    log('Dashboard', 'render:error', error)
     return (
       <Alert variant="destructive">
         <AlertDescription>{error}</AlertDescription>
@@ -92,7 +82,9 @@ const Dashboard = () => {
   }
 
   console.log('Dashboard: Rendering main dashboard with data:', !!dashboardData)
-  const themeLabels = getThemeLabels(dashboardData?.user_theme)
+  log('Dashboard', 'render:ready', { hasData: !!dashboardData })
+
+  const themeLabels = getThemeLabels(dashboardData?.user_theme || 'sanctuary_builder')
 
   return (
     <div className="space-y-6">
@@ -136,13 +128,17 @@ const Dashboard = () => {
 
       {/* Charts and Analytics */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <AssetAllocationChart 
-          data={dashboardData?.asset_allocation || []}
-          title="Your Portfolio Composition"
-        />
-        <InsurancePolicyBreakdown 
-          title="Insurance Policy Breakdown"
-        />
+        <SafeSection debugId="Dashboard:AssetAllocationChart">
+          <AssetAllocationChart 
+            data={dashboardData?.asset_allocation || []}
+            title="Your Portfolio Composition"
+          />
+        </SafeSection>
+        <SafeSection debugId="Dashboard:InsurancePolicyBreakdown">
+          <InsurancePolicyBreakdown 
+            title="Insurance Policy Breakdown"
+          />
+        </SafeSection>
       </div>
     </div>
   )

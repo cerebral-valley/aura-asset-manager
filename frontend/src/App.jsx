@@ -13,6 +13,8 @@ import UserGuide from './pages/UserGuide'
 import Profile from './pages/Profile'
 import AppLayout from './components/layout/AppLayout'
 import { Toaster } from './components/ui/toaster'
+import Loading from './components/ui/Loading'
+import { log, warn } from './lib/debug'
 import './App.css'
 
 // Page Components
@@ -57,26 +59,19 @@ function DebugLocation() {
 function AppContent() {
   const { user, loading } = useAuth()
   
-  console.log('AppContent: Auth state - loading:', loading, 'user:', !!user)
+  log('App', 'AppContent render - loading:', loading, 'user:', !!user)
 
   if (loading) {
-    console.log('AppContent: Showing loading state')
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading Aura...</p>
-        </div>
-      </div>
-    )
+    log('App', 'render:loading')
+    return <Loading fullScreen messageOverride="Loading your financial sanctuary..." />
   }
 
   if (!user) {
-    console.log('AppContent: No user, showing login form')
+    log('App', 'render:unauthenticated')
     return <LoginForm />
   }
 
-  console.log('AppContent: User authenticated, rendering app with routing')
+  log('App', 'render:authenticated')
   return (
     <AppLayout>
       <DebugLocation />
@@ -98,7 +93,7 @@ function AppContent() {
 }
 
 function App() {
-  console.log('App: Component mounting/rendering')
+  log('App', 'init')
   return (
     <ThemeProvider>
       <AuthProvider>

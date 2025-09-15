@@ -12,8 +12,11 @@ import { toast } from 'sonner';
 import { assetTypes, getAggregationCategories, getAssetTypeLabel, getAllAssetTypes } from '../constants/assetTypes';
 import AnnuityManager from '../components/assets/AnnuityManager';
 import ConfirmationDialog from '../components/ui/confirmation-dialog';
-  import { exportAssetsToPDF } from '../utils/pdfExportTerminal';
-  import { exportToExcel } from '../utils/excelExport';
+import { exportAssetsToPDF } from '../utils/pdfExportTerminal';
+import { exportToExcel } from '../utils/excelExport';
+import Loading from '../components/ui/Loading';
+import SafeSection from '../components/util/SafeSection';
+import { log, warn, error } from '../lib/debug';
 
 const Assets = () => {
   const navigate = useNavigate();
@@ -60,6 +63,7 @@ const Assets = () => {
   const [excelExporting, setExcelExporting] = useState(false);
 
   const fetchAssets = () => {
+    log('Assets', 'fetch:start');
     setLoading(true);
     
     // Fetch assets, transactions, and user settings
@@ -67,25 +71,33 @@ const Assets = () => {
       assetsService.getAssets(),
       transactionsService.getTransactions(),
       userSettingsService.getSettings().catch(err => {
-        console.warn('Could not fetch user settings:', err);
+        warn('Assets', 'Could not fetch user settings:', err);
         return null; // Return null if user settings fail, don't break the entire page
       })
     ])
       .then(([assetsData, transactionsData, settingsData]) => {
+        log('Assets', 'fetch:success', { 
+          assetsCount: assetsData?.length, 
+          transactionsCount: transactionsData?.length,
+          hasSettings: !!settingsData 
+        });
         setAssets(assetsData);
         setTransactions(transactionsData);
         setUserSettings(settingsData);
-        setLoading(false);
       })
       .catch(err => {
-        console.error('❌ Error fetching assets or transactions:', err);
+        error('Assets', 'fetch:error', err);
         setError('Failed to fetch data');
-        setLoading(false);
         toast.error('Failed to fetch data');
+      })
+      .finally(() => {
+        log('Assets', 'fetch:done');
+        setLoading(false);
       });
   };
 
   useEffect(() => {
+    log('Assets', 'init');
     fetchAssets();
   }, []);
 
@@ -740,7 +752,22 @@ const Assets = () => {
     }
   };
 
-  if (loading) return <div>Loading assets...</div>;
+  // Import verification
+  if (!assetsService?.getAssets) warn('Assets', 'service missing: getAssets');
+  if (typeof exportAssetsToPDF !== 'function') warn('Assets', 'util missing: exportAssetsToPDF');
+
+  log('Assets:render', { 
+    assetsCount: assets.length,
+    loading,
+    error: error?.message || null,
+    filters: { nameFilter, typeFilter, dateFromFilter, dateToFilter },
+    sorting: { sortField, sortDirection }
+  });
+
+  if (loading) {
+    log('Assets', 'render:loading');
+    return <Loading pageName="Assets" />;
+  }
 
   return (
     <div className={`p-6 min-h-screen ${isDark ? 'bg-black text-neutral-100' : 'bg-gray-50'}`}>
@@ -886,39 +913,42 @@ const Assets = () => {
           {/* Charts Grid */}
           <div className={`grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8`}>
             {/* Asset Value Over Time */}
-            <div className={`${isDark ? 'bg-neutral-900 text-neutral-100' : 'bg-white'} rounded shadow p-4`}>
-              <h2 className="font-semibold mb-2">Asset Value Over Time</h2>
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={getEnhancedChartData()}>
-                  <XAxis dataKey="year" />
-                  <YAxis tickFormatter={formatYAxisCurrency} />
-                  <Tooltip formatter={(value) => formatChartCurrency(value)} />
-                  <Legend />
-                  <Line type="monotone" dataKey="acquisitionValue" stroke={getColor(0)} name="Acquisition Value" />
-                  <Line type="monotone" dataKey="presentValue" stroke={getColor(1)} name="Present Value" />
-                  {showProjections && (
-                    <Line 
-                      type="monotone" 
-                      dataKey="projectedValue" 
-                      stroke={getColor(2)} 
-                      strokeDasharray="5 5"
-                      name="Projected Value" 
-                    />
-                  )}
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            <SafeSection debugId="Assets:ValueOverTimeChart">
+              <div className={`${isDark ? 'bg-neutral-900 text-neutral-100' : 'bg-white'} rounded shadow p-4`}>
+                <h2 className="font-semibold mb-2">Asset Value Over Time</h2>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={getEnhancedChartData()}>
+                    <XAxis dataKey="year" />
+                    <YAxis tickFormatter={formatYAxisCurrency} />
+                    <Tooltip formatter={(value) => formatChartCurrency(value)} />
+                    <Legend />
+                    <Line type="monotone" dataKey="acquisitionValue" stroke={getColor(0)} name="Acquisition Value" />
+                    <Line type="monotone" dataKey="presentValue" stroke={getColor(1)} name="Present Value" />
+                    {showProjections && (
+                      <Line 
+                        type="monotone" 
+                        dataKey="projectedValue" 
+                        stroke={getColor(2)} 
+                        strokeDasharray="5 5"
+                        name="Projected Value" 
+                      />
+                    )}
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </SafeSection>
 
             {/* Asset Distribution */}
-            <div className={`${isDark ? 'bg-neutral-900 text-neutral-100' : 'bg-white'} rounded shadow p-4`}>
-              <h2 className="font-semibold mb-2">Asset Distribution</h2>
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie 
-                    data={pieData} 
-                    dataKey="value" 
-                    nameKey="name" 
-                    cx="50%" 
+            <SafeSection debugId="Assets:DistributionChart">
+              <div className={`${isDark ? 'bg-neutral-900 text-neutral-100' : 'bg-white'} rounded shadow p-4`}>
+                <h2 className="font-semibold mb-2">Asset Distribution</h2>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie 
+                      data={pieData} 
+                      dataKey="value" 
+                      nameKey="name" 
+                      cx="50%" 
                     cy="50%" 
                     outerRadius={80} 
                     label={({ value, percent }) => `${formatChartCurrency(value)} (${(percent * 100).toFixed(1)}%)`}
@@ -934,12 +964,14 @@ const Assets = () => {
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
-            </div>
+              </div>
+            </SafeSection>
 
             {/* Asset Timeline */}
-            <div className={`${isDark ? 'bg-neutral-900 text-neutral-100' : 'bg-white'} rounded shadow p-4`}>
-              <h2 className="font-semibold mb-2">Asset Timeline</h2>
-              <div className="h-64 overflow-y-auto pr-2">
+            <SafeSection debugId="Assets:TimelineChart">
+              <div className={`${isDark ? 'bg-neutral-900 text-neutral-100' : 'bg-white'} rounded shadow p-4`}>
+                <h2 className="font-semibold mb-2">Asset Timeline</h2>
+                <div className="h-64 overflow-y-auto pr-2">
                 {activeAssets
                   .filter(asset => asset.purchase_date)
                   .sort((a, b) => new Date(b.purchase_date) - new Date(a.purchase_date))
@@ -976,6 +1008,7 @@ const Assets = () => {
                   ))}
               </div>
             </div>
+            </SafeSection>
           </div>
 
           {/* Asset Aggregates */}

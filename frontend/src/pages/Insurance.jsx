@@ -14,9 +14,17 @@ import {
   calculateProtectionMetrics,
   prepareInsuranceChartData
 } from '../utils/insuranceAggregation';
+import Loading from '../components/ui/Loading';
+import SafeSection from '../components/util/SafeSection';
+import { log, warn, error } from '../lib/debug';
 
 const Insurance = () => {
-  console.log('Insurance component: Starting to render...');
+  log('Insurance:init', 'Component initializing');
+  
+  // Import verification
+  if (!insuranceService) warn('Insurance:import', 'insuranceService not available');
+  if (!ResponsiveContainer) warn('Insurance:import', 'ResponsiveContainer not available');
+  if (!exportInsuranceToPDF) warn('Insurance:import', 'exportInsuranceToPDF not available');
   
   const { colors, getColor } = useChartColors();
   const [policies, setPolicies] = useState([]);
@@ -36,33 +44,36 @@ const Insurance = () => {
   const [globalPreferencesVersion, setGlobalPreferencesVersion] = useState(0);
 
   const fetchPolicies = () => {
-    console.log('Insurance: fetchPolicies called...');
+    log('Insurance:fetchPolicies', 'Starting to fetch policies...');
     setLoading(true);
     setError(null); // Clear any previous errors
     
     insuranceService.getPolicies()
       .then(data => {
-        console.log('Insurance: Successfully fetched policies:', data);
+        log('Insurance:fetchPolicies:success', 'Successfully fetched policies', { count: data?.length || 0 });
         setPolicies(data || []); // Ensure we have an array
-        setLoading(false);
       })
       .catch(err => {
-        console.error('❌ Error fetching policies:', err);
-        console.error('❌ Error details:', err.response?.data);
-        console.error('❌ Error message:', err.message);
-        console.error('❌ Full error object:', err);
+        error('Insurance:fetchPolicies:error', 'Error fetching policies', {
+          message: err.message,
+          response: err.response?.data,
+          status: err.response?.status
+        });
         
         // Set empty array and continue with the page load
         setPolicies([]);
         setError('Failed to fetch insurance policies');
-        setLoading(false);
         
         // Don't show toast for now during debugging
         // toast.error('Failed to fetch insurance policies');
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
   useEffect(() => {
+    log('Insurance:useEffect:init', 'Component mounted, fetching policies');
     fetchPolicies();
   }, []);
 
@@ -553,9 +564,17 @@ const Insurance = () => {
   };
 
   if (loading) {
-    console.log('Insurance: Still loading...');
-    return <div>Loading insurance policies...</div>;
+    log('Insurance:loading', 'Still loading policies...');
+    return <Loading pageName="Insurance" />;
   }
+
+  log('Insurance:render', { 
+    policiesCount: policies.length,
+    loading,
+    error: error?.message || null,
+    pdfExporting,
+    excelExporting
+  });
 
   console.log('Insurance: About to render main component...', {
     policies: policies?.length || 0,
@@ -648,48 +667,52 @@ const Insurance = () => {
         <>
           {/* KPIs & Charts */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-card text-card-foreground rounded shadow p-4">
-              <h2 className="font-semibold mb-2">Annual Premiums Overview</h2>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={newChartData}>
-                  <XAxis dataKey="name" stroke="currentColor" />
-                  <YAxis stroke="currentColor" />
-                  <Tooltip 
-                    formatter={(value) => formatCurrency(value)}
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
-                      border: '1px solid hsl(var(--border))',
-                      color: 'hsl(var(--card-foreground))'
-                    }} 
-                  />
-                  <Legend />
-                  <Bar dataKey="premium" fill={getColor(0)} name="Annual Premium" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="bg-card text-card-foreground rounded shadow p-4">
-              <h2 className="font-semibold mb-2">Policy Type Breakdown</h2>
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie data={newPieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                    {newPieData.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={getColor(index)} 
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
-                      border: '1px solid hsl(var(--border))',
-                      color: 'hsl(var(--card-foreground))'
-                    }} 
-                  />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+            <SafeSection debugId="Insurance:AnnualPremiumsChart">
+              <div className="bg-card text-card-foreground rounded shadow p-4">
+                <h2 className="font-semibold mb-2">Annual Premiums Overview</h2>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={newChartData}>
+                    <XAxis dataKey="name" stroke="currentColor" />
+                    <YAxis stroke="currentColor" />
+                    <Tooltip 
+                      formatter={(value) => formatCurrency(value)}
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        color: 'hsl(var(--card-foreground))'
+                      }} 
+                    />
+                    <Legend />
+                    <Bar dataKey="premium" fill={getColor(0)} name="Annual Premium" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </SafeSection>
+            <SafeSection debugId="Insurance:PolicyTypeBreakdownChart">
+              <div className="bg-card text-card-foreground rounded shadow p-4">
+                <h2 className="font-semibold mb-2">Policy Type Breakdown</h2>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie data={newPieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                      {newPieData.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={getColor(index)} 
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        color: 'hsl(var(--card-foreground))'
+                      }} 
+                    />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </SafeSection>
           </div>
 
           {/* --- Aggregate KPIs by policy type: moved up for visibility --- */}

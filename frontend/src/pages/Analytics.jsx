@@ -12,8 +12,17 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Calculator, TrendingUp, Info } from 'lucide-react';
 import { Tooltip as InfoTooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import Loading from '../components/ui/Loading';
+import SafeSection from '../components/util/SafeSection';
+import { log, warn, error } from '../lib/debug';
 
 const Analytics = () => {
+  log('Analytics:init', 'Component initializing');
+  
+  // Import verification
+  if (!assetsService) warn('Analytics:import', 'assetsService not available');
+  if (!ResponsiveContainer) warn('Analytics:import', 'ResponsiveContainer not available');
+  
   const { isDark } = useTheme();
   const { colors, getColor } = useChartColors();
   const { formatCurrency, getCurrencySymbol } = useCurrency();
@@ -28,9 +37,12 @@ const Analytics = () => {
 
   // Load assets
   useEffect(() => {
+    log('Analytics:useEffect:init', 'Component mounted, fetching assets');
+    
     const fetchAssets = async () => {
       try {
         setLoading(true);
+        log('Analytics:fetchAssets', 'Starting to fetch assets...');
         const assetsData = await assetsService.getAssets();
         
         // Filter active assets (exclude cash and bank, only assets with quantity > 0)
@@ -38,6 +50,11 @@ const Analytics = () => {
           asset.quantity > 0 && 
           !['cash', 'bank', 'cash_in_hand'].includes(asset.asset_type?.toLowerCase())
         );
+        
+        log('Analytics:fetchAssets:success', 'Successfully filtered active assets', { 
+          total: assetsData.length, 
+          active: activeAssets.length 
+        });
         
         setAssets(activeAssets);
         
@@ -48,8 +65,12 @@ const Analytics = () => {
         });
         setAssetGrowthRates(defaultRates);
         
-      } catch (error) {
-        console.error('Error fetching assets:', error);
+      } catch (err) {
+        error('Analytics:fetchAssets:error', 'Error fetching assets', {
+          message: err.message,
+          response: err.response?.data,
+          status: err.response?.status
+        });
       } finally {
         setLoading(false);
       }
@@ -127,15 +148,17 @@ const Analytics = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading analytics...</p>
-        </div>
-      </div>
-    );
+    log('Analytics:loading', 'Still loading assets...');
+    return <Loading pageName="Analytics" />;
   }
+
+  log('Analytics:render', { 
+    assetsCount: assets.length,
+    loading,
+    currentPortfolioValue,
+    endYear,
+    inflationRate
+  });
 
   return (
     <div className="space-y-6">
@@ -337,79 +360,81 @@ const Analytics = () => {
       </div>
 
       {/* Projection Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Portfolio Growth Projection
-          </CardTitle>
-          <CardDescription>
-            Portfolio value growth from {currentYear} to {endYear} showing nominal, real growth, and inflation-adjusted values
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-96">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={projectionData}>
-                <XAxis 
-                  dataKey="year" 
-                  tick={{ fontSize: 12 }}
-                  stroke={isDark ? '#64748b' : '#475569'}
-                />
-                <YAxis 
-                  tick={{ fontSize: 12 }}
-                  stroke={isDark ? '#64748b' : '#475569'}
-                  tickFormatter={(value) => `${getCurrencySymbol()}${(value / 1000000).toFixed(1)}M`}
-                />
-                <Tooltip 
-                  content={({ active, payload, label }) => {
-                    if (active && payload && payload.length) {
-                      return (
-                        <div className={`rounded-lg border p-3 shadow-lg ${
-                          isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-gray-200'
-                        }`}>
-                          <p className="font-medium mb-2">{label}</p>
-                          {payload.map((item, index) => (
-                            <p key={index} style={{ color: item.color }}>
-                              {item.name}: {formatCurrency(item.value)}
-                            </p>
-                          ))}
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="realGrowth"
-                  stroke={getColor(0)}
-                  strokeWidth={2}
-                  dot={{ fill: getColor(0), strokeWidth: 2, r: 4 }}
-                  name="Portfolio Value (NOT Adjusted for inflation)"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="real"
-                  stroke={getColor(1)}
-                  strokeWidth={2}
-                  dot={{ fill: getColor(1), strokeWidth: 2, r: 4 }}
-                  name="Portfolio Value (Adjusted for inflation)"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="inflationDepreciated"
-                  stroke={getColor(2)}
-                  strokeWidth={2}
-                  dot={{ fill: getColor(2), strokeWidth: 2, r: 4 }}
-                  name="Inflation Depreciated Value"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
+      <SafeSection debugId="Analytics:ProjectionChart">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Portfolio Growth Projection
+            </CardTitle>
+            <CardDescription>
+              Portfolio value growth from {currentYear} to {endYear} showing nominal, real growth, and inflation-adjusted values
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-96">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={projectionData}>
+                  <XAxis 
+                    dataKey="year" 
+                    tick={{ fontSize: 12 }}
+                    stroke={isDark ? '#64748b' : '#475569'}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12 }}
+                    stroke={isDark ? '#64748b' : '#475569'}
+                    tickFormatter={(value) => `${getCurrencySymbol()}${(value / 1000000).toFixed(1)}M`}
+                  />
+                  <Tooltip 
+                    content={({ active, payload, label }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className={`rounded-lg border p-3 shadow-lg ${
+                            isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-gray-200'
+                          }`}>
+                            <p className="font-medium mb-2">{label}</p>
+                            {payload.map((item, index) => (
+                              <p key={index} style={{ color: item.color }}>
+                                {item.name}: {formatCurrency(item.value)}
+                              </p>
+                            ))}
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="realGrowth"
+                    stroke={getColor(0)}
+                    strokeWidth={2}
+                    dot={{ fill: getColor(0), strokeWidth: 2, r: 4 }}
+                    name="Portfolio Value (NOT Adjusted for inflation)"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="real"
+                    stroke={getColor(1)}
+                    strokeWidth={2}
+                    dot={{ fill: getColor(1), strokeWidth: 2, r: 4 }}
+                    name="Portfolio Value (Adjusted for inflation)"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="inflationDepreciated"
+                    stroke={getColor(2)}
+                    strokeWidth={2}
+                    dot={{ fill: getColor(2), strokeWidth: 2, r: 4 }}
+                    name="Inflation Depreciated Value"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </SafeSection>
     </div>
   );
 };
