@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { persistQueryClient } from '@tanstack/react-query-persist-client'
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
+import { useQuerySync } from './lib/queryUtils'
 import LoginForm from './components/auth/LoginForm'
 import Dashboard from './pages/Dashboard'
 import Assets from './pages/Assets'
@@ -107,10 +108,9 @@ const createQueryClient = () => {
         gcTime: 10 * 60 * 1000,
         // Retry failed queries up to 3 times
         retry: 3,
-        // Refetch on window focus for important financial data
-        refetchOnWindowFocus: true,
-        // Refetch when connection is restored
-        refetchOnReconnect: true,
+        // Use explicit invalidation approach instead of automatic refetch
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
         // Enable request deduplication
         refetchOnMount: true,
       },
@@ -162,6 +162,10 @@ const queryClient = createQueryClient()
 
 function App() {
   log('App', 'init')
+  
+  // Enable cross-tab synchronization
+  useQuerySync(queryClient)
+  
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>

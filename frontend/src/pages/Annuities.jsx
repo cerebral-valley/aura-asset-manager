@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../hooks/useAuth';
 import { Plus, Filter, Search, TrendingUp, DollarSign, Calendar, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -31,6 +32,7 @@ const AnnuitiesPage = () => {
   if (!AnnuityForm) warn('Annuities:import', 'AnnuityForm not available');
   if (!AnnuityDetails) warn('Annuities:import', 'AnnuityDetails not available');
   
+  const { user } = useAuth();
   const { theme } = useTheme();
   const queryClient = useQueryClient();
   
@@ -53,7 +55,8 @@ const AnnuitiesPage = () => {
     error: annuitiesError
   } = useQuery({
     queryKey: queryKeys.annuities.list(filters),
-    queryFn: () => annuityService.getAnnuities(filters),
+    queryFn: ({ signal }) => annuityService.getAnnuities(filters, { signal }),
+    enabled: !!user,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   })
@@ -64,7 +67,8 @@ const AnnuitiesPage = () => {
     error: summaryError
   } = useQuery({
     queryKey: queryKeys.annuities.summary(),
-    queryFn: () => annuityService.getPortfolioSummary(),
+    queryFn: ({ signal }) => annuityService.getPortfolioSummary({ signal }),
+    enabled: !!user,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   })
@@ -95,6 +99,7 @@ const AnnuitiesPage = () => {
       setShowForm(false);
       queryClient.invalidateQueries({ queryKey: queryKeys.annuities.list() });
       queryClient.invalidateQueries({ queryKey: queryKeys.annuities.summary() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() });
     } catch (error) {
       console.error('Error creating annuity:', error);
     }
@@ -106,6 +111,7 @@ const AnnuitiesPage = () => {
       setSelectedAnnuity(null);
       queryClient.invalidateQueries({ queryKey: queryKeys.annuities.list() });
       queryClient.invalidateQueries({ queryKey: queryKeys.annuities.summary() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() });
     } catch (error) {
       console.error('Error updating annuity:', error);
     }
@@ -118,6 +124,7 @@ const AnnuitiesPage = () => {
         setSelectedAnnuity(null);
         queryClient.invalidateQueries({ queryKey: queryKeys.annuities.list() });
         queryClient.invalidateQueries({ queryKey: queryKeys.annuities.summary() });
+        queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() });
       } catch (error) {
         console.error('Error deleting annuity:', error);
       }

@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.103',
+  version: 'v0.104',
   buildDate: '2025-09-16',
-  deploymentId: 'fix-infinite-loop-version-tracking',
-  description: 'Remove commit hash from version tracking to prevent infinite loop'
+  deploymentId: 'complete-tanstack-query-migration',
+  description: 'Complete TanStack Query migration with all missing features: abort signals, cross-tab sync, dashboard invalidation, cache strategy, prefetch, session gating, reduced logging'
 }
 
 export const getVersionDisplay = () => {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useAuth } from '../hooks/useAuth'
 import ValueDisplayCard from '../components/dashboard/ValueDisplayCard.jsx'
 import AssetAllocationChart from '../components/dashboard/AssetAllocationChart.jsx'
 import InsurancePolicyBreakdown from '../components/dashboard/InsurancePolicyBreakdown.jsx'
@@ -13,6 +14,7 @@ import SafeSection from '../components/util/SafeSection'
 import { log, warn, error } from '@/lib/debug'
 
 const Dashboard = () => {
+  const { user } = useAuth()
   // Import verification
   if (!dashboardService?.getSummary) warn('Dashboard', 'service missing: getSummary')
 
@@ -27,6 +29,7 @@ const Dashboard = () => {
   } = useQuery({
     queryKey: queryKeys.dashboard.summary(),
     queryFn: ({ signal }) => dashboardService.getSummary({ signal }),
+    enabled: !!user,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 3,
     onSuccess: (data) => {

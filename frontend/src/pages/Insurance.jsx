@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../hooks/useAuth';
 import { useForm } from 'react-hook-form';
 import { useChartColors } from '../hooks/useChartColors';
 import { insuranceService } from '../services/insurance';
@@ -29,6 +30,7 @@ const Insurance = () => {
   if (!ResponsiveContainer) warn('Insurance:import', 'ResponsiveContainer not available');
   if (!exportInsuranceToPDF) warn('Insurance:import', 'exportInsuranceToPDF not available');
   
+  const { user } = useAuth();
   const { colors, getColor } = useChartColors();
   const queryClient = useQueryClient();
   
@@ -39,7 +41,8 @@ const Insurance = () => {
     error: queryError
   } = useQuery({
     queryKey: queryKeys.insurance.list(),
-    queryFn: () => insuranceService.getPolicies(),
+    queryFn: ({ signal }) => insuranceService.getPolicies({ signal }),
+    enabled: !!user,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   })
@@ -353,6 +356,7 @@ const Insurance = () => {
       
       closeModal();
       queryClient.invalidateQueries({ queryKey: queryKeys.insurance.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() });
       
     } catch (err) {
       console.error('❌ Form submission error:', err);
@@ -373,6 +377,7 @@ const Insurance = () => {
     try {
       await insuranceService.deletePolicy(id);
       queryClient.invalidateQueries({ queryKey: queryKeys.insurance.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() });
       toast.success('Policy deleted successfully');
     } catch (err) {
       setActionError('Failed to delete policy');

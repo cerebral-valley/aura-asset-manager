@@ -70,6 +70,7 @@ export default function Transactions() {
     warn('Transactions: assetTypes constants not available, asset type options may fail');
   }
   
+  const { user } = useAuth()
   const { formatCurrency } = useCurrency()
   const queryClient = useQueryClient()
   
@@ -80,7 +81,8 @@ export default function Transactions() {
     error: transactionsError
   } = useQuery({
     queryKey: queryKeys.transactions.list(),
-    queryFn: () => transactionsService.getTransactions(),
+    queryFn: ({ signal }) => transactionsService.getTransactions({ signal }),
+    enabled: !!user,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   })
@@ -91,7 +93,8 @@ export default function Transactions() {
     error: assetsError
   } = useQuery({
     queryKey: queryKeys.assets.list(),
-    queryFn: () => assetsService.getAssets(),
+    queryFn: ({ signal }) => assetsService.getAssets({ signal }),
+    enabled: !!user,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   })
@@ -445,6 +448,7 @@ export default function Transactions() {
       // Invalidate and refetch data
       await queryClient.invalidateQueries({ queryKey: queryKeys.transactions.list() })
       await queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() })
+      await queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
       
       console.log('✅ REFRESH_SUCCESS: Data refreshed successfully', {
         code: 'REFRESH_002'
@@ -546,6 +550,7 @@ export default function Transactions() {
       // Refresh data
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions.list() })
       queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() }) // Also refresh assets if an asset was deleted
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
     } catch (error) {
       console.error('Failed to delete transaction:', error)
       

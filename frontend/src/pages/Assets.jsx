@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../hooks/useAuth';
 import { useChartColors } from '../hooks/useChartColors';
 import { useCurrency } from '../hooks/useCurrency';
 import { useForm } from 'react-hook-form';
@@ -24,6 +25,7 @@ import { log, warn, error } from '@/lib/debug';
 const Assets = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const { formatCurrency, getCurrencySymbol } = useCurrency();
 
   // TanStack Query for assets data
@@ -34,6 +36,7 @@ const Assets = () => {
   } = useQuery({
     queryKey: queryKeys.assets.list(),
     queryFn: ({ signal }) => assetsService.getAssets({ signal }),
+    enabled: !!user,
     staleTime: 2 * 60 * 1000, // 2 minutes
     onError: (err) => {
       error('Assets', 'assets:fetch:error', err);
@@ -49,6 +52,7 @@ const Assets = () => {
   } = useQuery({
     queryKey: queryKeys.transactions.list(),
     queryFn: ({ signal }) => transactionsService.getTransactions({ signal }),
+    enabled: !!user,
     staleTime: 2 * 60 * 1000, // 2 minutes
     onError: (err) => {
       error('Assets', 'transactions:fetch:error', err);
@@ -63,6 +67,7 @@ const Assets = () => {
   } = useQuery({
     queryKey: queryKeys.user.settings(),
     queryFn: ({ signal }) => userSettingsService.getSettings({ signal }),
+    enabled: !!user,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1, // Only retry once for settings
     onError: (err) => {
@@ -640,6 +645,7 @@ const Assets = () => {
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() });
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() });
       
     } catch (err) {
       console.error('❌ Form submission error:', err);
@@ -668,6 +674,7 @@ const Assets = () => {
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() });
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() });
       
       // Show detailed success message
       const message = response.transactions_deleted > 0 
@@ -1234,6 +1241,7 @@ const Assets = () => {
                               onUpdate={() => {
                                 queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() });
                                 queryClient.invalidateQueries({ queryKey: queryKeys.transactions.list() });
+                                queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() });
                               }}
                             />
                           </td>
