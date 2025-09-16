@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.104',
+  version: 'v0.105',
   buildDate: '2025-09-16',
-  deploymentId: 'complete-tanstack-query-migration',
-  description: 'Complete TanStack Query migration with all missing features: abort signals, cross-tab sync, dashboard invalidation, cache strategy, prefetch, session gating, reduced logging'
+  deploymentId: 'fix-vercel-deployment-imports',
+  description: 'Fix Vercel deployment issue: corrected service imports in useAuth hook (assetsService named export instead of default)'
 }
 
 export const getVersionDisplay = () => {

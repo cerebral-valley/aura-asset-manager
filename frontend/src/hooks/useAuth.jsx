@@ -2,11 +2,11 @@ import { useState, useEffect, createContext, useContext } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { queryKeys } from '@/lib/queryKeys'
-import assetsService from '@/services/assets'
-import transactionsService from '@/services/transactions'
-import insuranceService from '@/services/insurance'
+import { assetsService } from '@/services/assets'
+import { transactionsService } from '@/services/transactions'
+import { insuranceService } from '@/services/insurance'
 import annuityService from '@/services/annuities'
-import dashboardService from '@/services/dashboard'
+import { dashboardService } from '@/services/dashboard'
 
 const AuthContext = createContext({})
 
