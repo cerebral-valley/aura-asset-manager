@@ -4,11 +4,53 @@ import { supabase } from './supabase'
 // Ensure HTTPS is always used
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://aura-asset-manager-production.up.railway.app/api/v1').replace(/^http:/, 'https:')
 
+// Cache access token in memory for performance
+let cachedAccessToken = null
+let tokenCacheTime = 0
+const TOKEN_CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+
+// Initialize token cache from auth state
+supabase.auth.onAuthStateChange((event, session) => {
+  if (import.meta.env.DEV) {
+    console.log('Auth state change:', event)
+  }
+  
+  if (session?.access_token) {
+    cachedAccessToken = session.access_token
+    tokenCacheTime = Date.now()
+  } else {
+    cachedAccessToken = null
+    tokenCacheTime = 0
+  }
+})
+
+// Helper function to get cached or fresh token
+const getAccessToken = async () => {
+  // Return cached token if it's fresh (within 5 minutes)
+  if (cachedAccessToken && (Date.now() - tokenCacheTime < TOKEN_CACHE_DURATION)) {
+    return cachedAccessToken
+  }
+  
+  // Fetch fresh token if cache is stale
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.access_token) {
+      cachedAccessToken = session.access_token
+      tokenCacheTime = Date.now()
+      return cachedAccessToken
+    }
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error('Error getting fresh auth session:', error)
+    }
+  }
+  
+  return null
+}
+
 // Log the API URL being used for debugging (DEV only)
 if (import.meta.env.DEV) {
   console.log('API Base URL:', API_BASE_URL)
-  console.log('Environment check - VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL)
-  console.log('All environment variables:', import.meta.env)
 }
 
 // Create axios instance
@@ -26,41 +68,22 @@ apiClient.interceptors.request.use(async (config) => {
     // Ensure the URL is always HTTPS
     if (config.baseURL.startsWith('http:')) {
       config.baseURL = config.baseURL.replace('http:', 'https:')
-      if (import.meta.env.DEV) {
-        console.log('API Request - Fixed baseURL to use HTTPS:', config.baseURL)
-      }
+    }
+    
+    // Get cached or fresh access token
+    const accessToken = await getAccessToken()
+    
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`
     }
     
     if (import.meta.env.DEV) {
-      const fullURL = config.baseURL + config.url
-      console.log('API Request START - Full URL:', fullURL)
-      console.log('API Request - Base URL:', config.baseURL)
-      console.log('API Request - Endpoint:', config.url)
-      console.log('API Request - Method:', config.method)
-    }
-    
-    const { data: { session } } = await supabase.auth.getSession()
-    
-    if (import.meta.env.DEV) {
-      console.log('API Request - Session exists:', !!session)
-      console.log('API Request - Access token exists:', !!session?.access_token)
-    }
-    
-    if (session?.access_token) {
-      config.headers.Authorization = `Bearer ${session.access_token}`
-      if (import.meta.env.DEV) {
-        console.log('API Request - Added auth header, token length:', session.access_token.length)
-        console.log('API Request - Token preview:', session.access_token.substring(0, 20) + '...')
-      }
-    } else if (import.meta.env.DEV) {
-      console.log('API Request - No access token found')
-    }
-    
-    if (import.meta.env.DEV) {
-      console.log('API Request - Final headers:', config.headers)
+      console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}${accessToken ? ' (authenticated)' : ' (no auth)'}`)
     }
   } catch (error) {
-    console.error('API Request - Error getting auth session:', error)
+    if (import.meta.env.DEV) {
+      console.error('API Request - Error setting up auth:', error)
+    }
   }
   
   return config
@@ -70,33 +93,22 @@ apiClient.interceptors.request.use(async (config) => {
 apiClient.interceptors.response.use(
   response => {
     if (import.meta.env.DEV) {
-      console.log('API Response - SUCCESS:', response.status, 'URL:', response.config.url)
-      console.log('API Response - Data:', response.data)
+      console.log(`API Response: ${response.status} ${response.config.method?.toUpperCase()} ${response.config.url}`)
     }
     return response
   }, 
   error => {
-    // Log detailed error information (always log errors, even in production)
-    console.error('API Response - ERROR for URL:', error.config?.url)
+    // Always log errors, even in production, but keep them concise
+    console.error(`API Error: ${error.response?.status || 'Network'} ${error.config?.method?.toUpperCase() || ''} ${error.config?.url || ''}`)
     
     if (import.meta.env.DEV) {
-      console.error('API Response - Full error object:', error)
-    }
-    
-    if (error.response) {
-      console.error('API Response - Server responded with error:', error.response.status)
-      if (import.meta.env.DEV) {
-        console.error('API Response - Error data:', error.response.data)
-        console.error('API Response - Error headers:', error.response.headers)
+      if (error.response) {
+        console.error('API Response - Server error data:', error.response.data)
+      } else if (error.request) {
+        console.error('API Response - No response received (network/CORS issue)')
+      } else {
+        console.error('API Response - Request setup error:', error.message)
       }
-    } else if (error.request) {
-      console.error('API Response - No response received')
-      if (import.meta.env.DEV) {
-        console.error('API Response - Request details:', error.request)
-        console.error('API Response - This usually means network/CORS issues')
-      }
-    } else {
-      console.error('API Response - Error setting up request:', error.message)
     }
     
     return Promise.reject(error)

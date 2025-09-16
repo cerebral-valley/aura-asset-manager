@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
         }),
         queryClient.prefetchQuery({
           queryKey: queryKeys.dashboard.summary(),
-          queryFn: ({ signal }) => dashboardService.getDashboardSummary({ signal })
+          queryFn: ({ signal }) => dashboardService.getSummary({ signal })
         }),
       ])
       console.log('✅ AuthProvider: Data prefetch completed successfully')

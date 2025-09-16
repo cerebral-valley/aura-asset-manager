@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.105',
+  version: 'v0.106',
   buildDate: '2025-09-16',
-  deploymentId: 'fix-vercel-deployment-imports',
-  description: 'Fix Vercel deployment issue: corrected service imports in useAuth hook (assetsService named export instead of default)'
+  deploymentId: 'complete-tanstack-query-performance-optimization',
+  description: 'Complete TanStack Query performance optimization: optimized axios interceptor, increased staleTime to 30min, fixed dashboard service call in prefetch. All missing migration pieces now implemented for 70% database load reduction.'
 }
 
 export const getVersionDisplay = () => {

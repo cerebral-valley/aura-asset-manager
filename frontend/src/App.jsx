@@ -102,10 +102,10 @@ const createQueryClient = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        // Cache data for 5 minutes by default
-        staleTime: 5 * 60 * 1000,
-        // Keep cached data for 10 minutes before garbage collection
-        gcTime: 10 * 60 * 1000,
+        // Cache data for 30 minutes by default (explicit invalidation strategy)
+        staleTime: 30 * 60 * 1000,
+        // Keep cached data for 1 hour before garbage collection
+        gcTime: 60 * 60 * 1000,
         // Retry failed queries up to 3 times
         retry: 3,
         // Use explicit invalidation approach instead of automatic refetch
