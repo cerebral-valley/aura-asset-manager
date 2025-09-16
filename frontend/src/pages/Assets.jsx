@@ -149,6 +149,87 @@ const Assets = () => {
     },
   })
 
+  // Create Asset Mutation
+  const createAssetMutation = useMutation({
+    mutationFn: (assetData) => assetsService.createAsset(assetData),
+    onMutate: async (newAsset) => {
+      // Cancel outgoing fetches for assets to avoid overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: queryKeys.assets.list() })
+      
+      // Snapshot previous
+      const previousAssets = queryClient.getQueryData(queryKeys.assets.list())
+      
+      // Optimistically update to show the asset immediately
+      queryClient.setQueryData(queryKeys.assets.list(), (old = []) => [
+        { ...newAsset, id: `temp-${Date.now()}` }, // Temporary ID for optimistic update
+        ...old
+      ])
+      
+      return { previousAssets }
+    },
+    onError: (error, variables, context) => {
+      // Rollback on error
+      if (context?.previousAssets) {
+        queryClient.setQueryData(queryKeys.assets.list(), context.previousAssets)
+      }
+      console.error('Asset creation failed:', error)
+      toast.error('Failed to create asset: ' + (error.response?.data?.detail || error.message))
+    },
+    onSuccess: (result, variables) => {
+      console.log('✅ Asset created:', result)
+      toast.success('Asset created successfully')
+      
+      // Use mutation helpers for proper invalidation and broadcasting
+      mutationHelpers.onAssetSuccess(queryClient, 'create', { 
+        assetId: result.id,
+        assetData: result 
+      })
+      
+      // Close modal
+      closeModal()
+    },
+  })
+
+  // Update Asset Mutation
+  const updateAssetMutation = useMutation({
+    mutationFn: ({ id, assetData }) => assetsService.updateAsset(id, assetData),
+    onMutate: async ({ id, assetData }) => {
+      // Cancel outgoing fetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.assets.list() })
+      
+      // Snapshot previous
+      const previousAssets = queryClient.getQueryData(queryKeys.assets.list())
+      
+      // Optimistically update
+      queryClient.setQueryData(queryKeys.assets.list(), (old = []) =>
+        old.map(asset => asset.id === id ? { ...asset, ...assetData } : asset)
+      )
+      
+      return { previousAssets }
+    },
+    onError: (error, variables, context) => {
+      // Rollback on error
+      if (context?.previousAssets) {
+        queryClient.setQueryData(queryKeys.assets.list(), context.previousAssets)
+      }
+      console.error('Asset update failed:', error)
+      toast.error('Failed to update asset: ' + (error.response?.data?.detail || error.message))
+    },
+    onSuccess: (result, { id }) => {
+      console.log('✅ Asset updated:', result)
+      toast.success('Asset updated successfully')
+      
+      // Use mutation helpers for proper invalidation and broadcasting
+      mutationHelpers.onAssetSuccess(queryClient, 'update', { 
+        assetId: id,
+        assetData: result 
+      })
+      
+      // Close modal
+      closeModal()
+    },
+  })
+
   // Calculate overall loading state
   const loading = assetsLoading || transactionsLoading;
   const criticalError = assetsError || transactionsError;
@@ -156,11 +237,13 @@ const Assets = () => {
   // Legacy state for non-data functionality
   const [modalOpen, setModalOpen] = useState(false);
   const [editAsset, setEditAsset] = useState(null);
-  const [actionError, setActionError] = useState(null);
   const modalRef = useRef(null);
 
   // Compute mutation loading state
-  const actionLoading = deleteAssetMutation.isPending;
+  const actionLoading = deleteAssetMutation.isPending || createAssetMutation.isPending || updateAssetMutation.isPending;
+  
+  // Compute mutation error state
+  const actionError = deleteAssetMutation.error || createAssetMutation.error || updateAssetMutation.error;
 
   // Sorting and filtering states
   const [sortField, setSortField] = useState('name');
@@ -659,7 +742,6 @@ const Assets = () => {
   // Open modal for add/edit
   const openModal = (asset = null) => {
     setEditAsset(asset);
-    setActionError(null);
     setModalOpen(true);
     
     setTimeout(() => {
@@ -697,42 +779,19 @@ const Assets = () => {
   const closeModal = () => {
     setModalOpen(false);
     setEditAsset(null);
-    setActionError(null);
     reset();
   };
 
-  // Add or update asset
+  // Add or update asset using mutations
   const onSubmit = async (data) => {
-    setActionLoading(true);
-    setActionError(null);
-
-    try {
-      let result;
-      if (editAsset) {
-        result = await assetsService.updateAsset(editAsset.id, data);
-        toast.success('Asset updated successfully');
-      } else {
-        result = await assetsService.createAsset(data);
-        toast.success('Asset added successfully');
-      }
-      
-      closeModal();
-      // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() });
-      
-    } catch (err) {
-      console.error('❌ Form submission error:', err);
-      const errorMessage = err.message || 'Failed to save asset';
-      setActionError(errorMessage);
-      toast.error(errorMessage);
+    if (editAsset) {
+      // Update existing asset
+      updateAssetMutation.mutate({ id: editAsset.id, assetData: data })
+    } else {
+      // Create new asset
+      createAssetMutation.mutate(data)
     }
-    
-    setActionLoading(false);
-  };
-
-  // Delete asset with confirmation
+  };  // Delete asset with confirmation
   const handleDelete = async (asset) => {
     setConfirmDialog({
       isOpen: true,

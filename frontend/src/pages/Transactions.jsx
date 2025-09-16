@@ -99,6 +99,120 @@ export default function Transactions() {
     gcTime: 10 * 60 * 1000, // 10 minutes
   })
 
+  // Create Transaction Mutation
+  const createTransactionMutation = useMutation({
+    mutationFn: (transactionData) => transactionsService.createTransaction(transactionData),
+    onMutate: async (newTransaction) => {
+      // Cancel outgoing fetches for transactions
+      await queryClient.cancelQueries({ queryKey: queryKeys.transactions.list() })
+      
+      // Snapshot previous
+      const previousTransactions = queryClient.getQueryData(queryKeys.transactions.list())
+      
+      // Optimistically update to show the transaction immediately
+      queryClient.setQueryData(queryKeys.transactions.list(), (old = []) => [
+        { ...newTransaction, id: `temp-${Date.now()}` }, // Temporary ID
+        ...old
+      ])
+      
+      return { previousTransactions }
+    },
+    onError: (error, variables, context) => {
+      // Rollback on error
+      if (context?.previousTransactions) {
+        queryClient.setQueryData(queryKeys.transactions.list(), context.previousTransactions)
+      }
+      console.error('Transaction creation failed:', error)
+    },
+    onSuccess: (result, variables) => {
+      console.log('✅ Transaction created:', result)
+      
+      // Use mutation helpers for proper invalidation and broadcasting
+      mutationHelpers.onTransactionSuccess(queryClient, 'create', { 
+        transactionId: result.id,
+        transactionData: result 
+      })
+      
+      // Close dialog and reset form
+      setShowTransactionDialog(false)
+      resetForm()
+    },
+  })
+
+  // Update Transaction Mutation
+  const updateTransactionMutation = useMutation({
+    mutationFn: ({ id, transactionData }) => transactionsService.updateTransaction(id, transactionData),
+    onMutate: async ({ id, transactionData }) => {
+      // Cancel outgoing fetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.transactions.list() })
+      
+      // Snapshot previous
+      const previousTransactions = queryClient.getQueryData(queryKeys.transactions.list())
+      
+      // Optimistically update
+      queryClient.setQueryData(queryKeys.transactions.list(), (old = []) =>
+        old.map(transaction => transaction.id === id ? { ...transaction, ...transactionData } : transaction)
+      )
+      
+      return { previousTransactions }
+    },
+    onError: (error, variables, context) => {
+      // Rollback on error
+      if (context?.previousTransactions) {
+        queryClient.setQueryData(queryKeys.transactions.list(), context.previousTransactions)
+      }
+      console.error('Transaction update failed:', error)
+    },
+    onSuccess: (result, { id }) => {
+      console.log('✅ Transaction updated:', result)
+      
+      // Use mutation helpers for proper invalidation and broadcasting
+      mutationHelpers.onTransactionSuccess(queryClient, 'update', { 
+        transactionId: id,
+        transactionData: result 
+      })
+      
+      // Close dialog and reset form
+      setShowTransactionDialog(false)
+      resetForm()
+    },
+  })
+
+  // Delete Transaction Mutation
+  const deleteTransactionMutation = useMutation({
+    mutationFn: (transactionId) => transactionsService.deleteTransaction(transactionId),
+    onMutate: async (transactionId) => {
+      // Cancel outgoing fetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.transactions.list() })
+      
+      // Snapshot previous
+      const previousTransactions = queryClient.getQueryData(queryKeys.transactions.list())
+      
+      // Optimistically remove from list
+      queryClient.setQueryData(queryKeys.transactions.list(), (old = []) =>
+        old.filter(transaction => transaction.id !== transactionId)
+      )
+      
+      return { previousTransactions }
+    },
+    onError: (error, variables, context) => {
+      // Rollback on error
+      if (context?.previousTransactions) {
+        queryClient.setQueryData(queryKeys.transactions.list(), context.previousTransactions)
+      }
+      console.error('Transaction deletion failed:', error)
+    },
+    onSuccess: (result, transactionId) => {
+      console.log('✅ Transaction deleted:', result)
+      
+      // Use mutation helpers for proper invalidation and broadcasting
+      mutationHelpers.onTransactionSuccess(queryClient, 'delete', { transactionId })
+      
+      // Close confirmation dialog
+      setConfirmationDialog({ isOpen: false, transaction: null, type: null })
+    },
+  })
+
   // Compute combined loading state
   const loading = transactionsLoading || assetsLoading
 
@@ -215,13 +329,45 @@ export default function Transactions() {
     setTransactionForm(prev => ({ ...prev, transaction_type: type }))
   }
 
+  // Helper function to handle transaction creation using mutations
+  const createTransactionViaMutation = async (transactionData) => {
+    return new Promise((resolve, reject) => {
+      createTransactionMutation.mutate(transactionData, {
+        onSuccess: (result) => {
+          console.log('✅ MUTATION_CREATE_SUCCESS: Transaction created via mutation', result)
+          resolve(result)
+        },
+        onError: (error) => {
+          console.error('❌ MUTATION_CREATE_ERROR: Transaction creation failed', error)
+          reject(error)
+        }
+      })
+    })
+  }
+
+  // Helper function to handle transaction updates using mutations
+  const updateTransactionViaMutation = async (id, transactionData) => {
+    return new Promise((resolve, reject) => {
+      updateTransactionMutation.mutate({ id, transactionData }, {
+        onSuccess: (result) => {
+          console.log('✅ MUTATION_UPDATE_SUCCESS: Transaction updated via mutation', result)
+          resolve(result)
+        },
+        onError: (error) => {
+          console.error('❌ MUTATION_UPDATE_ERROR: Transaction update failed', error)
+          reject(error)
+        }
+      })
+    })
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     
     const currentTime = Date.now()
     
     // Prevent duplicate submissions with both state and timing checks
-    if (submitting) {
+    if (createTransactionMutation.isPending || updateTransactionMutation.isPending) {
       console.log('🚫 SUBMIT_BLOCKED: Form submission already in progress')
       return
     }
@@ -232,7 +378,6 @@ export default function Transactions() {
       return
     }
     
-    setSubmitting(true)
     setLastSubmissionTime(currentTime)
     console.log('🚀 TRANSACTION_SUBMIT_START: Form submission initiated', {
       transactionType: transactionForm.transaction_type,
@@ -243,14 +388,15 @@ export default function Transactions() {
     
     try {
       if (editingTransaction) {
-        // Update existing transaction
-        await transactionsService.updateTransaction(editingTransaction.id, transactionForm)
+        // Update existing transaction using mutation
+        await updateTransactionViaMutation(editingTransaction.id, transactionForm)
+        
         toast({
           title: "Success",
           description: "Transaction updated successfully"
         })
       } else {
-        // Create new transaction
+        // Create new transaction - handle different transaction types
         if (transactionForm.transaction_type === 'create') {
           console.log('📝 CREATE_ASSET_START: Creating new asset via transaction', {
             assetName: transactionForm.asset_name,
@@ -269,15 +415,13 @@ export default function Transactions() {
             throw new Error('VALIDATION_ERROR_003: Purchase date is required')
           }
           
-          // 🎯 PURE TRANSACTION-CENTRIC: Send everything directly to transactions endpoint
-          console.log('� CREATE_TRANSACTION_DIRECT: Creating transaction with all asset data', {
+          console.log('🎯 CREATE_TRANSACTION_DIRECT: Creating transaction with all asset data', {
             formData: transactionForm,
             code: 'CREATE_002'
           })
           
-          // 🎯 ALL DATA GOES TO TRANSACTIONS ENDPOINT (no asset creation needed)
+          // Prepare transaction data for asset creation
           const transactionData = {
-            // Asset will be created automatically by backend based on transaction data
             transaction_type: 'create',
             transaction_date: transactionForm.purchase_date,
             amount: parseFloat(transactionForm.initial_value) || 0,
@@ -317,8 +461,8 @@ export default function Transactions() {
             code: 'CREATE_003'
           })
           
-          // Use the existing transactions service (avoid connection reset)
-          const newTransaction = await transactionsService.createTransaction(transactionData)
+          // Use the mutation helper instead of direct service call
+          const newTransaction = await createTransactionViaMutation(transactionData)
           
           console.log('✅ PURE_TRANSACTION_SUCCESS: Transaction created with all asset data', {
             transactionId: newTransaction.id,
@@ -373,7 +517,7 @@ export default function Transactions() {
             }
             
             console.log('🔥 SALE_STEP_1: Creating sale transaction', saleTransaction)
-            await transactionsService.createTransaction(saleTransaction)
+            await createTransactionViaMutation(saleTransaction)
             console.log('✅ SALE_STEP_1_COMPLETE: Sale transaction created successfully')
 
             // 2. Record cash/bank increase transaction
@@ -386,7 +530,7 @@ export default function Transactions() {
             }
             
             console.log('🔥 SALE_STEP_2: Creating cash deposit transaction', cashTransaction)
-            await transactionsService.createTransaction(cashTransaction)
+            await createTransactionViaMutation(cashTransaction)
             console.log('✅ SALE_STEP_2_COMPLETE: Cash deposit transaction created successfully')
 
             console.log('🎉 SALE_COMPLETE: Dual transaction process completed successfully', {
@@ -422,7 +566,7 @@ export default function Transactions() {
               code: 'UPDATE_002'
             })
 
-            await transactionsService.createTransaction(transactionData)
+            await createTransactionViaMutation(transactionData)
 
             console.log('✅ UPDATE_SUCCESS: Transaction updated', {
               transactionType: transactionForm.transaction_type,
@@ -437,21 +581,16 @@ export default function Transactions() {
         }
       }
       
-      // Refresh data and close dialog
-      console.log('🔄 REFRESH_START: Refreshing transaction and asset lists', {
-        code: 'REFRESH_001'
+      // Close dialog and reset form - mutations handle invalidation automatically
+      console.log('🔄 FORM_RESET: Closing dialog and resetting form', {
+        code: 'RESET_001'
       })
       
       setShowTransactionDialog(false)
       resetForm()
       
-      // Invalidate and refetch data
-      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions.list() })
-      await queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() })
-      await queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
-      
-      console.log('✅ REFRESH_SUCCESS: Data refreshed successfully', {
-        code: 'REFRESH_002'
+      console.log('✅ FORM_RESET_SUCCESS: Dialog closed successfully', {
+        code: 'RESET_002'
       })
       
       console.log('🎉 TRANSACTION_SUBMIT_COMPLETE: Form submission completed successfully', {
@@ -536,21 +675,17 @@ export default function Transactions() {
 
   const confirmDelete = async () => {
     try {
-      const result = await transactionsService.deleteTransaction(confirmationDialog.transaction.id)
+      // Use delete mutation instead of manual service call
+      deleteTransactionMutation.mutate(confirmationDialog.transaction.id)
       
       // Close dialog first
       setConfirmationDialog({ isOpen: false, transaction: null, type: null })
       
-      // Show appropriate success message
       toast({
         title: "Success",
-        description: result.message || "Transaction deleted successfully"
+        description: "Transaction deleted successfully"
       })
       
-      // Refresh data
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.list() })
-      queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() }) // Also refresh assets if an asset was deleted
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() })
     } catch (error) {
       console.error('Failed to delete transaction:', error)
       

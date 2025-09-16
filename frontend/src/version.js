@@ -5,10 +5,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.107',
-  buildDate: '2025-09-16',
-  deploymentId: 'release-notes-prefetch-enhancement',
-  description: 'Add comprehensive release notes to User Guide with full changelog from v0.100-v0.107. Enhanced prefetch coverage to include annuities summary for instant loading. Identified remaining manual invalidation cleanup needed.'
+  version: 'v0.108',
+  buildDate: '2024-12-28',
+  deploymentId: 'transactions-mutations',
+  description: 'Complete Transactions.jsx mutations implementation with preserved business logic'
 }
 
 export const getVersionDisplay = () => {
