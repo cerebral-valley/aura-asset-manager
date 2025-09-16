@@ -43,17 +43,129 @@ const Insurance = () => {
     queryKey: queryKeys.insurance.list(),
     queryFn: ({ signal }) => insuranceService.getPolicies({ signal }),
     enabled: !!user,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 30 * 60 * 1000, // 30 minutes (align with global default)
+    gcTime: 60 * 60 * 1000, // 1 hour (align with global default)
+    // Smart retry: don't retry on 4xx client errors (like empty data), only on 5xx/network
+    retry: (failureCount, error) => {
+      if (error?.response?.status >= 400 && error?.response?.status < 500) {
+        return false
+      }
+      return failureCount < 2
+    },
+  })
+
+  // TanStack Query mutations with broadcasting
+  const createPolicyMutation = useMutation({
+    mutationFn: (policyData) => insuranceService.createPolicy(policyData),
+    onMutate: async (newPolicy) => {
+      // Cancel outgoing queries to avoid overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: queryKeys.insurance.list() })
+      
+      // Snapshot previous data
+      const previousPolicies = queryClient.getQueryData(queryKeys.insurance.list())
+      
+      // Optimistically update cache
+      queryClient.setQueryData(queryKeys.insurance.list(), (old = []) => [
+        { ...newPolicy, id: 'temp-' + Date.now() },
+        ...old
+      ])
+      
+      return { previousPolicies }
+    },
+    onError: (error, variables, context) => {
+      // Rollback on error
+      if (context?.previousPolicies) {
+        queryClient.setQueryData(queryKeys.insurance.list(), context.previousPolicies)
+      }
+      console.error('Insurance create failed:', error)
+      toast.error(error.message || 'Failed to create policy')
+    },
+    onSuccess: (result, variables) => {
+      console.log('✅ Insurance policy created:', result)
+      toast.success('Policy added successfully')
+      
+      // Use mutation helpers for proper invalidation and broadcasting
+      mutationHelpers.onInsuranceSuccess(queryClient, 'create', { 
+        insuranceId: result.id, 
+        policyType: variables.policy_type 
+      })
+      
+      closeModal()
+    },
+  })
+
+  const updatePolicyMutation = useMutation({
+    mutationFn: ({ id, data }) => insuranceService.updatePolicy(id, data),
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.insurance.list() })
+      
+      const previousPolicies = queryClient.getQueryData(queryKeys.insurance.list())
+      
+      // Optimistic update
+      queryClient.setQueryData(queryKeys.insurance.list(), (old = []) =>
+        old.map(policy => policy.id === id ? { ...policy, ...data } : policy)
+      )
+      
+      return { previousPolicies }
+    },
+    onError: (error, variables, context) => {
+      if (context?.previousPolicies) {
+        queryClient.setQueryData(queryKeys.insurance.list(), context.previousPolicies)
+      }
+      console.error('Insurance update failed:', error)
+      toast.error(error.message || 'Failed to update policy')
+    },
+    onSuccess: (result, { id, data }) => {
+      console.log('✅ Insurance policy updated:', result)
+      toast.success('Policy updated successfully')
+      
+      mutationHelpers.onInsuranceSuccess(queryClient, 'update', { 
+        insuranceId: id, 
+        policyType: data.policy_type 
+      })
+      
+      closeModal()
+    },
+  })
+
+  const deletePolicyMutation = useMutation({
+    mutationFn: (id) => insuranceService.deletePolicy(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.insurance.list() })
+      
+      const previousPolicies = queryClient.getQueryData(queryKeys.insurance.list())
+      
+      // Optimistic removal
+      queryClient.setQueryData(queryKeys.insurance.list(), (old = []) =>
+        old.filter(policy => policy.id !== id)
+      )
+      
+      return { previousPolicies }
+    },
+    onError: (error, variables, context) => {
+      if (context?.previousPolicies) {
+        queryClient.setQueryData(queryKeys.insurance.list(), context.previousPolicies)
+      }
+      console.error('Insurance delete failed:', error)
+      toast.error('Failed to delete policy')
+    },
+    onSuccess: (result, id) => {
+      console.log('✅ Insurance policy deleted:', result)
+      toast.success('Policy deleted successfully')
+      
+      mutationHelpers.onInsuranceSuccess(queryClient, 'delete', { insuranceId: id })
+    },
   })
 
   // Local state for UI management
   const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editPolicy, setEditPolicy] = useState(null);
-  const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState(null);
   const modalRef = useRef(null);
+
+  // Compute mutation loading state
+  const actionLoading = createPolicyMutation.isPending || updatePolicyMutation.isPending || deletePolicyMutation.isPending;
 
   // Export loading states
   const [pdfExporting, setPdfExporting] = useState(false);
@@ -305,9 +417,8 @@ const Insurance = () => {
     reset();
   };
 
-  // Add or update policy
+  // Add or update policy using TanStack Query mutations
   const onSubmit = async (data) => {
-    setActionLoading(true);
     setActionError(null);
 
     console.log('🔍 [DEBUG] Form submission - raw data:', data);
@@ -342,48 +453,26 @@ const Insurance = () => {
         }
       }
 
-      // API call
-      let result;
+      // Use TanStack Query mutations instead of manual API calls
       if (editPolicy) {
-        result = await insuranceService.updatePolicy(editPolicy.id, processedData);
-        console.log('✅ Update result:', result);
-        toast.success('Policy updated successfully');
+        updatePolicyMutation.mutate({ id: editPolicy.id, data: processedData });
       } else {
-        result = await insuranceService.createPolicy(processedData);
-        console.log('✅ Create result:', result);
-        toast.success('Policy added successfully');
+        createPolicyMutation.mutate(processedData);
       }
-      
-      closeModal();
-      queryClient.invalidateQueries({ queryKey: queryKeys.insurance.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() });
       
     } catch (err) {
       console.error('❌ Form submission error:', err);
-      console.error('❌ Error response:', err.response?.data);
       const errorMessage = err.message || 'Failed to save policy';
       setActionError(errorMessage);
       toast.error(errorMessage);
     }
-    
-    setActionLoading(false);
   };
 
-  // Delete policy
+  // Delete policy using TanStack Query mutation
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this policy?')) return;
-    setActionLoading(true);
-    setActionError(null);
-    try {
-      await insuranceService.deletePolicy(id);
-      queryClient.invalidateQueries({ queryKey: queryKeys.insurance.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() });
-      toast.success('Policy deleted successfully');
-    } catch (err) {
-      setActionError('Failed to delete policy');
-      toast.error('Failed to delete policy');
-    }
-    setActionLoading(false);
+    
+    deletePolicyMutation.mutate(id);
   };
 
   // Data aggregation using new utility functions with error handling

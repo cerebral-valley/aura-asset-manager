@@ -48,7 +48,7 @@ const AnnuitiesPage = () => {
   if (statusFilter) filters.status = statusFilter;
   if (typeFilter) filters.annuity_type = typeFilter;
 
-  // TanStack Query data fetching
+  // TanStack Query data fetching with guarded retry for 4xx responses
   const {
     data: annuities = [],
     isLoading: annuitiesLoading,
@@ -57,8 +57,17 @@ const AnnuitiesPage = () => {
     queryKey: queryKeys.annuities.list(filters),
     queryFn: ({ signal }) => annuityService.getAnnuities(filters, { signal }),
     enabled: !!user,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 30 * 60 * 1000, // 30 minutes (align with global default)
+    gcTime: 60 * 60 * 1000, // 1 hour (align with global default)
+    // Smart retry: don't retry on 4xx client errors (like empty data), only on 5xx/network
+    retry: (failureCount, error) => {
+      // Don't retry client errors (4xx) - these are likely empty data responses
+      if (error?.response?.status >= 400 && error?.response?.status < 500) {
+        return false
+      }
+      // Retry server errors (5xx) and network errors up to 2 times
+      return failureCount < 2
+    },
   })
 
   const {
@@ -69,8 +78,17 @@ const AnnuitiesPage = () => {
     queryKey: queryKeys.annuities.summary(),
     queryFn: ({ signal }) => annuityService.getPortfolioSummary({ signal }),
     enabled: !!user,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 30 * 60 * 1000, // 30 minutes (align with global default)
+    gcTime: 60 * 60 * 1000, // 1 hour (align with global default)
+    // Smart retry: don't retry on 4xx client errors (like empty data), only on 5xx/network
+    retry: (failureCount, error) => {
+      // Don't retry client errors (4xx) - these are likely empty data responses
+      if (error?.response?.status >= 400 && error?.response?.status < 500) {
+        return false
+      }
+      // Retry server errors (5xx) and network errors up to 2 times
+      return failureCount < 2
+    },
   })
 
   // Compute combined loading state

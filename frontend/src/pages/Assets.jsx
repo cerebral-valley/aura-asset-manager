@@ -37,7 +37,15 @@ const Assets = () => {
     queryKey: queryKeys.assets.list(),
     queryFn: ({ signal }) => assetsService.getAssets({ signal }),
     enabled: !!user,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 30 * 60 * 1000, // 30 minutes (align with global default)
+    gcTime: 60 * 60 * 1000, // 1 hour (align with global default)
+    // Smart retry: don't retry on 4xx client errors, only on 5xx/network
+    retry: (failureCount, error) => {
+      if (error?.response?.status >= 400 && error?.response?.status < 500) {
+        return false
+      }
+      return failureCount < 2
+    },
     onError: (err) => {
       error('Assets', 'assets:fetch:error', err);
       toast.error('Failed to fetch assets');
@@ -53,7 +61,15 @@ const Assets = () => {
     queryKey: queryKeys.transactions.list(),
     queryFn: ({ signal }) => transactionsService.getTransactions({ signal }),
     enabled: !!user,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 30 * 60 * 1000, // 30 minutes (align with global default)
+    gcTime: 60 * 60 * 1000, // 1 hour (align with global default)
+    // Smart retry: don't retry on 4xx client errors, only on 5xx/network
+    retry: (failureCount, error) => {
+      if (error?.response?.status >= 400 && error?.response?.status < 500) {
+        return false
+      }
+      return failureCount < 2
+    },
     onError: (err) => {
       error('Assets', 'transactions:fetch:error', err);
       toast.error('Failed to fetch transactions');
@@ -68,13 +84,70 @@ const Assets = () => {
     queryKey: queryKeys.user.settings(),
     queryFn: ({ signal }) => userSettingsService.getSettings({ signal }),
     enabled: !!user,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 1, // Only retry once for settings
+    staleTime: 30 * 60 * 1000, // 30 minutes (align with global default)
+    retry: (failureCount, error) => {
+      // Settings are non-critical, don't retry much
+      if (error?.response?.status >= 400 && error?.response?.status < 500) {
+        return false
+      }
+      return failureCount < 1
+    },
     onError: (err) => {
       warn('Assets', 'Could not fetch user settings:', err);
       // Don't show toast for settings errors, they're non-critical
     },
   });
+
+  // TanStack Query mutations with broadcasting
+  const deleteAssetMutation = useMutation({
+    mutationFn: (id) => assetsService.deleteAsset(id),
+    onMutate: async (id) => {
+      // Cancel outgoing queries to avoid overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: queryKeys.assets.list() })
+      await queryClient.cancelQueries({ queryKey: queryKeys.transactions.list() })
+      
+      // Snapshot previous data
+      const previousAssets = queryClient.getQueryData(queryKeys.assets.list())
+      const previousTransactions = queryClient.getQueryData(queryKeys.transactions.list())
+      
+      // Optimistically remove asset and related transactions
+      queryClient.setQueryData(queryKeys.assets.list(), (old = []) =>
+        old.filter(asset => asset.id !== id)
+      )
+      queryClient.setQueryData(queryKeys.transactions.list(), (old = []) =>
+        old.filter(transaction => transaction.asset_id !== id)
+      )
+      
+      return { previousAssets, previousTransactions }
+    },
+    onError: (error, variables, context) => {
+      // Rollback on error
+      if (context?.previousAssets) {
+        queryClient.setQueryData(queryKeys.assets.list(), context.previousAssets)
+      }
+      if (context?.previousTransactions) {
+        queryClient.setQueryData(queryKeys.transactions.list(), context.previousTransactions)
+      }
+      console.error('Asset delete failed:', error)
+      toast.error('Failed to delete asset: ' + (error.response?.data?.detail || error.message))
+    },
+    onSuccess: (result, id) => {
+      console.log('✅ Asset deleted:', result)
+      
+      // Show detailed success message
+      const message = result.transactions_deleted > 0 
+        ? `Asset "${result.asset_name}" and ${result.transactions_deleted} related transactions deleted successfully`
+        : `Asset "${result.asset_name}" deleted successfully`;
+      
+      toast.success(message);
+      
+      // Use mutation helpers for proper invalidation and broadcasting
+      mutationHelpers.onAssetSuccess(queryClient, 'delete', { assetId: id })
+      
+      // Close confirmation dialog
+      setConfirmDialog({ isOpen: false, asset: null, onConfirm: null });
+    },
+  })
 
   // Calculate overall loading state
   const loading = assetsLoading || transactionsLoading;
@@ -83,9 +156,11 @@ const Assets = () => {
   // Legacy state for non-data functionality
   const [modalOpen, setModalOpen] = useState(false);
   const [editAsset, setEditAsset] = useState(null);
-  const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState(null);
   const modalRef = useRef(null);
+
+  // Compute mutation loading state
+  const actionLoading = deleteAssetMutation.isPending;
 
   // Sorting and filtering states
   const [sortField, setSortField] = useState('name');
@@ -667,27 +742,7 @@ const Assets = () => {
   };
 
   const confirmDeleteAsset = async (id) => {
-    setActionLoading(true);
-    setActionError(null);
-    try {
-      const response = await assetsService.deleteAsset(id);
-      // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() });
-      
-      // Show detailed success message
-      const message = response.transactions_deleted > 0 
-        ? `Asset "${response.asset_name}" and ${response.transactions_deleted} related transactions deleted successfully`
-        : `Asset "${response.asset_name}" deleted successfully`;
-      
-      toast.success(message);
-      setConfirmDialog({ isOpen: false, asset: null, onConfirm: null });
-    } catch (err) {
-      setActionError('Failed to delete asset');
-      toast.error('Failed to delete asset: ' + (err.response?.data?.detail || err.message));
-    }
-    setActionLoading(false);
+    deleteAssetMutation.mutate(id);
   };
 
   // PDF Export Function

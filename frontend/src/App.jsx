@@ -138,7 +138,7 @@ const createQueryClient = () => {
       persistQueryClient({
         queryClient,
         persister,
-        maxAge: 10 * 60 * 1000, // 10 minutes
+        maxAge: 30 * 60 * 1000, // 30 minutes (align with staleTime for consistent cache behavior)
         dehydrateOptions: {
           // Don't persist mutations
           shouldDehydrateMutation: () => false,
