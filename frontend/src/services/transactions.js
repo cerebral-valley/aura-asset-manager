@@ -1,22 +1,22 @@
 import apiClient from '../lib/api'
 
 export const transactionsService = {
-  async getTransactions() {
-    const response = await apiClient.get('/transactions/')
+  async getTransactions(config = {}) {
+    const response = await apiClient.get('/transactions/', config)
     return response.data
   },
 
-  async getTransaction(id) {
-    const response = await apiClient.get(`/transactions/${id}/`)
+  async getTransaction(id, config = {}) {
+    const response = await apiClient.get(`/transactions/${id}/`, config)
     return response.data
   },
 
-  async getAssetTransactions(assetId) {
-    const response = await apiClient.get(`/transactions/asset/${assetId}/`)
+  async getAssetTransactions(assetId, config = {}) {
+    const response = await apiClient.get(`/transactions/asset/${assetId}/`, config)
     return response.data
   },
 
-  async createTransaction(transaction) {
+  async createTransaction(transaction, config = {}) {
     console.log('🔧 TRANSACTIONS_SERVICE_CREATE_START: Creating transaction', {
       transaction,
       fieldsCount: Object.keys(transaction).length,
@@ -62,7 +62,7 @@ export const transactionsService = {
         })
         
         // 🎯 USE DEDICATED CREATE ENDPOINT - matches backend router exactly
-        const response = await apiClient.post('/transaction_create/', createTransactionData)
+        const response = await apiClient.post('/transaction_create/', createTransactionData, config)
         
         console.log('✅ CREATE_TRANSACTION_SUCCESS: Asset created via transaction', {
           transactionId: response.data.id,
@@ -91,7 +91,7 @@ export const transactionsService = {
         })
         
         // Use regular transactions endpoint for updates
-        const response = await apiClient.post('/transactions/', transaction)
+        const response = await apiClient.post('/transactions/', transaction, config)
         
         console.log('✅ UPDATE_TRANSACTION_SUCCESS: Transaction updated', {
           transactionId: response.data.id,
@@ -128,13 +128,13 @@ export const transactionsService = {
     }
   },
 
-  async updateTransaction(id, transaction) {
-    const response = await apiClient.put(`/transactions/${id}/`, transaction)
+  async updateTransaction(id, transaction, config = {}) {
+    const response = await apiClient.put(`/transactions/${id}/`, transaction, config)
     return response.data
   },
 
-  async deleteTransaction(id) {
-    const response = await apiClient.delete(`/transactions/${id}/`)
+  async deleteTransaction(id, config = {}) {
+    const response = await apiClient.delete(`/transactions/${id}/`, config)
     return response.data
   }
 }

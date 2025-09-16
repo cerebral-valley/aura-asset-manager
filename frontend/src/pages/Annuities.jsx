@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Filter, Search, TrendingUp, DollarSign, Calendar, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -19,6 +20,8 @@ import {
 import Loading from '../components/ui/Loading';
 import SafeSection from '@/components/util/SafeSection'
 import { log, warn, error } from '@/lib/debug';
+import { queryKeys } from '@/lib/queryKeys';
+import { mutationHelpers } from '@/lib/queryUtils';
 
 const AnnuitiesPage = () => {
   log('Annuities:init', 'Component initializing');
@@ -29,56 +32,69 @@ const AnnuitiesPage = () => {
   if (!AnnuityDetails) warn('Annuities:import', 'AnnuityDetails not available');
   
   const { theme } = useTheme();
-  const [annuities, setAnnuities] = useState([]);
-  const [portfolioSummary, setPortfolioSummary] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  
+  // Local state for UI management
   const [showForm, setShowForm] = useState(false);
   const [selectedAnnuity, setSelectedAnnuity] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
 
-  useEffect(() => {
-    log('Annuities:useEffect:init', 'Component mounted, fetching annuities data');
-    fetchData();
-  }, [statusFilter, typeFilter]);
+  // Create filters object for query key
+  const filters = {};
+  if (statusFilter) filters.status = statusFilter;
+  if (typeFilter) filters.annuity_type = typeFilter;
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      log('Annuities:fetchData', 'Starting to fetch annuities data...', { statusFilter, typeFilter });
-      const filters = {};
-      if (statusFilter) filters.status = statusFilter;
-      if (typeFilter) filters.annuity_type = typeFilter;
-      
-      const [annuitiesData, summaryData] = await Promise.all([
-        annuityService.getAnnuities(filters),
-        annuityService.getPortfolioSummary()
-      ]);
-      
-      log('Annuities:fetchData:success', 'Successfully fetched annuities data', { 
-        annuitiesCount: annuitiesData?.length || 0,
-        hasSummary: !!summaryData
-      });
-      
-      setAnnuities(annuitiesData);
-      setPortfolioSummary(summaryData);
-    } catch (err) {
-      error('Annuities:fetchData:error', 'Error fetching annuities data', {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  // TanStack Query data fetching
+  const {
+    data: annuities = [],
+    isLoading: annuitiesLoading,
+    error: annuitiesError
+  } = useQuery({
+    queryKey: queryKeys.annuities.list(filters),
+    queryFn: () => annuityService.getAnnuities(filters),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  })
+
+  const {
+    data: portfolioSummary = null,
+    isLoading: summaryLoading,
+    error: summaryError
+  } = useQuery({
+    queryKey: queryKeys.annuities.summary(),
+    queryFn: () => annuityService.getPortfolioSummary(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  })
+
+  // Compute combined loading state
+  const loading = annuitiesLoading || summaryLoading
+
+  // Handle query errors
+  if (annuitiesError) {
+    error('Annuities:annuitiesQuery', 'Error fetching annuities', {
+      message: annuitiesError.message,
+      response: annuitiesError.response?.data,
+      status: annuitiesError.response?.status
+    });
+  }
+
+  if (summaryError) {
+    error('Annuities:summaryQuery', 'Error fetching portfolio summary', {
+      message: summaryError.message,
+      response: summaryError.response?.data,
+      status: summaryError.response?.status
+    });
+  }
 
   const handleCreateAnnuity = async (annuityData) => {
     try {
       await annuityService.createAnnuity(annuityData);
       setShowForm(false);
-      fetchData();
+      queryClient.invalidateQueries({ queryKey: queryKeys.annuities.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.annuities.summary() });
     } catch (error) {
       console.error('Error creating annuity:', error);
     }
@@ -88,7 +104,8 @@ const AnnuitiesPage = () => {
     try {
       await annuityService.updateAnnuity(annuityId, updateData);
       setSelectedAnnuity(null);
-      fetchData();
+      queryClient.invalidateQueries({ queryKey: queryKeys.annuities.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.annuities.summary() });
     } catch (error) {
       console.error('Error updating annuity:', error);
     }
@@ -99,7 +116,8 @@ const AnnuitiesPage = () => {
       try {
         await annuityService.deleteAnnuity(annuityId);
         setSelectedAnnuity(null);
-        fetchData();
+        queryClient.invalidateQueries({ queryKey: queryKeys.annuities.list() });
+        queryClient.invalidateQueries({ queryKey: queryKeys.annuities.summary() });
       } catch (error) {
         console.error('Error deleting annuity:', error);
       }

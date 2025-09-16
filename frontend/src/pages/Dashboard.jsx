@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import ValueDisplayCard from '../components/dashboard/ValueDisplayCard.jsx'
 import AssetAllocationChart from '../components/dashboard/AssetAllocationChart.jsx'
 import InsurancePolicyBreakdown from '../components/dashboard/InsurancePolicyBreakdown.jsx'
 import { dashboardService } from '../services/dashboard.js'
+import { queryKeys } from '../lib/queryKeys'
 import { Wallet, Shield, TrendingUp } from 'lucide-react'
 import { Alert, AlertDescription } from '../components/ui/alert.jsx'
 import Loading from '../components/ui/Loading'
@@ -10,39 +12,40 @@ import SafeSection from '../components/util/SafeSection'
 import { log, warn, error } from '@/lib/debug'
 
 const Dashboard = () => {
-  const [dashboardData, setDashboardData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-
   // Import verification
   if (!dashboardService?.getSummary) warn('Dashboard', 'service missing: getSummary')
 
-  log('Dashboard', 'init', { loading, error })
+  log('Dashboard', 'init')
 
-  useEffect(() => {
-    log('Dashboard', 'fetch:start')
-    const fetchDashboardData = async () => {
-      try {
-        const data = await dashboardService.getSummary()
-        log('Dashboard', 'fetch:success', { dataKeys: Object.keys(data || {}) })
-        setDashboardData(data)
-      } catch (err) {
-        error('Dashboard', 'fetch:error', err)
-        if (err.response) {
-          setError(`Failed to load dashboard data: ${err.response.status} - ${err.response.data?.detail || err.message}`)
-        } else if (err.request) {
-          setError(`No response from API server. The backend may not be running or accessible.`)
-        } else {
-          setError(`Error preparing request: ${err.message}`)
-        }
-      } finally {
-        log('Dashboard', 'fetch:done')
-        setLoading(false)
-      }
+  // TanStack Query for dashboard data
+  const {
+    data: dashboardData,
+    isLoading: loading,
+    error: queryError,
+    isError
+  } = useQuery({
+    queryKey: queryKeys.dashboard.summary(),
+    queryFn: ({ signal }) => dashboardService.getSummary({ signal }),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 3,
+    onSuccess: (data) => {
+      log('Dashboard', 'fetch:success', { dataKeys: Object.keys(data || {}) })
+    },
+    onError: (err) => {
+      error('Dashboard', 'fetch:error', err)
+    },
+  })
+
+  // Convert TanStack Query error to string for display
+  const errorMessage = isError && queryError ? (() => {
+    if (queryError.response) {
+      return `Failed to load dashboard data: ${queryError.response.status} - ${queryError.response.data?.detail || queryError.message}`
+    } else if (queryError.request) {
+      return `No response from API server. The backend may not be running or accessible.`
+    } else {
+      return `Error preparing request: ${queryError.message}`
     }
-
-    fetchDashboardData()
-  }, [])
+  })() : ''
 
   const getThemeLabels = (theme) => {
     switch (theme) {
@@ -72,11 +75,11 @@ const Dashboard = () => {
     return <Loading pageName="Dashboard" />
   }
 
-  if (error) {
-    log('Dashboard', 'render:error', error)
+  if (isError) {
+    log('Dashboard', 'render:error', errorMessage)
     return (
       <Alert variant="destructive">
-        <AlertDescription>{error}</AlertDescription>
+        <AlertDescription>{errorMessage}</AlertDescription>
       </Alert>
     )
   }

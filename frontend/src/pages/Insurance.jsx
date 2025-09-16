@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { useChartColors } from '../hooks/useChartColors';
 import { insuranceService } from '../services/insurance';
@@ -17,6 +18,8 @@ import {
 import Loading from '../components/ui/Loading';
 import SafeSection from '@/components/util/SafeSection'
 import { log, warn, error } from '@/lib/debug';
+import { queryKeys } from '@/lib/queryKeys';
+import { mutationHelpers } from '@/lib/queryUtils';
 
 const Insurance = () => {
   log('Insurance:init', 'Component initializing');
@@ -27,8 +30,21 @@ const Insurance = () => {
   if (!exportInsuranceToPDF) warn('Insurance:import', 'exportInsuranceToPDF not available');
   
   const { colors, getColor } = useChartColors();
-  const [policies, setPolicies] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  
+  // TanStack Query data fetching
+  const {
+    data: policies = [],
+    isLoading: loading,
+    error: queryError
+  } = useQuery({
+    queryKey: queryKeys.insurance.list(),
+    queryFn: () => insuranceService.getPolicies(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  })
+
+  // Local state for UI management
   const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editPolicy, setEditPolicy] = useState(null);
@@ -43,39 +59,14 @@ const Insurance = () => {
   // Global preferences trigger for re-renders
   const [globalPreferencesVersion, setGlobalPreferencesVersion] = useState(0);
 
-  const fetchPolicies = () => {
-    log('Insurance:fetchPolicies', 'Starting to fetch policies...');
-    setLoading(true);
-    setError(null); // Clear any previous errors
-    
-    insuranceService.getPolicies()
-      .then(data => {
-        log('Insurance:fetchPolicies:success', 'Successfully fetched policies', { count: data?.length || 0 });
-        setPolicies(data || []); // Ensure we have an array
-      })
-      .catch(err => {
-        error('Insurance:fetchPolicies:error', 'Error fetching policies', {
-          message: err.message,
-          response: err.response?.data,
-          status: err.response?.status
-        });
-        
-        // Set empty array and continue with the page load
-        setPolicies([]);
-        setError('Failed to fetch insurance policies');
-        
-        // Don't show toast for now during debugging
-        // toast.error('Failed to fetch insurance policies');
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
-
-  useEffect(() => {
-    log('Insurance:useEffect:init', 'Component mounted, fetching policies');
-    fetchPolicies();
-  }, []);
+  // Handle query error
+  if (queryError) {
+    error('Insurance:query', 'Error fetching policies', {
+      message: queryError.message,
+      response: queryError.response?.data,
+      status: queryError.response?.status
+    });
+  }
 
   // Listen for global preferences changes
   useEffect(() => {
@@ -361,7 +352,7 @@ const Insurance = () => {
       }
       
       closeModal();
-      fetchPolicies();
+      queryClient.invalidateQueries({ queryKey: queryKeys.insurance.list() });
       
     } catch (err) {
       console.error('❌ Form submission error:', err);
@@ -381,7 +372,7 @@ const Insurance = () => {
     setActionError(null);
     try {
       await insuranceService.deletePolicy(id);
-      fetchPolicies();
+      queryClient.invalidateQueries({ queryKey: queryKeys.insurance.list() });
       toast.success('Policy deleted successfully');
     } catch (err) {
       setActionError('Failed to delete policy');

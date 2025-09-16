@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useChartColors } from '../hooks/useChartColors';
 import { useCurrency } from '../hooks/useCurrency';
 import { useForm } from 'react-hook-form';
@@ -6,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import { assetsService } from '../services/assets';
 import { transactionsService } from '../services/transactions';
 import { userSettingsService } from '../services/user-settings';
+import { queryKeys } from '../lib/queryKeys';
+import { mutationHelpers } from '../lib/queryUtils';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
 Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
@@ -20,11 +23,59 @@ import { log, warn, error } from '@/lib/debug';
 
 const Assets = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { formatCurrency, getCurrencySymbol } = useCurrency();
-  const [assets, setAssets] = useState([]);
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+
+  // TanStack Query for assets data
+  const {
+    data: assets = [],
+    isLoading: assetsLoading,
+    error: assetsError
+  } = useQuery({
+    queryKey: queryKeys.assets.list(),
+    queryFn: ({ signal }) => assetsService.getAssets({ signal }),
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    onError: (err) => {
+      error('Assets', 'assets:fetch:error', err);
+      toast.error('Failed to fetch assets');
+    },
+  });
+
+  // TanStack Query for transactions data
+  const {
+    data: transactions = [],
+    isLoading: transactionsLoading,
+    error: transactionsError
+  } = useQuery({
+    queryKey: queryKeys.transactions.list(),
+    queryFn: ({ signal }) => transactionsService.getTransactions({ signal }),
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    onError: (err) => {
+      error('Assets', 'transactions:fetch:error', err);
+      toast.error('Failed to fetch transactions');
+    },
+  });
+
+  // TanStack Query for user settings (non-critical, can fail gracefully)
+  const {
+    data: userSettings,
+    isLoading: settingsLoading
+  } = useQuery({
+    queryKey: queryKeys.user.settings(),
+    queryFn: ({ signal }) => userSettingsService.getSettings({ signal }),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1, // Only retry once for settings
+    onError: (err) => {
+      warn('Assets', 'Could not fetch user settings:', err);
+      // Don't show toast for settings errors, they're non-critical
+    },
+  });
+
+  // Calculate overall loading state
+  const loading = assetsLoading || transactionsLoading;
+  const criticalError = assetsError || transactionsError;
+
+  // Legacy state for non-data functionality
   const [modalOpen, setModalOpen] = useState(false);
   const [editAsset, setEditAsset] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
@@ -56,45 +107,9 @@ const Assets = () => {
   // Global preferences trigger for re-renders
   const [globalPreferencesVersion, setGlobalPreferencesVersion] = useState(0);
 
-  // User settings for PDF export
-  const [userSettings, setUserSettings] = useState(null);
   // Export states
   const [pdfExporting, setPdfExporting] = useState(false);
   const [excelExporting, setExcelExporting] = useState(false);
-
-  const fetchAssets = () => {
-    log('Assets', 'fetch:start');
-    setLoading(true);
-    
-    // Fetch assets, transactions, and user settings
-    Promise.all([
-      assetsService.getAssets(),
-      transactionsService.getTransactions(),
-      userSettingsService.getSettings().catch(err => {
-        warn('Assets', 'Could not fetch user settings:', err);
-        return null; // Return null if user settings fail, don't break the entire page
-      })
-    ])
-      .then(([assetsData, transactionsData, settingsData]) => {
-        log('Assets', 'fetch:success', { 
-          assetsCount: assetsData?.length, 
-          transactionsCount: transactionsData?.length,
-          hasSettings: !!settingsData 
-        });
-        setAssets(assetsData);
-        setTransactions(transactionsData);
-        setUserSettings(settingsData);
-      })
-      .catch(err => {
-        error('Assets', 'fetch:error', err);
-        setError('Failed to fetch data');
-        toast.error('Failed to fetch data');
-      })
-      .finally(() => {
-        log('Assets', 'fetch:done');
-        setLoading(false);
-      });
-  };
 
   useEffect(() => {
     log('Assets', 'init');
@@ -767,6 +782,18 @@ const Assets = () => {
   if (loading) {
     log('Assets', 'render:loading');
     return <Loading pageName="Assets" />;
+  }
+
+  if (criticalError) {
+    log('Assets', 'render:error', criticalError);
+    return (
+      <div className="p-6">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <strong className="font-bold">Error loading assets: </strong>
+          <span className="block sm:inline">{criticalError.message}</span>
+        </div>
+      </div>
+    );
   }
 
   return (

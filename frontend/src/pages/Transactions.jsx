@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -40,6 +41,8 @@ import {
 } from 'lucide-react'
 import { transactionsService } from '@/services/transactions'
 import { assetsService } from '@/services/assets'
+import { queryKeys } from '@/lib/queryKeys'
+import { mutationHelpers } from '@/lib/queryUtils'
 import { assetTypes } from '@/constants/assetTypes'
 
 // Transaction types
@@ -68,9 +71,35 @@ export default function Transactions() {
   }
   
   const { formatCurrency } = useCurrency()
-  const [transactions, setTransactions] = useState([])
-  const [assets, setAssets] = useState([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
+  
+  // TanStack Query data fetching
+  const {
+    data: transactions = [],
+    isLoading: transactionsLoading,
+    error: transactionsError
+  } = useQuery({
+    queryKey: queryKeys.transactions.list(),
+    queryFn: () => transactionsService.getTransactions(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  })
+
+  const {
+    data: assets = [],
+    isLoading: assetsLoading,
+    error: assetsError
+  } = useQuery({
+    queryKey: queryKeys.assets.list(),
+    queryFn: () => assetsService.getAssets(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  })
+
+  // Compute combined loading state
+  const loading = transactionsLoading || assetsLoading
+
+  // Local state for form management  
   const [submitting, setSubmitting] = useState(false)
   const [lastSubmissionTime, setLastSubmissionTime] = useState(0)
   const [searchTerm, setSearchTerm] = useState('')
@@ -128,13 +157,21 @@ export default function Transactions() {
   const { toast } = useToast()
   // Note: useAuth provides user info, but authentication is handled by apiClient
 
-  log('Transactions:init', 'Component initialization complete, setting up data fetching');
+  log('Transactions:init', 'Component initialization complete, TanStack Query handling data fetching');
 
-  useEffect(() => {
-    log('Transactions:useEffect', 'Initial data fetch triggered');
-    fetchTransactions();
-    fetchAssets();
-  }, []);
+  // Handle query errors
+  if (transactionsError) {
+    error('Transactions:transactionsQuery', 'Failed to fetch transactions:', transactionsError);
+    toast({
+      title: "Error",
+      description: "Failed to fetch transactions",
+      variant: "destructive"
+    });
+  }
+
+  if (assetsError) {
+    error('Transactions:assetsQuery', 'Failed to fetch assets:', assetsError);
+  }
 
   // Listen for global preferences changes
   useEffect(() => {
@@ -148,38 +185,6 @@ export default function Transactions() {
       window.removeEventListener('globalPreferencesChanged', handlePreferencesChanged);
     };
   }, []);
-
-  const fetchTransactions = async () => {
-    log('Transactions:fetchTransactions', 'Starting transactions data fetch with filters:', filters);
-    try {
-      log('Transactions:fetchTransactions', 'Calling transactionsService.getTransactions()');
-      const data = await transactionsService.getTransactions();
-      log('Transactions:fetchTransactions', `Received ${data?.length || 0} transactions`);
-      setTransactions(data || []);
-      log('Transactions:fetchTransactions', 'Successfully set transactions state');
-    } catch (error) {
-      error('Transactions:fetchTransactions', 'Failed to fetch transactions:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch transactions",
-        variant: "destructive"
-      });
-    } finally {
-      log('Transactions:fetchTransactions', 'Fetch completed, disabling loading state');
-      setLoading(false);
-    }
-  }
-
-  const fetchAssets = async () => {
-    log('Transactions:fetchAssets', 'Starting assets data fetch');
-    try {
-      const data = await assetsService.getAssets();
-      log('Transactions:fetchAssets', `Received ${data?.length || 0} assets`);
-      setAssets(data || []);
-    } catch (error) {
-      error('Transactions:fetchAssets', 'Failed to fetch assets:', error);
-    }
-  }
 
   const resetForm = () => {
     setTransactionForm({
@@ -436,7 +441,10 @@ export default function Transactions() {
       
       setShowTransactionDialog(false)
       resetForm()
-      await Promise.all([fetchTransactions(), fetchAssets()])
+      
+      // Invalidate and refetch data
+      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions.list() })
+      await queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() })
       
       console.log('✅ REFRESH_SUCCESS: Data refreshed successfully', {
         code: 'REFRESH_002'
@@ -536,8 +544,8 @@ export default function Transactions() {
       })
       
       // Refresh data
-      fetchTransactions()
-      fetchAssets() // Also refresh assets if an asset was deleted
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.list() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() }) // Also refresh assets if an asset was deleted
     } catch (error) {
       console.error('Failed to delete transaction:', error)
       

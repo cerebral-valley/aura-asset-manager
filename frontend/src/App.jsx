@@ -1,6 +1,10 @@
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { persistQueryClient } from '@tanstack/react-query-persist-client'
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
 import LoginForm from './components/auth/LoginForm'
 import Dashboard from './pages/Dashboard'
 import Assets from './pages/Assets'
@@ -92,17 +96,85 @@ function AppContent() {
   )
 }
 
+// TanStack Query Configuration
+const createQueryClient = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        // Cache data for 5 minutes by default
+        staleTime: 5 * 60 * 1000,
+        // Keep cached data for 10 minutes before garbage collection
+        gcTime: 10 * 60 * 1000,
+        // Retry failed queries up to 3 times
+        retry: 3,
+        // Refetch on window focus for important financial data
+        refetchOnWindowFocus: true,
+        // Refetch when connection is restored
+        refetchOnReconnect: true,
+        // Enable request deduplication
+        refetchOnMount: true,
+      },
+      mutations: {
+        // Retry failed mutations once
+        retry: 1,
+        // Global mutation error handling
+        onError: (error) => {
+          console.error('Mutation failed:', error)
+          // Toast notifications could be added here
+        },
+      },
+    },
+  })
+
+  // Set up session storage persistence
+  if (typeof window !== 'undefined') {
+    try {
+      const persister = createSyncStoragePersister({
+        storage: window.sessionStorage,
+        key: 'AURA_QUERY_CACHE',
+        throttleTime: 1000, // Throttle saves to 1 second
+      })
+
+      persistQueryClient({
+        queryClient,
+        persister,
+        maxAge: 10 * 60 * 1000, // 10 minutes
+        dehydrateOptions: {
+          // Don't persist mutations
+          shouldDehydrateMutation: () => false,
+          // Only persist successful queries
+          shouldDehydrateQuery: (query) => {
+            return query.state.status === 'success'
+          },
+        },
+      })
+    } catch (error) {
+      console.warn('Query persistence setup failed:', error)
+      // Gracefully degrade if persistence fails
+    }
+  }
+
+  return queryClient
+}
+
+// Create a single QueryClient instance
+const queryClient = createQueryClient()
+
 function App() {
   log('App', 'init')
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <Router>
-          <AppContent />
-          <Toaster />
-        </Router>
-      </AuthProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <AuthProvider>
+          <Router>
+            <AppContent />
+            <Toaster />
+          </Router>
+        </AuthProvider>
+      </ThemeProvider>
+      {/* React Query DevTools - only in development */}
+      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+    </QueryClientProvider>
   )
 }
 
