@@ -5,6 +5,7 @@ import AssetAllocationChart from '../components/dashboard/AssetAllocationChart.j
 import InsurancePolicyBreakdown from '../components/dashboard/InsurancePolicyBreakdown.jsx'
 import { dashboardService } from '../services/dashboard.js'
 import { queryKeys } from '../lib/queryKeys'
+import { getVersionDisplay } from '../version.js'
 import { Wallet, Shield, TrendingUp } from 'lucide-react'
 import { Alert, AlertDescription } from '../components/ui/alert.jsx'
 import Loading from '../components/ui/Loading'
@@ -100,6 +101,11 @@ const Dashboard = () => {
           <p className="text-muted-foreground mt-1">
             {themeLabels.subtitle}
           </p>
+        </div>
+        <div className="text-right">
+          <div className="text-xs text-muted-foreground font-mono">
+            {getVersionDisplay()}
+          </div>
         </div>
       </div>
 

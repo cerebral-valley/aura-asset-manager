@@ -142,6 +142,49 @@ git push origin main
 
 **This overrides any Beast Mode instruction about asking permission before Git operations.**
 
+## 🏷️ CRITICAL: Version Tracking & Deployment Verification
+
+### Mandatory Version Management
+**EVERY GitHub push MUST include version tracking:**
+
+1. **Update Version File**: Always update `frontend/src/version.js` before committing:
+   ```javascript
+   export const VERSION_INFO = {
+     version: 'v0.1XX',           // Increment XX for each deployment
+     commitHash: 'abc1234',       // First 7 chars of commit hash
+     buildDate: 'YYYY-MM-DD',     // Current date
+     deploymentId: 'feature-name', // Brief description
+     description: 'Description of changes'
+   }
+   ```
+
+2. **Commit Message Format**:
+   ```bash
+   git commit -m "type(scope): description
+   
+   - Detailed change 1
+   - Detailed change 2
+   - Version: v0.1XX"
+   ```
+
+3. **Version Increment Rules**:
+   - Start from v0.101 and increment by 1 for each deployment
+   - Major features: increment by 10 (v0.110, v0.120, etc.)
+   - Hotfixes: increment by 1 (v0.101, v0.102, etc.)
+
+### Deployment Verification Protocol
+**After every push, use MCP Playwright to verify deployment:**
+
+1. **Navigate to Dashboard**: Check version display in top-right corner
+2. **Version Verification**: Confirm new version number is displayed
+3. **Feature Testing**: Test the specific changes made
+4. **Screenshot Evidence**: Take screenshot showing new version deployed
+
+**Version Display Location**: 
+- Dashboard page, top-right corner: `v0.1XX (abc1234)`
+- Visible to user as deployment verification
+- Helps distinguish old vs new deployments during testing
+
 ### Phase 3: Deployment Verification (CRITICAL)
 **After every GitHub push, deployment analysis workflow:**
 
