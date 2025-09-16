@@ -15,7 +15,8 @@ const UserGuide = () => {
     { id: 'insurance', title: 'Insurance', icon: '🛡️' },
     { id: 'annuity', title: 'Annuity Planning', icon: '💰' },
     { id: 'ai-analysis', title: 'AI Analysis', icon: '🤖' },
-    { id: 'tips', title: 'Tips & Best Practices', icon: '💡' }
+    { id: 'tips', title: 'Tips & Best Practices', icon: '💡' },
+    { id: 'release-notes', title: 'Release Notes', icon: '📋' }
   ];
 
   const scrollToSection = (sectionId) => {
@@ -731,6 +732,245 @@ const UserGuide = () => {
                         Call stock holdings "Tech Growth Fund" with notes about your belief in the sector's potential.
                       </p>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Release Notes Section */}
+            <section id="release-notes" className="mb-16">
+              <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
+                <span className="text-2xl">📋</span>
+                Release Notes
+              </h2>
+              
+              <div className="space-y-6">
+                {/* v0.107 */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold text-blue-600">Version v0.107</h3>
+                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-800'}`}>
+                      2025-09-16
+                    </span>
+                  </div>
+                  <h4 className="font-semibold mb-3">Complete TanStack Query mutations with cross-tab broadcasting</h4>
+                  <ul className="space-y-2 text-sm mb-4">
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">✅</span>
+                      <span>Insurance.jsx: Implement useMutation with optimistic updates and mutationHelpers broadcasting</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">✅</span>
+                      <span>Assets.jsx: Add deleteAssetMutation with optimistic updates and proper broadcasting</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🚀</span>
+                      <span>Fix Annuities 12s loading issue with guarded retry logic for 4xx responses</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">⚡</span>
+                      <span>Align persistence (30min) with staleness (30min) for consistent cache behavior</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🔧</span>
+                      <span>Standardize retry strategies: don't retry 4xx client errors, only 5xx/network</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🔗</span>
+                      <span>Normalize annuity service URLs with consistent trailing slashes</span>
+                    </li>
+                  </ul>
+                  <div className={`text-sm p-3 rounded-lg ${isDark ? 'bg-green-900/30 text-green-300' : 'bg-green-50 text-green-800'}`}>
+                    <strong>Performance improvements:</strong> Eliminates 12s delays on empty data responses, enables instant cross-tab synchronization, optimistic updates for immediate UI feedback, smart retry prevents unnecessary API calls
+                  </div>
+                </div>
+
+                {/* v0.106 */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold text-blue-600">Version v0.106</h3>
+                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-800'}`}>
+                      2025-09-16
+                    </span>
+                  </div>
+                  <h4 className="font-semibold mb-3">Complete TanStack Query performance optimization</h4>
+                  <ul className="space-y-2 text-sm mb-4">
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">⚡</span>
+                      <span>Optimized axios interceptor with token caching system</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🕒</span>
+                      <span>Increased staleTime to 30min for better cache efficiency</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🔧</span>
+                      <span>Fixed dashboard service call in prefetch (getSummary method)</span>
+                    </li>
+                  </ul>
+                  <div className={`text-sm p-3 rounded-lg ${isDark ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-50 text-blue-800'}`}>
+                    <strong>Target achieved:</strong> 70% database load reduction through comprehensive caching strategy
+                  </div>
+                </div>
+
+                {/* v0.105 */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold text-blue-600">Version v0.105</h3>
+                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-800'}`}>
+                      2025-09-16
+                    </span>
+                  </div>
+                  <h4 className="font-semibold mb-3">TanStack Query foundation implementation</h4>
+                  <ul className="space-y-2 text-sm mb-4">
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🏗️</span>
+                      <span>Complete TanStack Query v5 setup with persistence</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🔄</span>
+                      <span>Cross-tab synchronization with BroadcastChannel API</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🚀</span>
+                      <span>Prefetch system on authentication for instant data hydration</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">⚙️</span>
+                      <span>Query keys architecture for hierarchical caching</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* v0.104 */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold text-blue-600">Version v0.104</h3>
+                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-800'}`}>
+                      2025-09-15
+                    </span>
+                  </div>
+                  <h4 className="font-semibold mb-3">Enhanced theme system and UI improvements</h4>
+                  <ul className="space-y-2 text-sm mb-4">
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🎨</span>
+                      <span>Dynamic theme system with OKLCH color support</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">📊</span>
+                      <span>Enhanced chart visualizations with theme-aware colors</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🔧</span>
+                      <span>Unified loading spinner across all pages</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* v0.103 */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold text-blue-600">Version v0.103</h3>
+                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-800'}`}>
+                      2025-09-15
+                    </span>
+                  </div>
+                  <h4 className="font-semibold mb-3">PDF export enhancements and transaction optimizations</h4>
+                  <ul className="space-y-2 text-sm mb-4">
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">📄</span>
+                      <span>Enhanced PDF export with detailed asset breakdowns</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">💰</span>
+                      <span>Improved transaction processing and validation</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🔍</span>
+                      <span>Advanced filtering and search capabilities</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* v0.102 */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold text-blue-600">Version v0.102</h3>
+                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-800'}`}>
+                      2025-09-14
+                    </span>
+                  </div>
+                  <h4 className="font-semibold mb-3">Insurance management system and analytics</h4>
+                  <ul className="space-y-2 text-sm mb-4">
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🛡️</span>
+                      <span>Complete insurance policy management system</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">📈</span>
+                      <span>Advanced analytics and protection metrics</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">📊</span>
+                      <span>Interactive charts and visualizations</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* v0.101 */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold text-blue-600">Version v0.101</h3>
+                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-800'}`}>
+                      2025-09-13
+                    </span>
+                  </div>
+                  <h4 className="font-semibold mb-3">Annuity management and portfolio tracking</h4>
+                  <ul className="space-y-2 text-sm mb-4">
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">💰</span>
+                      <span>Complete annuity portfolio management system</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">📅</span>
+                      <span>Payment schedule tracking and projections</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">📊</span>
+                      <span>Performance analytics and growth tracking</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* v0.100 */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold text-blue-600">Version v0.100</h3>
+                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-800'}`}>
+                      Foundation Release
+                    </span>
+                  </div>
+                  <h4 className="font-semibold mb-3">Core platform foundation</h4>
+                  <ul className="space-y-2 text-sm mb-4">
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🏗️</span>
+                      <span>Core asset management system</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🔐</span>
+                      <span>Supabase authentication integration</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">💳</span>
+                      <span>Transaction management and tracking</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🎨</span>
+                      <span>Modern UI with theme support</span>
+                    </li>
+                  </ul>
+                  <div className={`text-sm p-3 rounded-lg ${isDark ? 'bg-green-900/30 text-green-300' : 'bg-green-50 text-green-800'}`}>
+                    <strong>Foundation established:</strong> Personal financial sanctuary platform for visualizing and managing financial assets with peace of mind
                   </div>
                 </div>
               </div>

@@ -49,6 +49,10 @@ export const AuthProvider = ({ children }) => {
           queryFn: ({ signal }) => annuityService.getAnnuities({}, { signal })
         }),
         queryClient.prefetchQuery({
+          queryKey: queryKeys.annuities.summary(),
+          queryFn: ({ signal }) => annuityService.getSummary({ signal })
+        }),
+        queryClient.prefetchQuery({
           queryKey: queryKeys.dashboard.summary(),
           queryFn: ({ signal }) => dashboardService.getSummary({ signal })
         }),
