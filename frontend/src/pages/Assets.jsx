@@ -113,7 +113,7 @@ const Assets = () => {
 
   useEffect(() => {
     log('Assets', 'init');
-    fetchAssets();
+    // TanStack Query automatically fetches on mount, no manual call needed
   }, []);
 
   // Listen for global preferences changes
@@ -637,7 +637,9 @@ const Assets = () => {
       }
       
       closeModal();
-      fetchAssets();
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.list() });
       
     } catch (err) {
       console.error('❌ Form submission error:', err);
@@ -663,7 +665,9 @@ const Assets = () => {
     setActionError(null);
     try {
       const response = await assetsService.deleteAsset(id);
-      fetchAssets();
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.list() });
       
       // Show detailed success message
       const message = response.transactions_deleted > 0 
@@ -1227,7 +1231,10 @@ const Assets = () => {
                           <td colSpan="9" className="py-4 px-4 bg-gray-50">
                             <AnnuityManager 
                               asset={asset} 
-                              onUpdate={fetchAssets}
+                              onUpdate={() => {
+                                queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() });
+                                queryClient.invalidateQueries({ queryKey: queryKeys.transactions.list() });
+                              }}
                             />
                           </td>
                         </tr>
