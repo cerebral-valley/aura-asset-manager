@@ -94,6 +94,96 @@ const AnnuitiesPage = () => {
   // Compute combined loading state
   const loading = annuitiesLoading || summaryLoading
 
+  // TanStack Query mutations for CRUD operations
+  const createAnnuityMutation = useMutation({
+    mutationFn: (annuityData) => annuityService.createAnnuity(annuityData),
+    onMutate: async (newAnnuity) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.annuities.list() })
+
+      // Snapshot the previous value
+      const previousAnnuities = queryClient.getQueryData(queryKeys.annuities.list())
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(queryKeys.annuities.list(), (old = []) => [
+        ...old,
+        { id: 'temp-' + Date.now(), ...newAnnuity }
+      ])
+
+      // Return a context object with the snapshotted value
+      return { previousAnnuities }
+    },
+    onError: (err, newAnnuity, context) => {
+      // Revert to previous state on error
+      queryClient.setQueryData(queryKeys.annuities.list(), context.previousAnnuities)
+    },
+    onSuccess: (data) => {
+      // Broadcast success across tabs with mutationHelpers
+      mutationHelpers.onAnnuitySuccess(queryClient, 'create', { 
+        annuity: data,
+        userId: user?.id 
+      })
+    }
+  })
+
+  const updateAnnuityMutation = useMutation({
+    mutationFn: ({ id, annuityData }) => annuityService.updateAnnuity(id, annuityData),
+    onMutate: async ({ id, annuityData }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.annuities.list() })
+
+      // Snapshot the previous value
+      const previousAnnuities = queryClient.getQueryData(queryKeys.annuities.list())
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(queryKeys.annuities.list(), (old = []) =>
+        old.map(annuity => annuity.id === id ? { ...annuity, ...annuityData } : annuity)
+      )
+
+      // Return a context object with the snapshotted value
+      return { previousAnnuities }
+    },
+    onError: (err, { id, annuityData }, context) => {
+      // Revert to previous state on error
+      queryClient.setQueryData(queryKeys.annuities.list(), context.previousAnnuities)
+    },
+    onSuccess: (data, { id }) => {
+      // Broadcast success across tabs with mutationHelpers
+      mutationHelpers.onAnnuitySuccess(queryClient, 'update', { 
+        annuity: data,
+        annuityId: id,
+        userId: user?.id 
+      })
+    }
+  })
+
+  const deleteAnnuityMutation = useMutation({
+    mutationFn: (annuityId) => annuityService.deleteAnnuity(annuityId),
+    onMutate: async (annuityId) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.annuities.list() })
+
+      // Snapshot the previous value
+      const previousAnnuities = queryClient.getQueryData(queryKeys.annuities.list())
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(queryKeys.annuities.list(), (old = []) =>
+        old.filter(annuity => annuity.id !== annuityId)
+      )
+
+      // Return a context object with the snapshotted value
+      return { previousAnnuities }
+    },
+    onError: (err, annuityId, context) => {
+      // Revert to previous state on error
+      queryClient.setQueryData(queryKeys.annuities.list(), context.previousAnnuities)
+    },
+    onSuccess: (data, annuityId) => {
+      // Broadcast success across tabs with mutationHelpers
+      mutationHelpers.onAnnuitySuccess(queryClient, 'delete', { annuityId })
+    }
+  })
+
   // Handle query errors
   if (annuitiesError) {
     error('Annuities:annuitiesQuery', 'Error fetching annuities', {
@@ -113,41 +203,66 @@ const AnnuitiesPage = () => {
 
   const handleCreateAnnuity = async (annuityData) => {
     try {
-      await annuityService.createAnnuity(annuityData);
-      setShowForm(false);
-      queryClient.invalidateQueries({ queryKey: queryKeys.annuities.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.annuities.summary() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() });
+      // Use create mutation instead of direct service call
+      createAnnuityMutation.mutate(annuityData, {
+        onSuccess: () => {
+          setShowForm(false)
+          log('Annuities:create', 'Annuity created successfully', { annuityData })
+        },
+        onError: (error) => {
+          error('Annuities:create', 'Error creating annuity', {
+            error: error.message,
+            annuityData
+          })
+        }
+      })
     } catch (error) {
-      console.error('Error creating annuity:', error);
+      console.error('Error creating annuity:', error)
     }
-  };
+  }
 
   const handleUpdateAnnuity = async (annuityId, updateData) => {
     try {
-      await annuityService.updateAnnuity(annuityId, updateData);
-      setSelectedAnnuity(null);
-      queryClient.invalidateQueries({ queryKey: queryKeys.annuities.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.annuities.summary() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() });
+      // Use update mutation instead of direct service call
+      updateAnnuityMutation.mutate({ id: annuityId, annuityData: updateData }, {
+        onSuccess: () => {
+          setSelectedAnnuity(null)
+          log('Annuities:update', 'Annuity updated successfully', { annuityId, updateData })
+        },
+        onError: (error) => {
+          error('Annuities:update', 'Error updating annuity', {
+            error: error.message,
+            annuityId,
+            updateData
+          })
+        }
+      })
     } catch (error) {
-      console.error('Error updating annuity:', error);
+      console.error('Error updating annuity:', error)
     }
-  };
+  }
 
   const handleDeleteAnnuity = async (annuityId) => {
     if (window.confirm('Are you sure you want to delete this annuity?')) {
       try {
-        await annuityService.deleteAnnuity(annuityId);
-        setSelectedAnnuity(null);
-        queryClient.invalidateQueries({ queryKey: queryKeys.annuities.list() });
-        queryClient.invalidateQueries({ queryKey: queryKeys.annuities.summary() });
-        queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() });
+        // Use delete mutation instead of direct service call
+        deleteAnnuityMutation.mutate(annuityId, {
+          onSuccess: () => {
+            setSelectedAnnuity(null)
+            log('Annuities:delete', 'Annuity deleted successfully', { annuityId })
+          },
+          onError: (error) => {
+            error('Annuities:delete', 'Error deleting annuity', {
+              error: error.message,
+              annuityId
+            })
+          }
+        })
       } catch (error) {
-        console.error('Error deleting annuity:', error);
+        console.error('Error deleting annuity:', error)
       }
     }
-  };
+  }
 
   const filteredAnnuities = annuities.filter(annuity => {
     const matchesSearch = annuity.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||

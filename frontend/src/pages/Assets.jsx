@@ -1353,9 +1353,11 @@ const Assets = () => {
                             <AnnuityManager 
                               asset={asset} 
                               onUpdate={() => {
-                                queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() });
-                                queryClient.invalidateQueries({ queryKey: queryKeys.transactions.list() });
-                                queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.summary() });
+                                // Use mutationHelpers for cross-tab broadcasting instead of manual invalidation
+                                mutationHelpers.onAssetSuccess(queryClient, 'update', { 
+                                  asset: asset,
+                                  userId: user?.id 
+                                })
                               }}
                             />
                           </td>

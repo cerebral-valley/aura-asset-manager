@@ -5,10 +5,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.108',
+  version: 'v0.110',
   buildDate: '2024-12-28',
-  deploymentId: 'transactions-mutations',
-  description: 'Complete Transactions.jsx mutations implementation with preserved business logic'
+  deploymentId: 'tanstack-migration-complete',
+  description: '100% TanStack Query migration complete - all manual invalidation replaced with mutations'
 }
 
 export const getVersionDisplay = () => {
