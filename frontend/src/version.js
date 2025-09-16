@@ -2,15 +2,14 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.102',
-  commitHash: '870f84b',
+  version: 'v0.103',
   buildDate: '2025-09-16',
-  deploymentId: 'version-tracking-system',
-  description: 'Implement comprehensive version tracking system with Dashboard display'
+  deploymentId: 'fix-infinite-loop-version-tracking',
+  description: 'Remove commit hash from version tracking to prevent infinite loop'
 }
 
 export const getVersionDisplay = () => {
-  return `${VERSION_INFO.version} (${VERSION_INFO.commitHash})`
+  return `${VERSION_INFO.version}`
 }
 
 export const getFullVersionInfo = () => {

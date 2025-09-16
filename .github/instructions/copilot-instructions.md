@@ -151,7 +151,6 @@ git push origin main
    ```javascript
    export const VERSION_INFO = {
      version: 'v0.1XX',           // Increment XX for each deployment
-     commitHash: 'abc1234',       // First 7 chars of commit hash
      buildDate: 'YYYY-MM-DD',     // Current date
      deploymentId: 'feature-name', // Brief description
      description: 'Description of changes'
@@ -160,11 +159,12 @@ git push origin main
 
 2. **Commit Message Format**:
    ```bash
-   git commit -m "type(scope): description
+   git commit -m "Version: v0.1XX
+
+   type(scope): description
    
    - Detailed change 1
-   - Detailed change 2
-   - Version: v0.1XX"
+   - Detailed change 2"
    ```
 
 3. **Version Increment Rules**:
@@ -181,7 +181,7 @@ git push origin main
 4. **Screenshot Evidence**: Take screenshot showing new version deployed
 
 **Version Display Location**: 
-- Dashboard page, top-right corner: `v0.1XX (abc1234)`
+- Dashboard page, top-right corner: `v0.1XX`
 - Visible to user as deployment verification
 - Helps distinguish old vs new deployments during testing
 
