@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.147',
-  buildDate: '2025-09-23',
-  deploymentId: 'trailing-slash-fix',
-  description: 'CRITICAL FIX: Added trailing slashes back to frontend service URLs to match FastAPI backend routes and prevent HTTPS→HTTP redirect CSP violations'
+  version: 'v0.148',
+  buildDate: '2025-01-04',
+  deploymentId: 'https-api-fix',
+  description: 'Fixed API base URL to use HTTPS instead of HTTP for production deployment compatibility'
 }
 
 export const getVersionDisplay = () => {
