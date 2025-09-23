@@ -179,9 +179,10 @@ def get_liquid_assets(
             UserAssetSelection.user_id == current_user.id
         ).all()
         
-        # Create a lookup dict for quick access
-        selection_lookup = {str(sel.asset_id): bool(sel.is_selected) for sel in asset_selections}
+        # Create a lookup dict for quick access using UUID objects directly
+        selection_lookup = {sel.asset_id: bool(sel.is_selected) for sel in asset_selections}
         print(f"🔧 DEBUG: Found {len(asset_selections)} stored asset selections")
+        print(f"🔧 DEBUG: Selection lookup keys: {list(selection_lookup.keys())}")
         
         result = [
             LiquidAsset(
@@ -189,12 +190,14 @@ def get_liquid_assets(
                 name=asset.name,  # type: ignore
                 current_value=asset.current_value or 0,  # type: ignore
                 asset_type=asset.asset_type,  # type: ignore
-                is_selected=selection_lookup.get(str(asset.id), False)  # Get actual selection state
+                is_selected=selection_lookup.get(asset.id, False)  # Use UUID directly for lookup
             )
             for asset in liquid_assets
         ]
         
         print(f"🔧 DEBUG: Returning {len(result)} liquid assets with selection states")
+        for asset in result:
+            print(f"🔧 DEBUG: Asset {asset.name} (ID: {asset.id}) - selected: {asset.is_selected}")
         return result
     except Exception as e:
         print(f"Error in get_liquid_assets: {e}")

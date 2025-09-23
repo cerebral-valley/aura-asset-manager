@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.152',
+  version: 'v0.153',
   buildDate: '2024-12-08',
-  deploymentId: 'add-url-comments',
-  description: 'Added detailed comments explaining FastAPI URL matching requirements'
+  deploymentId: 'fix-asset-selection-lookup',
+  description: 'Fixed UserAssetSelection lookup to use UUID objects directly instead of strings'
 }
 
 export const getVersionDisplay = () => {
