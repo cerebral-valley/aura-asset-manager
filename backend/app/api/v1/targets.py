@@ -174,18 +174,27 @@ def get_liquid_assets(
             ).all()
             print(f"🔧 DEBUG: Found {len(liquid_assets)} liquid assets with case-insensitive match")
         
+        # Get user's asset selections to determine which are selected
+        asset_selections = db.query(UserAssetSelection).filter(
+            UserAssetSelection.user_id == current_user.id
+        ).all()
+        
+        # Create a lookup dict for quick access
+        selection_lookup = {str(sel.asset_id): bool(sel.is_selected) for sel in asset_selections}
+        print(f"🔧 DEBUG: Found {len(asset_selections)} stored asset selections")
+        
         result = [
             LiquidAsset(
                 id=asset.id,  # type: ignore
                 name=asset.name,  # type: ignore
                 current_value=asset.current_value or 0,  # type: ignore
                 asset_type=asset.asset_type,  # type: ignore
-                is_selected=False  # Default to not selected, will be updated by user selections
+                is_selected=selection_lookup.get(str(asset.id), False)  # Get actual selection state
             )
             for asset in liquid_assets
         ]
         
-        print(f"🔧 DEBUG: Returning {len(result)} liquid assets")
+        print(f"🔧 DEBUG: Returning {len(result)} liquid assets with selection states")
         return result
     except Exception as e:
         print(f"Error in get_liquid_assets: {e}")

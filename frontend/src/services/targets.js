@@ -2,27 +2,27 @@ import apiClient from '../lib/api'
 
 export const targetsService = {
   async getTargets(config = {}) {
-    const response = await apiClient.get('/targets/', config)
+    const response = await apiClient.get('/targets', config)
     return response.data
   },
 
   async createTarget(target, config = {}) {
-    const response = await apiClient.post('/targets/', target, config)
+    const response = await apiClient.post('/targets', target, config)
     return response.data
   },
 
   async updateTarget(id, target, config = {}) {
-    const response = await apiClient.put(`/targets/${id}/`, target, config)
+    const response = await apiClient.put(`/targets/${id}`, target, config)
     return response.data
   },
 
   async deleteTarget(id, config = {}) {
-    const response = await apiClient.delete(`/targets/${id}/`, config)
+    const response = await apiClient.delete(`/targets/${id}`, config)
     return response.data
   },
 
   async completeTarget(id, config = {}) {
-    const response = await apiClient.post(`/targets/${id}/complete/`, {}, config)
+    const response = await apiClient.post(`/targets/${id}/complete`, {}, config)
     return response.data
   },
 
@@ -42,12 +42,12 @@ export const targetsService = {
   },
 
   async updateTargetAllocations(targetId, allocations, config = {}) {
-    const response = await apiClient.post(`/targets/${targetId}/allocations/`, allocations, config)
+    const response = await apiClient.post(`/targets/${targetId}/allocations`, allocations, config)
     return response.data
   },
 
   async restoreTarget(id, config = {}) {
-    const response = await apiClient.post(`/targets/${id}/restore/`, {}, config)
+    const response = await apiClient.post(`/targets/${id}/restore`, {}, config)
     return response.data
   }
 }

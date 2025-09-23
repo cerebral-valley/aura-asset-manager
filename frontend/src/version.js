@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.144',
+  version: 'v0.145',
   buildDate: '2025-01-13',
-  deploymentId: 'target-selection-complete',
-  description: 'COMPLETED: Target page asset selection working perfectly. Reverted to secure CORS configuration. Payload reshaping fix successful.'
+  deploymentId: 'target-core-fixes',
+  description: 'CRITICAL FIXES: Asset selection persistence + Edit/Save operations. Fixed backend selection lookup and removed trailing slash redirects.'
 }
 
 export const getVersionDisplay = () => {
