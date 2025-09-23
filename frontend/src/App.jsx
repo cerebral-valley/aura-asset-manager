@@ -12,6 +12,7 @@ import Assets from './pages/Assets'
 import Transactions from './pages/Transactions'
 import Insurance from './pages/Insurance'
 import Annuities from './pages/Annuities'
+import Targets from './pages/Targets'
 import Analytics from './pages/Analytics'
 import UserSettings from './pages/UserSettings'
 import UserGuide from './pages/UserGuide'
@@ -87,6 +88,7 @@ function AppContent() {
         <Route path="/insurance" element={<Insurance />} />
         <Route path="/annuities" element={<Annuities />} />
         <Route path="/transactions" element={<TransactionsPage />} />
+        <Route path="/targets" element={<Targets />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<UserSettings />} />

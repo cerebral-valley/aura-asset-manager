@@ -5,10 +5,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.120',
+  version: 'v0.130',
   buildDate: '2025-09-23',
-  deploymentId: 'agents-md-consolidation',
-  description: 'Consolidated copilot-instructions.md into AGENTS.md - single source of truth for AI coding guidance'
+  deploymentId: 'target-page-feature',
+  description: 'Complete Target page implementation - financial goal tracking with database integration'
 }
 
 export const getVersionDisplay = () => {

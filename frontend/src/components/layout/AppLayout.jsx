@@ -14,9 +14,9 @@ import {
   X,
   Coins,
   Settings,
-  BookOpen
-,
-  User
+  BookOpen,
+  User,
+  Target
 } from 'lucide-react'
 import './AppLayout.css'
 
@@ -117,6 +117,7 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
   const navigation = [
     { name: 'Dashboard', href: '/', icon: Home, id: 'dashboard' },
     { name: 'Assets', href: '/assets', icon: Briefcase, id: 'assets' },
+    { name: 'Targets', href: '/targets', icon: Target, id: 'targets' },
     { name: 'Insurance', href: '/insurance', icon: Shield, id: 'insurance' },
     { name: 'Annuities', href: '/annuities', icon: Coins, id: 'annuities' },
     { name: 'Transactions', href: '/transactions', icon: ArrowRightLeft, id: 'transactions' },
