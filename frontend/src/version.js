@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.137',
+  version: 'v0.138',
   buildDate: '2024-12-21',
-  deploymentId: 'api-routing-fix',
-  description: 'Fixed API endpoint routing issues - removed trailing slashes and resolved backend import problems'
+  deploymentId: 'liquid-assets-fix',
+  description: 'Fixed liquid assets endpoint by filtering asset types instead of non-existent is_liquid column'
 }
 
 export const getVersionDisplay = () => {

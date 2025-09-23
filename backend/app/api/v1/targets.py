@@ -4,6 +4,7 @@ Targets API endpoints for financial goal tracking.
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from app.core.database import get_db
 from app.api.deps import get_current_active_user
 from app.models.user import User
@@ -143,11 +144,27 @@ def get_liquid_assets(
 ):
     """Get all liquid assets for the current user"""
     try:
-        # Get liquid assets owned by the user
+        # Define liquid asset types (assets that can be easily converted to cash)
+        # Use case-insensitive matching and common variations found in the system
+        liquid_asset_types = [
+            'cash', 'bank', 'stocks', 'etf', 'mutual_funds', 'mutual funds',
+            'money_market', 'bonds', 'treasury', 'checking', 'savings', 
+            'crypto', 'cryptocurrency', 'Cash In Hand', 'Bank', 'Stocks',
+            'Etf', 'ETF', 'Mutual Funds', 'Crypto', 'Bonds'
+        ]
+        
+        # Get liquid assets owned by the user with case-insensitive matching
         liquid_assets = db.query(Asset).filter(
             Asset.user_id == current_user.id,
-            Asset.is_liquid == True
+            Asset.asset_type.in_(liquid_asset_types)
         ).all()
+        
+        # If no exact matches, try case-insensitive search
+        if not liquid_assets:
+            liquid_assets = db.query(Asset).filter(
+                Asset.user_id == current_user.id,
+                func.lower(Asset.asset_type).in_([t.lower() for t in liquid_asset_types])
+            ).all()
         
         return [
             LiquidAsset(
