@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.149',
-  buildDate: '2025-01-04',
-  deploymentId: 'env-priority-fix',
-  description: 'Removed .env.local to ensure .env.production HTTPS URLs take precedence for production deployment'
+  version: 'v0.151',
+  buildDate: '2024-12-08',
+  deploymentId: 'fix-trailing-slashes',
+  description: 'Fixed URL trailing slashes to match FastAPI routes exactly, prevent 307 redirects'
 }
 
 export const getVersionDisplay = () => {

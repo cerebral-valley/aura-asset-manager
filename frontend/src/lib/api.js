@@ -3,7 +3,8 @@ import { supabase } from './supabase'
 
 // Ensure HTTPS is always used - force HTTPS for security and CSP compliance
 const rawUrl = import.meta.env.VITE_API_BASE_URL || 'https://aura-asset-manager-production.up.railway.app/api/v1'
-const API_BASE_URL = rawUrl.replace(/^http:/g, 'https:')
+// TEMPORARY: Force HTTPS URL to resolve CSP violations
+const API_BASE_URL = 'https://aura-asset-manager-production.up.railway.app/api/v1'
 
 // Debug log to ensure correct URL (remove in production)
 if (import.meta.env.DEV) {
