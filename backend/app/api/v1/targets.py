@@ -25,7 +25,7 @@ from datetime import datetime
 
 router = APIRouter()
 
-@router.get("/", response_model=List[TargetSchema])
+@router.get("", response_model=List[TargetSchema])
 async def get_targets(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -38,7 +38,7 @@ async def get_targets(
     
     return targets
 
-@router.post("/", response_model=TargetSchema)
+@router.post("", response_model=TargetSchema)
 async def create_target(
     target_data: TargetCreate,
     current_user: User = Depends(get_current_active_user),

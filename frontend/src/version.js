@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.145',
-  buildDate: '2025-01-13',
-  deploymentId: 'target-core-fixes',
-  description: 'CRITICAL FIXES: Asset selection persistence + Edit/Save operations. Fixed backend selection lookup and removed trailing slash redirects.'
+  version: 'v0.146',
+  buildDate: '2025-09-23',
+  deploymentId: 'backend-route-fix',
+  description: 'BACKEND FIX: Removed trailing slashes from router.get/post routes to prevent Railway HTTPS→HTTP redirects that browsers block'
 }
 
 export const getVersionDisplay = () => {
