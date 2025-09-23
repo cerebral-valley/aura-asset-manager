@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.139',
-  buildDate: '2024-12-21',
-  deploymentId: 'debug-liquid-assets',
-  description: 'Added debug logging to liquid assets endpoint to trace the is_liquid error'
+  version: 'v0.140',
+  buildDate: '2025-01-13',
+  deploymentId: 'api-connectivity-fix',
+  description: 'Fixed API connectivity issues by creating .env.production file with correct HTTPS endpoints. Resolved CORS and CSP violations preventing PUT/POST requests to targets endpoints.'
 }
 
 export const getVersionDisplay = () => {
