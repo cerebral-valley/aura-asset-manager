@@ -5,10 +5,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.130',
-  buildDate: '2025-09-23',
-  deploymentId: 'target-page-feature',
-  description: 'Complete Target page implementation - financial goal tracking with database integration'
+  version: 'v0.131',
+  buildDate: '2024-12-21',
+  deploymentId: 'target-page-complete-rebuild',
+  description: 'Complete Target page rebuild with 5-section design: liquid assets selection, net worth milestone, custom targets grid, allocation overview, target logs'
 }
 
 export const getVersionDisplay = () => {
