@@ -144,6 +144,8 @@ def get_liquid_assets(
 ):
     """Get all liquid assets for the current user"""
     try:
+        print("🔧 DEBUG: get_liquid_assets called - NEW VERSION v0.138")
+        
         # Define liquid asset types (assets that can be easily converted to cash)
         # Use case-insensitive matching and common variations found in the system
         liquid_asset_types = [
@@ -153,30 +155,43 @@ def get_liquid_assets(
             'Etf', 'ETF', 'Mutual Funds', 'Crypto', 'Bonds'
         ]
         
+        print(f"🔧 DEBUG: Filtering assets by types: {liquid_asset_types}")
+        
         # Get liquid assets owned by the user with case-insensitive matching
         liquid_assets = db.query(Asset).filter(
             Asset.user_id == current_user.id,
             Asset.asset_type.in_(liquid_asset_types)
         ).all()
         
+        print(f"🔧 DEBUG: Found {len(liquid_assets)} liquid assets with exact match")
+        
         # If no exact matches, try case-insensitive search
         if not liquid_assets:
+            print("🔧 DEBUG: No exact matches, trying case-insensitive search")
             liquid_assets = db.query(Asset).filter(
                 Asset.user_id == current_user.id,
                 func.lower(Asset.asset_type).in_([t.lower() for t in liquid_asset_types])
             ).all()
+            print(f"🔧 DEBUG: Found {len(liquid_assets)} liquid assets with case-insensitive match")
         
-        return [
+        result = [
             LiquidAsset(
                 id=asset.id,  # type: ignore
                 name=asset.name,  # type: ignore
                 current_value=asset.current_value or 0,  # type: ignore
-                asset_type=asset.asset_type  # type: ignore
+                asset_type=asset.asset_type,  # type: ignore
+                is_selected=False  # Default to not selected, will be updated by user selections
             )
             for asset in liquid_assets
         ]
+        
+        print(f"🔧 DEBUG: Returning {len(result)} liquid assets")
+        return result
     except Exception as e:
         print(f"Error in get_liquid_assets: {e}")
+        print(f"🔧 DEBUG: Exception type: {type(e)}")
+        import traceback
+        print(f"🔧 DEBUG: Traceback: {traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}"

@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.138',
+  version: 'v0.139',
   buildDate: '2024-12-21',
-  deploymentId: 'liquid-assets-fix',
-  description: 'Fixed liquid assets endpoint by filtering asset types instead of non-existent is_liquid column'
+  deploymentId: 'debug-liquid-assets',
+  description: 'Added debug logging to liquid assets endpoint to trace the is_liquid error'
 }
 
 export const getVersionDisplay = () => {
