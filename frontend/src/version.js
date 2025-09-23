@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.146',
+  version: 'v0.147',
   buildDate: '2025-09-23',
-  deploymentId: 'backend-route-fix',
-  description: 'BACKEND FIX: Removed trailing slashes from router.get/post routes to prevent Railway HTTPS→HTTP redirects that browsers block'
+  deploymentId: 'trailing-slash-fix',
+  description: 'CRITICAL FIX: Added trailing slashes back to frontend service URLs to match FastAPI backend routes and prevent HTTPS→HTTP redirect CSP violations'
 }
 
 export const getVersionDisplay = () => {
