@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.148',
+  version: 'v0.149',
   buildDate: '2025-01-04',
-  deploymentId: 'https-api-fix',
-  description: 'Fixed API base URL to use HTTPS instead of HTTP for production deployment compatibility'
+  deploymentId: 'env-priority-fix',
+  description: 'Removed .env.local to ensure .env.production HTTPS URLs take precedence for production deployment'
 }
 
 export const getVersionDisplay = () => {
