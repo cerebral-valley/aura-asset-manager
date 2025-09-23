@@ -78,6 +78,8 @@ export const queryKeys = {
       return [...queryKeys.targets.baseKey, 'list', normalizeFilters(filters)]
     },
     detail: (id) => [...queryKeys.targets.baseKey, 'detail', id],
+    liquidAssets: () => [...queryKeys.targets.baseKey, 'liquid-assets'],
+    completed: () => [...queryKeys.targets.baseKey, 'completed'],
   },
 
   // Dashboard and aggregated queries

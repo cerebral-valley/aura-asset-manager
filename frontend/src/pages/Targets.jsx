@@ -17,19 +17,26 @@ import { Progress } from '../components/ui/progress';
 import { Badge } from '../components/ui/badge';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { Checkbox } from '../components/ui/checkbox';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import Loading from '../components/ui/Loading';
 import SafeSection from '../components/util/SafeSection';
 import CreateTargetModal from '../components/targets/CreateTargetModal';
+import EditTargetModal from '../components/targets/EditTargetModal';
+import DeleteConfirmModal from '../components/targets/DeleteConfirmModal';
+import ViewTargetDetailsModal from '../components/targets/ViewTargetDetailsModal';
 import { log, warn, error } from '../lib/debug';
 
 const Targets = () => {
   const { user } = useAuth();
   const { formatCurrency } = useCurrency();
   const queryClient = useQueryClient();
-  const [selectedAssets, setSelectedAssets] = useState(new Set());
   const [showTargetModal, setShowTargetModal] = useState(false);
   const [showNetWorthModal, setShowNetWorthModal] = useState(false);
   const [editingTarget, setEditingTarget] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [allocations, setAllocations] = useState({});
+  const [viewingTarget, setViewingTarget] = useState(null);
 
   // TanStack Query for targets data
   const {
@@ -55,6 +62,107 @@ const Targets = () => {
     enabled: !!user,
     staleTime: 5 * 60 * 1000,
     retry: 3,
+  });
+
+  // TanStack Query for liquid assets with selection status
+  const {
+    data: liquidAssets = [],
+    isLoading: liquidAssetsLoading,
+    error: liquidAssetsError
+  } = useQuery({
+    queryKey: queryKeys.targets.liquidAssets(),
+    queryFn: ({ signal }) => targetsService.getLiquidAssets({ signal }),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+    retry: 3,
+  });
+
+  // TanStack Query for completed targets
+  const {
+    data: completedTargets = [],
+    isLoading: completedTargetsLoading,
+    error: completedTargetsError
+  } = useQuery({
+    queryKey: queryKeys.targets.completed(),
+    queryFn: ({ signal }) => targetsService.getCompletedTargets({ signal }),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+    retry: 3,
+  });
+
+  // Mutation for updating asset selections
+  const updateAssetSelectionsMutation = useMutation({
+    mutationFn: targetsService.updateAssetSelections,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.targets.liquidAssets() });
+      toast.success('Asset selection updated successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to update asset selections: ' + (error.response?.data?.detail || 'Unknown error'));
+    }
+  });
+
+  // Mutation for updating target
+  const updateTargetMutation = useMutation({
+    mutationFn: ({ id, data }) => targetsService.updateTarget(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.targets.list() });
+      toast.success('Target updated successfully');
+      setEditingTarget(null);
+    },
+    onError: (error) => {
+      toast.error('Failed to update target: ' + (error.response?.data?.detail || 'Unknown error'));
+    }
+  });
+
+  // Mutation for deleting target
+  const deleteTargetMutation = useMutation({
+    mutationFn: targetsService.deleteTarget,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.targets.list() });
+      toast.success('Target deleted successfully');
+      setShowDeleteConfirm(null);
+    },
+    onError: (error) => {
+      toast.error('Failed to delete target: ' + (error.response?.data?.detail || 'Unknown error'));
+    }
+  });
+
+  // Mutation for completing target
+  const completeTargetMutation = useMutation({
+    mutationFn: targetsService.completeTarget,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.targets.list() });
+      toast.success('Target completed! 🎉');
+    },
+    onError: (error) => {
+      toast.error('Failed to complete target: ' + (error.response?.data?.detail || 'Unknown error'));
+    }
+  });
+
+  // Mutation for updating target allocations
+  const updateAllocationsMutation = useMutation({
+    mutationFn: ({ targetId, allocations }) => targetsService.updateTargetAllocations(targetId, allocations),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.targets.list() });
+      toast.success('Allocation updated successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to update allocation: ' + (error.response?.data?.detail || 'Unknown error'));
+    }
+  });
+
+  // Mutation for restoring target
+  const restoreTargetMutation = useMutation({
+    mutationFn: targetsService.restoreTarget,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.targets.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.targets.completed() });
+      toast.success('Target restored successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to restore target: ' + (error.response?.data?.detail || 'Unknown error'));
+    }
   });
 
   // Helper functions
@@ -89,11 +197,7 @@ const Targets = () => {
   };
 
   // Calculate totals and progress
-  const liquidAssets = assets.filter(asset => 
-    ['stocks', 'crypto', 'cash', 'savings', 'bonds', 'etf'].includes(asset.asset_type)
-  );
-
-  const selectedAssetsList = liquidAssets.filter(asset => selectedAssets.has(asset.id));
+  const selectedAssetsList = liquidAssets.filter(asset => asset.is_selected);
   const selectedAssetsTotal = selectedAssetsList.reduce((sum, asset) => {
     const value = parseFloat(asset.current_value) || 0;
     return sum + value;
@@ -101,7 +205,6 @@ const Targets = () => {
   
   const netWorthTarget = targets.find(t => t.target_type === 'net_worth');
   const customTargets = targets.filter(t => t.target_type === 'custom' && t.status === 'active');
-  const completedTargets = targets.filter(t => t.status === 'completed' || t.status === 'archived');
 
   const totalNetWorth = assets.reduce((sum, asset) => {
     const value = parseFloat(asset.current_value) || 0;
@@ -152,23 +255,107 @@ const Targets = () => {
     }
   };
 
-  const toggleAssetSelection = (assetId) => {
-    const newSelected = new Set(selectedAssets);
-    if (newSelected.has(assetId)) {
-      newSelected.delete(assetId);
-    } else {
-      newSelected.add(assetId);
+  const handleAssetToggle = async (assetId, currentlySelected) => {
+    const updatedSelections = liquidAssets.map(asset => ({
+      asset_id: asset.id,
+      is_selected: asset.id === assetId ? !currentlySelected : asset.is_selected
+    }));
+    
+    try {
+      await updateAssetSelectionsMutation.mutateAsync({
+        selections: updatedSelections
+      });
+    } catch (error) {
+      // Error already handled by mutation
     }
-    setSelectedAssets(newSelected);
   };
 
-  if (targetsLoading || assetsLoading) {
+  // Handle allocation change
+  const handleAllocationChange = (targetId, percentage) => {
+    setAllocations(prev => ({
+      ...prev,
+      [targetId]: percentage
+    }));
+  };
+
+  // Handle save allocation
+  const handleSaveAllocation = async (targetId) => {
+    const percentage = allocations[targetId];
+    if (percentage === undefined || percentage < 0 || percentage > 100) {
+      toast.error('Please enter a valid allocation percentage (0-100)');
+      return;
+    }
+
+    const allocationAmount = (selectedAssetsTotal * percentage) / 100;
+    
+    try {
+      await updateAllocationsMutation.mutateAsync({
+        targetId,
+        allocations: [{
+          allocation_amount: allocationAmount,
+          allocation_percentage: percentage
+        }]
+      });
+    } catch (error) {
+      // Error already handled by mutation
+    }
+  };
+
+  // Calculate allocation details for a target
+  const calculateAllocationDetails = (target) => {
+    const allocationPercentage = allocations[target.id] || target.allocation_percentage || 35; // Default 35%
+    const allocatedAmount = (selectedAssetsTotal * allocationPercentage) / 100;
+    
+    // Calculate monthly savings needed based on target date
+    let monthlySavings = 0;
+    if (target.target_date) {
+      const targetDate = new Date(target.target_date);
+      const now = new Date();
+      const monthsRemaining = Math.max(1, Math.ceil((targetDate - now) / (1000 * 60 * 60 * 24 * 30)));
+      const remainingAmount = Math.max(0, target.target_amount - allocatedAmount);
+      monthlySavings = remainingAmount / monthsRemaining;
+    }
+
+    return {
+      percentage: allocationPercentage,
+      amount: allocatedAmount,
+      monthlySavings
+    };
+  };
+
+  // Calculate total allocation overview
+  const calculateAllocationOverview = () => {
+    const totalAllocatedPercentage = customTargets.reduce((sum, target) => {
+      const details = calculateAllocationDetails(target);
+      return sum + details.percentage;
+    }, 0);
+
+    const totalAllocatedAmount = (selectedAssetsTotal * totalAllocatedPercentage) / 100;
+    const availableForAllocation = selectedAssetsTotal - totalAllocatedAmount;
+
+    return {
+      totalAllocatedPercentage,
+      totalAllocatedAmount,
+      availableForAllocation,
+      isOverAllocated: totalAllocatedPercentage > 100
+    };
+  };
+
+  // Handle refresh assets
+  const handleRefreshAssets = () => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.targets.liquidAssets() });
+    queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() });
+    toast.success('Assets refreshed successfully');
+  };
+
+  if (targetsLoading || liquidAssetsLoading || completedTargetsLoading) {
     return <Loading pageName="Targets" />;
   }
 
-  if (targetsError || assetsError) {
+  if (targetsError || liquidAssetsError || completedTargetsError) {
     const errorMessage = targetsError?.response?.data?.detail || 
-                         assetsError?.response?.data?.detail || 
+                         liquidAssetsError?.response?.data?.detail || 
+                         completedTargetsError?.response?.data?.detail ||
                          'Failed to load data';
     return (
       <Alert variant="destructive">
@@ -201,7 +388,7 @@ const Targets = () => {
                 Select assets to include in your allocation pool
               </CardDescription>
             </div>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleRefreshAssets}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh Assets
             </Button>
@@ -218,8 +405,8 @@ const Targets = () => {
                   <div key={asset.id} className="flex items-center justify-between p-3 border rounded-md hover:bg-muted/30 transition-colors">
                     <div className="flex items-center space-x-3">
                       <Checkbox
-                        checked={selectedAssets.has(asset.id)}
-                        onCheckedChange={() => toggleAssetSelection(asset.id)}
+                        checked={asset.is_selected}
+                        onCheckedChange={() => handleAssetToggle(asset.id, asset.is_selected)}
                       />
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-sm truncate">{asset.name}</p>
@@ -257,11 +444,14 @@ const Targets = () => {
               <CardTitle className="text-xl">🏆 {themeLabels.netWorthTitle}</CardTitle>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
-                <Edit className="h-4 w-4 mr-2" />
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setEditingTarget(netWorthTarget)}
+              >
+                <Edit3 className="h-4 w-4 mr-2" />
                 Edit
               </Button>
-              <Button variant="outline" size="sm">Save</Button>
             </div>
           </CardHeader>
           <CardContent>
@@ -328,6 +518,7 @@ const Targets = () => {
               const progress = calculateTargetProgress(target);
               const status = getTargetStatus(target);
               const StatusIcon = status.icon;
+              const allocationDetails = calculateAllocationDetails(target);
               
               return (
                 <Card key={target.id} className="hover:shadow-md transition-shadow">
@@ -345,35 +536,86 @@ const Targets = () => {
                       <div>
                         <div className="flex justify-between mb-2">
                           <span className="text-sm text-muted-foreground">Target: {formatCurrency(target.target_amount)}</span>
-                          <span className="text-sm font-semibold">{progress.toFixed(1)}% ({formatCurrency(target.total_allocated_amount || 0)})</span>
+                          <span className="text-sm font-semibold">{progress.toFixed(1)}% ({formatCurrency(allocationDetails.amount)})</span>
                         </div>
                         <Progress value={progress} className="h-2" />
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-muted-foreground">Allocation:</p>
-                          <p className="font-medium">35%</p>
+                      {/* Allocation Controls */}
+                      <div className="bg-muted/30 p-3 rounded-md space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor={`allocation-${target.id}`} className="text-sm font-medium">
+                            Allocation %:
+                          </Label>
+                          <Input
+                            id={`allocation-${target.id}`}
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={allocations[target.id] || allocationDetails.percentage}
+                            onChange={(e) => handleAllocationChange(target.id, parseFloat(e.target.value) || 0)}
+                            className="w-20 h-8"
+                          />
+                          <Button 
+                            size="sm"
+                            onClick={() => handleSaveAllocation(target.id)}
+                            disabled={updateAllocationsMutation.isPending}
+                          >
+                            Save
+                          </Button>
                         </div>
-                        <div>
-                          <p className="text-muted-foreground">Monthly:</p>
-                          <p className="font-medium">{formatCurrency(625)}</p>
+                        
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <p className="text-muted-foreground">Allocated Amount:</p>
+                            <p className="font-medium">{formatCurrency(allocationDetails.amount)}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Monthly Needed:</p>
+                            <p className="font-medium">{formatCurrency(allocationDetails.monthlySavings)}</p>
+                          </div>
+                          {target.target_date && (
+                            <>
+                              <div>
+                                <p className="text-muted-foreground">Due:</p>
+                                <p className="font-medium">{new Date(target.target_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</p>
+                              </div>
+                            </>
+                          )}
                         </div>
-                        {target.target_date && (
-                          <>
-                            <div>
-                              <p className="text-muted-foreground">Due:</p>
-                              <p className="font-medium">{new Date(target.target_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</p>
-                            </div>
-                          </>
-                        )}
                       </div>
 
                       <div className="flex gap-2 pt-2">
-                        <Button variant="outline" size="sm" className="flex-1">Save</Button>
-                        <Button variant="outline" size="sm" className="flex-1">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => setEditingTarget(target)}
+                          className="flex-1"
+                        >
+                          <Edit3 className="h-3 w-3 mr-1" />
+                          Edit
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setShowDeleteConfirm(target)}
+                          className="flex-1"
+                        >
                           <Trash2 className="h-3 w-3 mr-1" />
-                          Remove
+                          Delete
+                        </Button>
+                      </div>
+                      
+                      <div className="flex gap-2 pt-2">
+                        <Button 
+                          variant="default" 
+                          size="sm"
+                          onClick={() => completeTargetMutation.mutate(target.id)}
+                          disabled={completeTargetMutation.isPending}
+                          className="flex-1"
+                        >
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          {completeTargetMutation.isPending ? 'Completing...' : 'Mark Complete'}
                         </Button>
                       </div>
                     </div>
@@ -414,28 +656,42 @@ const Targets = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total Allocated:</p>
-                  <p className="text-xl font-bold">{formatCurrency(selectedAssetsTotal * 0.85)} (85%)</p>
+                  <p className="text-xl font-bold">
+                    {formatCurrency(calculateAllocationOverview().totalAllocatedAmount)} 
+                    ({calculateAllocationOverview().totalAllocatedPercentage.toFixed(1)}%)
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Available for Allocation:</p>
-                  <p className="text-xl font-bold">{formatCurrency(selectedAssetsTotal * 0.15)}</p>
+                  <p className="text-xl font-bold">{formatCurrency(calculateAllocationOverview().availableForAllocation)}</p>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    ⚠️ Vacation target behind schedule - consider increasing allocation or extending deadline
-                  </AlertDescription>
-                </Alert>
+                {calculateAllocationOverview().isOverAllocated && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      ⚠️ Over-allocated by {(calculateAllocationOverview().totalAllocatedPercentage - 100).toFixed(1)}% - please reduce some allocations
+                    </AlertDescription>
+                  </Alert>
+                )}
                 
-                <Alert className="border-green-200 bg-green-50">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <AlertDescription className="text-green-800">
-                    ✅ All other targets on track for completion
-                  </AlertDescription>
-                </Alert>
+                {customTargets.some(target => getTargetStatus(target).status === 'behind') ? (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      ⚠️ Some targets behind schedule - consider increasing allocation or extending deadlines
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <Alert className="border-green-200 bg-green-50">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <AlertDescription className="text-green-800">
+                      ✅ All targets on track for completion
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
             </div>
           </CardContent>
@@ -470,13 +726,22 @@ const Targets = () => {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => setViewingTarget(target)}
+                      >
                         <Eye className="h-4 w-4 mr-1" />
                         View Details
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => restoreTargetMutation.mutate(target.id)}
+                        disabled={restoreTargetMutation.isPending}
+                      >
                         <RotateCcw className="h-4 w-4 mr-1" />
-                        Restore Target
+                        {restoreTargetMutation.isPending ? 'Restoring...' : 'Restore Target'}
                       </Button>
                     </div>
                   </div>
@@ -497,6 +762,22 @@ const Targets = () => {
         isOpen={showNetWorthModal} 
         onClose={() => setShowNetWorthModal(false)} 
         targetType="net_worth"
+      />
+      <EditTargetModal
+        isOpen={!!editingTarget}
+        onClose={() => setEditingTarget(null)}
+        target={editingTarget}
+      />
+      <DeleteConfirmModal
+        isOpen={!!showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(null)}
+        target={showDeleteConfirm}
+      />
+      <ViewTargetDetailsModal
+        isOpen={!!viewingTarget}
+        onClose={() => setViewingTarget(null)}
+        target={viewingTarget}
+        formatCurrency={formatCurrency}
       />
     </SafeSection>
   );

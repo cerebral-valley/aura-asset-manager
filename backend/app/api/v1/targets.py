@@ -11,8 +11,11 @@ from app.models.target import Target, TargetAllocation, UserAssetSelection
 from app.schemas.target import (
     Target as TargetSchema,
     TargetCreate,
-    TargetUpdate
+    TargetUpdate,
+    AssetSelectionUpdate,
+    LiquidAsset
 )
+from app.schemas.asset import Asset as AssetSchema
 from typing import List
 from uuid import UUID
 from decimal import Decimal
@@ -130,3 +133,204 @@ async def delete_target(
     db.commit()
     
     return {"message": "Target deleted successfully"}
+
+
+@router.get("/liquid-assets", response_model=List[LiquidAsset])
+async def get_liquid_assets(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get user's liquid assets with selection status."""
+    from app.models.asset import Asset
+    
+    # Get all liquid assets for the user
+    assets = db.query(Asset).filter(
+        Asset.user_id == current_user.id,
+        Asset.asset_type.in_(['stocks', 'crypto', 'bonds', 'etf', 'cash', 'bank'])
+    ).all()
+    
+    # Get user selections
+    selections = db.query(UserAssetSelection).filter(
+        UserAssetSelection.user_id == current_user.id
+    ).all()
+    selection_map = {str(s.asset_id): s.is_selected for s in selections}
+    
+    # Combine asset data with selection status
+    liquid_assets = []
+    for asset in assets:
+        is_selected = selection_map.get(str(asset.id), True)  # Default to selected
+        liquid_assets.append({
+            "id": asset.id,
+            "name": asset.name,
+            "asset_type": asset.asset_type,
+            "current_value": asset.current_value,
+            "is_selected": is_selected
+        })
+    
+    return liquid_assets
+
+
+@router.put("/liquid-assets", response_model=dict)
+async def update_asset_selections(
+    selections: AssetSelectionUpdate,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Update user's liquid asset selections."""
+    for asset_id, is_selected in selections.selections.items():
+        # Try to get existing selection
+        existing = db.query(UserAssetSelection).filter(
+            UserAssetSelection.user_id == current_user.id,
+            UserAssetSelection.asset_id == UUID(asset_id)
+        ).first()
+        
+        if existing:
+            db.query(UserAssetSelection).filter(
+                UserAssetSelection.id == existing.id
+            ).update({"is_selected": is_selected})
+        else:
+            # Create new selection
+            selection = UserAssetSelection(
+                user_id=current_user.id,
+                asset_id=UUID(asset_id),
+                is_selected=is_selected
+            )
+            db.add(selection)
+    
+    db.commit()
+    return {"message": "Asset selections updated successfully"}
+
+
+@router.post("/{target_id}/complete", response_model=TargetSchema)
+async def complete_target(
+    target_id: UUID,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Mark a target as completed and move to logs."""
+    target = db.query(Target).filter(
+        Target.id == target_id,
+        Target.user_id == current_user.id
+    ).first()
+    
+    if not target:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Target not found"
+        )
+    
+    # Mark as completed
+    db.query(Target).filter(Target.id == target_id).update({
+        "status": "completed",
+        "updated_at": datetime.utcnow()
+    })
+    
+    db.commit()
+    db.refresh(target)
+    
+    return target
+
+
+@router.get("/completed", response_model=List[TargetSchema])
+async def get_completed_targets(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get all completed targets for target logs."""
+    completed_targets = db.query(Target).filter(
+        Target.user_id == current_user.id,
+        Target.status == 'completed'
+    ).order_by(Target.updated_at.desc()).all()
+    
+    return completed_targets
+
+
+@router.post("/{target_id}/restore", response_model=TargetSchema)
+async def restore_target(
+    target_id: UUID,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Restore a completed or archived target back to active status."""
+    target = db.query(Target).filter(
+        Target.id == target_id,
+        Target.user_id == current_user.id,
+        Target.status.in_(['completed', 'archived'])
+    ).first()
+    
+    if not target:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Target not found or not in completed/archived status"
+        )
+    
+    # Check if user already has max active targets (4 custom + 1 net worth)
+    if str(target.target_type) == 'custom':
+        current_targets_count = db.query(Target).filter(
+            Target.user_id == current_user.id,
+            Target.status == 'active',
+            Target.target_type == 'custom'
+        ).count()
+        
+        if current_targets_count >= 4:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Maximum of 4 custom targets allowed. Please complete or delete an existing target first."
+            )
+    
+    # Restore target to active status
+    result = db.query(Target).filter(Target.id == target_id).update({
+        "status": "active",
+        "updated_at": datetime.utcnow()
+    })
+    
+    db.commit()
+    
+    # Fetch updated target
+    updated_target = db.query(Target).filter(Target.id == target_id).first()
+    return updated_target
+
+
+@router.post("/{target_id}/allocations")
+async def update_target_allocations(
+    target_id: UUID,
+    allocations: List[dict],  # [{"asset_id": "uuid", "amount": 1000.00}]
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Update allocations for a specific target."""
+    target = db.query(Target).filter(
+        Target.id == target_id,
+        Target.user_id == current_user.id
+    ).first()
+    
+    if not target:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Target not found"
+        )
+    
+    # Delete existing allocations
+    db.query(TargetAllocation).filter(
+        TargetAllocation.target_id == target_id
+    ).delete()
+    
+    # Add new allocations
+    total_allocated = Decimal('0')
+    for allocation in allocations:
+        if allocation['amount'] > 0:
+            target_allocation = TargetAllocation(
+                target_id=target_id,
+                asset_id=UUID(allocation['asset_id']),
+                allocation_amount=Decimal(str(allocation['amount']))
+            )
+            db.add(target_allocation)
+            total_allocated += Decimal(str(allocation['amount']))
+    
+    # Update target's total allocated amount
+    db.query(Target).filter(Target.id == target_id).update({
+        "total_allocated_amount": total_allocated
+    })
+    
+    db.commit()
+    return {"message": "Allocations updated successfully"}

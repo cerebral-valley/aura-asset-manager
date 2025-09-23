@@ -63,12 +63,15 @@ The Target Page allows users to set and track financial aspirations with a focus
 │ ████████████░░░░    │    │ ██████░░░░░░░░░░    │
 │ 75% ($37,500)       │    │ 40% ($6,000)        │
 │                     │    │                     │
+│ Allocated Amount:   │    │ Allocated Amount:   │
+│ $37,500            │    │ $6,000             │
 │ Allocation: 35%     │    │ Allocation: 10%     │
 │ Monthly: $625       │    │ Monthly: $450       │
 │ Due: Jan 2026       │    │ Due: Jun 2025       │
 │ Status: ✅ On track │    │ Status: ⚠️ Behind   │
 │                     │    │                     │
-│ [Save] [Remove]     │    │ [Save] [Remove]     │
+│ [Save][Edit][Remove]│    │ [Save][Edit][Remove]│
+│ [Completed]         │    │ [Completed]         │
 └─────────────────────┘    └─────────────────────┘
 
 ┌─────────────────────┐    ┌─────────────────────┐
@@ -77,13 +80,17 @@ The Target Page allows users to set and track financial aspirations with a focus
 │ ██████████████████  │    │ Create your next    │
 │ 90% ($22,500)       │    │ financial milestone │
 │                     │    │                     │
-│ Allocation: 25%     │    │                     │
-│ Monthly: $125       │    │ Monthly: $125       │
-│ Due: Dec 2025       │    │ Due: Dec 2025       │
-│ Status: ✅ On track │    │ Status: ✅ On track │
+│ Allocated Amount:   │    │ Allocated Amount:   │
+│ $22,500             │    │ $0                  │
+│ Allocation: 35%     │    │ Allocation: 10%     │
+│ Monthly: $625       │    │ Monthly: $0         │
+│ Due: Jan 2026       │    │ Due:                │
+│ Status: ✅ On track │    │ Status:             │
 │                     │    │                     │
-│ [Save] [Remove]     │    │ [+ Create Target]   │
+│ [Save][Edit][Remove]│    │ [Save][Edit][Remove]│
+│ [Completed]         │    │ [Completed]         │
 └─────────────────────┘    └─────────────────────┘
+
 ```
 
 **Features:**

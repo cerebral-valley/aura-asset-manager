@@ -68,9 +68,9 @@ class AssetSelectionBase(BaseModel):
     """Base asset selection schema."""
     is_selected: bool = True
 
-class AssetSelectionUpdate(AssetSelectionBase):
-    """Schema for updating asset selection."""
-    pass
+class AssetSelectionUpdate(BaseModel):
+    """Schema for updating asset selections."""
+    selections: Dict[str, bool]  # asset_id -> is_selected
 
 class AssetSelection(AssetSelectionBase):
     """Schema for asset selection response."""
