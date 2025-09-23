@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.141',
+  version: 'v0.142',
   buildDate: '2025-01-13',
-  deploymentId: 'target-payload-fix',
-  description: 'Fixed asset selection payload format - reshaped from array to flat dictionary to match backend schema expectations'
+  deploymentId: 'cors-railway-fix',
+  description: 'Fixed CORS configuration for Railway deployment - explicitly allow Vercel domains without wildcard dependency'
 }
 
 export const getVersionDisplay = () => {

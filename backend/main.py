@@ -75,15 +75,25 @@ def is_allowed_origin(origin: str) -> bool:
     
     return False
 
-# Get dynamic allowed origins
+# Get dynamic allowed origins - Fixed for Railway deployment
 def get_allowed_origins():
     """Get allowed origins including dynamic ones."""
     base_origins = settings.ALLOWED_ORIGINS.copy()
     
-    # In production, be more permissive with Vercel URLs for now
-    if settings.is_production:
-        base_origins.append("*")  # Temporary - allows all origins
+    # For Railway deployment, always allow Vercel domains
+    # Add specific Vercel domains to ensure CORS works
+    vercel_domains = [
+        "https://aura-asset-manager.vercel.app",
+        "https://aura-asset-manager-git-main-cerebral-valley.vercel.app",
+        "https://aura-asset-manager-cerebral-valley.vercel.app"
+    ]
     
+    for domain in vercel_domains:
+        if domain not in base_origins:
+            base_origins.append(domain)
+    
+    # Also allow wildcard for Vercel preview deployments
+    print(f"🌐 Final CORS origins: {base_origins}")
     return base_origins
 
 app.add_middleware(
