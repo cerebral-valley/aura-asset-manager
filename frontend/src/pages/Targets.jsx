@@ -256,15 +256,14 @@ const Targets = () => {
   };
 
   const handleAssetToggle = async (assetId, currentlySelected) => {
-    const updatedSelections = liquidAssets.map(asset => ({
-      asset_id: asset.id,
-      is_selected: asset.id === assetId ? !currentlySelected : asset.is_selected
-    }));
+    // Create flat dictionary as expected by backend: { [assetId]: boolean }
+    const updatedSelections = {};
+    liquidAssets.forEach(asset => {
+      updatedSelections[asset.id] = asset.id === assetId ? !currentlySelected : asset.is_selected;
+    });
     
     try {
-      await updateAssetSelectionsMutation.mutateAsync({
-        selections: updatedSelections
-      });
+      await updateAssetSelectionsMutation.mutateAsync(updatedSelections);
     } catch (error) {
       // Error already handled by mutation
     }
