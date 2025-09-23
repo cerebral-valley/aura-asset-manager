@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.133',
-  buildDate: '2024-12-21',
-  deploymentId: 'target-page-complete-implementation',
-  description: 'Complete Target page implementation per TARGET_PAGE.md: persistent asset selection, CRUD operations, allocation management, target logs, comprehensive testing'
+  version: 'v0.134',
+  buildDate: '2025-09-23',
+  deploymentId: 'target-api-https-fix',
+  description: 'Fix CSP violation by enforcing HTTPS in API configuration'
 }
 
 export const getVersionDisplay = () => {

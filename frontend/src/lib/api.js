@@ -1,8 +1,14 @@
 import axios from 'axios'
 import { supabase } from './supabase'
 
-// Ensure HTTPS is always used
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://aura-asset-manager-production.up.railway.app/api/v1').replace(/^http:/, 'https:')
+// Ensure HTTPS is always used - force HTTPS for security and CSP compliance
+const rawUrl = import.meta.env.VITE_API_BASE_URL || 'https://aura-asset-manager-production.up.railway.app/api/v1'
+const API_BASE_URL = rawUrl.replace(/^http:/g, 'https:')
+
+// Debug log to ensure correct URL (remove in production)
+if (import.meta.env.DEV) {
+  console.log('🔗 API Configuration:', { rawUrl, finalUrl: API_BASE_URL })
+}
 
 // Cache access token in memory for performance
 let cachedAccessToken = null
