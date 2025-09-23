@@ -8,6 +8,7 @@ from app.core.database import get_db
 from app.api.deps import get_current_active_user
 from app.models.user import User
 from app.models.target import Target, TargetAllocation, UserAssetSelection
+from app.models.asset import Asset
 from app.schemas.target import (
     Target as TargetSchema,
     TargetCreate,
@@ -136,38 +137,33 @@ async def delete_target(
 
 
 @router.get("/liquid-assets", response_model=List[LiquidAsset])
-async def get_liquid_assets(
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+def get_liquid_assets(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
 ):
-    """Get user's liquid assets with selection status."""
-    from app.models.asset import Asset
-    
-    # Get all liquid assets for the user
-    assets = db.query(Asset).filter(
-        Asset.user_id == current_user.id,
-        Asset.asset_type.in_(['stocks', 'crypto', 'bonds', 'etf', 'cash', 'bank'])
-    ).all()
-    
-    # Get user selections
-    selections = db.query(UserAssetSelection).filter(
-        UserAssetSelection.user_id == current_user.id
-    ).all()
-    selection_map = {str(s.asset_id): s.is_selected for s in selections}
-    
-    # Combine asset data with selection status
-    liquid_assets = []
-    for asset in assets:
-        is_selected = selection_map.get(str(asset.id), True)  # Default to selected
-        liquid_assets.append({
-            "id": asset.id,
-            "name": asset.name,
-            "asset_type": asset.asset_type,
-            "current_value": asset.current_value,
-            "is_selected": is_selected
-        })
-    
-    return liquid_assets
+    """Get all liquid assets for the current user"""
+    try:
+        # Get liquid assets owned by the user
+        liquid_assets = db.query(Asset).filter(
+            Asset.user_id == current_user.id,
+            Asset.is_liquid == True
+        ).all()
+        
+        return [
+            LiquidAsset(
+                id=asset.id,  # type: ignore
+                name=asset.name,  # type: ignore
+                current_value=asset.current_value or 0,  # type: ignore
+                asset_type=asset.asset_type  # type: ignore
+            )
+            for asset in liquid_assets
+        ]
+    except Exception as e:
+        print(f"Error in get_liquid_assets: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal server error: {str(e)}"
+        )
 
 
 @router.put("/liquid-assets", response_model=dict)

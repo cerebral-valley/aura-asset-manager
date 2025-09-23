@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.136',
-  buildDate: '2025-09-23',
-  deploymentId: 'fix-edit3-import-error',
-  description: 'Fix: Added missing Edit3 icon import to resolve JavaScript error on Target page'
+  version: 'v0.137',
+  buildDate: '2024-12-21',
+  deploymentId: 'api-routing-fix',
+  description: 'Fixed API endpoint routing issues - removed trailing slashes and resolved backend import problems'
 }
 
 export const getVersionDisplay = () => {
