@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.134',
+  version: 'v0.135',
   buildDate: '2025-09-23',
-  deploymentId: 'target-api-https-fix',
-  description: 'Fix CSP violation by enforcing HTTPS in API configuration'
+  deploymentId: 'database-migration-applied',
+  description: 'Database migration 007 successfully applied: created user_asset_selections and target_allocations tables, Target page endpoints should now work'
 }
 
 export const getVersionDisplay = () => {
