@@ -8,7 +8,7 @@ import { queryKeys } from '../lib/queryKeys';
 import { toast } from 'sonner';
 import { 
   Plus, Target, TrendingUp, Calendar, DollarSign, Settings, 
-  Trash2, CheckCircle, AlertCircle, RefreshCw, Eye, Edit, 
+  Trash2, CheckCircle, AlertCircle, RefreshCw, Eye, Edit, Edit3,
   RotateCcw
 } from 'lucide-react';
 import { Button } from '../components/ui/button';

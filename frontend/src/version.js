@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.135',
+  version: 'v0.136',
   buildDate: '2025-09-23',
-  deploymentId: 'database-migration-applied',
-  description: 'Database migration 007 successfully applied: created user_asset_selections and target_allocations tables, Target page endpoints should now work'
+  deploymentId: 'fix-edit3-import-error',
+  description: 'Fix: Added missing Edit3 icon import to resolve JavaScript error on Target page'
 }
 
 export const getVersionDisplay = () => {

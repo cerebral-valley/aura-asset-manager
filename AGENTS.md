@@ -221,12 +221,21 @@ mcp_playwright_browser_snapshot()  # Get accessibility snapshot
 mcp_playwright_browser_console_messages()  # Check for JS errors
 ```
 
+**🚨 CRITICAL: Browser Session Management**
+- **Check for existing browser sessions FIRST**: Use `mcp_playwright_browser_tabs` to list existing tabs
+- **If website already open**: Use `mcp_playwright_browser_navigate` to refresh the current page
+- **DO NOT close existing sessions**: Work with existing tabs to save time
+- **Use console logs**: `mcp_playwright_browser_console_messages()` to pull error logs automatically
+- **Avoid new sessions**: Never start new browser sessions if existing ones are available
+
 **Testing Protocol:**
-1. **Authenticate**: Use Google OAuth on live site for realistic user flow
-2. **Navigate**: Test affected pages/features systematically  
-3. **Console Analysis**: Monitor browser console for errors during navigation
-4. **Visual Verification**: Take screenshots of key functionality working
-5. **Cross-Feature Testing**: Verify changes don't break unrelated features
+1. **Check existing tabs**: `mcp_playwright_browser_tabs` first
+2. **Authenticate**: Use Google OAuth on live site for realistic user flow
+3. **Navigate**: Test affected pages/features systematically  
+4. **Console Analysis**: Monitor browser console for errors during navigation
+5. **Pull console logs**: Use `mcp_playwright_browser_console_messages()` to get error details
+6. **Visual Verification**: Take screenshots of key functionality working
+7. **Cross-Feature Testing**: Verify changes don't break unrelated features
 
 ### 🧪 COMPREHENSIVE TESTING METHODOLOGY
 
@@ -247,7 +256,7 @@ mcp_playwright_browser_console_messages()  # Check for JS errors
 3. **Complete User Journey Testing**: Don't just navigate to pages
    - **Target Page Example**: Navigate → Select 3+ assets → Create net worth target → Create 4 custom goals → Verify all calculations → Test modals → Check allocation overview → Review target logs
    - Take screenshots at each major step for evidence
-   - Monitor browser console throughout entire journey
+   - Monitor browser console logs throughout entire journey
 
 #### Bug Resolution Testing Protocol  
 **For reported issues and bug fixes:**
