@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.143',
+  version: 'v0.144',
   buildDate: '2025-01-13',
-  deploymentId: 'cors-wildcard-temp',
-  description: 'TEMPORARY: Using CORS wildcard to test asset selection functionality - will revert to secure config after testing'
+  deploymentId: 'target-selection-complete',
+  description: 'COMPLETED: Target page asset selection working perfectly. Reverted to secure CORS configuration. Payload reshaping fix successful.'
 }
 
 export const getVersionDisplay = () => {

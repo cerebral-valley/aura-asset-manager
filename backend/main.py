@@ -98,8 +98,8 @@ def get_allowed_origins():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Temporary: Allow all origins to test functionality
-    allow_credentials=False,  # Must be False when using wildcard
+    allow_origins=get_allowed_origins(),
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
