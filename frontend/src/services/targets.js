@@ -2,12 +2,12 @@ import apiClient from '../lib/api'
 
 export const targetsService = {
   async getTargets(config = {}) {
-    const response = await apiClient.get('/targets/', config)
+    const response = await apiClient.get('/targets', config)
     return response.data
   },
 
   async createTarget(target, config = {}) {
-    const response = await apiClient.post('/targets/', target, config)
+    const response = await apiClient.post('/targets', target, config)
     return response.data
   },
 
