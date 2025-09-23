@@ -19,6 +19,7 @@ import { Alert, AlertDescription } from '../components/ui/alert';
 import { Checkbox } from '../components/ui/checkbox';
 import Loading from '../components/ui/Loading';
 import SafeSection from '../components/util/SafeSection';
+import CreateTargetModal from '../components/targets/CreateTargetModal';
 import { log, warn, error } from '../lib/debug';
 
 const Targets = () => {
@@ -27,6 +28,7 @@ const Targets = () => {
   const queryClient = useQueryClient();
   const [selectedAssets, setSelectedAssets] = useState(new Set());
   const [showTargetModal, setShowTargetModal] = useState(false);
+  const [showNetWorthModal, setShowNetWorthModal] = useState(false);
   const [editingTarget, setEditingTarget] = useState(null);
 
   // TanStack Query for targets data
@@ -92,13 +94,19 @@ const Targets = () => {
   );
 
   const selectedAssetsList = liquidAssets.filter(asset => selectedAssets.has(asset.id));
-  const selectedAssetsTotal = selectedAssetsList.reduce((sum, asset) => sum + (asset.current_value || 0), 0);
+  const selectedAssetsTotal = selectedAssetsList.reduce((sum, asset) => {
+    const value = parseFloat(asset.current_value) || 0;
+    return sum + value;
+  }, 0);
   
   const netWorthTarget = targets.find(t => t.target_type === 'net_worth');
   const customTargets = targets.filter(t => t.target_type === 'custom' && t.status === 'active');
   const completedTargets = targets.filter(t => t.status === 'completed' || t.status === 'archived');
 
-  const totalNetWorth = assets.reduce((sum, asset) => sum + (asset.current_value || 0), 0);
+  const totalNetWorth = assets.reduce((sum, asset) => {
+    const value = parseFloat(asset.current_value) || 0;
+    return sum + value;
+  }, 0);
 
   // Calculate progress for net worth target
   const netWorthProgress = netWorthTarget ? 
@@ -205,35 +213,34 @@ const Targets = () => {
                 <p>No liquid assets found. Add some assets first to get started.</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {liquidAssets.map((asset) => (
-                  <div key={asset.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50">
+                  <div key={asset.id} className="flex items-center justify-between p-3 border rounded-md hover:bg-muted/30 transition-colors">
                     <div className="flex items-center space-x-3">
                       <Checkbox
                         checked={selectedAssets.has(asset.id)}
                         onCheckedChange={() => toggleAssetSelection(asset.id)}
                       />
-                      <div>
-                        <p className="font-medium">{asset.name}</p>
-                        <p className="text-sm text-muted-foreground">{asset.asset_type}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-sm truncate">{asset.name}</p>
+                        <p className="text-xs text-muted-foreground capitalize">{asset.asset_type}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold">{formatCurrency(asset.current_value || 0)}</p>
-                      <Button variant="ghost" size="sm">
-                        <Eye className="h-4 w-4 mr-1" />
-                        Details
+                    <div className="text-right flex-shrink-0 ml-2">
+                      <p className="font-semibold text-sm">{formatCurrency(parseFloat(asset.current_value) || 0)}</p>
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
+                        <Eye className="h-3 w-3" />
                       </Button>
                     </div>
                   </div>
                 ))}
                 
-                <div className="border-t pt-4 mt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold">Selected Total:</span>
-                    <span className="text-xl font-bold">{formatCurrency(selectedAssetsTotal)}</span>
+                <div className="border-t pt-3 mt-3">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="font-medium">Selected Total:</span>
+                    <span className="text-lg font-bold">{formatCurrency(selectedAssetsTotal)}</span>
                   </div>
-                  <div className="flex justify-between items-center mt-2">
+                  <div className="flex justify-between items-center mt-2 text-sm">
                     <span className="text-muted-foreground">Available for Allocation:</span>
                     <span className="font-medium">{formatCurrency(selectedAssetsTotal * 0.85)} (unallocated)</span>
                   </div>
@@ -304,7 +311,7 @@ const Targets = () => {
               <div className="text-center py-8">
                 <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p className="text-muted-foreground mb-4">No net worth milestone set</p>
-                <Button>Set Net Worth Target</Button>
+                <Button onClick={() => setShowNetWorthModal(true)}>Set Net Worth Target</Button>
               </div>
             )}
           </CardContent>
@@ -383,7 +390,7 @@ const Targets = () => {
                   <Plus className="h-12 w-12 text-muted-foreground mb-4" />
                   <h3 className="font-semibold mb-2">+ Add Foundation Goal</h3>
                   <p className="text-sm text-muted-foreground mb-4">Create your next financial milestone</p>
-                  <Button>+ Create Your First Target</Button>
+                  <Button onClick={() => setShowTargetModal(true)}>+ Create Your First Target</Button>
                 </CardContent>
               </Card>
             )}
@@ -479,6 +486,18 @@ const Targets = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modals */}
+      <CreateTargetModal 
+        isOpen={showTargetModal} 
+        onClose={() => setShowTargetModal(false)} 
+        targetType="custom"
+      />
+      <CreateTargetModal 
+        isOpen={showNetWorthModal} 
+        onClose={() => setShowNetWorthModal(false)} 
+        targetType="net_worth"
+      />
     </SafeSection>
   );
 };

@@ -228,6 +228,93 @@ mcp_playwright_browser_console_messages()  # Check for JS errors
 4. **Visual Verification**: Take screenshots of key functionality working
 5. **Cross-Feature Testing**: Verify changes don't break unrelated features
 
+### 🧪 COMPREHENSIVE TESTING METHODOLOGY
+
+#### Feature Development Testing Protocol
+**For new features and major changes:**
+1. **Feature-Specific Testing**: Test EVERY aspect of the new feature
+   - Create realistic test scenarios using actual data
+   - Test all user interaction paths (happy path + edge cases)
+   - Verify all buttons, modals, forms, and navigation elements
+   - Test responsive behavior across different screen sizes
+   
+2. **Multi-Asset Testing**: When testing financial features
+   - Select multiple assets with different types (stocks, crypto, bonds, ETFs)
+   - Verify calculations with various combinations of asset values
+   - Test edge cases: very large numbers, zero values, negative values
+   - Validate currency formatting and number parsing
+
+3. **Complete User Journey Testing**: Don't just navigate to pages
+   - **Target Page Example**: Navigate → Select 3+ assets → Create net worth target → Create 4 custom goals → Verify all calculations → Test modals → Check allocation overview → Review target logs
+   - Take screenshots at each major step for evidence
+   - Monitor browser console throughout entire journey
+
+#### Bug Resolution Testing Protocol  
+**For reported issues and bug fixes:**
+1. **Reproduce the Exact Issue**: 
+   - Follow user's exact steps to reproduce the problem
+   - Document console errors, network failures, UI glitches
+   - Take screenshots/video of the bug occurring
+
+2. **Iterative Testing with Browser Console**:
+   ```bash
+   # After each code change:
+   1. Deploy changes
+   2. Open browser developer tools
+   3. Navigate to affected page
+   4. Perform the problematic action
+   5. Check console for errors/warnings
+   6. If issues persist, analyze console logs and iterate
+   7. Repeat until issue is completely resolved
+   ```
+
+3. **Verification Testing**:
+   - Test the specific reported issue is fixed
+   - Test related functionality wasn't broken
+   - Test the same issue across different browsers/devices
+   - Verify fix works with different user data scenarios
+
+#### Deployment Testing Standards
+**After every GitHub push with feature changes:**
+1. **Authentication & Navigation Baseline**:
+   - Authenticate via Google OAuth
+   - Navigate to all major pages (Dashboard, Assets, Targets, etc.)
+   - Verify navigation works and pages load without console errors
+
+2. **Feature-Specific Deep Testing**:
+   - **For Target Page Changes**: Select multiple liquid assets, verify totals calculate correctly, create net worth target, create multiple custom targets, test all modals and buttons
+   - **For Asset Page Changes**: Add/edit/delete assets, test all asset types, verify calculations update across application
+   - **For Dashboard Changes**: Verify all charts render, test theme switching, check responsive design
+
+3. **Browser Console Monitoring**:
+   ```bash
+   # Check these at every step:
+   - No JavaScript errors (red console messages)
+   - No failed network requests (404, 500 errors)
+   - No React warnings or context errors
+   - Proper data loading and state management
+   ```
+
+4. **Evidence Collection**:
+   - Take full-page screenshots of working features
+   - Record console output when issues are found
+   - Document successful test scenarios with data
+   - Save evidence in `.playwright-mcp/` folder with descriptive names
+
+#### Testing Failure Recovery Protocol
+**When live testing reveals issues:**
+1. **Don't Report Success Prematurely**: If any aspect of the feature doesn't work as expected, continue iterating
+2. **Use Browser Console for Debugging**: Check for JavaScript errors, network failures, React warnings
+3. **Test with Different Data**: Try various combinations of user data, asset values, target amounts
+4. **Iterate Until Perfect**: Make code changes, deploy, test again until all functionality works flawlessly
+5. **Document What Was Fixed**: Note specific issues found during testing and how they were resolved
+
+#### Testing Quality Standards
+- **✅ GOOD**: "Tested target creation with $50,000 vacation goal, verified allocation calculations update correctly, checked browser console shows no errors"
+- **❌ BAD**: "Navigated to targets page, looks like it's working"
+- **✅ GOOD**: "Selected 3 assets (Bitcoin £100k, Apple £18.5k, Treasury Bond £52k), total shows £170,500, created net worth target £500k, progress bar shows 34%, monthly growth calculation displays £7,963/month"
+- **❌ BAD**: "Asset selection works, target creation works"
+
 ### Phase 5: Comprehensive Validation
 **For theme/UI changes specifically:**
 1. Test ALL theme options (not just the changed ones)
