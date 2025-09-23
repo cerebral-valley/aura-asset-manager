@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.151',
+  version: 'v0.152',
   buildDate: '2024-12-08',
-  deploymentId: 'fix-trailing-slashes',
-  description: 'Fixed URL trailing slashes to match FastAPI routes exactly, prevent 307 redirects'
+  deploymentId: 'add-url-comments',
+  description: 'Added detailed comments explaining FastAPI URL matching requirements'
 }
 
 export const getVersionDisplay = () => {
