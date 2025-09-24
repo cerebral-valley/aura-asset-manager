@@ -26,6 +26,10 @@ class AssetBase(BaseModel):
     accumulation_phase_end: Optional[date] = None
     has_payment_schedule: Optional[bool] = False
     
+    # Asset selection fields for targets functionality
+    liquid_assets: Optional[bool] = False
+    is_selected: Optional[bool] = False
+    
     asset_metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
     
     @field_validator('asset_metadata', mode='before')
@@ -57,6 +61,10 @@ class AssetUpdate(BaseModel):
     guaranteed_rate: Optional[Decimal] = None
     accumulation_phase_end: Optional[date] = None
     has_payment_schedule: Optional[bool] = None
+    
+    # Asset selection fields for targets functionality
+    liquid_assets: Optional[bool] = None
+    is_selected: Optional[bool] = None
     
     asset_metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
     

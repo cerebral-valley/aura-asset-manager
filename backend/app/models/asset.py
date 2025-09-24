@@ -32,6 +32,10 @@ class Asset(Base):
     accumulation_phase_end = Column(Date)  # When annuity payments start
     has_payment_schedule = Column(Boolean, default=False)
     
+    # Asset selection fields for targets functionality
+    liquid_assets = Column(Boolean, default=False)  # Whether this asset can be used in liquid calculations
+    is_selected = Column(Boolean, default=False)  # Whether this asset is currently selected for targets
+    
     asset_metadata = Column("metadata", JSONB)  # Flexible JSON field for asset-specific characteristics
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

@@ -142,55 +142,26 @@ def get_liquid_assets(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    """Get all liquid assets for the current user"""
+    """Get all liquid assets for the current user using new asset-based selection model"""
     try:
-        print("🔧 DEBUG: get_liquid_assets called - NEW VERSION v0.138")
+        print("🔧 DEBUG: get_liquid_assets called - NEW REFACTORED VERSION v0.156")
         
-        # Define liquid asset types (assets that can be easily converted to cash)
-        # Use case-insensitive matching and common variations found in the system
-        liquid_asset_types = [
-            'cash', 'bank', 'stocks', 'etf', 'mutual_funds', 'mutual funds',
-            'money_market', 'bonds', 'treasury', 'checking', 'savings', 
-            'crypto', 'cryptocurrency', 'Cash In Hand', 'Bank', 'Stocks',
-            'Etf', 'ETF', 'Mutual Funds', 'Crypto', 'Bonds'
-        ]
-        
-        print(f"🔧 DEBUG: Filtering assets by types: {liquid_asset_types}")
-        
-        # Get liquid assets owned by the user with case-insensitive matching
+        # Get all assets marked as liquid for the user
         liquid_assets = db.query(Asset).filter(
             Asset.user_id == current_user.id,
-            Asset.asset_type.in_(liquid_asset_types)
+            Asset.liquid_assets == True  # Use the new liquid_assets column
         ).all()
         
-        print(f"🔧 DEBUG: Found {len(liquid_assets)} liquid assets with exact match")
+        print(f"🔧 DEBUG: Found {len(liquid_assets)} liquid assets using liquid_assets column")
         
-        # If no exact matches, try case-insensitive search
-        if not liquid_assets:
-            print("🔧 DEBUG: No exact matches, trying case-insensitive search")
-            liquid_assets = db.query(Asset).filter(
-                Asset.user_id == current_user.id,
-                func.lower(Asset.asset_type).in_([t.lower() for t in liquid_asset_types])
-            ).all()
-            print(f"🔧 DEBUG: Found {len(liquid_assets)} liquid assets with case-insensitive match")
-        
-        # Get user's asset selections to determine which are selected
-        asset_selections = db.query(UserAssetSelection).filter(
-            UserAssetSelection.user_id == current_user.id
-        ).all()
-        
-        # Create a lookup dict for quick access using UUID objects directly
-        selection_lookup = {sel.asset_id: bool(sel.is_selected) for sel in asset_selections}
-        print(f"🔧 DEBUG: Found {len(asset_selections)} stored asset selections")
-        print(f"🔧 DEBUG: Selection lookup keys: {list(selection_lookup.keys())}")
-        
+        # Convert to LiquidAsset schema with selection status from asset.is_selected
         result = [
             LiquidAsset(
                 id=asset.id,  # type: ignore
                 name=asset.name,  # type: ignore
                 current_value=asset.current_value or 0,  # type: ignore
                 asset_type=asset.asset_type,  # type: ignore
-                is_selected=selection_lookup.get(asset.id, False)  # Use UUID directly for lookup
+                is_selected=bool(asset.is_selected) if asset.is_selected is not None else False  # Use the asset's is_selected column directly
             )
             for asset in liquid_assets
         ]
@@ -216,33 +187,23 @@ async def update_asset_selections(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """Update user's liquid asset selections."""
-    print(f"🔧 DEBUG: Received asset selections update for user {current_user.id}")
+    """Update user's liquid asset selections using new asset-based model."""
+    print(f"🔧 DEBUG: Received asset selections update for user {current_user.id} - REFACTORED VERSION")
     print(f"🔧 DEBUG: Selections data: {selections.selections}")
     
     for asset_id, is_selected in selections.selections.items():
         print(f"🔧 DEBUG: Processing asset {asset_id} -> {is_selected}")
         
-        # Try to get existing selection
-        existing = db.query(UserAssetSelection).filter(
-            UserAssetSelection.user_id == current_user.id,
-            UserAssetSelection.asset_id == UUID(asset_id)
-        ).first()
+        # Update the is_selected column directly in the assets table
+        result = db.query(Asset).filter(
+            Asset.user_id == current_user.id,
+            Asset.id == UUID(asset_id)
+        ).update({"is_selected": is_selected})
         
-        if existing:
-            print(f"🔧 DEBUG: Found existing selection for asset {asset_id}, updating...")
-            db.query(UserAssetSelection).filter(
-                UserAssetSelection.id == existing.id
-            ).update({"is_selected": is_selected})
+        if result == 0:
+            print(f"🔧 WARNING: No asset found with id {asset_id} for user {current_user.id}")
         else:
-            print(f"🔧 DEBUG: Creating new selection for asset {asset_id}")
-            # Create new selection
-            selection = UserAssetSelection(
-                user_id=current_user.id,
-                asset_id=UUID(asset_id),
-                is_selected=is_selected
-            )
-            db.add(selection)
+            print(f"🔧 DEBUG: Successfully updated asset {asset_id} selection to {is_selected}")
     
     try:
         db.commit()
