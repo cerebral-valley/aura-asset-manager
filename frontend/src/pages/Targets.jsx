@@ -94,12 +94,35 @@ const Targets = () => {
   // Mutation for updating asset selections
   const updateAssetSelectionsMutation = useMutation({
     mutationFn: targetsService.updateAssetSelections,
+    onMutate: async (updatedSelections) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.targets.liquidAssets() });
+
+      // Snapshot the previous value
+      const previousAssets = queryClient.getQueryData(queryKeys.targets.liquidAssets());
+
+      // Optimistically update the cache
+      queryClient.setQueryData(queryKeys.targets.liquidAssets(), (old) =>
+        old?.map(asset => ({
+          ...asset,
+          is_selected: updatedSelections[asset.id] ?? asset.is_selected
+        })) || []
+      );
+
+      // Return context with snapshot for rollback
+      return { previousAssets };
+    },
+    onError: (err, updatedSelections, context) => {
+      // Rollback on error
+      if (context?.previousAssets) {
+        queryClient.setQueryData(queryKeys.targets.liquidAssets(), context.previousAssets);
+      }
+      toast.error('Failed to update asset selections: ' + (err.response?.data?.detail || 'Unknown error'));
+    },
     onSuccess: () => {
+      // Invalidate to ensure server state is synced (but UI already updated)
       queryClient.invalidateQueries({ queryKey: queryKeys.targets.liquidAssets() });
       toast.success('Asset selection updated successfully');
-    },
-    onError: (error) => {
-      toast.error('Failed to update asset selections: ' + (error.response?.data?.detail || 'Unknown error'));
     }
   });
 

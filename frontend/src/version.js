@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.160',
+  version: 'v0.161',
   buildDate: '2025-01-26',
-  deploymentId: 'backward-compatibility-enhancement',
-  description: 'Enhanced backward compatibility: GET/PUT endpoints now support both new column-based model and legacy user_asset_selections table. Ensures smooth migration and prevents data loss.'
+  deploymentId: 'checkbox-optimistic-updates',
+  description: 'Fixed checkbox rapid toggle issue by implementing optimistic updates in asset selection mutation. UI now updates instantly while backend syncs in background.'
 }
 
 export const getVersionDisplay = () => {

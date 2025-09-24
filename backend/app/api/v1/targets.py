@@ -159,11 +159,6 @@ def get_liquid_assets(
             'treasury', 'crypto', 'cryptocurrency'
         ]
 
-        # Load any legacy selections (fallback support)
-        asset_selections = db.query(UserAssetSelection).filter(
-            UserAssetSelection.user_id == current_user.id
-        ).all()
-        selection_lookup = {str(sel.asset_id): bool(sel.is_selected) for sel in asset_selections}
 
         # Fetch assets that are either explicitly marked as liquid or whose
         # type matches the list above (case-insensitive)
@@ -179,15 +174,11 @@ def get_liquid_assets(
 
         result = [
             LiquidAsset(
-                id=asset.id,  # type: ignore
-                name=asset.name,  # type: ignore
-                current_value=asset.current_value or 0,  # type: ignore
-                asset_type=asset.asset_type,  # type: ignore
-                is_selected=(
-                    bool(asset.is_selected)
-                    if asset.is_selected is not None
-                    else selection_lookup.get(str(asset.id), False)
-                )
+                id=getattr(asset, 'id'),
+                name=getattr(asset, 'name'),
+                current_value=getattr(asset, 'current_value') or Decimal('0'),
+                asset_type=getattr(asset, 'asset_type'),
+                is_selected=bool(getattr(asset, 'is_selected')) if getattr(asset, 'is_selected') is not None else False
             )
             for asset in liquid_assets
         ]
@@ -254,21 +245,6 @@ async def update_asset_selections(
             print(f"🔧 DEBUG: After update, asset {updated_asset.name} is_selected: {updated_asset.is_selected}")
         else:
             print(f"🔧 ERROR: Could not re-query asset {asset_id} after update")
-
-        # Maintain legacy user_asset_selections table for backwards compatibility
-        existing_selection = db.query(UserAssetSelection).filter(
-            UserAssetSelection.user_id == current_user.id,
-            UserAssetSelection.asset_id == UUID(asset_id)
-        ).first()
-
-        if existing_selection:
-            existing_selection.is_selected = is_selected
-        else:
-            db.add(UserAssetSelection(
-                user_id=current_user.id,
-                asset_id=UUID(asset_id),
-                is_selected=is_selected
-            ))
     
     try:
         db.commit()
