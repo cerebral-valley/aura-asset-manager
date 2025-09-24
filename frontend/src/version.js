@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.161',
+  version: 'v0.162',
   buildDate: '2025-01-26',
-  deploymentId: 'checkbox-optimistic-updates',
-  description: 'Fixed checkbox rapid toggle issue by implementing optimistic updates in asset selection mutation. UI now updates instantly while backend syncs in background.'
+  deploymentId: 'checkbox-debug-logging',
+  description: 'Added debug logging to checkbox mutation to trace data flow and identify why DB updates are not persisting.'
 }
 
 export const getVersionDisplay = () => {

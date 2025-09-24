@@ -93,7 +93,10 @@ const Targets = () => {
 
   // Mutation for updating asset selections
   const updateAssetSelectionsMutation = useMutation({
-    mutationFn: targetsService.updateAssetSelections,
+    mutationFn: (selections) => {
+      console.log('🔧 DEBUG: Frontend sending asset selections:', selections);
+      return targetsService.updateAssetSelections(selections);
+    },
     onMutate: async (updatedSelections) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: queryKeys.targets.liquidAssets() });
@@ -117,11 +120,13 @@ const Targets = () => {
       if (context?.previousAssets) {
         queryClient.setQueryData(queryKeys.targets.liquidAssets(), context.previousAssets);
       }
+      console.error('🔧 DEBUG: Asset selection update failed:', err);
       toast.error('Failed to update asset selections: ' + (err.response?.data?.detail || 'Unknown error'));
     },
-    onSuccess: () => {
+    onSuccess: (data, updatedSelections) => {
       // Invalidate to ensure server state is synced (but UI already updated)
       queryClient.invalidateQueries({ queryKey: queryKeys.targets.liquidAssets() });
+      console.log('🔧 DEBUG: Asset selection update succeeded:', data);
       toast.success('Asset selection updated successfully');
     }
   });
@@ -280,16 +285,21 @@ const Targets = () => {
   };
 
   const handleAssetToggle = async (assetId, currentlySelected) => {
+    console.log('🔧 DEBUG: handleAssetToggle called with:', { assetId, currentlySelected });
+    
     // Create flat dictionary as expected by backend: { [assetId]: boolean }
     const updatedSelections = {};
     liquidAssets.forEach(asset => {
       updatedSelections[asset.id] = asset.id === assetId ? !currentlySelected : asset.is_selected;
     });
     
+    console.log('🔧 DEBUG: Sending updatedSelections:', updatedSelections);
+    
     try {
       await updateAssetSelectionsMutation.mutateAsync(updatedSelections);
     } catch (error) {
       // Error already handled by mutation
+      console.error('🔧 DEBUG: handleAssetToggle error:', error);
     }
   };
 
