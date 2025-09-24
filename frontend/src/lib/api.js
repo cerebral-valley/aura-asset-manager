@@ -106,7 +106,25 @@ apiClient.interceptors.response.use(
   }, 
   error => {
     // Always log errors, even in production, but keep them concise
-    console.error(`API Error: ${error.response?.status || 'Network'} ${error.config?.method?.toUpperCase() || ''} ${error.config?.url || ''}`)
+    const method = error.config?.method?.toUpperCase() || ''
+    const url = error.config?.url || ''
+    const status = error.response?.status || 'Network'
+    
+    console.error(`API Error: ${status} ${method} ${url}`)
+    
+    // Extra debugging for PUT requests since they're failing
+    if (method === 'PUT' && import.meta.env.DEV) {
+      console.error('PUT Request Debug Info:', {
+        url: error.config?.url,
+        baseURL: error.config?.baseURL,
+        data: error.config?.data,
+        headers: error.config?.headers,
+        timeout: error.config?.timeout,
+        errorResponse: error.response,
+        errorMessage: error.message,
+        errorCode: error.code
+      })
+    }
     
     if (import.meta.env.DEV) {
       if (error.response) {
