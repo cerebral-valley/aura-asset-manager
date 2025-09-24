@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.158',
-  buildDate: '2024-12-24',
-  deploymentId: 'debug-checkbox-persistence',
-  description: 'Enhanced backend debugging to trace checkbox selection persistence issue. Added detailed logging for PUT/GET asset selection operations.'
+  version: 'v0.159',
+  buildDate: '2025-01-26',
+  deploymentId: 'asset-selection-architecture-complete',
+  description: 'CRITICAL SUCCESS: Asset selection architectural refactor complete! Eliminated user_asset_selections table, moved selection state to asset.is_selected column. Checkbox persistence issue permanently resolved.'
 }
 
 export const getVersionDisplay = () => {
