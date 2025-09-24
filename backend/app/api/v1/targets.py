@@ -4,7 +4,7 @@ Targets API endpoints for financial goal tracking.
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from app.core.database import get_db
 from app.api.deps import get_current_active_user
 from app.models.user import User
@@ -142,34 +142,56 @@ def get_liquid_assets(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    """Get all liquid assets for the current user using new asset-based selection model"""
+    """Get all liquid assets for the current user.
+
+    The endpoint supports both the new column-based selection model
+    (assets.liquid_assets / assets.is_selected) and the previous
+    user_asset_selections table so that checkbox state persists even if
+    migrations have not run yet or legacy data still exists.
+    """
     try:
-        print("🔧 DEBUG: get_liquid_assets called - NEW REFACTORED VERSION v0.156")
-        
-        # Get all assets marked as liquid for the user
+        print("🔧 DEBUG: get_liquid_assets called - compatibility mode")
+
+        # Canonical list of liquid asset types (lowercase)
+        liquid_asset_types = [
+            'cash', 'bank', 'checking', 'savings', 'stocks', 'stock', 'etf',
+            'mutual_funds', 'mutual funds', 'money_market', 'bonds', 'bond',
+            'treasury', 'crypto', 'cryptocurrency'
+        ]
+
+        # Load any legacy selections (fallback support)
+        asset_selections = db.query(UserAssetSelection).filter(
+            UserAssetSelection.user_id == current_user.id
+        ).all()
+        selection_lookup = {str(sel.asset_id): bool(sel.is_selected) for sel in asset_selections}
+
+        # Fetch assets that are either explicitly marked as liquid or whose
+        # type matches the list above (case-insensitive)
         liquid_assets = db.query(Asset).filter(
             Asset.user_id == current_user.id,
-            Asset.liquid_assets == True  # Use the new liquid_assets column
+            or_(
+                Asset.liquid_assets.is_(True),
+                func.lower(Asset.asset_type).in_(liquid_asset_types)
+            )
         ).all()
-        
-        print(f"🔧 DEBUG: Found {len(liquid_assets)} liquid assets using liquid_assets column")
-        
-        # Debug: Print raw database values before conversion
-        for asset in liquid_assets:
-            print(f"🔧 DEBUG: Raw asset data - ID: {asset.id}, Name: {asset.name}, is_selected: {asset.is_selected} (type: {type(asset.is_selected)})")
-        
-        # Convert to LiquidAsset schema with selection status from asset.is_selected
+
+        print(f"🔧 DEBUG: Found {len(liquid_assets)} candidate liquid assets")
+
         result = [
             LiquidAsset(
                 id=asset.id,  # type: ignore
                 name=asset.name,  # type: ignore
                 current_value=asset.current_value or 0,  # type: ignore
                 asset_type=asset.asset_type,  # type: ignore
-                is_selected=bool(asset.is_selected) if asset.is_selected is not None else False  # Use the asset's is_selected column directly
+                is_selected=(
+                    bool(asset.is_selected)
+                    if asset.is_selected is not None
+                    else selection_lookup.get(str(asset.id), False)
+                )
             )
             for asset in liquid_assets
         ]
-        
+
         print(f"🔧 DEBUG: Returning {len(result)} liquid assets with selection states")
         for asset in result:
             print(f"🔧 DEBUG: Final result - Asset {asset.name} (ID: {asset.id}) - selected: {asset.is_selected}")
@@ -198,37 +220,55 @@ async def update_asset_selections(
     
     for asset_id, is_selected in selections.selections.items():
         print(f"🔧 DEBUG: Processing asset {asset_id} -> {is_selected}")
-        
+
         # First, check if asset exists and get current value
         existing_asset = db.query(Asset).filter(
             Asset.user_id == current_user.id,
             Asset.id == UUID(asset_id)
         ).first()
-        
+
         if not existing_asset:
             print(f"🔧 ERROR: No asset found with id {asset_id} for user {current_user.id}")
             continue
-            
+
         print(f"🔧 DEBUG: Found asset {existing_asset.name}, current is_selected: {existing_asset.is_selected}")
-        
-        # Update the is_selected column directly in the assets table
+
+        # Update the assets table flags
         result = db.query(Asset).filter(
             Asset.user_id == current_user.id,
             Asset.id == UUID(asset_id)
-        ).update({"is_selected": is_selected})
-        
+        ).update({
+            "is_selected": is_selected,
+            "liquid_assets": True  # ensure asset stays visible in liquid list
+        })
+
         print(f"🔧 DEBUG: Update query affected {result} row(s)")
-        
+
         # Verify the update by re-querying
         updated_asset = db.query(Asset).filter(
             Asset.user_id == current_user.id,
             Asset.id == UUID(asset_id)
         ).first()
-        
+
         if updated_asset:
             print(f"🔧 DEBUG: After update, asset {updated_asset.name} is_selected: {updated_asset.is_selected}")
         else:
             print(f"🔧 ERROR: Could not re-query asset {asset_id} after update")
+
+        # Maintain legacy user_asset_selections table for backwards compatibility
+        existing_selection = db.query(UserAssetSelection).filter(
+            UserAssetSelection.user_id == current_user.id,
+            UserAssetSelection.asset_id == UUID(asset_id)
+        ).first()
+
+        if existing_selection:
+            existing_selection.is_selected = is_selected
+        else:
+            db.add(UserAssetSelection(
+                user_id=current_user.id,
+                asset_id=UUID(asset_id),
+                is_selected=is_selected
+            ))
     
     try:
         db.commit()

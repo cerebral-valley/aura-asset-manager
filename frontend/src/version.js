@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.159',
+  version: 'v0.160',
   buildDate: '2025-01-26',
-  deploymentId: 'asset-selection-architecture-complete',
-  description: 'CRITICAL SUCCESS: Asset selection architectural refactor complete! Eliminated user_asset_selections table, moved selection state to asset.is_selected column. Checkbox persistence issue permanently resolved.'
+  deploymentId: 'backward-compatibility-enhancement',
+  description: 'Enhanced backward compatibility: GET/PUT endpoints now support both new column-based model and legacy user_asset_selections table. Ensures smooth migration and prevents data loss.'
 }
 
 export const getVersionDisplay = () => {
