@@ -5,7 +5,7 @@ import { queryKeys } from '@/lib/queryKeys'
 import { assetsService } from '@/services/assets'
 import { transactionsService } from '@/services/transactions'
 import { insuranceService } from '@/services/insurance'
-import annuityService from '@/services/annuities'
+import { annuityService } from '@/services/annuities'
 import { dashboardService } from '@/services/dashboard'
 
 const AuthContext = createContext({})

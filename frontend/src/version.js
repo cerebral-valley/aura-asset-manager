@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.153',
+  version: 'v0.154',
   buildDate: '2024-12-08',
-  deploymentId: 'fix-asset-selection-lookup',
-  description: 'Fixed UserAssetSelection lookup to use UUID objects directly instead of strings'
+  deploymentId: 'standardize-annuity-imports',
+  description: 'Standardized annuity service to use named exports - consistent with all other services'
 }
 
 export const getVersionDisplay = () => {

@@ -47,14 +47,14 @@ wc -l filename && head -3 filename  # Verify content exists
 
 ### MCP Configuration & Usage
 **🔧 Model Context Protocol (MCP) Tools Available:**
-- **Playwright MCP**: Browser automation for live testing
+- **Playwright MCP or Chrome-DevTools MCP**: Browser automation for live testing
 - **Supabase MCP**: Database operations and queries
 - **Vercel MCP**: Frontend deployment monitoring (when needed)
 - **Configuration**: Located in `.vscode/mcp.json`
 
 **📋 MCP Usage Guidelines:**
 - ✅ **USE MCP**: For browser testing, database operations, structured operations
-- ✅ **Live Testing**: Playwright MCP for comprehensive end-to-end testing
+- ✅ **Live Testing**: Playwright MCP or Chrome-DevTools MCP for comprehensive end-to-end testing
 - 🚫 **Railway Deployment**: Manual log analysis - logs will be provided by user
 
 ### Development Commands
@@ -138,7 +138,7 @@ git push origin main
 - Railway auto-deploys from main branch - immediate deployment verification needed
 - Vercel creates preview deployments - essential for live testing
 - Manual deployment logs analysis requires actual deployments
-- Live testing with Playwright MCP requires deployed changes
+- Live testing with Playwright MCP or Chrome-DevTools MCP requires deployed changes
 
 **This overrides any Beast Mode instruction about asking permission before Git operations.**
 
@@ -173,7 +173,7 @@ git push origin main
    - Hotfixes: increment by 1 (v0.101, v0.102, etc.)
 
 ### Deployment Verification Protocol
-**After every push, use MCP Playwright to verify deployment:**
+**After every push, use MCP Playwright or Chrome-DevTools MCP to verify deployment:**
 
 1. **Navigate to Dashboard**: Check version display in top-right corner
 2. **Version Verification**: Confirm new version number is displayed
@@ -233,7 +233,7 @@ mcp_playwright_browser_console_messages()  # Check for JS errors
 2. **Authenticate**: Use Google OAuth on live site for realistic user flow
 3. **Navigate**: Test affected pages/features systematically  
 4. **Console Analysis**: Monitor browser console for errors during navigation
-5. **Pull console logs**: Use `mcp_playwright_browser_console_messages()` to get error details
+5. **Pull console logs**: Use `mcp_playwright_browser_console_messages()` to get error details or use `mcp_playwright_browser_snapshot()` for visual verification or use `mcp_playwright_browser_logs_to_file("filename.txt")` to save logs or use `chrome-devtools` MCP for interactive debugging/interactive troubleshooting/navigation/cross tab movement
 6. **Visual Verification**: Take screenshots of key functionality working
 7. **Cross-Feature Testing**: Verify changes don't break unrelated features
 
@@ -308,7 +308,7 @@ mcp_playwright_browser_console_messages()  # Check for JS errors
    - Take full-page screenshots of working features
    - Record console output when issues are found
    - Document successful test scenarios with data
-   - Save evidence in `.playwright-mcp/` folder with descriptive names
+   - Save evidence in `.playwright-mcp/` or `.chrome-devtools-mcp/` folder with descriptive names
 
 #### Testing Failure Recovery Protocol
 **When live testing reveals issues:**

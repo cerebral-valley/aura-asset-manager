@@ -5,7 +5,7 @@ import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { useTheme } from '../../contexts/ThemeContext';
-import annuityService from '../../services/annuities';
+import { annuityService } from '../../services/annuities';
 import AnnuityForm from './AnnuityForm';
 import { 
   formatAnnuityValue, 

@@ -139,7 +139,7 @@ const UserSettings = () => {
     const { assetsService } = await import('../services/assets.js')
     const { transactionsService } = await import('../services/transactions.js')
     const { insuranceService } = await import('../services/insurance.js')
-    const { annuitiesService } = await import('../services/annuities.js')
+    const { annuityService } = await import('../services/annuities.js')
     const { profileService } = await import('../services/profile.js')
 
     // Delete all data in sequence
@@ -163,9 +163,9 @@ const UserSettings = () => {
       }
 
       // Delete annuities
-      const annuities = await annuitiesService.getAnnuities()
+      const annuities = await annuityService.getAnnuities()
       for (const annuity of annuities) {
-        await annuitiesService.deleteAnnuity(annuity.id)
+        await annuityService.deleteAnnuity(annuity.id)
       }
 
       // Reset profile to default values

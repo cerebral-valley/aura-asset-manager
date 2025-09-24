@@ -1,6 +1,6 @@
 import api from '../lib/api';
 
-const annuityService = {
+export const annuityService = {
   // Get all annuities
   getAnnuities: async (params = {}, config = {}) => {
     try {
@@ -122,5 +122,3 @@ const annuityService = {
     }
   }
 };
-
-export default annuityService;
