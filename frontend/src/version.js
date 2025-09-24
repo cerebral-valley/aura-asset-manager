@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.157',
+  version: 'v0.158',
   buildDate: '2024-12-24',
-  deploymentId: 'debug-put-network-failures',
-  description: 'Added detailed debug logging for PUT requests to diagnose network failures causing checkbox selection issues.'
+  deploymentId: 'debug-checkbox-persistence',
+  description: 'Enhanced backend debugging to trace checkbox selection persistence issue. Added detailed logging for PUT/GET asset selection operations.'
 }
 
 export const getVersionDisplay = () => {

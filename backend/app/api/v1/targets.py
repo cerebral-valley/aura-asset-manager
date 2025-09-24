@@ -154,6 +154,10 @@ def get_liquid_assets(
         
         print(f"🔧 DEBUG: Found {len(liquid_assets)} liquid assets using liquid_assets column")
         
+        # Debug: Print raw database values before conversion
+        for asset in liquid_assets:
+            print(f"🔧 DEBUG: Raw asset data - ID: {asset.id}, Name: {asset.name}, is_selected: {asset.is_selected} (type: {type(asset.is_selected)})")
+        
         # Convert to LiquidAsset schema with selection status from asset.is_selected
         result = [
             LiquidAsset(
@@ -168,6 +172,7 @@ def get_liquid_assets(
         
         print(f"🔧 DEBUG: Returning {len(result)} liquid assets with selection states")
         for asset in result:
+            print(f"🔧 DEBUG: Final result - Asset {asset.name} (ID: {asset.id}) - selected: {asset.is_selected}")
             print(f"🔧 DEBUG: Asset {asset.name} (ID: {asset.id}) - selected: {asset.is_selected}")
         return result
     except Exception as e:
@@ -194,16 +199,36 @@ async def update_asset_selections(
     for asset_id, is_selected in selections.selections.items():
         print(f"🔧 DEBUG: Processing asset {asset_id} -> {is_selected}")
         
+        # First, check if asset exists and get current value
+        existing_asset = db.query(Asset).filter(
+            Asset.user_id == current_user.id,
+            Asset.id == UUID(asset_id)
+        ).first()
+        
+        if not existing_asset:
+            print(f"🔧 ERROR: No asset found with id {asset_id} for user {current_user.id}")
+            continue
+            
+        print(f"🔧 DEBUG: Found asset {existing_asset.name}, current is_selected: {existing_asset.is_selected}")
+        
         # Update the is_selected column directly in the assets table
         result = db.query(Asset).filter(
             Asset.user_id == current_user.id,
             Asset.id == UUID(asset_id)
         ).update({"is_selected": is_selected})
         
-        if result == 0:
-            print(f"🔧 WARNING: No asset found with id {asset_id} for user {current_user.id}")
+        print(f"🔧 DEBUG: Update query affected {result} row(s)")
+        
+        # Verify the update by re-querying
+        updated_asset = db.query(Asset).filter(
+            Asset.user_id == current_user.id,
+            Asset.id == UUID(asset_id)
+        ).first()
+        
+        if updated_asset:
+            print(f"🔧 DEBUG: After update, asset {updated_asset.name} is_selected: {updated_asset.is_selected}")
         else:
-            print(f"🔧 DEBUG: Successfully updated asset {asset_id} selection to {is_selected}")
+            print(f"🔧 ERROR: Could not re-query asset {asset_id} after update")
     
     try:
         db.commit()

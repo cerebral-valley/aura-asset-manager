@@ -222,20 +222,21 @@ mcp_playwright_browser_console_messages()  # Check for JS errors
 ```
 
 **🚨 CRITICAL: Browser Session Management**
-- **Check for existing browser sessions FIRST**: Use `mcp_playwright_browser_tabs` to list existing tabs
-- **If website already open**: Use `mcp_playwright_browser_navigate` to refresh the current page
-- **DO NOT close existing sessions**: Work with existing tabs to save time
-- **Use console logs**: `mcp_playwright_browser_console_messages()` to pull error logs automatically
-- **Avoid new sessions**: Never start new browser sessions if existing ones are available
+- **ALWAYS use Playwright MCP ONLY**: Never mix Chrome DevTools MCP and Playwright MCP in the same session
+- **Close existing sessions FIRST**: Always use `mcp_playwright_browser_close()` before starting new tests
+- **Fresh session for each major test**: Quit and restart browser to ensure clean state
+- **Session isolation**: Each test should start with clean browser state
+- **Use console logs**: `mcp_playwright_browser_console_messages()` to get error details automatically
+- **Visual verification**: `mcp_playwright_browser_snapshot()` for page state documentation
 
-**Testing Protocol:**
-1. **Check existing tabs**: `mcp_playwright_browser_tabs` first
-2. **Authenticate**: Use Google OAuth on live site for realistic user flow
-3. **Navigate**: Test affected pages/features systematically  
-4. **Console Analysis**: Monitor browser console for errors during navigation
-5. **Pull console logs**: Use `mcp_playwright_browser_console_messages()` to get error details or use `mcp_playwright_browser_snapshot()` for visual verification or use `mcp_playwright_browser_logs_to_file("filename.txt")` to save logs or use `chrome-devtools` MCP for interactive debugging/interactive troubleshooting/navigation/cross tab movement
-6. **Visual Verification**: Take screenshots of key functionality working
-7. **Cross-Feature Testing**: Verify changes don't break unrelated features
+**Testing Protocol - ALWAYS FOLLOW THIS ORDER:**
+1. **Close existing sessions**: `mcp_playwright_browser_close()` if any browser is running  
+2. **Navigate fresh**: `mcp_playwright_browser_navigate("https://aura-asset-manager.vercel.app/")`
+3. **Authenticate**: Use Google OAuth on live site for realistic user flow
+4. **Navigate systematically**: Test affected pages/features in sequence
+5. **Console monitoring**: Use `mcp_playwright_browser_console_messages()` after each major action
+6. **Visual verification**: Use `mcp_playwright_browser_snapshot()` to confirm UI state
+7. **Cross-feature testing**: Verify changes don't break unrelated features
 
 ### 🧪 COMPREHENSIVE TESTING METHODOLOGY
 

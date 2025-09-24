@@ -287,6 +287,31 @@ if "*vercel.app" not in origins:
 3. **Feature Testing**: Test specific functionality end-to-end
 4. **Cross-Feature Validation**: Ensure changes don't break unrelated features
 
+#### ✅ Browser Testing Protocol - PLAYWRIGHT MCP ONLY
+**🚨 CRITICAL: Always use Playwright MCP exclusively, never mix with Chrome DevTools MCP**
+
+**Session Management:**
+- **ALWAYS close existing sessions first**: Use `mcp_playwright_browser_close()` before starting new tests
+- **Fresh session for each major test**: Quit and restart browser to ensure clean state
+- **Use only Playwright MCP tools**: Never switch to Chrome DevTools MCP in same session
+
+**Testing Workflow:**
+```bash
+# Correct workflow for each test session:
+1. mcp_playwright_browser_close()  # Clean slate  
+2. mcp_playwright_browser_navigate("https://aura-asset-manager.vercel.app/")  # Fresh session
+3. Authenticate with Google OAuth
+4. Navigate to affected pages systematically
+5. mcp_playwright_browser_console_messages()  # Check for errors after actions
+6. mcp_playwright_browser_snapshot()  # Document UI state
+7. Test specific functionality and verify results
+```
+
+**Error Detection:**
+- Use `mcp_playwright_browser_console_messages()` after each major action
+- Look for React context errors, network failures, import issues
+- Check for API request/response problems
+
 ```javascript
 // ✅ Version tracking pattern
 export const VERSION_INFO = {
