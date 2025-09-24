@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.154',
-  buildDate: '2024-12-08',
-  deploymentId: 'standardize-annuity-imports',
-  description: 'Standardized annuity service to use named exports - consistent with all other services'
+  version: 'v0.155',
+  buildDate: '2024-09-24',
+  deploymentId: 'fix-target-checkbox-eye-button',
+  description: 'Fixed asset checkbox persistence issue and added eye button handler for asset details viewing'
 }
 
 export const getVersionDisplay = () => {

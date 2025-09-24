@@ -217,7 +217,12 @@ async def update_asset_selections(
     db: Session = Depends(get_db)
 ):
     """Update user's liquid asset selections."""
+    print(f"🔧 DEBUG: Received asset selections update for user {current_user.id}")
+    print(f"🔧 DEBUG: Selections data: {selections.selections}")
+    
     for asset_id, is_selected in selections.selections.items():
+        print(f"🔧 DEBUG: Processing asset {asset_id} -> {is_selected}")
+        
         # Try to get existing selection
         existing = db.query(UserAssetSelection).filter(
             UserAssetSelection.user_id == current_user.id,
@@ -225,10 +230,12 @@ async def update_asset_selections(
         ).first()
         
         if existing:
+            print(f"🔧 DEBUG: Found existing selection for asset {asset_id}, updating...")
             db.query(UserAssetSelection).filter(
                 UserAssetSelection.id == existing.id
             ).update({"is_selected": is_selected})
         else:
+            print(f"🔧 DEBUG: Creating new selection for asset {asset_id}")
             # Create new selection
             selection = UserAssetSelection(
                 user_id=current_user.id,
@@ -237,7 +244,14 @@ async def update_asset_selections(
             )
             db.add(selection)
     
-    db.commit()
+    try:
+        db.commit()
+        print(f"🔧 DEBUG: Successfully committed asset selections to database")
+    except Exception as e:
+        print(f"🔧 ERROR: Failed to commit asset selections: {e}")
+        db.rollback()
+        raise
+    
     return {"message": "Asset selections updated successfully"}
 
 

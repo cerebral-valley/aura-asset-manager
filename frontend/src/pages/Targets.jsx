@@ -37,6 +37,7 @@ const Targets = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [allocations, setAllocations] = useState({});
   const [viewingTarget, setViewingTarget] = useState(null);
+  const [viewingAsset, setViewingAsset] = useState(null);
 
   // TanStack Query for targets data
   const {
@@ -414,7 +415,12 @@ const Targets = () => {
                     </div>
                     <div className="text-right flex-shrink-0 ml-2">
                       <p className="font-semibold text-sm">{formatCurrency(parseFloat(asset.current_value) || 0)}</p>
-                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-7 px-2 text-xs"
+                        onClick={() => setViewingAsset(asset)}
+                      >
                         <Eye className="h-3 w-3" />
                       </Button>
                     </div>
@@ -778,6 +784,66 @@ const Targets = () => {
         target={viewingTarget}
         formatCurrency={formatCurrency}
       />
+      
+      {/* Asset Details Modal */}
+      {viewingAsset && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-background rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Asset Details</h3>
+              <button
+                onClick={() => setViewingAsset(null)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Name</label>
+                <p className="text-base">{viewingAsset.name}</p>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Type</label>
+                <p className="text-base capitalize">{viewingAsset.asset_type}</p>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Current Value</label>
+                <p className="text-lg font-semibold">{formatCurrency(parseFloat(viewingAsset.current_value) || 0)}</p>
+              </div>
+              
+              {viewingAsset.description && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Description</label>
+                  <p className="text-base">{viewingAsset.description}</p>
+                </div>
+              )}
+              
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Selection Status</label>
+                <p className="text-base">
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    viewingAsset.is_selected 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' 
+                      : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100'
+                  }`}>
+                    {viewingAsset.is_selected ? 'Selected for Allocation' : 'Not Selected'}
+                  </span>
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex justify-end mt-6">
+              <Button onClick={() => setViewingAsset(null)} variant="outline">
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </SafeSection>
   );
 };
