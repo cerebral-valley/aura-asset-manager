@@ -135,8 +135,7 @@ const Targets = () => {
   const completeTargetMutation = useMutation({
     mutationFn: targetsService.completeTarget,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.targets.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.targets.completed() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.targets.all() });
       toast.success('Target completed! 🎉');
     },
     onError: (error) => {
@@ -160,8 +159,7 @@ const Targets = () => {
   const restoreTargetMutation = useMutation({
     mutationFn: targetsService.restoreTarget,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.targets.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.targets.completed() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.targets.all() });
       toast.success('Target restored successfully');
     },
     onError: (error) => {
