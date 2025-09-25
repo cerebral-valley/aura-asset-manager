@@ -97,37 +97,13 @@ const Targets = () => {
       console.log('🔧 DEBUG: Frontend sending asset selections:', selections);
       return targetsService.updateAssetSelections(selections);
     },
-    onMutate: async (updatedSelections) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: queryKeys.targets.liquidAssets() });
-
-      // Snapshot the previous value
-      const previousAssets = queryClient.getQueryData(queryKeys.targets.liquidAssets());
-
-      // Optimistically update the cache
-      queryClient.setQueryData(queryKeys.targets.liquidAssets(), (old) =>
-        old?.map(asset => ({
-          ...asset,
-          is_selected: updatedSelections[asset.id] ?? asset.is_selected
-        })) || []
-      );
-
-      // Return context with snapshot for rollback
-      return { previousAssets };
-    },
-    onError: (err, updatedSelections, context) => {
-      // Rollback on error
-      if (context?.previousAssets) {
-        queryClient.setQueryData(queryKeys.targets.liquidAssets(), context.previousAssets);
-      }
-      console.error('🔧 DEBUG: Asset selection update failed:', err);
-      toast.error('Failed to update asset selections: ' + (err.response?.data?.detail || 'Unknown error'));
-    },
     onSuccess: (data, updatedSelections) => {
-      // Invalidate to ensure server state is synced (but UI already updated)
-      queryClient.invalidateQueries({ queryKey: queryKeys.targets.liquidAssets() });
       console.log('🔧 DEBUG: Asset selection update succeeded:', data);
       toast.success('Asset selection updated successfully');
+    },
+    onError: (error) => {
+      console.error('🔧 DEBUG: Asset selection update failed:', error);
+      toast.error('Failed to update asset selections: ' + (error.response?.data?.detail || 'Unknown error'));
     }
   });
 
@@ -287,16 +263,15 @@ const Targets = () => {
   const handleAssetToggle = async (assetId, currentlySelected) => {
     console.log('🔧 DEBUG: handleAssetToggle called with:', { assetId, currentlySelected });
     
-    // Create flat dictionary as expected by backend: { [assetId]: boolean }
-    const updatedSelections = {};
-    liquidAssets.forEach(asset => {
-      updatedSelections[asset.id] = asset.id === assetId ? !currentlySelected : asset.is_selected;
-    });
+    // Send just this single asset selection change to backend
+    const selections = {
+      [assetId]: !currentlySelected
+    };
     
-    console.log('🔧 DEBUG: Sending updatedSelections:', updatedSelections);
+    console.log('🔧 DEBUG: Sending selections:', selections);
     
     try {
-      await updateAssetSelectionsMutation.mutateAsync(updatedSelections);
+      await updateAssetSelectionsMutation.mutateAsync(selections);
     } catch (error) {
       // Error already handled by mutation
       console.error('🔧 DEBUG: handleAssetToggle error:', error);

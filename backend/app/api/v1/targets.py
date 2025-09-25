@@ -142,15 +142,9 @@ def get_liquid_assets(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    """Get all liquid assets for the current user.
-
-    The endpoint supports both the new column-based selection model
-    (assets.liquid_assets / assets.is_selected) and the previous
-    user_asset_selections table so that checkbox state persists even if
-    migrations have not run yet or legacy data still exists.
-    """
+    """Get all liquid assets for the current user with selection status from user_asset_selections table."""
     try:
-        print("🔧 DEBUG: get_liquid_assets called - compatibility mode")
+        print("🔧 DEBUG: get_liquid_assets called - using user_asset_selections table")
 
         # Canonical list of liquid asset types (lowercase)
         liquid_asset_types = [
@@ -159,10 +153,15 @@ def get_liquid_assets(
             'treasury', 'crypto', 'cryptocurrency'
         ]
 
-
         # Fetch assets that are either explicitly marked as liquid or whose
-        # type matches the list above (case-insensitive)
-        liquid_assets = db.query(Asset).filter(
+        # type matches the list above (case-insensitive), with LEFT JOIN to user_asset_selections
+        liquid_assets = db.query(
+            Asset,
+            UserAssetSelection.is_selected.label('user_selected')
+        ).outerjoin(
+            UserAssetSelection,
+            (UserAssetSelection.asset_id == Asset.id) & (UserAssetSelection.user_id == current_user.id)
+        ).filter(
             Asset.user_id == current_user.id,
             or_(
                 Asset.liquid_assets.is_(True),
@@ -172,21 +171,23 @@ def get_liquid_assets(
 
         print(f"🔧 DEBUG: Found {len(liquid_assets)} candidate liquid assets")
 
-        result = [
-            LiquidAsset(
-                id=getattr(asset, 'id'),
-                name=getattr(asset, 'name'),
-                current_value=getattr(asset, 'current_value') or Decimal('0'),
-                asset_type=getattr(asset, 'asset_type'),
-                is_selected=bool(getattr(asset, 'is_selected')) if getattr(asset, 'is_selected') is not None else False
-            )
-            for asset in liquid_assets
-        ]
+        result = []
+        for asset, user_selected in liquid_assets:
+            # Use user selection if it exists, otherwise default to False
+            is_selected = user_selected if user_selected is not None else False
+            
+            result.append(LiquidAsset(
+                id=asset.id,
+                name=asset.name,
+                current_value=asset.current_value or Decimal('0'),
+                asset_type=asset.asset_type,
+                is_selected=is_selected
+            ))
 
         print(f"🔧 DEBUG: Returning {len(result)} liquid assets with selection states")
         for asset in result:
-            print(f"🔧 DEBUG: Final result - Asset {asset.name} (ID: {asset.id}) - selected: {asset.is_selected}")
             print(f"🔧 DEBUG: Asset {asset.name} (ID: {asset.id}) - selected: {asset.is_selected}")
+        
         return result
     except Exception as e:
         print(f"Error in get_liquid_assets: {e}")
@@ -205,14 +206,14 @@ async def update_asset_selections(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """Update user's liquid asset selections using new asset-based model."""
-    print(f"🔧 DEBUG: Received asset selections update for user {current_user.id} - REFACTORED VERSION")
+    """Update user's liquid asset selections using user_asset_selections table."""
+    print(f"🔧 DEBUG: Received asset selections update for user {current_user.id}")
     print(f"🔧 DEBUG: Selections data: {selections.selections}")
     
     for asset_id, is_selected in selections.selections.items():
         print(f"🔧 DEBUG: Processing asset {asset_id} -> {is_selected}")
 
-        # First, check if asset exists and get current value
+        # Check if asset exists and belongs to user
         existing_asset = db.query(Asset).filter(
             Asset.user_id == current_user.id,
             Asset.id == UUID(asset_id)
@@ -222,29 +223,27 @@ async def update_asset_selections(
             print(f"🔧 ERROR: No asset found with id {asset_id} for user {current_user.id}")
             continue
 
-        print(f"🔧 DEBUG: Found asset {existing_asset.name}, current is_selected: {existing_asset.is_selected}")
+        print(f"🔧 DEBUG: Found asset {existing_asset.name}")
 
-        # Update the assets table flags
-        result = db.query(Asset).filter(
-            Asset.user_id == current_user.id,
-            Asset.id == UUID(asset_id)
-        ).update({
-            "is_selected": is_selected,
-            "liquid_assets": True  # ensure asset stays visible in liquid list
-        })
-
-        print(f"🔧 DEBUG: Update query affected {result} row(s)")
-
-        # Verify the update by re-querying
-        updated_asset = db.query(Asset).filter(
-            Asset.user_id == current_user.id,
-            Asset.id == UUID(asset_id)
+        # Check if selection record already exists
+        existing_selection = db.query(UserAssetSelection).filter(
+            UserAssetSelection.user_id == current_user.id,
+            UserAssetSelection.asset_id == UUID(asset_id)
         ).first()
 
-        if updated_asset:
-            print(f"🔧 DEBUG: After update, asset {updated_asset.name} is_selected: {updated_asset.is_selected}")
+        if existing_selection:
+            # Update existing selection
+            setattr(existing_selection, 'is_selected', is_selected)
+            print(f"🔧 DEBUG: Updated existing selection for asset {existing_asset.name}")
         else:
-            print(f"🔧 ERROR: Could not re-query asset {asset_id} after update")
+            # Create new selection record
+            new_selection = UserAssetSelection(
+                user_id=current_user.id,
+                asset_id=UUID(asset_id),
+                is_selected=is_selected
+            )
+            db.add(new_selection)
+            print(f"🔧 DEBUG: Created new selection record for asset {existing_asset.name}")
     
     try:
         db.commit()
