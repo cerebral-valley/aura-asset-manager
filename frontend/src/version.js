@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.165',
-  buildDate: '2025-01-26',
-  deploymentId: 'fix-target-completion-invalidation',
-  description: 'Fixed target completion query invalidation by invalidating all targets queries instead of individual ones to ensure completed targets appear immediately.'
+  version: 'v0.166',
+  buildDate: '2025-09-26',
+  deploymentId: 'fix-asset-selection-cache-invalidation',
+  description: 'Fixed asset selection checkbox snap-back bug by adding cache invalidation to updateAssetSelectionsMutation onSuccess callback.'
 }
 
 export const getVersionDisplay = () => {

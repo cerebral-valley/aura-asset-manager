@@ -97,6 +97,8 @@ const Targets = () => {
     },
     onSuccess: (data, updatedSelections) => {
       console.log('🔧 DEBUG: Asset selection update succeeded:', data);
+      // Invalidate assets query to refetch updated selection states
+      queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() });
       toast.success('Asset selection updated successfully');
     },
     onError: (error) => {
