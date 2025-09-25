@@ -188,35 +188,44 @@ CREATE TABLE target_allocations (
 );
 ```
 
-#### user_asset_selections table
+#### assets table
 ```sql
-CREATE TABLE user_asset_selections (
+CREATE TABLE assets (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    asset_id UUID NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
-    is_selected BOOLEAN DEFAULT true,
+    name VARCHAR(255) NOT NULL,
+    asset_type VARCHAR(50) NOT NULL,
+    current_value DECIMAL(18,2) NOT NULL,
+    acquisition_value DECIMAL(18,2),
+    acquisition_date DATE,
+    is_selected BOOLEAN DEFAULT false, -- Used for target page asset selection
+    liquid_assets BOOLEAN DEFAULT false,
+    metadata JSONB,
+    description TEXT,
     created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW(),
-    UNIQUE(user_id, asset_id)
+    updated_at TIMESTAMP DEFAULT NOW()
 );
 ```
 
 ### API Endpoints
+
 - `GET /api/v1/targets` - Get user's targets + calculations
 - `POST /api/v1/targets` - Create new target
 - `PUT /api/v1/targets/{id}` - Update target
 - `DELETE /api/v1/targets/{id}` - Remove target
-- `GET /api/v1/targets/liquid-assets` - Get user's assets with selection status
-- `PUT /api/v1/targets/liquid-assets` - Update selected assets
+- `GET /api/v1/targets/liquid-assets` - Get user's liquid assets with selection status from assets.is_selected
+- `PUT /api/v1/targets/liquid-assets` - Update assets.is_selected for selected assets
 - `POST /api/v1/targets/{id}/allocations` - Update target allocations
 
 ### Frontend State Management
+
 - **TanStack Query**: Server state for targets, assets, calculations
 - **Local State**: Modal open/close, form validation, temporary edits
 - **Real-time Calculations**: Frontend calculation of progress, monthly savings
 - **Optimistic Updates**: Immediate UI updates, sync with server on save
 
 ### Data Refresh Strategy
+
 - Page navigation refresh
 - User login refresh
 - Manual "Refresh Assets" button
@@ -225,16 +234,19 @@ CREATE TABLE user_asset_selections (
 ## 📱 Responsive Design
 
 ### Desktop (≥1024px)
+
 - 2x2 grid for target cards
 - Side-by-side layout for sections
 - Full-width modals with larger content areas
 
 ### Tablet (768px-1023px)
+
 - 2x1 grid for target cards
 - Stacked sections
 - Medium-sized modals
 
 ### Mobile (<768px)
+
 - Single column layout for all target cards
 - Fully stacked sections
 - Full-screen modals
@@ -243,24 +255,29 @@ CREATE TABLE user_asset_selections (
 ## ⚠️ Edge Cases & Validations
 
 ### Asset Selection
+
 - No assets selected: Show warning "Please select at least one asset"
 - All assets deselected: Reset all allocations to 0%
 
 ### Target Creation
+
 - Past target date: Show warning and suggest extending
 - Unrealistic timeline: Calculate required monthly savings and warn if >50% of liquid assets
 
 ### Allocation Management
+
 - Over-allocation: Show warning when total exceeds 100%
 - Under-allocation: Show available percentage for allocation
 - Freed allocation: When target removed, show freed amount available
 
 ### Progress Tracking
+
 - Target achieved: Auto-suggest marking as complete
 - Past due: Highlight in red and suggest extending or completing
 - Negative progress: Handle cases where asset values decrease
 
 ## 🎯 Success Metrics
+
 - User creates at least one custom target within first session
 - Average number of targets per active user
 - Percentage of targets completed vs. abandoned
