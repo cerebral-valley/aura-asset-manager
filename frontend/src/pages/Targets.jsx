@@ -38,6 +38,7 @@ const Targets = () => {
   const [allocations, setAllocations] = useState({});
   const [viewingTarget, setViewingTarget] = useState(null);
   const [viewingAsset, setViewingAsset] = useState(null);
+  const [pendingAssetSelections, setPendingAssetSelections] = useState({}); // Track pending changes before save
 
   // TanStack Query for targets data
   const {
@@ -259,21 +260,36 @@ const Targets = () => {
     }
   };
 
-  const handleAssetToggle = async (assetId, currentlySelected) => {
+  const handleAssetToggle = (assetId, currentlySelected) => {
     console.log('🔧 DEBUG: handleAssetToggle called with:', { assetId, currentlySelected });
-    
-    // Send just this single asset selection change to backend
-    const selections = {
+
+    // Update local pending state instead of immediate DB call
+    setPendingAssetSelections(prev => ({
+      ...prev,
       [assetId]: !currentlySelected
-    };
-    
-    console.log('🔧 DEBUG: Sending selections:', selections);
-    
+    }));
+
+    console.log('🔧 DEBUG: Updated pending selections:', { ...pendingAssetSelections, [assetId]: !currentlySelected });
+  };
+
+  // Handle saving asset selections to DB
+  const handleSaveAssetSelections = async () => {
+    console.log('🔧 DEBUG: Saving asset selections:', pendingAssetSelections);
+
+    if (Object.keys(pendingAssetSelections).length === 0) {
+      toast.info('No changes to save');
+      return;
+    }
+
     try {
-      await updateAssetSelectionsMutation.mutateAsync(selections);
+      await updateAssetSelectionsMutation.mutateAsync(pendingAssetSelections);
+      // Clear pending changes after successful save
+      setPendingAssetSelections({});
+      // Refresh the page to get updated data
+      window.location.reload();
     } catch (error) {
       // Error already handled by mutation
-      console.error('🔧 DEBUG: handleAssetToggle error:', error);
+      console.error('🔧 DEBUG: Save asset selections error:', error);
     }
   };
 
@@ -407,21 +423,27 @@ const Targets = () => {
               </div>
             ) : (
               <div className="space-y-2">
-                {liquidAssets.map((asset) => (
-                  <div key={asset.id} className="flex items-center justify-between p-3 border rounded-md hover:bg-muted/30 transition-colors">
-                    <div className="flex items-center space-x-3">
-                      <Checkbox
-                        checked={asset.is_selected}
-                        onCheckedChange={() => handleAssetToggle(asset.id, asset.is_selected)}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm truncate">{asset.name}</p>
-                        <p className="text-xs text-muted-foreground capitalize">{asset.asset_type}</p>
+                {liquidAssets.map((asset) => {
+                  // Use pending changes if they exist, otherwise use current asset state
+                  const isChecked = pendingAssetSelections[asset.id] !== undefined
+                    ? pendingAssetSelections[asset.id]
+                    : asset.is_selected;
+
+                  return (
+                    <div key={asset.id} className="flex items-center justify-between p-3 border rounded-md hover:bg-muted/30 transition-colors">
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          checked={isChecked}
+                          onCheckedChange={() => handleAssetToggle(asset.id, isChecked)}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm truncate">{asset.name}</p>
+                          <p className="text-xs text-muted-foreground capitalize">{asset.asset_type}</p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-right flex-shrink-0 ml-2">
-                      <p className="font-semibold text-sm">{formatCurrency(parseFloat(asset.current_value) || 0)}</p>
-                      <Button 
+                      <div className="text-right flex-shrink-0 ml-2">
+                        <p className="font-semibold text-sm">{formatCurrency(parseFloat(asset.current_value) || 0)}</p>
+                        <Button 
                         variant="ghost" 
                         size="sm" 
                         className="h-7 px-2 text-xs"
@@ -431,8 +453,37 @@ const Targets = () => {
                       </Button>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
                 
+                {/* Save Selection Button */}
+                {Object.keys(pendingAssetSelections).length > 0 && (
+                  <div className="border-t pt-4 mt-4">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-muted-foreground">
+                        {Object.keys(pendingAssetSelections).length} pending change{Object.keys(pendingAssetSelections).length !== 1 ? 's' : ''}
+                      </div>
+                      <Button
+                        onClick={handleSaveAssetSelections}
+                        disabled={updateAssetSelectionsMutation.isPending}
+                        className="bg-primary hover:bg-primary/90"
+                      >
+                        {updateAssetSelectionsMutation.isPending ? (
+                          <>
+                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Save Selections
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="border-t pt-3 mt-3">
                   <div className="flex justify-between items-center text-sm">
                     <span className="font-medium">Selected Total:</span>

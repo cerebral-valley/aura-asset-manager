@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.167',
+  version: 'v0.168',
   buildDate: '2025-09-26',
-  deploymentId: 'railway-redeploy-trigger',
-  description: 'Triggered Railway redeploy to fix CORS and cache invalidation issues'
+  deploymentId: 'asset-selection-save-button-rewrite',
+  description: 'Completely rewrote asset selection logic with save button - checkboxes now work locally with pending changes, save button sends only changed selections to DB, page refreshes after save'
 }
 
 export const getVersionDisplay = () => {
