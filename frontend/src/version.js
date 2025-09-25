@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.163',
+  version: 'v0.164',
   buildDate: '2025-01-26',
-  deploymentId: 'simplified-checkbox-persistence',
-  description: 'Simplified checkbox persistence: store selections in user_asset_selections table, send changes immediately, fetch on login. Removed complex optimistic updates.'
+  deploymentId: 'fix-target-completion-delay',
+  description: 'Fixed target completion delay: Added query invalidation for completed targets in completeTargetMutation to ensure immediate UI updates when targets are marked complete.'
 }
 
 export const getVersionDisplay = () => {

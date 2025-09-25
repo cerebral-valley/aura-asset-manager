@@ -136,6 +136,7 @@ const Targets = () => {
     mutationFn: targetsService.completeTarget,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.targets.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.targets.completed() });
       toast.success('Target completed! 🎉');
     },
     onError: (error) => {
