@@ -43,14 +43,9 @@ export const targetsService = {
     return response.data
   },
 
-  // Special endpoints - match @router.get("/completed"), @router.get("/liquid-assets"), @router.put("/liquid-assets")
+  // Special endpoints - match @router.get("/completed"), @router.put("/liquid-assets")
   async getCompletedTargets(config = {}) {
     const response = await apiClient.get('/targets/completed', config)
-    return response.data
-  },
-
-  async getLiquidAssets(config = {}) {
-    const response = await apiClient.get('/targets/liquid-assets', config)
     return response.data
   },
 

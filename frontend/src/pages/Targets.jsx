@@ -65,17 +65,15 @@ const Targets = () => {
     retry: 3,
   });
 
-  // TanStack Query for liquid assets with selection status
-  const {
-    data: liquidAssets = [],
-    isLoading: liquidAssetsLoading,
-    error: liquidAssetsError
-  } = useQuery({
-    queryKey: queryKeys.targets.liquidAssets(),
-    queryFn: ({ signal }) => targetsService.getLiquidAssets({ signal }),
-    enabled: !!user,
-    staleTime: 5 * 60 * 1000,
-    retry: 3,
+  // Filter assets to get only liquid ones (same logic as backend)
+  const liquidAssets = assets.filter(asset => {
+    const liquidTypes = [
+      'cash', 'bank', 'checking', 'savings', 'stocks', 'stock', 'etf',
+      'mutual_funds', 'mutual funds', 'money_market', 'bonds', 'bond',
+      'treasury', 'crypto', 'cryptocurrency'
+    ];
+    
+    return asset.liquid_assets || liquidTypes.includes(asset.asset_type?.toLowerCase());
   });
 
   // TanStack Query for completed targets
@@ -351,18 +349,17 @@ const Targets = () => {
 
   // Handle refresh assets
   const handleRefreshAssets = () => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.targets.liquidAssets() });
     queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() });
     toast.success('Assets refreshed successfully');
   };
 
-  if (targetsLoading || liquidAssetsLoading || completedTargetsLoading) {
+  if (targetsLoading || assetsLoading || completedTargetsLoading) {
     return <Loading pageName="Targets" />;
   }
 
-  if (targetsError || liquidAssetsError || completedTargetsError) {
+  if (targetsError || assetsError || completedTargetsError) {
     const errorMessage = targetsError?.response?.data?.detail || 
-                         liquidAssetsError?.response?.data?.detail || 
+                         assetsError?.response?.data?.detail || 
                          completedTargetsError?.response?.data?.detail ||
                          'Failed to load data';
     return (
