@@ -1,7 +1,7 @@
 """
 Aura Asset Manager - FastAPI Backend Application
 Main entry point for the FastAPI application.
-Updated: July 25, 2025 - CORS Fix Deployment
+Updated: July 25, 2025 - CORS Fix Deployment + Cache Invalidation Fix
 """
 
 from fastapi import FastAPI, Request

@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.166',
+  version: 'v0.167',
   buildDate: '2025-09-26',
-  deploymentId: 'fix-asset-selection-cache-invalidation',
-  description: 'Fixed asset selection checkbox snap-back bug by adding cache invalidation to updateAssetSelectionsMutation onSuccess callback.'
+  deploymentId: 'railway-redeploy-trigger',
+  description: 'Triggered Railway redeploy to fix CORS and cache invalidation issues'
 }
 
 export const getVersionDisplay = () => {
