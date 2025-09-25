@@ -8,7 +8,7 @@ from sqlalchemy import func, or_
 from app.core.database import get_db
 from app.api.deps import get_current_active_user
 from app.models.user import User
-from app.models.target import Target, TargetAllocation
+from app.models.target import Target, TargetAllocation, UserAssetSelection
 from app.models.asset import Asset
 from app.schemas.target import (
     Target as TargetSchema,
@@ -197,7 +197,7 @@ async def update_asset_selections(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """Update user's liquid asset selections by updating assets.is_selected column directly."""
+    """Update user's liquid asset selections using user_asset_selections table."""
     print(f"🔧 DEBUG: Received asset selections update for user {current_user.id}")
     print(f"🔧 DEBUG: Selections data: {selections.selections}")
 
@@ -214,15 +214,27 @@ async def update_asset_selections(
             print(f"🔧 ERROR: No asset found with id {asset_id} for user {current_user.id}")
             continue
 
-        print(f"🔧 DEBUG: Found asset {existing_asset.name}, current is_selected: {existing_asset.is_selected}")
+        print(f"🔧 DEBUG: Found asset {existing_asset.name}")
 
-        # Update the asset's is_selected column directly
-        db.query(Asset).filter(Asset.id == UUID(asset_id)).update({
-            "is_selected": is_selected,
-            "updated_at": datetime.utcnow()
-        })
+        # Check if selection record already exists
+        existing_selection = db.query(UserAssetSelection).filter(
+            UserAssetSelection.user_id == current_user.id,
+            UserAssetSelection.asset_id == UUID(asset_id)
+        ).first()
 
-        print(f"🔧 DEBUG: Updated asset {existing_asset.name} is_selected to {is_selected}")
+        if existing_selection:
+            # Update existing selection
+            setattr(existing_selection, 'is_selected', is_selected)
+            print(f"🔧 DEBUG: Updated existing selection for asset {existing_asset.name}")
+        else:
+            # Create new selection record
+            new_selection = UserAssetSelection(
+                user_id=current_user.id,
+                asset_id=UUID(asset_id),
+                is_selected=is_selected
+            )
+            db.add(new_selection)
+            print(f"🔧 DEBUG: Created new selection record for asset {existing_asset.name}")
 
     try:
         db.commit()
