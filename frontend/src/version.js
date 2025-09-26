@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.179',
-  buildDate: '2025-01-26', 
-  deploymentId: 'cors-security-hardening',
-  description: 'Critical CORS security fix: replaced dangerous wildcard ["*"] origins with explicit secure domain whitelist to prevent CORS-based attacks'
+  version: 'v0.180',
+  buildDate: '2025-09-27', 
+  deploymentId: 'liquid-time-horizon-updates',
+  description: 'Added liquid asset status and time horizon update functionality to transaction system with new Update Type options and table columns'
 }
 
 export const getVersionDisplay = () => {

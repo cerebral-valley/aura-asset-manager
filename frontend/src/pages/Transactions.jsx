@@ -38,6 +38,8 @@ import {
   AlertTriangle,
   ChevronUp,
   ChevronDown,
+  Droplets,
+  Clock,
   Info
 } from 'lucide-react'
 import { transactionsService } from '@/services/transactions'
@@ -110,6 +112,8 @@ const transactionTypes = [
   { value: 'update_market_value', label: 'Update Market Value', icon: RefreshCw, color: 'text-blue-500', description: 'Update current market value' },
   { value: 'update_name', label: 'Update Name', icon: FileText, color: 'text-gray-500', description: 'Change asset name' },
   { value: 'update_type', label: 'Update Type', icon: ArrowUpRight, color: 'text-purple-500', description: 'Change asset category' },
+  { value: 'update_liquid_status', label: 'Update Liquid Status', icon: Droplets, color: 'text-cyan-500', description: 'Change asset liquidity status' },
+  { value: 'update_time_horizon', label: 'Update Time Horizon', icon: Clock, color: 'text-amber-500', description: 'Change investment time horizon' },
   { value: 'delete', label: 'Delete Asset', icon: Trash2, color: 'text-red-600', description: 'Permanently remove asset (irreversible)' }
 ]
 
@@ -624,6 +628,16 @@ export default function Transactions() {
               transactionData.asset_type = transactionForm.asset_type
             }
 
+            // Add liquid_assets for update_liquid_status transactions
+            if (transactionForm.transaction_type === 'update_liquid_status' && transactionForm.liquid_assets) {
+              transactionData.liquid_assets = transactionForm.liquid_assets
+            }
+
+            // Add time_horizon for update_time_horizon transactions
+            if (transactionForm.transaction_type === 'update_time_horizon' && transactionForm.time_horizon) {
+              transactionData.time_horizon = transactionForm.time_horizon
+            }
+
             console.log('📋 UPDATE_TRANSACTION_DATA: Update transaction data', {
               transactionData,
               code: 'UPDATE_002'
@@ -1001,7 +1015,7 @@ export default function Transactions() {
                   
                   <TabsContent value="update_acquisition_value" className="space-y-2">
                     <div className="grid grid-cols-1 gap-2">
-                      {transactionTypes.filter(t => ['update_acquisition_value', 'update_market_value', 'update_name', 'update_type'].includes(t.value)).map((type) => {
+                      {transactionTypes.filter(t => ['update_acquisition_value', 'update_market_value', 'update_name', 'update_type', 'update_liquid_status', 'update_time_horizon'].includes(t.value)).map((type) => {
                         const Icon = type.icon
                         return (
                           <div
@@ -1360,6 +1374,55 @@ export default function Transactions() {
               </div>
             )}
 
+            {/* Liquid Status Select for Update Liquid Status */}
+            {selectedTransactionType === 'update_liquid_status' && (
+              <div className="space-y-2">
+                <Label htmlFor="liquid_assets">New Liquid Status *</Label>
+                <Select 
+                  value={transactionForm.liquid_assets || ''} 
+                  onValueChange={(value) => setTransactionForm({...transactionForm, liquid_assets: value})}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select new liquid status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="YES">YES - Liquid Asset</SelectItem>
+                    <SelectItem value="NO">NO - Illiquid Asset</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  Liquid assets can be easily converted to cash within a short period.
+                </p>
+              </div>
+            )}
+
+            {/* Time Horizon Select for Update Time Horizon */}
+            {selectedTransactionType === 'update_time_horizon' && (
+              <div className="space-y-2">
+                <Label htmlFor="time_horizon">New Time Horizon *</Label>
+                <Select 
+                  value={transactionForm.time_horizon || ''} 
+                  onValueChange={(value) => setTransactionForm({...transactionForm, time_horizon: value})}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select new time horizon" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {timeHorizonOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  Investment time horizon affects risk tolerance and strategy.
+                </p>
+              </div>
+            )}
+
             {/* Notes */}
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
@@ -1609,6 +1672,8 @@ export default function Transactions() {
                 <SortableHeader label="Asset Details" sortKey="asset_name" />
                 <SortableHeader label="Values" sortKey="amount" />
                 <TableHead>Quantity & Unit</TableHead>
+                <TableHead>Liquid</TableHead>
+                <TableHead>Time Horizon</TableHead>
                 <TableHead>Properties</TableHead>
                 <TableHead>Notes</TableHead>
                  <TableHead>Last Modified</TableHead>
@@ -1681,6 +1746,32 @@ export default function Transactions() {
                             </div>
                           )}
                           {!transaction.quantity && (
+                            <span className="text-muted-foreground text-sm">-</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          {transaction.liquid_assets ? (
+                            <Badge variant={transaction.liquid_assets === 'YES' ? 'default' : 'secondary'} className="text-xs">
+                              {transaction.liquid_assets === 'YES' ? '💧 Liquid' : '🔒 Illiquid'}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">-</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          {transaction.time_horizon ? (
+                            <div className="text-sm">
+                              <span className="text-muted-foreground">
+                                {transaction.time_horizon === 'short_term' && '⏱️ Short'}
+                                {transaction.time_horizon === 'medium_term' && '⏰ Medium'}
+                                {transaction.time_horizon === 'long_term' && '⏳ Long'}
+                              </span>
+                            </div>
+                          ) : (
                             <span className="text-muted-foreground text-sm">-</span>
                           )}
                         </div>

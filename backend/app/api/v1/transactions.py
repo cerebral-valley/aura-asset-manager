@@ -178,6 +178,11 @@ async def create_transaction(
             asset.name = transaction.asset_name  # type: ignore
         elif transaction.transaction_type == "update_type" and transaction.asset_type:
             asset.asset_type = transaction.asset_type  # type: ignore
+        elif transaction.transaction_type == "update_liquid_status" and hasattr(transaction, 'liquid_assets'):
+            # Convert string to boolean for asset table
+            asset.liquid_assets = transaction.liquid_assets == 'YES'  # type: ignore
+        elif transaction.transaction_type == "update_time_horizon" and hasattr(transaction, 'time_horizon'):
+            asset.time_horizon = transaction.time_horizon  # type: ignore
 
     db.commit()
     db.refresh(db_transaction)

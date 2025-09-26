@@ -27,6 +27,8 @@ class TransactionBase(BaseModel):
     unit_of_measure: Optional[str] = None
     custom_properties: Optional[str] = None
     asset_description: Optional[str] = None
+    liquid_assets: Optional[str] = None
+    time_horizon: Optional[str] = None
     
     @field_validator('transaction_metadata', mode='before')
     @classmethod
@@ -48,6 +50,12 @@ class TransactionUpdate(BaseModel):
     quantity_change: Optional[Decimal] = None
     notes: Optional[str] = None
     transaction_metadata: Optional[Dict[str, Any]] = None
+    
+    # NEW FIELDS - Added to match frontend requirements for update transactions
+    asset_name: Optional[str] = None
+    asset_type: Optional[str] = None
+    liquid_assets: Optional[str] = None
+    time_horizon: Optional[str] = None
     
     # NEW FIELDS - Updated schema
     asset_name: Optional[str] = None

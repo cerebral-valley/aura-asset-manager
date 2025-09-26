@@ -35,6 +35,8 @@ class Transaction(Base):
     unit_of_measure = Column(Text)  # Units (shares, oz, sqft, etc.)
     custom_properties = Column(Text)  # Free-form custom properties
     asset_description = Column(Text)  # Asset description
+    liquid_assets = Column(Text)  # Liquid asset status (YES/NO)
+    time_horizon = Column(Text)  # Investment time horizon (short_term/medium_term/long_term)
     
     # Relationships
     asset = relationship("Asset", back_populates="transactions")
