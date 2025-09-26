@@ -200,7 +200,7 @@ async def update_asset_selections(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """Update user's liquid asset selections using user_asset_selections table."""
+    """Update user's liquid asset selections using user_asset_selections table AND sync with assets.is_selected."""
     print(f"🔧 DEBUG: Received asset selections update for user {current_user.id}")
     print(f"🔧 DEBUG: Selections data: {selections.selections}")
     
@@ -210,11 +210,17 @@ async def update_asset_selections(
 
     for asset_id, is_selected in selections.selections.items():
         print(f"🔧 DEBUG: Processing asset {asset_id} -> {is_selected}")
+        try:
+            # Parse UUID safely
+            asset_uuid = UUID(asset_id)
+        except ValueError:
+            print(f"🔧 ERROR: Invalid UUID format for asset_id {asset_id}")
+            continue
 
         # Check if asset exists and belongs to user
         existing_asset = db.query(Asset).filter(
             Asset.user_id == current_user.id,
-            Asset.id == UUID(asset_id)
+            Asset.id == asset_uuid
         ).first()
 
         if not existing_asset:
@@ -223,25 +229,30 @@ async def update_asset_selections(
 
         print(f"🔧 DEBUG: Found asset {existing_asset.name}")
 
-        # Check if selection record already exists
+        # CRITICAL FIX: Update is_selected in the assets table directly
+        # This ensures selection state is consistent between tables
+        setattr(existing_asset, 'is_selected', bool(is_selected))
+        print(f"🔧 DEBUG: Updated is_selected={is_selected} in assets table for {existing_asset.name}")
+
+        # Also maintain user_asset_selections table for historical/audit purposes
         existing_selection = db.query(UserAssetSelection).filter(
             UserAssetSelection.user_id == current_user.id,
-            UserAssetSelection.asset_id == UUID(asset_id)
+            UserAssetSelection.asset_id == asset_uuid
         ).first()
 
         if existing_selection:
             # Update existing selection
-            setattr(existing_selection, 'is_selected', is_selected)
-            print(f"🔧 DEBUG: Updated existing selection for asset {existing_asset.name}")
+            setattr(existing_selection, 'is_selected', bool(is_selected))
+            print(f"🔧 DEBUG: Updated existing selection in user_asset_selections for {existing_asset.name}")
         else:
             # Create new selection record
             new_selection = UserAssetSelection(
                 user_id=current_user.id,
-                asset_id=UUID(asset_id),
+                asset_id=asset_uuid,
                 is_selected=is_selected
             )
             db.add(new_selection)
-            print(f"🔧 DEBUG: Created new selection record for asset {existing_asset.name}")
+            print(f"🔧 DEBUG: Created new selection record in user_asset_selections for {existing_asset.name}")
 
     try:
         db.commit()
@@ -249,7 +260,10 @@ async def update_asset_selections(
     except Exception as e:
         print(f"🔧 ERROR: Failed to commit asset selections: {e}")
         db.rollback()
-        raise
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update asset selections: {str(e)}"
+        )
 
     # Return with explicit headers for CORS debugging
     response = JSONResponse(content={"message": "Asset selections updated successfully"})

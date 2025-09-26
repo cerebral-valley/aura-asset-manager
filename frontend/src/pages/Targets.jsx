@@ -94,17 +94,52 @@ const Targets = () => {
   const updateAssetSelectionsMutation = useMutation({
     mutationFn: (data) => {
       console.log('🔧 DEBUG: Frontend sending asset selections:', data.selections);
-      return targetsService.updateAssetSelections(data);
+      console.log('🔧 DEBUG: Request payload structure:', JSON.stringify(data, null, 2));
+      
+      // Verify selections format is correct (important!)
+      if (!data.selections || typeof data.selections !== 'object') {
+        throw new Error('Invalid selection format: selections must be an object');
+      }
+      
+      // Ensure all values are boolean
+      Object.entries(data.selections).forEach(([key, value]) => {
+        if (typeof value !== 'boolean') {
+          console.warn(`🔧 WARNING: Selection value for ${key} is not boolean: ${value} (${typeof value})`);
+          // This ensures the backend receives proper boolean values
+          data.selections[key] = Boolean(value);
+        }
+      });
+      
+      // Add explicit Content-Type header to the request
+      const config = {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      };
+      
+      return targetsService.updateAssetSelections(data, config);
     },
     onSuccess: (data, updatedSelections) => {
       console.log('🔧 DEBUG: Asset selection update succeeded:', data);
-      // Invalidate assets query to refetch updated selection states
+      // Invalidate both assets query and liquid-assets to refetch updated selection states
       queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() });
       toast.success('Asset selection updated successfully');
     },
     onError: (error) => {
       console.error('🔧 DEBUG: Asset selection update failed:', error);
-      toast.error('Failed to update asset selections: ' + (error.response?.data?.detail || 'Unknown error'));
+      console.error('🔧 DEBUG: Error details:', error.response || error.message || error);
+      console.error('🔧 DEBUG: Network status:', error.request?.status);
+      
+      // Detailed error logging for better debugging
+      if (error.response) {
+        console.error('🔧 DEBUG: Server responded with:', error.response.status);
+        console.error('🔧 DEBUG: Response data:', error.response.data);
+        console.error('🔧 DEBUG: Response headers:', error.response.headers);
+      } else if (error.request) {
+        console.error('🔧 DEBUG: No response received from server (CORS/network issue)');
+      }
+      
+      toast.error('Failed to update asset selections: ' + (error.response?.data?.detail || error.message || 'Unknown error'));
     }
   });
 

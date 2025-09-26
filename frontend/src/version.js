@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.172',
+  version: 'v0.174',
   buildDate: '2024-12-28',
-  deploymentId: 'asset-selection-fix',
-  description: 'Fixed asset selection request payload structure to match backend schema'
+  deploymentId: 'asset-selection-fix-complete',
+  description: 'Fixed asset selection sync between tables and improved error handling'
 }
 
 export const getVersionDisplay = () => {

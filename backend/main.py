@@ -114,10 +114,24 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With", "Content-Length"],
     expose_headers=["Content-Length"],
     max_age=600,  # Cache preflight requests for 10 minutes
 )
+
+# Enhanced debugging for CORS/Auth errors
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    path = request.url.path
+    method = request.method
+    if '/targets/liquid-assets' in path:
+        print(f"🔍 DEBUG REQUEST: {method} {path}")
+        print(f"🔍 Headers: {dict(request.headers)}")
+    response = await call_next(request)
+    if '/targets/liquid-assets' in path:
+        print(f"🔍 DEBUG RESPONSE: {response.status_code} for {method} {path}")
+        print(f"🔍 Response Headers: {dict(response.headers)}")
+    return response
 
 # Include API routers
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
