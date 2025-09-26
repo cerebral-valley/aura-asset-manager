@@ -9,7 +9,7 @@ from sqlalchemy import func, or_
 from app.core.database import get_db
 from app.api.deps import get_current_active_user
 from app.models.user import User
-from app.models.target import Target, TargetAllocation, UserAssetSelection
+from app.models.target import Target, TargetAllocation  # Removed UserAssetSelection since table was deleted
 from app.models.asset import Asset
 from app.schemas.target import (
     Target as TargetSchema,
@@ -143,28 +143,20 @@ def get_liquid_assets(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    """Get all liquid assets for the current user with selection status from assets.is_selected column."""
+    """Get all liquid assets for the current user with selection status from assets.is_selected column.
+    
+    Uses unified liquid asset definition from assets.liquid_assets column.
+    """
     try:
-        print("🔧 DEBUG: get_liquid_assets called - using assets.is_selected column")
+        print("🔧 DEBUG: get_liquid_assets called - using unified liquid_assets definition")
 
-        # Canonical list of liquid asset types (lowercase)
-        liquid_asset_types = [
-            'cash', 'bank', 'checking', 'savings', 'stocks', 'stock', 'etf',
-            'mutual_funds', 'mutual funds', 'money_market', 'bonds', 'bond',
-            'treasury', 'crypto', 'cryptocurrency'
-        ]
-
-        # Fetch assets that are either explicitly marked as liquid or whose
-        # type matches the list above (case-insensitive)
+        # Fetch assets that are marked as liquid in the database
         liquid_assets = db.query(Asset).filter(
             Asset.user_id == current_user.id,
-            or_(
-                Asset.liquid_assets.is_(True),
-                func.lower(Asset.asset_type).in_(liquid_asset_types)
-            )
+            Asset.liquid_assets == True  # Use unified definition from database
         ).all()
 
-        print(f"🔧 DEBUG: Found {len(liquid_assets)} candidate liquid assets")
+        print(f"🔧 DEBUG: Found {len(liquid_assets)} liquid assets using unified definition")
 
         result = []
         for asset in liquid_assets:
@@ -200,7 +192,10 @@ async def update_asset_selections(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """Update user's liquid asset selections using user_asset_selections table AND sync with assets.is_selected."""
+    """Update user's liquid asset selections using only assets.is_selected column.
+    
+    Simplified approach using single source of truth in assets table.
+    """
     print(f"🔧 DEBUG: Received asset selections update for user {current_user.id}")
     print(f"🔧 DEBUG: Selections data: {selections.selections}")
     
@@ -217,42 +212,22 @@ async def update_asset_selections(
             print(f"🔧 ERROR: Invalid UUID format for asset_id {asset_id}")
             continue
 
-        # Check if asset exists and belongs to user
+        # Check if asset exists, belongs to user, and is liquid
         existing_asset = db.query(Asset).filter(
             Asset.user_id == current_user.id,
-            Asset.id == asset_uuid
+            Asset.id == asset_uuid,
+            Asset.liquid_assets == True  # Only allow selection of liquid assets
         ).first()
 
         if not existing_asset:
-            print(f"🔧 ERROR: No asset found with id {asset_id} for user {current_user.id}")
+            print(f"🔧 ERROR: No liquid asset found with id {asset_id} for user {current_user.id}")
             continue
 
-        print(f"🔧 DEBUG: Found asset {existing_asset.name}")
+        print(f"🔧 DEBUG: Found liquid asset {existing_asset.name}")
 
-        # CRITICAL FIX: Update is_selected in the assets table directly
-        # This ensures selection state is consistent between tables
+        # Update selection state directly in assets table
         setattr(existing_asset, 'is_selected', bool(is_selected))
-        print(f"🔧 DEBUG: Updated is_selected={is_selected} in assets table for {existing_asset.name}")
-
-        # Also maintain user_asset_selections table for historical/audit purposes
-        existing_selection = db.query(UserAssetSelection).filter(
-            UserAssetSelection.user_id == current_user.id,
-            UserAssetSelection.asset_id == asset_uuid
-        ).first()
-
-        if existing_selection:
-            # Update existing selection
-            setattr(existing_selection, 'is_selected', bool(is_selected))
-            print(f"🔧 DEBUG: Updated existing selection in user_asset_selections for {existing_asset.name}")
-        else:
-            # Create new selection record
-            new_selection = UserAssetSelection(
-                user_id=current_user.id,
-                asset_id=asset_uuid,
-                is_selected=is_selected
-            )
-            db.add(new_selection)
-            print(f"🔧 DEBUG: Created new selection record in user_asset_selections for {existing_asset.name}")
+        print(f"🔧 DEBUG: Updated is_selected={is_selected} for asset {existing_asset.name}")
 
     try:
         db.commit()
@@ -265,10 +240,9 @@ async def update_asset_selections(
             detail=f"Failed to update asset selections: {str(e)}"
         )
 
-    # Return with explicit headers for CORS debugging
+    # Return success response
     response = JSONResponse(content={"message": "Asset selections updated successfully"})
-    # Ensure CORS headers are explicitly set
-    print(f"🔧 DEBUG: Returning successful response with CORS headers")
+    print(f"🔧 DEBUG: Returning successful response")
     return response
 
 

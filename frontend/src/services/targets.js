@@ -49,6 +49,12 @@ export const targetsService = {
     return response.data
   },
 
+  // Get liquid assets with selection status
+  async getLiquidAssets(config = {}) {
+    const response = await apiClient.get('/targets/liquid-assets', config)
+    return response.data
+  },
+
   async updateAssetSelections(data, config = {}) {
     // data should already contain the 'selections' property
     console.log('🔧 DEBUG [targetService]: Making PUT request to /targets/liquid-assets with data:', data);

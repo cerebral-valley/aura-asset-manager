@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.174',
+  version: 'v0.175',
   buildDate: '2024-12-28',
-  deploymentId: 'asset-selection-fix-complete',
-  description: 'Fixed asset selection sync between tables and improved error handling'
+  deploymentId: 'unified-liquid-assets-fix',
+  description: 'Unified liquid asset definition, removed user_asset_selection table, single source of truth in assets table'
 }
 
 export const getVersionDisplay = () => {

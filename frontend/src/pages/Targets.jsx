@@ -53,7 +53,7 @@ const Targets = () => {
     retry: 3,
   });
 
-  // TanStack Query for assets data
+  // TanStack Query for assets data (for general net worth calculation)
   const {
     data: assets = [],
     isLoading: assetsLoading,
@@ -66,15 +66,17 @@ const Targets = () => {
     retry: 3,
   });
 
-  // Filter assets to get only liquid ones (same logic as backend)
-  const liquidAssets = assets.filter(asset => {
-    const liquidTypes = [
-      'cash', 'bank', 'checking', 'savings', 'stocks', 'stock', 'etf',
-      'mutual_funds', 'mutual funds', 'money_market', 'bonds', 'bond',
-      'treasury', 'crypto', 'cryptocurrency'
-    ];
-    
-    return asset.liquid_assets || liquidTypes.includes(asset.asset_type?.toLowerCase());
+  // TanStack Query for liquid assets data (using unified backend definition)
+  const {
+    data: liquidAssets = [],
+    isLoading: liquidAssetsLoading,
+    error: liquidAssetsError
+  } = useQuery({
+    queryKey: queryKeys.targets.liquidAssets(),
+    queryFn: ({ signal }) => targetsService.getLiquidAssets({ signal }),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+    retry: 3,
   });
 
   // TanStack Query for completed targets
@@ -121,8 +123,8 @@ const Targets = () => {
     },
     onSuccess: (data, updatedSelections) => {
       console.log('🔧 DEBUG: Asset selection update succeeded:', data);
-      // Invalidate both assets query and liquid-assets to refetch updated selection states
-      queryClient.invalidateQueries({ queryKey: queryKeys.assets.list() });
+      // Invalidate liquid assets query to refetch updated selection states
+      queryClient.invalidateQueries({ queryKey: queryKeys.targets.liquidAssets() });
       toast.success('Asset selection updated successfully');
     },
     onError: (error) => {
@@ -406,14 +408,15 @@ const Targets = () => {
     toast.success('Assets refreshed successfully');
   };
 
-  if (targetsLoading || assetsLoading || completedTargetsLoading) {
+  if (targetsLoading || assetsLoading || completedTargetsLoading || liquidAssetsLoading) {
     return <Loading pageName="Targets" />;
   }
 
-  if (targetsError || assetsError || completedTargetsError) {
+  if (targetsError || assetsError || completedTargetsError || liquidAssetsError) {
     const errorMessage = targetsError?.response?.data?.detail || 
                          assetsError?.response?.data?.detail || 
                          completedTargetsError?.response?.data?.detail ||
+                         liquidAssetsError?.response?.data?.detail ||
                          'Failed to load data';
     return (
       <Alert variant="destructive">

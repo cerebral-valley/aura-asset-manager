@@ -56,23 +56,4 @@ class TargetAllocation(Base):
     def __repr__(self):
         return f"<TargetAllocation(target_id={self.target_id}, asset_id={self.asset_id}, amount={self.allocation_amount})>"
 
-
-class UserAssetSelection(Base):
-    """User preferences for which assets to include in liquid asset pool."""
-    
-    __tablename__ = "user_asset_selections"
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    asset_id = Column(UUID(as_uuid=True), ForeignKey("assets.id", ondelete="CASCADE"), nullable=False)
-    is_selected = Column(Boolean, default=True)
-    
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-    
-    # Relationships
-    user = relationship("User")
-    asset = relationship("Asset")
-    
-    def __repr__(self):
-        return f"<UserAssetSelection(user_id={self.user_id}, asset_id={self.asset_id}, selected={self.is_selected})>"
+# Note: UserAssetSelection model removed - asset selection now handled via assets.is_selected column
