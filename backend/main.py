@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from app.core.config import settings
-from app.api.v1 import auth, dashboard, assets, transactions, insurance, transaction_create, annuities, user_settings, feedback, profile, targets
+from app.api.v1 import auth, dashboard, assets, transactions, insurance, transaction_create, annuities, user_settings, feedback, profile
 # TODO: Re-enable after fixing metadata column name issue
 # from app.api.v1 import payment_schedules
 
@@ -114,15 +114,10 @@ app.add_middleware(
 # Enhanced debugging for CORS/Auth errors
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    path = request.url.path
+    """Log all HTTP requests for debugging."""
     method = request.method
-    if '/targets/liquid-assets' in path:
-        print(f"🔍 DEBUG REQUEST: {method} {path}")
-        print(f"🔍 Headers: {dict(request.headers)}")
+    path = str(request.url.path)
     response = await call_next(request)
-    if '/targets/liquid-assets' in path:
-        print(f"🔍 DEBUG RESPONSE: {response.status_code} for {method} {path}")
-        print(f"🔍 Response Headers: {dict(response.headers)}")
     return response
 
 # Include API routers
@@ -133,7 +128,6 @@ app.include_router(transactions.router, prefix="/api/v1/transactions", tags=["tr
 app.include_router(transaction_create.router, prefix="/api/v1/transaction_create", tags=["transaction-create"])
 app.include_router(insurance.router, prefix="/api/v1/insurance", tags=["insurance"])
 app.include_router(annuities.router, prefix="/api/v1/annuities", tags=["annuities"])
-app.include_router(targets.router, prefix="/api/v1/targets", tags=["targets"])
 app.include_router(user_settings.router, prefix="/api/v1/user-settings", tags=["user-settings"])
 app.include_router(profile.router, prefix="/api/v1/profile", tags=["profile"])
 # TODO: Re-enable after fixing metadata column name issue

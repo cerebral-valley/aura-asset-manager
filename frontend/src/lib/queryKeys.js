@@ -67,21 +67,6 @@ export const queryKeys = {
     performance: (annuityId) => [...queryKeys.annuities.baseKey, 'performance', annuityId],
   },
 
-  // Target-related queries
-  targets: {
-    baseKey: ['aura', 'targets'],
-    all: () => [...queryKeys.targets.baseKey],
-    list: (filters) => {
-      if (!filters || Object.keys(filters).length === 0) {
-        return [...queryKeys.targets.baseKey, 'list']
-      }
-      return [...queryKeys.targets.baseKey, 'list', normalizeFilters(filters)]
-    },
-    detail: (id) => [...queryKeys.targets.baseKey, 'detail', id],
-    completed: () => [...queryKeys.targets.baseKey, 'completed'],
-    liquidAssets: () => [...queryKeys.targets.baseKey, 'liquid-assets'],
-  },
-
   // Dashboard and aggregated queries
   dashboard: {
     baseKey: ['aura', 'dashboard'],
@@ -161,11 +146,6 @@ export const invalidationHelpers = {
   // Invalidate annuity data (independent of other data)
   invalidateAnnuities: (queryClient) => {
     queryClient.invalidateQueries({ queryKey: queryKeys.annuities.baseKey })
-  },
-
-  // Invalidate targets data
-  invalidateTargets: (queryClient) => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.targets.baseKey })
   },
 
   // Invalidate dashboard summaries (use when underlying data changes)

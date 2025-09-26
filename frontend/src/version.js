@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.177',
+  version: 'v0.178',
   buildDate: '2025-01-26', 
-  deploymentId: 'backend-import-fix',
-  description: 'Fixed SQLAlchemy import error: removed UserAssetSelection from __init__.py imports that was causing 502 backend crashes'
+  deploymentId: 'targets-feature-removal',
+  description: 'Complete removal of targets feature: removed backend models, API endpoints, frontend components, routes, navigation, query keys, and documentation'
 }
 
 export const getVersionDisplay = () => {
