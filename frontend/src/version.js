@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.175',
-  buildDate: '2024-12-28',
-  deploymentId: 'unified-liquid-assets-fix',
-  description: 'Unified liquid asset definition, removed user_asset_selection table, single source of truth in assets table'
+  version: 'v0.176',
+  buildDate: '2025-01-26', 
+  deploymentId: 'cors-fix-deployment',
+  description: 'CORS configuration fix to resolve API blocking issues preventing liquid asset selection functionality'
 }
 
 export const getVersionDisplay = () => {
