@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.178',
+  version: 'v0.179',
   buildDate: '2025-01-26', 
-  deploymentId: 'targets-feature-removal',
-  description: 'Complete removal of targets feature: removed backend models, API endpoints, frontend components, routes, navigation, query keys, and documentation'
+  deploymentId: 'cors-security-hardening',
+  description: 'Critical CORS security fix: replaced dangerous wildcard ["*"] origins with explicit secure domain whitelist to prevent CORS-based attacks'
 }
 
 export const getVersionDisplay = () => {

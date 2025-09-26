@@ -75,39 +75,34 @@ def is_allowed_origin(origin: str) -> bool:
     
     return False
 
-# Get dynamic allowed origins - Fixed for Railway deployment
+# Get dynamic allowed origins - SECURE: No wildcard origins
 def get_allowed_origins():
-    """Get allowed origins including dynamic ones."""
+    """Get allowed origins including dynamic Vercel preview deployments."""
     base_origins = settings.ALLOWED_ORIGINS.copy()
     
-    # For Railway deployment, always allow Vercel domains
-    # Add specific Vercel domains to ensure CORS works
-    vercel_domains = [
-        "https://aura-asset-manager.vercel.app",
-        "https://aura-asset-manager-git-main-cerebral-valley.vercel.app",
-        "https://aura-asset-manager-cerebral-valley.vercel.app",
-        # Add explicit www and non-www versions to be safe
+    # Add specific Vercel domains for production
+    additional_vercel_domains = [
         "https://www.aura-asset-manager.vercel.app"
     ]
     
-    for domain in vercel_domains:
+    for domain in additional_vercel_domains:
         if domain not in base_origins:
             base_origins.append(domain)
     
-    # Always allow all origins temporarily for debugging
-    print("⚠️ CORS DEBUG: Allowing all origins to resolve CORS blocking issue!")
-    return ["*"]
+    print(f"🔒 SECURE CORS: Using explicit origins: {base_origins}")
+    return base_origins
 
-# Enhanced CORS configuration with debugging
+# SECURE CORS configuration
 origins = get_allowed_origins()
-print(f"🔒 CORS: Adding middleware with origins: {origins}")
+print(f"🔒 CORS: Adding middleware with secure origins: {origins}")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["*"],
-    expose_headers=["*"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", 
+                   "X-Requested-With", "Content-Length"],
+    expose_headers=["Content-Length"],
     max_age=600,  # Cache preflight requests for 10 minutes
 )
 
