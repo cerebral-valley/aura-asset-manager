@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.176',
+  version: 'v0.177',
   buildDate: '2025-01-26', 
-  deploymentId: 'cors-fix-deployment',
-  description: 'CORS configuration fix to resolve API blocking issues preventing liquid asset selection functionality'
+  deploymentId: 'backend-import-fix',
+  description: 'Fixed SQLAlchemy import error: removed UserAssetSelection from __init__.py imports that was causing 502 backend crashes'
 }
 
 export const getVersionDisplay = () => {

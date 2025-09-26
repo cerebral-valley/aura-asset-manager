@@ -90,27 +90,13 @@ def get_allowed_origins():
         "https://www.aura-asset-manager.vercel.app"
     ]
     
-    # TEMPORARY FIX: Allow all origins to debug CORS issues
-    # This should resolve the immediate CORS blocking problem
+    for domain in vercel_domains:
+        if domain not in base_origins:
+            base_origins.append(domain)
+    
+    # Always allow all origins temporarily for debugging
     print("⚠️ CORS DEBUG: Allowing all origins to resolve CORS blocking issue!")
-    return ["*"]  # Allow all origins temporarily
-    
-    # Original logic commented out temporarily
-    # # Also allow all origins in development/testing to debug CORS issues
-    # # Remove this in production after testing
-    # if settings.ENVIRONMENT.lower() != "production":
-    #     all_origins_allowed = True
-    #     if all_origins_allowed:
-    #         print("⚠️ WARNING: All origins allowed for debugging!")
-    #         return ["*"]  # Allow all origins for testing
-    
-    # for domain in vercel_domains:
-    #     if domain not in base_origins:
-    #         base_origins.append(domain)
-    
-    # # Also allow wildcard for Vercel preview deployments
-    # print(f"🌐 Final CORS origins: {base_origins}")
-    # return base_origins
+    return ["*"]
 
 # Enhanced CORS configuration with debugging
 origins = get_allowed_origins()
@@ -119,9 +105,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all methods
-    allow_headers=["*"],  # Allow all headers
-    expose_headers=["*"],  # Expose all headers
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["*"],
+    expose_headers=["*"],
     max_age=600,  # Cache preflight requests for 10 minutes
 )
 
