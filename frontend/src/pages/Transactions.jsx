@@ -37,13 +37,70 @@ import {
   DollarSign,
   AlertTriangle,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  Info
 } from 'lucide-react'
 import { transactionsService } from '@/services/transactions'
 import { assetsService } from '@/services/assets'
 import { queryKeys } from '@/lib/queryKeys'
 import { mutationHelpers } from '@/lib/queryUtils'
 import { assetTypes } from '@/constants/assetTypes'
+
+// Asset liquidity defaults based on asset type
+const assetLiquidityDefaults = {
+  // Highly liquid assets (can be sold within days)
+  'stocks': true,
+  'bonds': true,
+  'mutual_funds': true,
+  'etf': true,
+  'crypto': true,
+  'bank': true,
+  'cash_in_hand': true,
+  'fd': true, // Fixed deposits are typically liquid with some notice
+  
+  // Medium liquidity (may take weeks to months)
+  'retirement_account': false, // Restricted access
+  'aif': false,
+  'private_equity': false,
+  'esops': false,
+  
+  // Low liquidity (takes months to years)
+  'real_estate_residential': false,
+  'real_estate_commercial': false,
+  'real_estate_agricultural': false,
+  'real_estate_industrial': false,
+  
+  // Variable liquidity (depends on market conditions)
+  'precious_metal_gold': true, // Generally liquid but may vary
+  'precious_metal_silver': true,
+  'precious_metal_platinum': true,
+  'jewellery_simple': false, // Requires appraisal and finding buyers
+  'jewellery_precious_stones': false,
+  'cars': false,
+  'antiques': false,
+  
+  // Annuities and insurance - typically illiquid
+  'annuity_fixed': false,
+  'annuity_variable': false,
+  'annuity_indexed': false,
+  'annuity_immediate': false,
+  'annuity_deferred': false,
+  'life_insurance_term': false,
+  'life_insurance_whole': false,
+  'life_insurance_universal': false,
+  'life_insurance_variable': false,
+  
+  // Other
+  'royalties': false,
+  'misc': false
+}
+
+// Time horizon options
+const timeHorizonOptions = [
+  { value: 'short_term', label: 'Short Term (< 1 year)' },
+  { value: 'medium_term', label: 'Medium Term (1-3 years)' },
+  { value: 'long_term', label: 'Long Term (> 3 years)' }
+]
 
 // Transaction types
 const transactionTypes = [
@@ -262,6 +319,9 @@ export default function Transactions() {
     quantity: '1',
     unit_of_measure: 'units',
     description: '',
+    // Liquidity and time horizon fields
+    liquid_assets: false, // Will be set based on asset type selection
+    time_horizon: '',
     // Custom properties
     custom_properties: '',
     // Transaction fields
@@ -427,7 +487,7 @@ export default function Transactions() {
             amount: parseFloat(transactionForm.initial_value) || 0,
             quantity_change: parseFloat(transactionForm.quantity) || 1,
             notes: transactionForm.notes?.trim() || '',
-            // 🎯 ALL 10 FRONTEND FIELDS SENT TO TRANSACTIONS:
+            // 🎯 ALL FRONTEND FIELDS SENT TO TRANSACTIONS (INCLUDING NEW LIQUID & HORIZON):
             asset_name: transactionForm.asset_name.trim(),
             asset_type: transactionForm.asset_type,
             acquisition_value: parseFloat(transactionForm.initial_value) || 0,
@@ -435,7 +495,10 @@ export default function Transactions() {
             quantity: parseFloat(transactionForm.quantity) || 1,
             unit_of_measure: transactionForm.unit_of_measure?.trim() || '',
             custom_properties: transactionForm.custom_properties?.trim() || '',
-            asset_description: transactionForm.description?.trim() || ''
+            asset_description: transactionForm.description?.trim() || '',
+            // New liquidity and time horizon fields
+            liquid_assets: transactionForm.liquid_assets,
+            time_horizon: transactionForm.time_horizon?.trim() || null
           }
           
           console.log('📋 CREATE_TRANSACTION_DATA: Transaction data prepared', {
@@ -1007,7 +1070,14 @@ export default function Transactions() {
                     <Label htmlFor="asset_type">Asset Type *</Label>
                     <Select 
                       value={transactionForm.asset_type} 
-                      onValueChange={(value) => setTransactionForm({...transactionForm, asset_type: value})}
+                      onValueChange={(value) => {
+                        const isLiquidByDefault = assetLiquidityDefaults[value] || false
+                        setTransactionForm({
+                          ...transactionForm, 
+                          asset_type: value,
+                          liquid_assets: isLiquidByDefault
+                        })
+                      }}
                       required
                     >
                       <SelectTrigger>
@@ -1023,6 +1093,51 @@ export default function Transactions() {
                                   {category} - {type.label}
                                 </SelectItem>
                               ))
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="liquid_assets">Mark as Liquid Asset</Label>
+                      <Info className="w-4 h-4 text-muted-foreground cursor-help" 
+                        title="Liquid assets are those that can be sold in very short span of time usually less than a day" />
+                    </div>
+                    <Select 
+                      value={transactionForm.liquid_assets ? 'true' : 'false'} 
+                      onValueChange={(value) => setTransactionForm({
+                        ...transactionForm, 
+                        liquid_assets: value === 'true'
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">YES</SelectItem>
+                        <SelectItem value="false">NO</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="time_horizon">Horizon</Label>
+                    <Select 
+                      value={transactionForm.time_horizon} 
+                      onValueChange={(value) => setTransactionForm({
+                        ...transactionForm, 
+                        time_horizon: value
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select time horizon" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeHorizonOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>

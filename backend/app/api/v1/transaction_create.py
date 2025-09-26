@@ -37,6 +37,10 @@ class TransactionCreateRequest(BaseModel):
     unit_of_measure: Optional[str] = ""
     custom_properties: Optional[str] = ""
     asset_description: Optional[str] = ""
+    
+    # Liquidity and time horizon fields
+    liquid_assets: Optional[bool] = False
+    time_horizon: Optional[str] = None
 
 class TransactionCreateResponse(BaseModel):
     """Response for transaction creation."""
@@ -71,7 +75,10 @@ async def create_asset_via_transaction(
             "quantity": request.quantity or 1,
             "unit_of_measure": request.unit_of_measure or "",
             "user_id": current_user.id,
-            "asset_metadata": {"custom_properties": request.custom_properties or ""}
+            "asset_metadata": {"custom_properties": request.custom_properties or ""},
+            # New liquidity and time horizon fields
+            "liquid_assets": request.liquid_assets or False,
+            "time_horizon": request.time_horizon
         }
         
         db_asset = Asset(**asset_data)
@@ -87,7 +94,10 @@ async def create_asset_via_transaction(
             "quantity_change": request.quantity_change or request.quantity or 1,
             "notes": request.notes or "",
             "user_id": current_user.id,
-            "transaction_metadata": {},
+            "transaction_metadata": {
+                "liquid_assets": request.liquid_assets or False,
+                "time_horizon": request.time_horizon
+            },
             # Store all asset fields in transaction for complete audit trail
             "asset_name": request.asset_name,
             "asset_type": request.asset_type,

@@ -35,6 +35,7 @@ class Asset(Base):
     # Asset selection fields for targets functionality
     liquid_assets = Column(Boolean, default=False)  # Whether this asset can be used in liquid calculations
     is_selected = Column(Boolean, default=False)  # Whether this asset is currently selected for targets
+    time_horizon = Column(Text)  # Investment time horizon: 'short_term', 'medium_term', 'long_term'
     
     asset_metadata = Column("metadata", JSONB)  # Flexible JSON field for asset-specific characteristics
     created_at = Column(DateTime(timezone=True), server_default=func.now())

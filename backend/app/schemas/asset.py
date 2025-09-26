@@ -29,6 +29,7 @@ class AssetBase(BaseModel):
     # Asset selection fields for targets functionality
     liquid_assets: Optional[bool] = False
     is_selected: Optional[bool] = False
+    time_horizon: Optional[str] = None
     
     asset_metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
     
@@ -65,6 +66,7 @@ class AssetUpdate(BaseModel):
     # Asset selection fields for targets functionality
     liquid_assets: Optional[bool] = None
     is_selected: Optional[bool] = None
+    time_horizon: Optional[str] = None
     
     asset_metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
     
