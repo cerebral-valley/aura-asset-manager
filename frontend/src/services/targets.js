@@ -49,8 +49,9 @@ export const targetsService = {
     return response.data
   },
 
-  async updateAssetSelections(selections, config = {}) {
-    const response = await apiClient.put('/targets/liquid-assets', { selections }, config)
+  async updateAssetSelections(data, config = {}) {
+    // data should already contain the 'selections' property
+    const response = await apiClient.put('/targets/liquid-assets', data, config)
     return response.data
   },
 

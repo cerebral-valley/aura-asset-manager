@@ -92,9 +92,9 @@ const Targets = () => {
 
   // Mutation for updating asset selections
   const updateAssetSelectionsMutation = useMutation({
-    mutationFn: (selections) => {
-      console.log('🔧 DEBUG: Frontend sending asset selections:', selections);
-      return targetsService.updateAssetSelections(selections);
+    mutationFn: (data) => {
+      console.log('🔧 DEBUG: Frontend sending asset selections:', data.selections);
+      return targetsService.updateAssetSelections(data);
     },
     onSuccess: (data, updatedSelections) => {
       console.log('🔧 DEBUG: Asset selection update succeeded:', data);
@@ -282,7 +282,8 @@ const Targets = () => {
     }
 
     try {
-      await updateAssetSelectionsMutation.mutateAsync(pendingAssetSelections);
+      // Pass selections wrapped in an object with selections property to match backend schema
+      await updateAssetSelectionsMutation.mutateAsync({ selections: pendingAssetSelections });
       // Clear pending changes after successful save
       setPendingAssetSelections({});
       // Refresh the page to get updated data

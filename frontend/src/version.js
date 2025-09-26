@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.171',
+  version: 'v0.172',
   buildDate: '2024-12-28',
-  deploymentId: 'cors-fix',
-  description: 'Enhanced CORS configuration for asset selections endpoint'
+  deploymentId: 'asset-selection-fix',
+  description: 'Fixed asset selection request payload structure to match backend schema'
 }
 
 export const getVersionDisplay = () => {
