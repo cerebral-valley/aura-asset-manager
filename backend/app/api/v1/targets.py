@@ -2,6 +2,7 @@
 Targets API endpoints for financial goal tracking.
 """
 
+from uuid import UUID  # Critical for string->UUID conversion in asset selection endpoints
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_

@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.169',
-  buildDate: '2024-12-26',
-  deploymentId: 'fix-liquid-assets-endpoint',
-  description: 'Fixed PUT /liquid-assets endpoint to use UserAssetSelection table instead of Asset.is_selected column'
+  version: 'v0.170',
+  buildDate: '2024-12-27',
+  deploymentId: 'fix-uuid-import',
+  description: 'Fixed missing UUID import in targets.py for asset selections endpoint'
 }
 
 export const getVersionDisplay = () => {
