@@ -85,8 +85,18 @@ def get_allowed_origins():
     vercel_domains = [
         "https://aura-asset-manager.vercel.app",
         "https://aura-asset-manager-git-main-cerebral-valley.vercel.app",
-        "https://aura-asset-manager-cerebral-valley.vercel.app"
+        "https://aura-asset-manager-cerebral-valley.vercel.app",
+        # Add explicit www and non-www versions to be safe
+        "https://www.aura-asset-manager.vercel.app"
     ]
+    
+    # Also allow all origins in development/testing to debug CORS issues
+    # Remove this in production after testing
+    if settings.ENVIRONMENT.lower() != "production":
+        all_origins_allowed = True
+        if all_origins_allowed:
+            print("⚠️ WARNING: All origins allowed for debugging!")
+            return ["*"]  # Allow all origins for testing
     
     for domain in vercel_domains:
         if domain not in base_origins:
@@ -96,12 +106,17 @@ def get_allowed_origins():
     print(f"🌐 Final CORS origins: {base_origins}")
     return base_origins
 
+# Enhanced CORS configuration with debugging
+origins = get_allowed_origins()
+print(f"🔒 CORS: Adding middleware with origins: {origins}")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=get_allowed_origins(),
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"],
+    expose_headers=["Content-Length"],
+    max_age=600,  # Cache preflight requests for 10 minutes
 )
 
 # Include API routers

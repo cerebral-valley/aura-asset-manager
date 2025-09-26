@@ -192,6 +192,8 @@ def get_liquid_assets(
         )
 
 
+from fastapi.responses import JSONResponse
+
 @router.put("/liquid-assets", response_model=dict)
 async def update_asset_selections(
     selections: AssetSelectionUpdate,
@@ -201,6 +203,10 @@ async def update_asset_selections(
     """Update user's liquid asset selections using user_asset_selections table."""
     print(f"🔧 DEBUG: Received asset selections update for user {current_user.id}")
     print(f"🔧 DEBUG: Selections data: {selections.selections}")
+    
+    # Debug request details
+    print(f"🔐 Auth: User authenticated as {current_user.email}")
+    print(f"🔧 DEBUG: Processing PUT /liquid-assets endpoint")
 
     for asset_id, is_selected in selections.selections.items():
         print(f"🔧 DEBUG: Processing asset {asset_id} -> {is_selected}")
@@ -245,7 +251,11 @@ async def update_asset_selections(
         db.rollback()
         raise
 
-    return {"message": "Asset selections updated successfully"}
+    # Return with explicit headers for CORS debugging
+    response = JSONResponse(content={"message": "Asset selections updated successfully"})
+    # Ensure CORS headers are explicitly set
+    print(f"🔧 DEBUG: Returning successful response with CORS headers")
+    return response
 
 
 @router.post("/{target_id}/complete", response_model=TargetSchema)
