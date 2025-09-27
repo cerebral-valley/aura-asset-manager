@@ -1576,7 +1576,7 @@ export default function Transactions() {
           <div className="space-y-4">
             {/* First row - Search and Type */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
+              <div className="flex-1 space-y-2">
                 <Label htmlFor="search">Search Transactions</Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -1589,7 +1589,7 @@ export default function Transactions() {
                   />
                 </div>
               </div>
-              <div className="w-full sm:w-48">
+              <div className="w-full sm:w-48 space-y-2">
                 <Label htmlFor="type-filter">Transaction Type</Label>
                 <Select value={selectedType} onValueChange={setSelectedType}>
                   <SelectTrigger>
@@ -1609,7 +1609,7 @@ export default function Transactions() {
 
             {/* Second row - Asset filters */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
+              <div className="flex-1 space-y-2">
                 <Label htmlFor="asset-name">Asset Name</Label>
                 <Input
                   id="asset-name"
@@ -1618,7 +1618,7 @@ export default function Transactions() {
                   onChange={(e) => updateFilter('assetName', e.target.value)}
                 />
               </div>
-              <div className="w-full sm:w-48">
+              <div className="w-full sm:w-48 space-y-2">
                 <Label htmlFor="asset-type">Asset Type</Label>
                 <Select value={filters.assetType} onValueChange={(value) => updateFilter('assetType', value)}>
                   <SelectTrigger>
@@ -1638,7 +1638,7 @@ export default function Transactions() {
 
             {/* Third row - Date range */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
+              <div className="flex-1 space-y-2">
                 <Label htmlFor="date-from">From Date</Label>
                 <Input
                   id="date-from"
@@ -1647,7 +1647,7 @@ export default function Transactions() {
                   onChange={(e) => updateFilter('dateFrom', e.target.value)}
                 />
               </div>
-              <div className="flex-1">
+              <div className="flex-1 space-y-2">
                 <Label htmlFor="date-to">To Date</Label>
                 <Input
                   id="date-to"
@@ -1660,7 +1660,7 @@ export default function Transactions() {
 
             {/* Fourth row - Amount range */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
+              <div className="flex-1 space-y-2">
                 <Label htmlFor="amount-min">Min Amount ($)</Label>
                 <Input
                   id="amount-min"
@@ -1670,7 +1670,7 @@ export default function Transactions() {
                   onChange={(e) => updateFilter('amountMin', e.target.value)}
                 />
               </div>
-              <div className="flex-1">
+              <div className="flex-1 space-y-2">
                 <Label htmlFor="amount-max">Max Amount ($)</Label>
                 <Input
                   id="amount-max"
@@ -1684,7 +1684,7 @@ export default function Transactions() {
 
             {/* Fifth row - Sorting and actions */}
             <div className="flex flex-col sm:flex-row gap-4 items-end">
-              <div className="flex-1">
+              <div className="flex-1 space-y-2">
                 <Label htmlFor="sort-by">Sort By</Label>
                 <Select value={filters.sortBy} onValueChange={(value) => updateFilter('sortBy', value)}>
                   <SelectTrigger>
@@ -1913,7 +1913,7 @@ export default function Transactions() {
                       <TableCell>
                         <div className="max-w-xs">
                           {transaction.custom_properties ? (
-                            <div className="text-xs text-muted-foreground truncate" title={transaction.custom_properties}>
+                            <div className="text-xs text-muted-foreground break-words whitespace-normal leading-relaxed">
                               {transaction.custom_properties}
                             </div>
                           ) : (
