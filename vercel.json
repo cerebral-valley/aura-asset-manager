@@ -4,19 +4,7 @@
   "installCommand": "cd frontend && pnpm install",
   "rewrites": [
     {
-      "source": "/assets",
-      "destination": "/assets"
-    },
-    {
-      "source": "/dashboard",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/targets",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/((?!api)(?!_next)(?!static)(?!assets).*)",
+      "source": "/((?!api)(?!_next)(?!static)(?!assets/).*)",
       "destination": "/index.html"
     }
   ]
