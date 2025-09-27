@@ -850,7 +850,12 @@ export default function Transactions() {
       .join(' ')
   }
 
-  const filteredTransactions = transactions.filter(transaction => {
+  const filteredTransactions = (transactions || []).filter(transaction => {
+    // Ensure transaction object exists
+    if (!transaction || typeof transaction !== 'object') {
+      return false
+    }
+
     // Search term matching
     const matchesSearch = searchTerm === '' || 
       transaction.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -885,6 +890,11 @@ export default function Transactions() {
            matchesAssetType && matchesDateFrom && matchesDateTo && 
            matchesAmountMin && matchesAmountMax
   }).sort((a, b) => {
+    // Ensure both objects exist
+    if (!a || !b || typeof a !== 'object' || typeof b !== 'object') {
+      return 0
+    }
+
     // Sorting logic
     let aVal, bVal
     
@@ -941,8 +951,8 @@ export default function Transactions() {
     })
   }
 
-  // Get unique asset types for filter dropdown
-  const uniqueAssetTypes = [...new Set(transactions.map(t => t.asset_type).filter(Boolean))]
+  // Get unique asset types for filter dropdown - with null safety
+  const uniqueAssetTypes = [...new Set((transactions || []).map(t => t?.asset_type).filter(Boolean))]
 
   if (loading) {
     log('Transactions:loading', 'Still loading transactions data...');

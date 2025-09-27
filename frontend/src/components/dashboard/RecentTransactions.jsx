@@ -40,7 +40,8 @@ const RecentTransactions = ({ transactions = [], title = "Recent Activity" }) =>
     }).format(amount)
   }
 
-  if (!transactions || transactions.length === 0) {
+  // Enhanced null safety check for transactions
+  if (!transactions || !Array.isArray(transactions) || transactions.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -62,33 +63,45 @@ const RecentTransactions = ({ transactions = [], title = "Recent Activity" }) =>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {transactions.map((transaction, index) => (
-            <div key={transaction.id || index} className="flex items-center space-x-4">
-              <div className="flex-shrink-0">
-                {getTransactionIcon(transaction.transaction_type)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {transaction.asset_name}
-                  </p>
-                  {transaction.amount && (
-                    <p className="text-sm font-medium text-foreground">
-                      {formatAmount(transaction.amount)}
+          {(transactions || []).map((transaction, index) => {
+            // Ensure transaction is an object with necessary properties
+            if (!transaction || typeof transaction !== 'object') {
+              return null
+            }
+
+            // Safely get date with fallback
+            const transactionDate = transaction.date || transaction.transaction_date || transaction.created_at
+            
+            return (
+              <div key={transaction.id || index} className="flex items-center space-x-4">
+                <div className="flex-shrink-0">
+                  {getTransactionIcon(transaction.transaction_type)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {transaction.asset_name || 'Unknown Asset'}
                     </p>
-                  )}
-                </div>
-                <div className="flex items-center space-x-2 mt-1">
-                  <Badge variant="secondary" className="text-xs">
-                    {getTransactionLabel(transaction.transaction_type)}
-                  </Badge>
-                  <p className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(transaction.date), { addSuffix: true })}
-                  </p>
+                    {transaction.amount && (
+                      <p className="text-sm font-medium text-foreground">
+                        {formatAmount(transaction.amount)}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center space-x-2 mt-1">
+                    <Badge variant="secondary" className="text-xs">
+                      {getTransactionLabel(transaction.transaction_type)}
+                    </Badge>
+                    {transactionDate && (
+                      <p className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(transactionDate), { addSuffix: true })}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          }).filter(Boolean)} {/* Remove null entries */}
         </div>
       </CardContent>
     </Card>

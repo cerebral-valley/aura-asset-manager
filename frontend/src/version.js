@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.132',
-  buildDate: '2025-09-27', 
-  deploymentId: 'vercel-assets-refresh-hotfix',
-  description: 'Ensure assets route rewrites fallback to SPA while leaving hashed static bundles untouched'
+  version: 'v0.133',
+  buildDate: '2024-12-28', 
+  deploymentId: 'matrix-charts-critical-fix',
+  description: 'Fixed critical undefined .map() error in transaction components preventing matrix chart rendering'
 }
 
 export const getVersionDisplay = () => {
