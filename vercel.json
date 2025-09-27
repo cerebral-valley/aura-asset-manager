@@ -2,13 +2,10 @@
   "buildCommand": "cd frontend && pnpm run build",
   "outputDirectory": "frontend/dist",
   "installCommand": "cd frontend && pnpm install",
-  "nodeVersion": "20.x",
-  "github": {
-    "silent": false
-  },
-  "build": {
-    "env": {
-      "VERCEL_FORCE_NO_BUILD_CACHE": "1"
+  "rewrites": [
+    {
+      "source": "/((?!api).*)",
+      "destination": "/index.html"
     }
-  }
+  ]
 }
