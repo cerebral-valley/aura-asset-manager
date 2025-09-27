@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.133',
+  version: 'v0.134',
   buildDate: '2024-12-28', 
-  deploymentId: 'matrix-charts-critical-fix',
-  description: 'Fixed critical undefined .map() error in transaction components preventing matrix chart rendering'
+  deploymentId: 'fix-route-collision',
+  description: 'Fixed SPA routing by renaming /assets route to /portfolio to avoid collision with Vercel static assets directory'
 }
 
 export const getVersionDisplay = () => {
