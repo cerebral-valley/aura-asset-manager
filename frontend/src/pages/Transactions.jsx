@@ -42,7 +42,8 @@ import {
   Clock,
   Info,
   Calculator,
-  Pencil
+  Pencil,
+  Target
 } from 'lucide-react'
 import { transactionsService } from '@/services/transactions'
 import { assetsService } from '@/services/assets'
@@ -126,6 +127,7 @@ const transactionTypes = [
   { value: 'update_type', label: 'Update Type', icon: ArrowUpRight, color: 'text-purple-500', description: 'Change asset category' },
   { value: 'update_liquid_status', label: 'Update Liquid Status', icon: Droplets, color: 'text-cyan-500', description: 'Change asset liquidity status' },
   { value: 'update_time_horizon', label: 'Update Time Horizon', icon: Clock, color: 'text-amber-500', description: 'Change investment time horizon' },
+  { value: 'update_asset_purpose', label: 'Update Asset Purpose', icon: Target, color: 'text-teal-500', description: 'Change asset investment purpose' },
   { value: 'update_quantity_units', label: 'Update Quantity & Units', icon: Calculator, color: 'text-indigo-500', description: 'Change asset quantity and unit of measure' },
   { value: 'update_description_properties', label: 'Update Description & Properties', icon: Pencil, color: 'text-orange-500', description: 'Update asset description, notes, and custom properties' },
   { value: 'delete', label: 'Delete Asset', icon: Trash2, color: 'text-red-600', description: 'Permanently remove asset (irreversible)' }
@@ -653,6 +655,11 @@ export default function Transactions() {
               transactionData.time_horizon = transactionForm.time_horizon
             }
 
+            // Add asset_purpose for update_asset_purpose transactions
+            if (transactionForm.transaction_type === 'update_asset_purpose' && transactionForm.asset_purpose) {
+              transactionData.asset_purpose = transactionForm.asset_purpose
+            }
+
             // Add update_quantity_units for update_quantity_units transactions
             if (transactionForm.transaction_type === 'update_quantity_units' && transactionForm.quantity && transactionForm.unit_of_measure) {
               transactionData.update_quantity_units = `${transactionForm.quantity}:${transactionForm.unit_of_measure}`
@@ -1018,7 +1025,7 @@ export default function Transactions() {
                   
                   <TabsContent value="update_acquisition_value" className="space-y-2">
                     <div className="grid grid-cols-1 gap-2">
-                      {transactionTypes.filter(t => ['update_acquisition_value', 'update_market_value', 'update_name', 'update_type', 'update_liquid_status', 'update_time_horizon', 'update_quantity_units', 'update_description_properties'].includes(t.value)).map((type) => {
+                      {transactionTypes.filter(t => ['update_acquisition_value', 'update_market_value', 'update_name', 'update_type', 'update_liquid_status', 'update_time_horizon', 'update_asset_purpose', 'update_quantity_units', 'update_description_properties'].includes(t.value)).map((type) => {
                         const Icon = type.icon
                         return (
                           <div
@@ -1448,6 +1455,32 @@ export default function Transactions() {
               </div>
             )}
 
+            {/* Asset Purpose Select for Update Asset Purpose */}
+            {selectedTransactionType === 'update_asset_purpose' && (
+              <div className="space-y-2">
+                <Label htmlFor="asset_purpose">New Asset Purpose *</Label>
+                <Select 
+                  value={transactionForm.asset_purpose || ''} 
+                  onValueChange={(value) => setTransactionForm({...transactionForm, asset_purpose: value})}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select new asset purpose" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {assetPurposeOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  Asset purpose helps categorize investments by their intended goal.
+                </p>
+              </div>
+            )}
+
             {/* Quantity and Units for Update Quantity & Units */}
             {selectedTransactionType === 'update_quantity_units' && (
               <div className="space-y-4">
@@ -1816,7 +1849,7 @@ export default function Transactions() {
                           )}
                           {/* Show amount only for monetary transactions, otherwise show "No Change" */}
                           {(() => {
-                            const nonMonetaryTypes = ['update_name', 'update_type', 'update_liquid_status', 'update_time_horizon', 'update_quantity_units', 'update_description_properties'];
+                            const nonMonetaryTypes = ['update_name', 'update_type', 'update_liquid_status', 'update_time_horizon', 'update_asset_purpose', 'update_quantity_units', 'update_description_properties'];
                             const isNonMonetary = nonMonetaryTypes.includes(transaction.transaction_type);
                             
                             if (isNonMonetary) {

@@ -195,6 +195,8 @@ async def create_transaction(
             asset.liquid_assets = transaction.liquid_assets == 'YES'  # type: ignore
         elif transaction.transaction_type == "update_time_horizon" and hasattr(transaction, 'time_horizon'):
             asset.time_horizon = transaction.time_horizon  # type: ignore
+        elif transaction.transaction_type == "update_asset_purpose" and hasattr(transaction, 'asset_purpose'):
+            asset.asset_purpose = transaction.asset_purpose  # type: ignore
         elif transaction.transaction_type == "update_quantity_units" and hasattr(transaction, 'update_quantity_units'):
             # Parse quantity and unit from update_quantity_units field 
             # Expected format: "quantity:unit" e.g., "100.5:shares"
