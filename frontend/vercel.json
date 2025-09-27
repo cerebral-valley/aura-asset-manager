@@ -1,7 +1,15 @@
 {
   "rewrites": [
     {
-      "source": "/((?!api)(?!_next)(?!static)(?!assets/).*)",
+      "source": "/assets",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/assets/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/((?!api|assets/).*)",
       "destination": "/index.html"
     }
   ],

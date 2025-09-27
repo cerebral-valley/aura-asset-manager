@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { getAssetTypeLabel } from '../constants/assetTypes';
-import { useCurrency } from '../hooks/useCurrency';
+import { getAssetTypeLabel } from '@/constants/assetTypes';
+import { useCurrency } from '@/hooks/useCurrency';
 
 const MatrixChart = ({ 
   assets = [], 
