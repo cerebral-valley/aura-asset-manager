@@ -189,7 +189,173 @@ const UserGuide = () => {
               </h2>
               
               <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 mb-8 shadow-sm`}>
-                <h3 className="text-xl font-semibold mb-4">Interactive Charts</h3>
+                <h3 className="text-xl font-semibold mb-4">Comprehensive Asset Management</h3>
+                <p className={`${isDark ? 'text-neutral-300' : 'text-gray-700'} mb-6`}>
+                  The Assets section serves as your comprehensive inventory of everything you own. This is where you can view, add, edit, and organize all your holdings, from real estate and investments to precious metals and cash reserves. Think of it as your financial museum—a place where each asset tells the story of your journey and accomplishments.
+                </p>
+              </div>
+
+              {/* Asset Categories */}
+              <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 mb-8 shadow-sm`}>
+                <h3 className="text-xl font-semibold mb-4">Asset Categories & Types</h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <div className={`w-10 h-10 rounded-lg ${isDark ? 'bg-blue-600' : 'bg-blue-100'} flex items-center justify-center flex-shrink-0 mt-1`}>
+                        <span className="text-lg">🏠</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">Real Estate Assets</h4>
+                        <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
+                          Residential, Commercial, Agricultural, Industrial properties and raw land
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-3">
+                      <div className={`w-10 h-10 rounded-lg ${isDark ? 'bg-green-600' : 'bg-green-100'} flex items-center justify-center flex-shrink-0 mt-1`}>
+                        <span className="text-lg">📈</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">Investment Assets</h4>
+                        <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
+                          Stocks, Bonds, Mutual Funds, ETFs, Cryptocurrency, Retirement Accounts
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-3">
+                      <div className={`w-10 h-10 rounded-lg ${isDark ? 'bg-yellow-600' : 'bg-yellow-100'} flex items-center justify-center flex-shrink-0 mt-1`}>
+                        <span className="text-lg">🥇</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">Precious Metals & Tangibles</h4>
+                        <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
+                          Gold, Silver, Platinum, Jewelry, Collectibles, Vehicles
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <div className={`w-10 h-10 rounded-lg ${isDark ? 'bg-cyan-600' : 'bg-cyan-100'} flex items-center justify-center flex-shrink-0 mt-1`}>
+                        <span className="text-lg">💰</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">Cash & Equivalents</h4>
+                        <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
+                          Bank Accounts, Certificates of Deposit, Money Market, Cash Holdings
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-3">
+                      <div className={`w-10 h-10 rounded-lg ${isDark ? 'bg-purple-600' : 'bg-purple-100'} flex items-center justify-center flex-shrink-0 mt-1`}>
+                        <span className="text-lg">🏢</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">Business & Professional</h4>
+                        <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
+                          Business Ownership, Equipment, Intellectual Property, Royalty Streams
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Strategic Classification */}
+              <div className={`${isDark ? 'bg-gradient-to-br from-blue-900 to-blue-800' : 'bg-gradient-to-br from-blue-50 to-blue-100'} rounded-xl p-6 mb-8 shadow-sm`}>
+                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <span className="text-2xl">🎯</span>
+                  Strategic Asset Classification
+                </h3>
+                <p className={`${isDark ? 'text-blue-100' : 'text-blue-800'} mb-6`}>
+                  Aura's advanced classification system helps you understand the strategic role each asset plays in your portfolio and aligns your holdings with your financial goals.
+                </p>
+                
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div className={`${isDark ? 'bg-blue-800/50' : 'bg-white/70'} rounded-lg p-4`}>
+                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                      <span className="text-lg">💡</span>
+                      Asset Purpose
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                        <span>Hyper Growth - Maximum appreciation</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                        <span>Growth - Long-term appreciation</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                        <span>Financial Security - Stability focus</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                        <span>Emergency Fund - Liquidity priority</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                        <span>Children's Education - Future needs</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                        <span>Retirement Fund - Long-term security</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-pink-500"></span>
+                        <span>Speculation - High risk/reward</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className={`${isDark ? 'bg-blue-800/50' : 'bg-white/70'} rounded-lg p-4`}>
+                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                      <span className="text-lg">⏰</span>
+                      Time Horizon
+                    </h4>
+                    <div className="space-y-3 text-sm">
+                      <div>
+                        <div className="font-medium">Short Term (&lt; 1 year)</div>
+                        <div className={`${isDark ? 'text-blue-200' : 'text-blue-700'}`}>Near-term goals and liquidity needs</div>
+                      </div>
+                      <div>
+                        <div className="font-medium">Medium Term (1-3 years)</div>
+                        <div className={`${isDark ? 'text-blue-200' : 'text-blue-700'}`}>Medium-range objectives and purchases</div>
+                      </div>
+                      <div>
+                        <div className="font-medium">Long Term (&gt; 3 years)</div>
+                        <div className={`${isDark ? 'text-blue-200' : 'text-blue-700'}`}>Retirement and generational wealth</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className={`${isDark ? 'bg-blue-800/50' : 'bg-white/70'} rounded-lg p-4`}>
+                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                      <span className="text-lg">💧</span>
+                      Liquidity Status
+                    </h4>
+                    <div className="space-y-3 text-sm">
+                      <div>
+                        <div className="font-medium text-green-600">Liquid Assets</div>
+                        <div className={`${isDark ? 'text-blue-200' : 'text-blue-700'}`}>Can be converted to cash within days</div>
+                      </div>
+                      <div>
+                        <div className="font-medium text-orange-600">Illiquid Assets</div>
+                        <div className={`${isDark ? 'text-blue-200' : 'text-blue-700'}`}>Take months or years to convert</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Interactive Features */}
+              <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 mb-8 shadow-sm`}>
+                <h3 className="text-xl font-semibold mb-4">Interactive Charts & Analysis</h3>
                 <div className="space-y-4">
                   <div className="flex items-center gap-4">
                     <div className={`w-12 h-12 rounded-lg ${isDark ? 'bg-blue-600' : 'bg-blue-100'} flex items-center justify-center`}>
@@ -207,22 +373,126 @@ const UserGuide = () => {
                       <span className="text-xl">🥧</span>
                     </div>
                     <div>
-                      <h4 className="font-semibold">Asset Distribution</h4>
+                      <h4 className="font-semibold">Strategic Distribution</h4>
                       <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
-                        Pie chart displaying wealth allocation across different asset categories
+                        Pie chart displaying wealth allocation by Asset Purpose, Time Horizon, and Liquidity
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className={`w-12 h-12 rounded-lg ${isDark ? 'bg-purple-600' : 'bg-purple-100'} flex items-center justify-center`}>
-                      <span className="text-xl">📅</span>
+                      <span className="text-xl">�</span>
                     </div>
                     <div>
-                      <h4 className="font-semibold">Asset Timeline</h4>
+                      <h4 className="font-semibold">Portfolio Analytics</h4>
                       <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
-                        Visual timeline showing when each asset was acquired
+                        Advanced filtering by strategic parameters and comprehensive performance tracking
                       </p>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Transaction Types */}
+              <div className={`${isDark ? 'bg-gradient-to-br from-green-900 to-green-800' : 'bg-gradient-to-br from-green-50 to-green-100'} rounded-xl p-6 mb-8 shadow-sm`}>
+                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <span className="text-2xl">🔄</span>
+                  Advanced Transaction Management
+                </h3>
+                <p className={`${isDark ? 'text-green-100' : 'text-green-800'} mb-6`}>
+                  Aura supports comprehensive transaction types to handle every aspect of asset ownership and management throughout the entire lifecycle.
+                </p>
+                
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div className={`${isDark ? 'bg-green-800/50' : 'bg-white/70'} rounded-lg p-3`}>
+                      <h4 className="font-semibold text-sm mb-1">Create Asset</h4>
+                      <p className="text-xs">Add new assets with full strategic classification</p>
+                    </div>
+                    <div className={`${isDark ? 'bg-green-800/50' : 'bg-white/70'} rounded-lg p-3`}>
+                      <h4 className="font-semibold text-sm mb-1">Update Market Value</h4>
+                      <p className="text-xs">Keep asset valuations current with market changes</p>
+                    </div>
+                    <div className={`${isDark ? 'bg-green-800/50' : 'bg-white/70'} rounded-lg p-3`}>
+                      <h4 className="font-semibold text-sm mb-1">Update Asset Purpose</h4>
+                      <p className="text-xs">Modify strategic classification as goals evolve</p>
+                    </div>
+                    <div className={`${isDark ? 'bg-green-800/50' : 'bg-white/70'} rounded-lg p-3`}>
+                      <h4 className="font-semibold text-sm mb-1">Update Time Horizon</h4>
+                      <p className="text-xs">Adjust investment timeline as circumstances change</p>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className={`${isDark ? 'bg-green-800/50' : 'bg-white/70'} rounded-lg p-3`}>
+                      <h4 className="font-semibold text-sm mb-1">Mark as Sold</h4>
+                      <p className="text-xs">Record asset dispositions and calculate returns</p>
+                    </div>
+                    <div className={`${isDark ? 'bg-green-800/50' : 'bg-white/70'} rounded-lg p-3`}>
+                      <h4 className="font-semibold text-sm mb-1">Update Acquisition Value</h4>
+                      <p className="text-xs">Correct historical purchase information</p>
+                    </div>
+                    <div className={`${isDark ? 'bg-green-800/50' : 'bg-white/70'} rounded-lg p-3`}>
+                      <h4 className="font-semibold text-sm mb-1">Update Liquid Status</h4>
+                      <p className="text-xs">Adjust liquidity classification for better planning</p>
+                    </div>
+                    <div className={`${isDark ? 'bg-green-800/50' : 'bg-white/70'} rounded-lg p-3`}>
+                      <h4 className="font-semibold text-sm mb-1">Update Name & Type</h4>
+                      <p className="text-xs">Modify asset identification and categorization</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Best Practices */}
+              <div className={`${isDark ? 'bg-gradient-to-br from-purple-900 to-purple-800' : 'bg-gradient-to-br from-purple-50 to-purple-100'} rounded-xl p-6 shadow-sm`}>
+                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <span className="text-2xl">💡</span>
+                  Best Practices for Asset Management
+                </h3>
+                
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold mb-3">Strategic Portfolio Construction</h4>
+                    <ul className="space-y-2 text-sm">
+                      <li className="flex items-start gap-2">
+                        <span className="text-green-500 mt-1">✓</span>
+                        <span>Balance Asset Purposes across your investment goals</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-green-500 mt-1">✓</span>
+                        <span>Maintain appropriate Time Horizon distribution</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-green-500 mt-1">✓</span>
+                        <span>Keep adequate Liquid Assets for emergencies</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-green-500 mt-1">✓</span>
+                        <span>Diversify across asset categories and types</span>
+                      </li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold mb-3">Regular Maintenance</h4>
+                    <ul className="space-y-2 text-sm">
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1">📅</span>
+                        <span>Monthly: Update liquid asset values</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1">📅</span>
+                        <span>Quarterly: Review real estate valuations</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1">📅</span>
+                        <span>Semi-annually: Strategic classification review</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1">📅</span>
+                        <span>Annually: Full portfolio strategic assessment</span>
+                      </li>
+                    </ul>
                   </div>
                 </div>
               </div>
@@ -745,6 +1015,82 @@ const UserGuide = () => {
               </h2>
               
               <div className="space-y-6">
+                {/* v0.126 */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm border-2 ${isDark ? 'border-blue-600' : 'border-blue-300'}`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold text-blue-600 flex items-center gap-2">
+                      <span className="text-2xl">🌟</span>
+                      Version v0.126
+                    </h3>
+                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-800'} font-medium`}>
+                      Latest • 2024-12-19
+                    </span>
+                  </div>
+                  <h4 className="font-semibold mb-3">Strategic Asset Classification System & Comprehensive User Guide Enhancement</h4>
+                  <ul className="space-y-2 text-sm mb-4">
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🎯</span>
+                      <span><strong>Strategic Asset Classification:</strong> Advanced Asset Purpose system with 7 strategic categories including Hyper Growth, Financial Security, Emergency Fund, Children's Education, Retirement Fund, and Speculation</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">⏰</span>
+                      <span><strong>Time Horizon Planning:</strong> Comprehensive temporal classification system with Short Term (&lt;1 year), Medium Term (1-3 years), and Long Term (&gt;3 years) strategic framework</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">💧</span>
+                      <span><strong>Liquidity Management:</strong> Enhanced liquidity status classification for better cash flow planning and emergency preparedness</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">📚</span>
+                      <span><strong>Comprehensive User Guide:</strong> Complete overhaul of Managing Assets section with detailed explanations of all strategic parameters, transaction types, and portfolio construction best practices</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🔄</span>
+                      <span><strong>Enhanced Transaction System:</strong> 8 advanced transaction types including Create Asset, Update Market Value, Strategic Reclassification, and comprehensive lifecycle management</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🎨</span>
+                      <span><strong>Theme Consistency:</strong> Unified button styling across all pages with proper theme-aware color schemes and consistent user experience</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🗄️</span>
+                      <span><strong>Database Schema Updates:</strong> Complete alignment of asset classification data with frontend options, ensuring consistent strategic planning capabilities</span>
+                    </li>
+                  </ul>
+                  <div className={`text-sm p-4 rounded-lg ${isDark ? 'bg-gradient-to-r from-blue-900/40 to-purple-900/40 text-blue-200' : 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-800'} border ${isDark ? 'border-blue-800' : 'border-blue-200'}`}>
+                    <strong>Strategic Innovation:</strong> This release transforms Aura from a simple asset tracker into a comprehensive financial planning platform. The new strategic classification system enables users to understand not just what they own, but how each asset contributes to their overall financial goals and timeline. Enhanced documentation empowers users to make informed decisions about portfolio construction and asset allocation strategies.
+                  </div>
+                </div>
+                
+                {/* v0.125 */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold text-blue-600">Version v0.125</h3>
+                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-800'}`}>
+                      2024-12-19
+                    </span>
+                  </div>
+                  <h4 className="font-semibold mb-3">Complete transaction system overhaul with enhanced Assets table</h4>
+                  <ul className="space-y-2 text-sm mb-4">
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🔄</span>
+                      <span>Transaction system enhancement with Asset Purpose strategic classification</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">📊</span>
+                      <span>New transaction types for comprehensive asset lifecycle management</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">💰</span>
+                      <span>Values column fix for accurate financial reporting</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-500 mt-1">🗂️</span>
+                      <span>Enhanced Assets table with improved data presentation</span>
+                    </li>
+                  </ul>
+                </div>
+
                 {/* v0.107 */}
                 <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
                   <div className="flex items-center justify-between mb-4">

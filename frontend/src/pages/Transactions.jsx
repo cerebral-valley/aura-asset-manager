@@ -114,7 +114,8 @@ const assetPurposeOptions = [
   { value: 'financial_security', label: 'Financial Security' },
   { value: 'emergency_fund', label: 'Emergency Fund' },
   { value: 'childrens_education', label: "Children's Education" },
-  { value: 'retirement_fund', label: 'Retirement Fund' }
+  { value: 'retirement_fund', label: 'Retirement Fund' },
+  { value: 'speculation', label: 'Speculation' }
 ]
 
 // Transaction types

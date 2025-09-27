@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.125',
+  version: 'v0.126',
   buildDate: '2024-12-19', 
-  deploymentId: 'transaction-system-enhancement',
-  description: 'Complete transaction system overhaul with Asset Purpose, new transaction types, Values column fix, Actions column removal, and enhanced Assets table'
+  deploymentId: 'strategic-asset-classification-system',
+  description: 'Strategic Asset Classification System with comprehensive Asset Purpose framework, enhanced User Guide with detailed portfolio construction guidance, theme consistency fixes, and database schema alignment'
 }
 
 export const getVersionDisplay = () => {
