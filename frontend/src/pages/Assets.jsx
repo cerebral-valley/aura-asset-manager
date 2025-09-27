@@ -5,6 +5,7 @@ import { useChartColors } from '../hooks/useChartColors';
 import { useCurrency } from '../hooks/useCurrency';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '../components/ui/button';
 import { assetsService } from '../services/assets';
 import { transactionsService } from '../services/transactions';
 import { userSettingsService } from '../services/user-settings';
@@ -21,6 +22,7 @@ import { exportToExcel } from '../utils/excelExport';
 import Loading from '../components/ui/Loading';
 import SafeSection from '../components/util/SafeSection';
 import { log, warn, error } from '@/lib/debug';
+import { Download, FileSpreadsheet, Plus } from 'lucide-react';
 
 const Assets = () => {
   const navigate = useNavigate();
@@ -928,66 +930,59 @@ const Assets = () => {
         <div className="flex items-center gap-3">
           {/* PDF Download Button */}
           {activeAssets.length > 0 && (
-            <button
-              className={`bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${pdfExporting ? 'cursor-not-allowed' : ''}`}
+            <Button
+              variant="secondary"
               onClick={handleExportToPDF}
               disabled={pdfExporting}
               title="Download complete asset report as PDF"
             >
               {pdfExporting ? (
                 <>
-                  <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 animate-spin mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                   Generating...
                 </>
               ) : (
                 <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+                  <Download className="w-4 h-4 mr-2" />
                   Download PDF
                 </>
               )}
-            </button>
+            </Button>
           )}
 
           {/* Excel Download Button */}
           {activeAssets.length > 0 && (
-            <button
-              className={`bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${excelExporting ? 'cursor-not-allowed' : ''}`}
+            <Button
+              variant="secondary"
               onClick={handleExportToExcel}
               disabled={excelExporting}
               title="Download complete asset report as Excel spreadsheet"
             >
               {excelExporting ? (
                 <>
-                  <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 animate-spin mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                   Generating...
                 </>
               ) : (
                 <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                  </svg>
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
                   Download Excel
                 </>
               )}
-            </button>
+            </Button>
           )}
           
           {/* New Transaction Button */}
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2"
+          <Button
             onClick={() => navigate('/transactions')}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
+            <Plus className="w-4 h-4 mr-2" />
             New Transaction
-          </button>
+          </Button>
         </div>
       </div>
 

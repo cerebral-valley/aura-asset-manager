@@ -67,36 +67,341 @@ Each milestone is presented with context that makes it feel meaningful rather th
 
 ## Managing Your Assets
 
-The Assets page is where you'll spend most of your time in Aura, providing detailed views of your complete portfolio with powerful analysis and visualization tools.
+The Assets section of Aura serves as your comprehensive inventory of everything you own. This is where you can view, add, edit, and organize all your holdings, from real estate and investments to precious metals and cash reserves. Think of it as your financial museum—a place where each asset tells the story of your journey and accomplishments.
 
-### Asset Categories and Types
+### Understanding Asset Categories and Types
 
-Aura supports a comprehensive range of asset types, organized into logical categories:
+Aura organizes assets into several broad categories, each designed to accommodate different types of holdings while maintaining flexibility for unique situations. Each category includes multiple specific asset types to ensure accurate classification and reporting.
 
-- **Real Estate**: Primary residence, investment properties, land, REITs
-- **Investments**: Stocks, bonds, mutual funds, ETFs, crypto currencies
-- **Precious Metals**: Gold, silver, platinum, collectible coins
-- **Vehicles**: Cars, motorcycles, boats, recreational vehicles
-- **Business Assets**: Business ownership, equipment, inventory
-- **Cash & Equivalents**: Savings, checking, money market accounts
-- **Collectibles**: Art, antiques, memorabilia, luxury items
-- **Other Assets**: Any other valuable possessions
+**Real Estate Assets**
+Real estate represents one of the most significant wealth-building categories for many individuals. Aura supports multiple real estate subcategories:
+- **Residential Properties**: Your primary home, vacation properties, rental houses, condominiums, and townhomes
+- **Commercial Properties**: Office buildings, retail spaces, warehouses, mixed-use properties
+- **Agricultural Land**: Farmland, ranches, orchards, and other agricultural properties
+- **Industrial Properties**: Manufacturing facilities, distribution centers, storage facilities
+- **Raw Land**: Undeveloped lots, future development sites, recreational land
 
-### Interactive Charts and Analysis
+For each real estate asset, you can track comprehensive details including property address, square footage, lot size, purchase date, original purchase price, current estimated value, rental income potential, property taxes, and maintenance costs. The metadata system allows you to store additional information such as renovation history, zoning details, or special characteristics.
 
-The Assets page features three main interactive charts that provide different perspectives on your portfolio:
+**Investment Assets**
+The investment category encompasses all your financial market holdings:
+- **Individual Stocks**: Common and preferred shares of publicly traded companies
+- **Bonds**: Government bonds, corporate bonds, municipal bonds, treasury bills
+- **Mutual Funds**: Actively managed funds across all sectors and asset classes
+- **Exchange-Traded Funds (ETFs)**: Index funds, sector funds, international funds
+- **Cryptocurrency**: Bitcoin, Ethereum, and other digital currencies
+- **Alternative Investments**: REITs, commodities, private equity, hedge funds
+- **Retirement Accounts**: 401(k), IRA, Roth IRA, and other retirement vehicles
 
-1. **Asset Value Over Time**: A line chart showing the evolution of your acquisition value versus current portfolio value, with optional future projections
-2. **Asset Distribution**: A pie chart displaying how your wealth is allocated across different asset categories
-3. **Asset Timeline**: A visual timeline showing when each asset was acquired, helping you track your investment journey
+For investment assets, you can track ticker symbols, number of shares or units, purchase dates, cost basis, dividend yields, and current market values. Aura automatically calculates unrealized gains/losses and tracks your investment performance over time.
 
-### Advanced Filtering and Sorting
+**Precious Metals and Tangible Assets**
+Physical assets that hold intrinsic value:
+- **Gold**: Coins, bars, jewelry, collectible pieces
+- **Silver**: Bullion, coins, industrial silver holdings
+- **Platinum and Other Precious Metals**: Investment-grade metals
+- **Jewelry**: Valuable personal jewelry, watches, collectible pieces
+- **Collectibles**: Art, antiques, rare books, wine collections, memorabilia
+- **Vehicles**: Cars, motorcycles, boats, recreational vehicles, classic automobiles
 
-Use the powerful filtering tools to analyze specific portions of your portfolio:
-- **Name Filter**: Search for specific assets by name
-- **Type Filter**: Focus on particular asset categories
-- **Date Range**: Filter by acquisition date periods
-- **Sorting Options**: Sort by name, value, return percentage, or acquisition date
+Track weights, purity levels, storage locations, insurance coverage, and current market values. For collectibles, include condition assessments, provenance, and professional appraisals.
+
+**Cash and Cash Equivalents**
+Your liquid holdings that provide financial flexibility:
+- **Bank Accounts**: Checking, savings, money market accounts
+- **Certificates of Deposit**: Fixed-term deposits with guaranteed returns
+- **Cash Holdings**: Physical cash, foreign currency holdings
+- **Short-term Investments**: Treasury bills, commercial paper, high-grade bonds
+
+**Business and Professional Assets**
+Assets related to your professional activities:
+- **Business Ownership**: Sole proprietorships, partnerships, corporate shares
+- **Professional Equipment**: Tools, machinery, specialized equipment
+- **Intellectual Property**: Patents, trademarks, copyrights, royalty streams
+- **Business Real Estate**: Properties used in business operations
+
+### Comprehensive Asset Parameters
+
+When adding or editing assets in Aura, you'll work with a comprehensive set of parameters that capture both financial and contextual information about each holding.
+
+**Core Financial Information**
+- **Asset Name**: A meaningful, personalized name for your asset
+- **Asset Type**: Specific categorization from Aura's extensive asset type taxonomy
+- **Purchase Date**: When you acquired the asset
+- **Initial Value**: The amount you paid when acquiring the asset
+- **Current Value**: The most recent estimated or market value
+- **Quantity**: Number of units, shares, or other measurable quantities
+- **Unit of Measure**: Shares, ounces, square feet, units, or other relevant measures
+
+**Strategic Asset Classification**
+These newer parameters help you understand the strategic role each asset plays in your portfolio:
+
+**Asset Purpose**: This critical field defines why you own this asset and what role it serves in your financial strategy:
+- **Growth**: Assets purchased primarily for capital appreciation (e.g., growth stocks, development properties)
+- **Income**: Assets that generate regular income (e.g., dividend stocks, rental properties)
+- **Capital Preservation**: Assets focused on maintaining purchasing power (e.g., government bonds, precious metals)
+- **Speculation**: High-risk, high-reward assets with uncertain outcomes (e.g., cryptocurrency, penny stocks)
+- **Hedge**: Assets that protect against specific risks or economic conditions (e.g., inflation-protected securities)
+- **Legacy**: Assets intended for long-term wealth transfer (e.g., family heirlooms, trust properties)
+
+**Time Horizon**: This parameter indicates your planned holding period and affects how you should think about the asset:
+- **Short-term (0-2 years)**: Assets you plan to sell or use in the near future
+- **Medium-term (2-10 years)**: Assets supporting medium-term goals like major purchases
+- **Long-term (10+ years)**: Assets for retirement, generational wealth, or long-term objectives
+
+**Liquidity Status**: Understanding how quickly you can convert assets to cash is crucial for financial planning:
+- **Liquid Assets**: Can be converted to cash within days (stocks, bonds, bank accounts)
+- **Illiquid Assets**: Take months or years to convert (real estate, private equity, collectibles)
+
+This classification helps you understand what portion of your wealth is readily accessible for emergencies or opportunities versus what's locked up in longer-term investments.
+
+**Detailed Asset Descriptions and Metadata**
+Use the description field to tell the story of each asset. Instead of technical details, focus on what makes this asset meaningful to you. The metadata system (stored as JSON) can capture asset-specific information like:
+- Real Estate: Property details, rental history, improvement records
+- Stocks: Sector information, analyst ratings, dividend history
+- Collectibles: Condition, provenance, insurance details
+- Precious Metals: Purity, storage location, certification details
+
+### Adding New Assets: A Comprehensive Walkthrough
+
+When you acquire a new asset, adding it to Aura should feel like celebrating an achievement. The asset creation process is designed to capture all relevant information while making the experience positive and meaningful.
+
+**Step 1: Choose Asset Category and Type**
+Start by selecting the broad category (Real Estate, Investments, etc.), then choose the specific asset type. Aura's extensive taxonomy ensures you can accurately classify virtually any asset type.
+
+**Step 2: Name Your Asset Meaningfully**
+Give your asset a name that resonates with you personally. Instead of "AAPL Stock," consider "Technology Growth Portfolio" or "My First Stock Investment." Instead of "123 Main Street," try "The Rental Property" or "Our Family Home."
+
+**Step 3: Define Strategic Parameters**
+- **Asset Purpose**: Why did you acquire this asset? What role does it play in your financial strategy?
+- **Time Horizon**: How long do you plan to hold this asset?
+- **Liquidity Needs**: How quickly could you convert this to cash if needed?
+
+**Step 4: Enter Financial Details**
+Record the purchase date, initial cost, current value, and any quantity information. Be as accurate as possible—this information drives all your portfolio calculations and analysis.
+
+**Step 5: Add Context and Story**
+Use the description field to capture why this asset is important to you. This might include:
+- How you decided to make this purchase
+- What you hope to achieve with this asset
+- Special circumstances or memories associated with the acquisition
+- Future plans or expectations for this holding
+
+**Step 6: Capture Asset-Specific Details**
+Use the metadata system to record information specific to your asset type. For real estate, this might include property details and improvement history. For investments, it could include research notes or purchase rationale.
+
+### Asset Performance Tracking and Analysis
+
+Aura provides sophisticated tools for understanding how your assets perform over time, but always with a focus on long-term progress rather than short-term volatility.
+
+**Individual Asset Journeys**
+Each asset page tells the complete story of that holding, showing:
+- Purchase history and average cost basis
+- Current value and unrealized gains/losses
+- Transaction history (additional purchases, partial sales, value updates)
+- Performance relative to purchase date and market conditions
+- Income generated (dividends, rent, interest) if applicable
+
+**Portfolio-Level Analysis**
+The Assets dashboard provides comprehensive portfolio-level insights:
+- **Asset Allocation Visualization**: See how your wealth is distributed across categories, purposes, and time horizons
+- **Liquidity Analysis**: Understand what percentage of your wealth is readily accessible
+- **Purpose Alignment**: See whether your asset mix aligns with your stated financial goals
+- **Geographic Diversification**: For applicable assets, see geographic spread
+- **Risk Distribution**: Understand concentration risks and diversification levels
+
+**Performance Metrics That Matter**
+Rather than focusing on daily fluctuations, Aura emphasizes metrics that support long-term financial security:
+- **Total Return**: Capital appreciation plus income generated over holding period
+- **Compounded Annual Growth Rate**: Smoothed returns that show true long-term performance
+- **Risk-Adjusted Returns**: Performance considering the volatility and risk level of each asset
+- **Portfolio Contribution**: How each asset contributes to your overall financial picture
+
+### Transaction Types and Asset Updates
+
+Aura supports a comprehensive range of transaction types that capture every aspect of asset ownership and management:
+
+**Purchase Transactions**
+Record new asset acquisitions or additions to existing holdings. Include purchase price, fees, and any relevant context about why you made this investment decision.
+
+**Sale Transactions**  
+Handle partial or complete asset sales, automatically updating quantities and calculating realized gains/losses. Include sale price, fees, taxes, and context about your decision to sell.
+
+**Value Update Transactions**
+Update current market values for assets that don't have daily pricing (like real estate or collectibles). These updates help maintain accurate portfolio valuations without requiring sales.
+
+**Transfer Transactions**
+Handle asset movements between accounts, ownership changes, or other administrative updates that don't involve buying or selling.
+
+**Update Quantity/Units**
+Adjust asset quantities due to stock splits, dividend reinvestments, or other corporate actions that change the number of units you own without affecting total value.
+
+**Update Description/Properties**
+Modify asset descriptions, metadata, or other characteristics when circumstances change (like property improvements or changed investment thesis).
+
+**Income Recording**
+Track dividends, rental income, interest payments, and other income generated by your assets. While Aura doesn't focus on income tracking like budgeting apps, recording this information helps paint a complete picture of each asset's contribution.
+
+### Advanced Asset Management Features
+
+**Bulk Operations and Data Import**
+For users with extensive portfolios, Aura provides tools for bulk asset management:
+- Import asset lists from spreadsheets or other financial tools
+- Bulk update asset values from market data feeds
+- Mass categorization and tagging operations
+- Portfolio rebalancing analysis and recommendations
+
+**Asset Grouping and Organization**
+Organize related assets into logical groups:
+- **Investment Accounts**: Group assets by brokerage account or custodian
+- **Property Portfolios**: Organize real estate holdings by location or property type  
+- **Collection Categories**: Group collectibles or precious metals by type or acquisition period
+- **Strategic Buckets**: Organize assets by financial goal or purpose
+
+**Professional Integration Support**
+Aura's export capabilities are designed to work seamlessly with financial professionals:
+- **CPA Integration**: Export tax-ready reports with cost basis and gain/loss information
+- **Financial Advisor Collaboration**: Share portfolio snapshots for professional review
+- **Estate Planning**: Generate comprehensive asset inventories for legal documentation
+- **Insurance Review**: Asset listings for coverage adequacy assessment
+
+### Best Practices for Asset Management in Aura
+
+**Regular Maintenance Schedule**
+- **Monthly**: Update liquid asset values (stocks, bonds, mutual funds)
+- **Quarterly**: Review and update real estate valuations and collectible assessments
+- **Semi-Annually**: Comprehensive portfolio review and strategic assessment
+- **Annually**: Full asset inventory review and goal alignment check
+
+**Meaningful Documentation**
+Take time to document the story behind each asset. Years from now, you'll appreciate having context about:
+- Why you made specific investment decisions
+- Market conditions or personal circumstances at the time of purchase
+- Lessons learned from each asset's performance
+- Emotional or family significance of particular holdings
+
+**Strategic Portfolio Construction**
+Use Aura's strategic parameters to build a portfolio that aligns with your goals:
+- **Purpose Diversification**: Ensure you have assets serving different strategic purposes
+- **Time Horizon Balance**: Mix short, medium, and long-term holdings appropriately
+- **Liquidity Management**: Maintain adequate liquid assets for emergencies and opportunities
+- **Risk Appropriate Distribution**: Balance growth potential with capital preservation needs
+
+**Privacy and Security Considerations**
+- **Personal Information**: Be thoughtful about what details you store in asset descriptions
+- **Location Information**: Consider whether storing specific addresses or locations is necessary
+- **Access Control**: Regularly review who has access to your Aura account and asset information
+- **Backup Strategy**: Understand how your asset information is backed up and protected
+
+The goal of asset management in Aura is not to create anxiety about daily performance or constant optimization, but to help you feel confident and secure about the financial foundation you're building. Each asset represents an achievement and a step forward in your financial journey. Take pride in what you've accomplished and use Aura's tools to continue building thoughtfully toward your goals.
+
+---
+
+## Release Notes
+
+### Version 0.3.0 - December 2025: Advanced Asset Management & Strategic Portfolio Planning
+
+This major release introduces comprehensive strategic asset management capabilities, enhanced transaction workflows, and improved user experience across the platform.
+
+#### 🎯 New Strategic Asset Classification System
+
+**Asset Purpose Framework**
+We've introduced a sophisticated Asset Purpose system that helps you understand the strategic role each asset plays in your portfolio:
+- **Growth**: Assets focused on capital appreciation and long-term wealth building
+- **Income**: Assets that generate regular income through dividends, rent, or interest
+- **Capital Preservation**: Conservative assets that protect against inflation and maintain purchasing power
+- **Speculation**: High-risk, high-reward assets with uncertain but potentially substantial returns
+- **Hedge**: Defensive assets that protect against specific economic risks or market conditions
+- **Legacy**: Assets intended for generational wealth transfer and long-term family benefit
+
+**Investment Time Horizon Planning**
+New Time Horizon classification helps align your assets with your financial timeline:
+- **Short-term (0-2 years)**: Assets supporting near-term goals and maintaining liquidity
+- **Medium-term (2-10 years)**: Assets for major life purchases and medium-range objectives  
+- **Long-term (10+ years)**: Assets for retirement planning and generational wealth building
+
+**Liquidity Status Management**
+Enhanced liquidity classification provides better emergency planning and cash flow management:
+- **Liquid Assets**: Can be converted to cash within days for emergencies and opportunities
+- **Illiquid Assets**: Long-term holdings that require months or years to convert but often provide higher returns
+
+#### 🔄 Advanced Transaction Management System
+
+**New Transaction Types**
+Expanded transaction capabilities to handle sophisticated portfolio management scenarios:
+- **Update Quantity/Units**: Handle stock splits, dividend reinvestments, and corporate actions
+- **Update Description/Properties**: Modify asset metadata and characteristics over time
+- **Enhanced Value Updates**: More detailed value tracking with better historical context
+- **Transfer Management**: Improved handling of asset transfers between accounts
+
+**Improved Transaction History**
+- **Enhanced Values Display Logic**: Transactions now show "No Change" when appropriate instead of confusing £0 amounts
+- **Better Transaction Context**: Each transaction includes more comprehensive metadata about the change
+- **Streamlined Interface**: Removed confusing "Actions" column for cleaner, more intuitive transaction history
+- **Asset-Centric View**: Transaction history now better reflects the asset's journey over time
+
+#### 🎨 User Interface & Experience Improvements
+
+**Theme-Consistent Design System**
+- **Unified Button Styling**: All action buttons now use consistent theme-aware styling across Assets, Insurance, and Transaction pages
+- **Better Visual Hierarchy**: Improved spacing and typography throughout filter forms and data tables
+- **Enhanced Readability**: Fixed text truncation issues in data tables with proper text wrapping
+- **Responsive Design**: Better mobile and tablet experience across all pages
+
+**Improved Form Usability**
+- **Better Label-Input Spacing**: Fixed aesthetic issues in transaction filter forms with proper vertical spacing
+- **Enhanced Property Display**: Properties column now shows complete text with intelligent wrapping
+- **Clearer Field Organization**: Better grouping and visual separation of form sections
+
+#### 📊 Enhanced Portfolio Analytics
+
+**Comprehensive Asset Table Display**
+New columns provide immediate insight into your portfolio composition:
+- **Liquidity Status**: Quickly see which assets are liquid vs. illiquid for better cash flow planning
+- **Time Horizon**: Understand the timeline alignment of your investment strategy
+- **Asset Purpose**: See the strategic role each asset plays in your portfolio
+
+**Advanced Filtering & Analysis**
+- **Multi-Dimensional Filtering**: Filter by asset purpose, time horizon, and liquidity status
+- **Strategic Portfolio Review**: Analyze your portfolio alignment with financial goals
+- **Enhanced Sorting Options**: Sort by strategic parameters in addition to traditional metrics
+
+#### 🛠️ Technical Improvements
+
+**Database Schema Enhancements**
+- **New Asset Fields**: Added asset_purpose, time_horizon, and liquid_assets columns
+- **Enhanced Transaction Support**: Expanded transaction types and metadata capabilities
+- **Improved Data Integrity**: Better validation and consistency across all asset operations
+
+**Performance & Reliability**
+- **Optimized Queries**: Faster loading times for asset and transaction data
+- **Better Error Handling**: More graceful handling of edge cases and error conditions
+- **Enhanced Caching**: Improved data caching for better user experience
+
+#### 📋 Migration & Compatibility
+
+**Automatic Data Enhancement**
+- **Strategic Classification**: Existing assets automatically receive appropriate strategic classifications
+- **Liquidity Assessment**: Assets are automatically classified as liquid or illiquid based on asset type
+- **Backwards Compatibility**: All existing functionality remains unchanged while new features enhance the experience
+
+**Seamless Upgrades**
+- **Zero Downtime**: Updates applied automatically without service interruption  
+- **Data Preservation**: All existing asset and transaction data preserved and enhanced
+- **Optional Adoption**: New features are available immediately but don't require changes to existing workflows
+
+#### 🎁 What's Next
+
+**Upcoming Features in Development**
+- **Advanced Portfolio Optimization**: AI-powered suggestions for portfolio rebalancing based on your strategic objectives
+- **Goal-Based Planning**: Connect specific assets to financial goals with progress tracking
+- **Enhanced Reporting**: More sophisticated PDF and Excel export capabilities with strategic analysis
+- **Mobile App**: Native mobile applications for iOS and Android
+- **Integration Expansion**: Direct integration with more banks and brokerages for automatic data synchronization
+
+This release represents a significant evolution in Aura's capabilities, transforming it from a portfolio tracker into a comprehensive strategic asset management platform. Whether you're just starting your financial journey or managing substantial wealth, these new tools help you build and maintain a portfolio that truly aligns with your goals and timeline.
+
+---
 
 ---
 

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { useForm } from 'react-hook-form';
 import { useChartColors } from '../hooks/useChartColors';
+import { Button } from '../components/ui/button';
 import { insuranceService } from '../services/insurance';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
 Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
@@ -21,6 +22,7 @@ import SafeSection from '@/components/util/SafeSection'
 import { log, warn, error } from '@/lib/debug';
 import { queryKeys } from '@/lib/queryKeys';
 import { mutationHelpers } from '@/lib/queryUtils';
+import { Download, FileSpreadsheet, Plus } from 'lucide-react';
 
 const Insurance = () => {
   log('Insurance:init', 'Component initializing');
@@ -674,63 +676,59 @@ const Insurance = () => {
         <div className="flex items-center gap-3">
           {/* PDF Download Button */}
           {policies.length > 0 && (
-            <button
-              className={`bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${pdfExporting ? 'cursor-not-allowed' : ''}`}
+            <Button
+              variant="secondary"
               onClick={handleExportToPDF}
               disabled={pdfExporting}
               title="Download complete insurance report as PDF"
             >
               {pdfExporting ? (
                 <>
-                  <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 animate-spin mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                   Generating...
                 </>
               ) : (
                 <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+                  <Download className="w-4 h-4 mr-2" />
                   Download PDF
                 </>
               )}
-            </button>
+            </Button>
           )}
 
           {/* Excel Download Button */}
           {policies.length > 0 && (
-            <button
-              className={`bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${excelExporting ? 'cursor-not-allowed' : ''}`}
+            <Button
+              variant="secondary"
               onClick={handleExportToExcel}
               disabled={excelExporting}
               title="Download complete insurance report as Excel spreadsheet"
             >
               {excelExporting ? (
                 <>
-                  <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 animate-spin mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                   Generating...
                 </>
               ) : (
                 <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                  </svg>
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
                   Download Excel
                 </>
               )}
-            </button>
+            </Button>
           )}
 
           {/* Add Policy Button */}
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          <Button
             onClick={() => openModal()}
           >
+            <Plus className="w-4 h-4 mr-2" />
             Add Policy
-          </button>
+          </Button>
         </div>
       </div>
 

@@ -1,11 +1,12 @@
 # Aura Asset Manager - Database Schema Design
 
-This document outlines the current PostgreSQL database schema for the Aura Asset Manager application hosted on Supabase. The schema is designed to be robust, flexible, and scalable, supporting various asset types, detailed transaction logging, comprehensive insurance management, and annuities.
+This document outlines the current PostgreSQL database schema for the Aura Asset Manager application hosted on Supabase. The schema is designed to be robust, flexible, and scalable, supporting various asset types, detailed transaction logging, comprehensive insurance management, and annuities with advanced strategic portfolio management capabilities.
 
-**Last Updated**: September 26, 2025  
+**Last Updated**: December 27, 2025  
 **Database**: Supabase PostgreSQL 17.4.1.057  
 **Project ID**: buuyvrysvjwqqfoyfbdr  
 **Environment**: Production (Active/Healthy)  
+**Schema Version**: 3.0 - Strategic Asset Management  
 
 ## Core Principles
 
@@ -69,7 +70,8 @@ This document outlines the current PostgreSQL database schema for the Aura Asset
 | `user_code` | `VARCHAR` | NULLABLE, UNIQUE | - | Unique user identification code |
 
 ### 2. `assets` Table
-**Purpose**: Stores information about each individual asset owned by a user  
+
+**Purpose**: Stores information about each individual asset owned by a user with comprehensive strategic classification  
 **Rows**: 26 | **RLS Enabled**: Yes
 
 | Column Name | Data Type | Constraints | Default | Description |
@@ -94,19 +96,27 @@ This document outlines the current PostgreSQL database schema for the Aura Asset
 | `accumulation_phase_end` | `DATE` | NULLABLE | - | End date of accumulation phase |
 | `has_payment_schedule` | `BOOLEAN` | NULLABLE | `false` | Has associated payment schedule |
 | `modified_at` | `TIMESTAMPTZ` | NULLABLE | - | Last modification timestamp |
-| `liquid_assets` | `BOOLEAN` | NULLABLE | `false` | Asset is liquid/easily convertible |
+| `liquid_assets` | `BOOLEAN` | NULLABLE | `false` | Asset is liquid/easily convertible to cash |
 | `is_selected` | `BOOLEAN` | NULLABLE | `false` | Asset is currently selected in UI |
+| `time_horizon` | `TEXT` | NULLABLE | - | CHECK: short_term, medium_term, long_term |
+| `asset_purpose` | `TEXT` | NULLABLE | - | CHECK: Growth, Income, Capital Preservation, Speculation, Hedge, Legacy |
+
+**Strategic Classification Fields**:
+- **time_horizon**: Investment time frame (short_term: 0-2 years, medium_term: 2-10 years, long_term: 10+ years)
+- **asset_purpose**: Strategic role of the asset in portfolio (Growth, Income, Capital Preservation, Speculation, Hedge, Legacy)
+- **liquid_assets**: Indicates whether the asset can be easily converted to cash within days
 
 ### 3. `transactions` Table
-**Purpose**: Records all financial events and asset changes  
-**Rows**: 11 | **RLS Enabled**: Yes
+
+**Purpose**: Records all financial events and asset changes with comprehensive transaction types  
+**Rows**: 11+ | **RLS Enabled**: Yes
 
 | Column Name | Data Type | Constraints | Default | Description |
 | :---------- | :-------- | :---------- | :------ | :---------- |
 | `id` | `UUID` | PRIMARY KEY | `uuid_generate_v4()` | Unique identifier for the transaction |
 | `user_id` | `UUID` | NOT NULL, FK(users.id) | - | User who performed the transaction |
 | `asset_id` | `UUID` | NOT NULL, FK(assets.id) | - | Asset involved in the transaction |
-| `transaction_type` | `TEXT` | NOT NULL | - | Type (purchase, sale, value_update, etc.) |
+| `transaction_type` | `TEXT` | NOT NULL | - | Type (purchase, sale, value_update, update_quantity_units, update_description_properties, etc.) |
 | `transaction_date` | `TIMESTAMPTZ` | NOT NULL | - | Date and time of transaction |
 | `amount` | `NUMERIC` | NULLABLE | - | Monetary amount involved |
 | `quantity_change` | `NUMERIC` | NULLABLE | - | Change in quantity (+ purchase, - sale) |
@@ -123,6 +133,15 @@ This document outlines the current PostgreSQL database schema for the Aura Asset
 | `asset_description` | `TEXT` | NULLABLE | - | Asset description at transaction time |
 | `custom_properties` | `TEXT` | NULLABLE | - | Custom asset properties |
 | `modified_at` | `TIMESTAMPTZ` | NULLABLE | - | Last modification timestamp |
+
+**Enhanced Transaction Types**:
+- **purchase**: Acquiring new assets or adding to existing holdings
+- **sale**: Disposing of assets (partial or complete)
+- **value_update**: Updating current market values without buying/selling
+- **transfer**: Moving assets between accounts or locations
+- **update_quantity_units**: Stock splits, dividend reinvestments, corporate actions
+- **update_description_properties**: Modifying asset metadata or characteristics
+- **income**: Recording dividends, rent, interest, or other asset-generated income
 
 ### 4. `insurance_policies` Table
 **Purpose**: Stores details about insurance policies and coverage  
@@ -273,11 +292,14 @@ This document outlines the current PostgreSQL database schema for the Aura Asset
 ## Data Integrity & Constraints
 
 ### Check Constraints
+
 - **users.marital_status**: single, married, divorced, widowed, separated
 - **users.gender**: male, female, other, prefer_not_to_say  
 - **users.occupation**: employed, self_employed, unemployed, retired, student, homemaker, other
 - **users.risk_appetite**: Low, Moderate, High
 - **assets.annuity_type**: fixed, variable, indexed, immediate, deferred
+- **assets.time_horizon**: short_term, medium_term, long_term
+- **assets.asset_purpose**: Growth, Income, Capital Preservation, Speculation, Hedge, Legacy
 - **payment_schedules.related_type**: asset, insurance_policy
 - **payment_schedules.schedule_type**: payment_out, payment_in, premium
 - **payment_schedules.frequency**: monthly, quarterly, semi-annually, annually
