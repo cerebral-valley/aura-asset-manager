@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.134',
+  version: 'v0.135',
   buildDate: '2024-12-28', 
-  deploymentId: 'fix-route-collision',
-  description: 'Fixed SPA routing by renaming /assets route to /portfolio to avoid collision with Vercel static assets directory'
+  deploymentId: 'matrix-asset-purpose-fix',
+  description: 'Fixed Matrix Chart x-axis to show Asset Purpose instead of Asset Type for proper strategic classification visualization'
 }
 
 export const getVersionDisplay = () => {

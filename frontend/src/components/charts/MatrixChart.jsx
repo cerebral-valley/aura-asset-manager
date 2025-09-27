@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { getAssetTypeLabel } from '@/constants/assetTypes';
+import { getAssetPurposeLabel, getUniqueAssetPurposes } from '@/constants/assetPurpose';
 import { useCurrency } from '@/hooks/useCurrency';
 
 const MatrixChart = ({ 
@@ -18,10 +18,9 @@ const MatrixChart = ({
     { value: 'long_term', label: 'Long Term', description: '> 3 years' }
   ];
 
-  // Get unique asset types from the data
-  const assetTypes = useMemo(() => {
-    const types = [...new Set(assets.map(asset => asset.asset_type))];
-    return types.sort();
+  // Get unique asset purposes from the data
+  const assetPurposes = useMemo(() => {
+    return getUniqueAssetPurposes(assets);
   }, [assets]);
 
   // Filter assets by liquidity status
@@ -41,8 +40,8 @@ const MatrixChart = ({
     // Initialize matrix structure
     timeHorizons.forEach(horizon => {
       matrix[horizon.value] = {};
-      assetTypes.forEach(assetType => {
-        matrix[horizon.value][assetType] = {
+      assetPurposes.forEach(assetPurpose => {
+        matrix[horizon.value][assetPurpose] = {
           assets: [],
           count: 0,
           value: 0,
@@ -54,25 +53,25 @@ const MatrixChart = ({
     // Populate matrix with asset data
     filteredAssets.forEach(asset => {
       const horizon = asset.time_horizon || 'short_term'; // Default fallback
-      const assetType = asset.asset_type;
+      const assetPurpose = asset.asset_purpose || 'unspecified'; // Default fallback for assets without purpose
       
-      if (matrix[horizon] && matrix[horizon][assetType]) {
-        matrix[horizon][assetType].assets.push(asset);
-        matrix[horizon][assetType].count++;
-        matrix[horizon][assetType].value += asset.present_value || 0;
+      if (matrix[horizon] && matrix[horizon][assetPurpose]) {
+        matrix[horizon][assetPurpose].assets.push(asset);
+        matrix[horizon][assetPurpose].count++;
+        matrix[horizon][assetPurpose].value += asset.present_value || 0;
       }
     });
 
     // Calculate percentages
     Object.keys(matrix).forEach(horizon => {
-      Object.keys(matrix[horizon]).forEach(assetType => {
-        const cellData = matrix[horizon][assetType];
+      Object.keys(matrix[horizon]).forEach(assetPurpose => {
+        const cellData = matrix[horizon][assetPurpose];
         cellData.percentage = totalValue > 0 ? (cellData.value / totalValue) * 100 : 0;
       });
     });
 
     return matrix;
-  }, [filteredAssets, timeHorizons, assetTypes, totalValue]);
+  }, [filteredAssets, timeHorizons, assetPurposes, totalValue]);
 
   // Get cell background color based on value
   const getCellColor = (percentage) => {
@@ -91,12 +90,12 @@ const MatrixChart = ({
   };
 
   // Handle cell hover
-  const handleCellHover = (horizon, assetType) => {
-    const cellData = matrixData[horizon]?.[assetType];
+  const handleCellHover = (horizon, assetPurpose) => {
+    const cellData = matrixData[horizon]?.[assetPurpose];
     if (cellData && cellData.count > 0) {
       setHoveredCell({
         horizon,
-        assetType,
+        assetPurpose,
         data: cellData
       });
     }
@@ -107,7 +106,7 @@ const MatrixChart = ({
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-2">{title}</h3>
         <p className={`text-sm ${isDark ? 'text-neutral-400' : 'text-gray-600'}`}>
-          Asset distribution by type and time horizon • Total: {formatCurrency(totalValue)}
+          Asset distribution by purpose and time horizon • Total: {formatCurrency(totalValue)}
         </p>
       </div>
 
@@ -116,12 +115,12 @@ const MatrixChart = ({
         <div className="min-w-max">
           {/* Header Row */}
           <div className="grid grid-cols-[200px_repeat(var(--cols),1fr)] gap-2 mb-2"
-               style={{ '--cols': assetTypes.length }}>
+               style={{ '--cols': assetPurposes.length }}>
             <div className="p-3"></div>
-            {assetTypes.map(assetType => (
-              <div key={assetType} 
+            {assetPurposes.map(assetPurpose => (
+              <div key={assetPurpose} 
                    className={`p-3 text-center rounded-md font-medium text-sm ${isDark ? 'bg-neutral-800 text-neutral-300' : 'bg-gray-100 text-gray-700'}`}>
-                <div className="font-semibold">{getAssetTypeLabel(assetType)}</div>
+                <div className="font-semibold">{getAssetPurposeLabel(assetPurpose)}</div>
               </div>
             ))}
           </div>
@@ -130,7 +129,7 @@ const MatrixChart = ({
           {timeHorizons.map(horizon => (
             <div key={horizon.value} 
                  className="grid grid-cols-[200px_repeat(var(--cols),1fr)] gap-2 mb-2"
-                 style={{ '--cols': assetTypes.length }}>
+                 style={{ '--cols': assetPurposes.length }}>
               {/* Row Header */}
               <div className={`p-3 rounded-md font-medium ${isDark ? 'bg-neutral-800 text-neutral-300' : 'bg-gray-100 text-gray-700'}`}>
                 <div className="font-semibold text-sm">{horizon.label}</div>
@@ -138,20 +137,20 @@ const MatrixChart = ({
               </div>
 
               {/* Matrix Cells */}
-              {assetTypes.map(assetType => {
-                const cellData = matrixData[horizon.value]?.[assetType] || { count: 0, value: 0, percentage: 0 };
+              {assetPurposes.map(assetPurpose => {
+                const cellData = matrixData[horizon.value]?.[assetPurpose] || { count: 0, value: 0, percentage: 0 };
                 const hasData = cellData.count > 0;
 
                 return (
                   <div
-                    key={`${horizon.value}-${assetType}`}
+                    key={`${horizon.value}-${assetPurpose}`}
                     className={`
                       p-4 rounded-md cursor-pointer transition-all duration-200 
                       ${getCellColor(cellData.percentage)}
                       ${hasData ? 'hover:scale-105 hover:shadow-md' : ''}
-                      ${hoveredCell?.horizon === horizon.value && hoveredCell?.assetType === assetType ? 'ring-2 ring-blue-500' : ''}
+                      ${hoveredCell?.horizon === horizon.value && hoveredCell?.assetPurpose === assetPurpose ? 'ring-2 ring-blue-500' : ''}
                     `}
-                    onMouseEnter={() => hasData && handleCellHover(horizon.value, assetType)}
+                    onMouseEnter={() => hasData && handleCellHover(horizon.value, assetPurpose)}
                     onMouseLeave={() => setHoveredCell(null)}
                   >
                     <div className={`text-center ${getTextColor(cellData.percentage)}`}>
@@ -185,7 +184,7 @@ const MatrixChart = ({
                transform: 'translateY(-50%)'
              }}>
           <div className="font-semibold mb-2">
-            {getAssetTypeLabel(hoveredCell.assetType)} • {timeHorizons.find(h => h.value === hoveredCell.horizon)?.label}
+            {getAssetPurposeLabel(hoveredCell.assetPurpose)} • {timeHorizons.find(h => h.value === hoveredCell.horizon)?.label}
           </div>
           <div className="space-y-1 text-sm">
             <div>Assets: {hoveredCell.data.count}</div>
