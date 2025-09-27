@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.126',
+  version: 'v0.127',
   buildDate: '2024-12-19', 
-  deploymentId: 'strategic-asset-classification-system',
-  description: 'Strategic Asset Classification System with comprehensive Asset Purpose framework, enhanced User Guide with detailed portfolio construction guidance, theme consistency fixes, and database schema alignment'
+  deploymentId: 'asset-matrix-charts',
+  description: 'Beautiful matrix chart visualizations showing asset distribution by type and time horizon for both liquid and illiquid assets with hover tooltips and theme-adaptable design'
 }
 
 export const getVersionDisplay = () => {

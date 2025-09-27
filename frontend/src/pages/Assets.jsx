@@ -23,6 +23,7 @@ import Loading from '../components/ui/Loading';
 import SafeSection from '../components/util/SafeSection';
 import { log, warn, error } from '@/lib/debug';
 import { Download, FileSpreadsheet, Plus } from 'lucide-react';
+import MatrixChart from '../components/charts/MatrixChart';
 
 const Assets = () => {
   const navigate = useNavigate();
@@ -1235,6 +1236,34 @@ const Assets = () => {
                     </tbody>
                   </table>
                 </div>
+              </div>
+            </div>
+
+            {/* Matrix Charts - Asset Type vs Time Horizon */}
+            <div className="mt-8 space-y-6">
+              <div className="text-center mb-6">
+                <h3 className="text-lg font-semibold mb-2">Asset Distribution Matrix</h3>
+                <p className={`text-sm ${isDark ? 'text-neutral-400' : 'text-gray-600'}`}>
+                  Visual representation of asset allocation across types and investment horizons
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                {/* Liquid Assets Matrix */}
+                <MatrixChart
+                  assets={activeAssets}
+                  title="Liquid Assets Matrix"
+                  isLiquid={true}
+                  isDark={isDark}
+                />
+                
+                {/* Illiquid Assets Matrix */}
+                <MatrixChart
+                  assets={activeAssets}
+                  title="Illiquid Assets Matrix"
+                  isLiquid={false}
+                  isDark={isDark}
+                />
               </div>
             </div>
           </div>
