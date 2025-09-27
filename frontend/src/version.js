@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.180',
-  buildDate: '2025-09-27', 
-  deploymentId: 'liquid-time-horizon-updates',
-  description: 'Added liquid asset status and time horizon update functionality to transaction system with new Update Type options and table columns'
+  version: 'v0.125',
+  buildDate: '2024-12-19', 
+  deploymentId: 'transaction-system-enhancement',
+  description: 'Complete transaction system overhaul with Asset Purpose, new transaction types, Values column fix, Actions column removal, and enhanced Assets table'
 }
 
 export const getVersionDisplay = () => {
