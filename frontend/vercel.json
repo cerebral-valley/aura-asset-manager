@@ -9,7 +9,7 @@
       "destination": "/index.html"
     },
     {
-      "source": "/((?!api)(?!_next)(?!static)(?!public)(?!favicon.ico)(?!assets/).*)",
+      "source": "/((?!api)(?!_next)(?!static)(?!public)(?!favicon\\.ico)(?!.*\\..*).*)",
       "destination": "/index.html"
     }
   ],
