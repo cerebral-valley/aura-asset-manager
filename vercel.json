@@ -4,7 +4,15 @@
   "installCommand": "cd frontend && pnpm install",
   "rewrites": [
     {
-      "source": "/((?!api)(?!_next)(?!static)(?!assets/.*).*)",
+      "source": "/assets",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/assets/",
+      "destination": "/index.html"  
+    },
+    {
+      "source": "/((?!api)(?!_next)(?!static)(?!public)(?!favicon.ico)(?!assets/).*)",
       "destination": "/index.html"
     }
   ]
