@@ -71,6 +71,18 @@ async def create_transaction(
             "user_id": current_user.id
         }
         
+        # Add asset_purpose if provided
+        if hasattr(transaction, 'asset_purpose') and transaction.asset_purpose:
+            asset_data["asset_purpose"] = transaction.asset_purpose
+            
+        # Add liquid_assets if provided  
+        if hasattr(transaction, 'liquid_assets') and transaction.liquid_assets:
+            asset_data["liquid_assets"] = transaction.liquid_assets == 'YES'
+            
+        # Add time_horizon if provided
+        if hasattr(transaction, 'time_horizon') and transaction.time_horizon:
+            asset_data["time_horizon"] = transaction.time_horizon
+        
         # Handle custom_properties if provided
         if hasattr(transaction, 'custom_properties') and transaction.custom_properties:
             asset_data["asset_metadata"] = {"custom_properties": transaction.custom_properties}
@@ -183,6 +195,42 @@ async def create_transaction(
             asset.liquid_assets = transaction.liquid_assets == 'YES'  # type: ignore
         elif transaction.transaction_type == "update_time_horizon" and hasattr(transaction, 'time_horizon'):
             asset.time_horizon = transaction.time_horizon  # type: ignore
+        elif transaction.transaction_type == "update_quantity_units" and hasattr(transaction, 'update_quantity_units'):
+            # Parse quantity and unit from update_quantity_units field 
+            # Expected format: "quantity:unit" e.g., "100.5:shares"
+            if transaction.update_quantity_units:
+                try:
+                    parts = transaction.update_quantity_units.split(':')
+                    if len(parts) == 2:
+                        asset.quantity = float(parts[0])  # type: ignore
+                        asset.unit_of_measure = parts[1]  # type: ignore
+                        print(f"🔢 UPDATE_QUANTITY_UNITS: Updated {asset.name} - quantity: {asset.quantity}, unit: {asset.unit_of_measure}")
+                except (ValueError, IndexError):
+                    print(f"⚠️ Invalid quantity_units format: {transaction.update_quantity_units}")
+        elif transaction.transaction_type == "update_description_properties":
+            # Update description and properties from update_description_properties field
+            if hasattr(transaction, 'update_description_properties') and transaction.update_description_properties:
+                # Parse JSON or structured format for description and properties updates
+                try:
+                    import json
+                    updates = json.loads(transaction.update_description_properties)
+                    if 'description' in updates:
+                        asset.description = updates['description']  # type: ignore
+                    if 'custom_properties' in updates:
+                        # Update metadata with custom properties
+                        current_metadata = asset.asset_metadata or {}
+                        current_metadata.update(updates['custom_properties'])
+                        asset.asset_metadata = current_metadata  # type: ignore
+                    print(f"📝 UPDATE_DESCRIPTION_PROPERTIES: Updated {asset.name} description and properties")
+                except Exception:
+                    # Fallback: treat as simple description update
+                    asset.description = transaction.update_description_properties  # type: ignore
+                    print(f"📝 UPDATE_DESCRIPTION_PROPERTIES: Updated {asset.name} description (simple)")
+        
+        # Handle asset_purpose updates for both create and update transactions
+        if hasattr(transaction, 'asset_purpose') and transaction.asset_purpose:
+            asset.asset_purpose = transaction.asset_purpose  # type: ignore
+            print(f"🎯 ASSET_PURPOSE: Updated {asset.name} purpose to {transaction.asset_purpose}")
 
     db.commit()
     db.refresh(db_transaction)
@@ -266,118 +314,6 @@ async def update_transaction(
     db.refresh(transaction)
     return transaction
 
-@router.delete("/{transaction_id}")
-async def delete_transaction(
-    transaction_id: UUID,
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    """
-    Delete a transaction with enhanced logic:
-    - If deleting a 'create' transaction: Delete all transactions for that asset + the asset itself
-    - If deleting any other transaction: Delete only that specific transaction
-    """
-    transaction = db.query(Transaction).filter(
-        Transaction.id == transaction_id,
-        Transaction.user_id == current_user.id
-    ).first()
-    
-    if not transaction:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Transaction not found"
-        )
-    
-    if getattr(transaction, 'transaction_type', None) == "create":
-        # For "create" transactions, delete all related transactions and the asset
-        asset_id = transaction.asset_id
-        
-        # Get the asset for response info
-        asset = db.query(Asset).filter(
-            Asset.id == asset_id,
-            Asset.user_id == current_user.id
-        ).first()
-        
-        if not asset:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Associated asset not found"
-            )
-        
-        # Get count of all transactions for this asset
-        total_transactions = db.query(Transaction).filter(
-            Transaction.asset_id == asset_id,
-            Transaction.user_id == current_user.id
-        ).count()
-        
-        # Delete all transactions for this asset
-        db.query(Transaction).filter(
-            Transaction.asset_id == asset_id,
-            Transaction.user_id == current_user.id
-        ).delete()
-        
-        # Delete the asset itself
-        db.delete(asset)
-        db.commit()
-        
-        return {
-            "message": f"Create Asset transaction deleted - removed asset '{getattr(asset, 'name', 'Unknown')}' and all {total_transactions} related transactions",
-            "transaction_type": "create",
-            "asset_deleted": True,
-            "asset_name": getattr(asset, 'name', 'Unknown'),
-            "total_transactions_deleted": total_transactions
-        }
-    elif getattr(transaction, 'transaction_type', None) == "delete":
-        # For "delete" transactions, also delete all related transactions and the asset
-        asset_id = transaction.asset_id
-        
-        # Get the asset for response info
-        asset = db.query(Asset).filter(
-            Asset.id == asset_id,
-            Asset.user_id == current_user.id
-        ).first()
-        
-        if not asset:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Associated asset not found"
-            )
-        
-        # Get count of all transactions for this asset
-        total_transactions = db.query(Transaction).filter(
-            Transaction.asset_id == asset_id,
-            Transaction.user_id == current_user.id
-        ).count()
-        
-        # Delete all transactions for this asset
-        db.query(Transaction).filter(
-            Transaction.asset_id == asset_id,
-            Transaction.user_id == current_user.id
-        ).delete()
-        
-        # Delete the asset itself
-        db.delete(asset)
-        db.commit()
-        
-        return {
-            "message": f"Delete Asset transaction executed - removed asset '{getattr(asset, 'name', 'Unknown')}' and all {total_transactions} related transactions",
-            "transaction_type": "delete",
-            "asset_deleted": True,
-            "asset_name": getattr(asset, 'name', 'Unknown'),
-            "total_transactions_deleted": total_transactions
-        }
-    else:
-        # For other transaction types, delete only the specific transaction
-        transaction_type = getattr(transaction, 'transaction_type', 'Unknown')
-        asset_name = getattr(transaction.asset, 'name', 'Unknown') if transaction.asset else "Unknown"
-        
-        db.delete(transaction)
-        db.commit()
-        
-        return {
-            "message": f"Transaction '{transaction_type}' for asset '{asset_name}' deleted successfully",
-            "transaction_type": transaction_type,
-            "asset_deleted": False,
-            "transactions_deleted": 1
-        }
+# DELETE endpoint removed as part of Actions column removal
+# Transactions are now managed through asset lifecycle only
 

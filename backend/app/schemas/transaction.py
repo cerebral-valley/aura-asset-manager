@@ -29,6 +29,9 @@ class TransactionBase(BaseModel):
     asset_description: Optional[str] = None
     liquid_assets: Optional[str] = None
     time_horizon: Optional[str] = None
+    asset_purpose: Optional[str] = None
+    update_quantity_units: Optional[str] = None
+    update_description_properties: Optional[str] = None
     
     @field_validator('transaction_metadata', mode='before')
     @classmethod

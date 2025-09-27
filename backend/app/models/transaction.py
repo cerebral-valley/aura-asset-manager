@@ -37,6 +37,9 @@ class Transaction(Base):
     asset_description = Column(Text)  # Asset description
     liquid_assets = Column(Text)  # Liquid asset status (YES/NO)
     time_horizon = Column(Text)  # Investment time horizon (short_term/medium_term/long_term)
+    asset_purpose = Column(Text)  # Asset purpose for create/update transactions
+    update_quantity_units = Column(Text)  # Updated quantity and units information
+    update_description_properties = Column(Text)  # Updated description, notes, and custom properties
     
     # Relationships
     asset = relationship("Asset", back_populates="transactions")

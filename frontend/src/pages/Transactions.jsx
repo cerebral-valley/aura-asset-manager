@@ -40,7 +40,9 @@ import {
   ChevronDown,
   Droplets,
   Clock,
-  Info
+  Info,
+  Calculator,
+  Pencil
 } from 'lucide-react'
 import { transactionsService } from '@/services/transactions'
 import { assetsService } from '@/services/assets'
@@ -104,6 +106,16 @@ const timeHorizonOptions = [
   { value: 'long_term', label: 'Long Term (> 3 years)' }
 ]
 
+// Asset Purpose options
+const assetPurposeOptions = [
+  { value: 'hyper_growth', label: 'Hyper Growth' },
+  { value: 'growth', label: 'Growth' },
+  { value: 'financial_security', label: 'Financial Security' },
+  { value: 'emergency_fund', label: 'Emergency Fund' },
+  { value: 'childrens_education', label: "Children's Education" },
+  { value: 'retirement_fund', label: 'Retirement Fund' }
+]
+
 // Transaction types
 const transactionTypes = [
   { value: 'create', label: 'Create Asset', icon: Plus, color: 'text-green-500', description: 'Add a new asset to your portfolio' },
@@ -114,6 +126,8 @@ const transactionTypes = [
   { value: 'update_type', label: 'Update Type', icon: ArrowUpRight, color: 'text-purple-500', description: 'Change asset category' },
   { value: 'update_liquid_status', label: 'Update Liquid Status', icon: Droplets, color: 'text-cyan-500', description: 'Change asset liquidity status' },
   { value: 'update_time_horizon', label: 'Update Time Horizon', icon: Clock, color: 'text-amber-500', description: 'Change investment time horizon' },
+  { value: 'update_quantity_units', label: 'Update Quantity & Units', icon: Calculator, color: 'text-indigo-500', description: 'Change asset quantity and unit of measure' },
+  { value: 'update_description_properties', label: 'Update Description & Properties', icon: Pencil, color: 'text-orange-500', description: 'Update asset description, notes, and custom properties' },
   { value: 'delete', label: 'Delete Asset', icon: Trash2, color: 'text-red-600', description: 'Permanently remove asset (irreversible)' }
 ]
 
@@ -326,6 +340,7 @@ export default function Transactions() {
     // Liquidity and time horizon fields
     liquid_assets: false, // Will be set based on asset type selection
     time_horizon: '',
+    asset_purpose: '', // Asset Purpose field
     // Custom properties
     custom_properties: '',
     // Transaction fields
@@ -638,6 +653,25 @@ export default function Transactions() {
               transactionData.time_horizon = transactionForm.time_horizon
             }
 
+            // Add update_quantity_units for update_quantity_units transactions
+            if (transactionForm.transaction_type === 'update_quantity_units' && transactionForm.quantity && transactionForm.unit_of_measure) {
+              transactionData.update_quantity_units = `${transactionForm.quantity}:${transactionForm.unit_of_measure}`
+            }
+
+            // Add update_description_properties for update_description_properties transactions
+            if (transactionForm.transaction_type === 'update_description_properties') {
+              const updates = {}
+              if (transactionForm.asset_description) {
+                updates.description = transactionForm.asset_description
+              }
+              if (transactionForm.custom_properties) {
+                updates.custom_properties = transactionForm.custom_properties
+              }
+              if (Object.keys(updates).length > 0) {
+                transactionData.update_description_properties = JSON.stringify(updates)
+              }
+            }
+
             console.log('📋 UPDATE_TRANSACTION_DATA: Update transaction data', {
               transactionData,
               code: 'UPDATE_002'
@@ -717,38 +751,7 @@ export default function Transactions() {
     }
   }
 
-  const handleEdit = (transaction) => {
-    setEditingTransaction(transaction)
-    setTransactionForm({
-      ...transactionForm,
-      transaction_type: transaction.transaction_type,
-      asset_id: transaction.asset_id,
-      amount: transaction.amount?.toString() || '',
-      notes: transaction.notes || ''
-    })
-    setSelectedTransactionType(transaction.transaction_type)
-    setShowTransactionDialog(true)
-  }
-
-  const handleDelete = async (transactionId) => {
-    // Find the transaction to understand its type
-    const transaction = transactions.find(t => t.id === transactionId)
-    if (!transaction) {
-      toast({
-        title: "Error",
-        description: "Transaction not found",
-        variant: "destructive"
-      })
-      return
-    }
-
-    // Open confirmation dialog with appropriate message
-    setConfirmationDialog({
-      isOpen: true,
-      transaction,
-      type: transaction.transaction_type === 'create' ? 'create' : 'other'
-    })
-  }
+  // Actions column and edit/delete functionality removed - transactions are managed through asset lifecycle
 
   const confirmDelete = async () => {
     try {
@@ -1015,7 +1018,7 @@ export default function Transactions() {
                   
                   <TabsContent value="update_acquisition_value" className="space-y-2">
                     <div className="grid grid-cols-1 gap-2">
-                      {transactionTypes.filter(t => ['update_acquisition_value', 'update_market_value', 'update_name', 'update_type', 'update_liquid_status', 'update_time_horizon'].includes(t.value)).map((type) => {
+                      {transactionTypes.filter(t => ['update_acquisition_value', 'update_market_value', 'update_name', 'update_type', 'update_liquid_status', 'update_time_horizon', 'update_quantity_units', 'update_description_properties'].includes(t.value)).map((type) => {
                         const Icon = type.icon
                         return (
                           <div
@@ -1068,7 +1071,7 @@ export default function Transactions() {
               <div className="space-y-4 border-t pt-4">
                 <h4 className="font-medium text-lg">Asset Details</h4>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="asset_name">Asset Name *</Label>
                     <Input
@@ -1149,6 +1152,28 @@ export default function Transactions() {
                       </SelectTrigger>
                       <SelectContent>
                         {timeHorizonOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="asset_purpose">Asset Purpose</Label>
+                    <Select 
+                      value={transactionForm.asset_purpose} 
+                      onValueChange={(value) => setTransactionForm({
+                        ...transactionForm, 
+                        asset_purpose: value
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select asset purpose" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {assetPurposeOptions.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
                           </SelectItem>
@@ -1423,6 +1448,68 @@ export default function Transactions() {
               </div>
             )}
 
+            {/* Quantity and Units for Update Quantity & Units */}
+            {selectedTransactionType === 'update_quantity_units' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="quantity">New Quantity *</Label>
+                    <Input
+                      id="quantity"
+                      type="number"
+                      step="0.0001"
+                      value={transactionForm.quantity || ''}
+                      onChange={(e) => setTransactionForm({...transactionForm, quantity: e.target.value})}
+                      placeholder="0.0000"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="unit_of_measure">New Unit of Measure *</Label>
+                    <Input
+                      id="unit_of_measure"
+                      value={transactionForm.unit_of_measure || ''}
+                      onChange={(e) => setTransactionForm({...transactionForm, unit_of_measure: e.target.value})}
+                      placeholder="shares, units, oz, sqft, etc."
+                      required
+                    />
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Update the quantity and unit of measure for this asset.
+                </p>
+              </div>
+            )}
+
+            {/* Description and Properties for Update Description & Properties */}
+            {selectedTransactionType === 'update_description_properties' && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="asset_description">New Description</Label>
+                  <Textarea
+                    id="asset_description"
+                    value={transactionForm.asset_description || ''}
+                    onChange={(e) => setTransactionForm({...transactionForm, asset_description: e.target.value})}
+                    placeholder="Enter new asset description"
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="custom_properties">Custom Properties</Label>
+                  <Textarea
+                    id="custom_properties"
+                    value={transactionForm.custom_properties || ''}
+                    onChange={(e) => setTransactionForm({...transactionForm, custom_properties: e.target.value})}
+                    placeholder="Enter custom properties (e.g., Ticker: AAPL, Exchange: NASDAQ)"
+                    rows={2}
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Update the description and custom properties for this asset.
+                </p>
+              </div>
+            )}
+
             {/* Notes */}
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
@@ -1677,7 +1764,6 @@ export default function Transactions() {
                 <TableHead>Properties</TableHead>
                 <TableHead>Notes</TableHead>
                  <TableHead>Last Modified</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -1728,11 +1814,26 @@ export default function Transactions() {
                               <span className="text-muted-foreground">Current:</span> {formatCurrency(transaction.current_value)}
                             </div>
                           )}
-                          {transaction.amount && (
-                            <div className={`text-sm font-medium ${typeInfo.color}`}>
-                              <span className="text-muted-foreground">Amount:</span> {formatCurrency(transaction.amount)}
-                            </div>
-                          )}
+                          {/* Show amount only for monetary transactions, otherwise show "No Change" */}
+                          {(() => {
+                            const nonMonetaryTypes = ['update_name', 'update_type', 'update_liquid_status', 'update_time_horizon', 'update_quantity_units', 'update_description_properties'];
+                            const isNonMonetary = nonMonetaryTypes.includes(transaction.transaction_type);
+                            
+                            if (isNonMonetary) {
+                              return (
+                                <div className="text-sm font-medium text-muted-foreground">
+                                  <span className="text-muted-foreground">Status:</span> No Change
+                                </div>
+                              );
+                            } else if (transaction.amount && transaction.amount !== 0) {
+                              return (
+                                <div className={`text-sm font-medium ${typeInfo.color}`}>
+                                  <span className="text-muted-foreground">Amount:</span> {formatCurrency(transaction.amount)}
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -1801,22 +1902,12 @@ export default function Transactions() {
                        <TableCell>
                          {transaction.modified_at ? new Date(transaction.modified_at).toLocaleDateString() : '-'}
                        </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end space-x-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleEdit(transaction)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete(transaction.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
                     </TableRow>
                   )
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
+                  <TableCell colSpan={12} className="text-center py-8">
                     <div className="text-muted-foreground">
                       {searchTerm || selectedType ? 'No transactions match your filters' : 'No transactions found. Record your first transaction to get started.'}
                     </div>

@@ -1325,6 +1325,15 @@ const Assets = () => {
                     <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('purchase_date')}>
                       Purchase Date {sortField === 'purchase_date' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('liquid_assets')}>
+                      Liquidity Status {sortField === 'liquid_assets' && (sortDirection === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('time_horizon')}>
+                      Time Horizon {sortField === 'time_horizon' && (sortDirection === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('asset_purpose')}>
+                      Asset Purpose {sortField === 'asset_purpose' && (sortDirection === 'asc' ? '↑' : '↓')}
+                    </th>
                     <th className="text-left py-2 px-4">Notes</th>
                     <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('share_percentage')}>
                       % Share {sortField === 'share_percentage' && (sortDirection === 'asc' ? '↑' : '↓')}
@@ -1343,13 +1352,16 @@ const Assets = () => {
                         <td className="py-2 px-4">{asset.quantity || '-'}</td>
                         <td className="py-2 px-4">{asset.unit_of_measure || '-'}</td>
                         <td className="py-2 px-4">{formatDate(asset.purchase_date)}</td>
+                        <td className="py-2 px-4">{asset.liquid_assets ? 'Liquid' : 'Not Liquid'}</td>
+                        <td className="py-2 px-4">{asset.time_horizon ? asset.time_horizon.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : '-'}</td>
+                        <td className="py-2 px-4">{asset.asset_purpose ? asset.asset_purpose.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : '-'}</td>
                         <td className="py-2 px-4">{asset.description || '-'}</td>
                         <td className="py-2 px-4">{formatPercentage(getPresentValue(asset), filteredTotalPresent)}</td>
                          <td className="py-2 px-4">{asset.modified_at ? formatDate(asset.modified_at) : '-'}</td>
                       </tr>
                       {expandedAsset === asset.id && (asset.asset_type?.includes('annuity') || asset.has_payment_schedule) && (
                         <tr>
-                          <td colSpan="9" className="py-4 px-4 bg-gray-50">
+                          <td colSpan="13" className="py-4 px-4 bg-gray-50">
                             <AnnuityManager 
                               asset={asset} 
                               onUpdate={() => {
@@ -1370,6 +1382,9 @@ const Assets = () => {
                     <td className="py-2 px-4">-</td>
                     <td className="py-2 px-4">{formatCurrency(filteredTotalAcquisition)}</td>
                     <td className="py-2 px-4">{formatCurrency(filteredTotalPresent)}</td>
+                    <td className="py-2 px-4">-</td>
+                    <td className="py-2 px-4">-</td>
+                    <td className="py-2 px-4">-</td>
                     <td className="py-2 px-4">-</td>
                     <td className="py-2 px-4">-</td>
                     <td className="py-2 px-4">-</td>
