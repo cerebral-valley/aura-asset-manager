@@ -4,12 +4,60 @@ import { useCurrency } from '@/hooks/useCurrency';
 
 const MatrixChart = ({ 
   assets = [], 
+  transactions = [], // Add transactions prop for value calculations
   title = "Asset Matrix", 
   isLiquid = true, 
   isDark = false 
 }) => {
   const { formatCurrency } = useCurrency();
   const [hoveredCell, setHoveredCell] = useState(null);
+
+  // Helper function to get the latest value from transactions (same logic as Assets.jsx)
+  const getLatestTransactionValue = (asset, valueType = 'current_value') => {
+    // Get all transactions for this asset
+    const assetTransactions = transactions.filter(t => t.asset_id === asset.id);
+    
+    if (assetTransactions.length === 0) {
+      // Fallback to asset's static values
+      return valueType === 'current_value' 
+        ? (Number(asset.current_value) || Number(asset.initial_value) || 0)
+        : (Number(asset.initial_value) || 0);
+    }
+    
+    // Sort transactions by date (most recent first)
+    const sortedTransactions = assetTransactions.sort((a, b) => 
+      new Date(b.transaction_date) - new Date(a.transaction_date)
+    );
+    
+    if (valueType === 'current_value') {
+      // Look for the latest market value update transaction
+      const marketValueTransaction = sortedTransactions.find(t => 
+        t.transaction_type === 'update_market_value' && t.amount != null
+      );
+      
+      if (marketValueTransaction) {
+        return Number(marketValueTransaction.amount) || 0;
+      }
+      
+      // If no market value update, look for transactions with current_value
+      const currentValueTransaction = sortedTransactions.find(t => 
+        t.current_value != null && t.current_value > 0
+      );
+      
+      if (currentValueTransaction) {
+        return Number(currentValueTransaction.current_value) || 0;
+      }
+    }
+    
+    // Final fallback to asset's static values
+    return valueType === 'current_value' 
+      ? (Number(asset.current_value) || Number(asset.initial_value) || 0)
+      : (Number(asset.initial_value) || 0);
+  };
+
+  const getPresentValue = (asset) => {
+    return getLatestTransactionValue(asset, 'current_value');
+  };
 
   // Time horizon options
   const timeHorizons = [
@@ -30,7 +78,7 @@ const MatrixChart = ({
 
   // Calculate total value for percentage calculations
   const totalValue = useMemo(() => {
-    return filteredAssets.reduce((sum, asset) => sum + (asset.present_value || 0), 0);
+    return filteredAssets.reduce((sum, asset) => sum + getPresentValue(asset), 0);
   }, [filteredAssets]);
 
   // Build matrix data
@@ -58,7 +106,7 @@ const MatrixChart = ({
       if (matrix[horizon] && matrix[horizon][assetPurpose]) {
         matrix[horizon][assetPurpose].assets.push(asset);
         matrix[horizon][assetPurpose].count++;
-        matrix[horizon][assetPurpose].value += asset.present_value || 0;
+        matrix[horizon][assetPurpose].value += getPresentValue(asset); // Use getPresentValue instead of asset.present_value
       }
     });
 
@@ -114,13 +162,15 @@ const MatrixChart = ({
       <div className="overflow-x-auto">
         <div className="min-w-max">
           {/* Header Row */}
-          <div className="grid grid-cols-[200px_repeat(var(--cols),1fr)] gap-2 mb-2"
+          <div className="grid grid-cols-[160px_repeat(var(--cols),minmax(100px,1fr))] gap-1 mb-1"
                style={{ '--cols': assetPurposes.length }}>
-            <div className="p-3"></div>
+            <div className="p-2"></div>
             {assetPurposes.map(assetPurpose => (
               <div key={assetPurpose} 
-                   className={`p-3 text-center rounded-md font-medium text-sm ${isDark ? 'bg-neutral-800 text-neutral-300' : 'bg-gray-100 text-gray-700'}`}>
-                <div className="font-semibold">{getAssetPurposeLabel(assetPurpose)}</div>
+                   className={`p-2 text-center rounded font-medium text-xs leading-tight ${isDark ? 'bg-neutral-800 text-neutral-300' : 'bg-gray-100 text-gray-700'}`}>
+                <div className="font-semibold whitespace-normal break-words">
+                  {getAssetPurposeLabel(assetPurpose)}
+                </div>
               </div>
             ))}
           </div>
@@ -128,12 +178,12 @@ const MatrixChart = ({
           {/* Matrix Rows */}
           {timeHorizons.map(horizon => (
             <div key={horizon.value} 
-                 className="grid grid-cols-[200px_repeat(var(--cols),1fr)] gap-2 mb-2"
+                 className="grid grid-cols-[160px_repeat(var(--cols),minmax(100px,1fr))] gap-1 mb-1"
                  style={{ '--cols': assetPurposes.length }}>
               {/* Row Header */}
-              <div className={`p-3 rounded-md font-medium ${isDark ? 'bg-neutral-800 text-neutral-300' : 'bg-gray-100 text-gray-700'}`}>
-                <div className="font-semibold text-sm">{horizon.label}</div>
-                <div className="text-xs opacity-75">{horizon.description}</div>
+              <div className={`p-2 rounded font-medium text-xs ${isDark ? 'bg-neutral-800 text-neutral-300' : 'bg-gray-100 text-gray-700'}`}>
+                <div className="font-semibold">{horizon.label}</div>
+                <div className="text-xs opacity-75 mt-1">{horizon.description}</div>
               </div>
 
               {/* Matrix Cells */}
@@ -145,7 +195,7 @@ const MatrixChart = ({
                   <div
                     key={`${horizon.value}-${assetPurpose}`}
                     className={`
-                      p-4 rounded-md cursor-pointer transition-all duration-200 
+                      p-2 rounded cursor-pointer transition-all duration-200 min-h-[60px] flex flex-col justify-center
                       ${getCellColor(cellData.percentage)}
                       ${hasData ? 'hover:scale-105 hover:shadow-md' : ''}
                       ${hoveredCell?.horizon === horizon.value && hoveredCell?.assetPurpose === assetPurpose ? 'ring-2 ring-blue-500' : ''}
@@ -156,7 +206,7 @@ const MatrixChart = ({
                     <div className={`text-center ${getTextColor(cellData.percentage)}`}>
                       {hasData ? (
                         <>
-                          <div className="font-bold text-lg">{cellData.count}</div>
+                          <div className="font-bold text-base">{cellData.count}</div>
                           <div className="text-xs font-semibold">{cellData.percentage.toFixed(1)}%</div>
                           <div className="text-xs mt-1">{formatCurrency(cellData.value)}</div>
                         </>
@@ -199,7 +249,7 @@ const MatrixChart = ({
                 {hoveredCell.data.assets.map(asset => (
                   <div key={asset.id} className="text-xs flex justify-between">
                     <span className="truncate mr-2">{asset.name}</span>
-                    <span className="font-medium">{formatCurrency(asset.present_value || 0)}</span>
+                    <span className="font-medium">{formatCurrency(getPresentValue(asset))}</span>
                   </div>
                 ))}
               </div>
@@ -209,7 +259,7 @@ const MatrixChart = ({
       )}
 
       {/* Legend */}
-      <div className="mt-6 pt-4 border-t border-gray-200">
+      <div className="mt-4 pt-3 border-t border-gray-200">
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center space-x-4">
             <span className={isDark ? 'text-neutral-400' : 'text-gray-600'}>Color intensity represents portfolio share</span>

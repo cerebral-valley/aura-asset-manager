@@ -1252,6 +1252,7 @@ const Assets = () => {
                 {/* Liquid Assets Matrix */}
                 <MatrixChart
                   assets={activeAssets}
+                  transactions={transactions}
                   title="Liquid Assets Matrix"
                   isLiquid={true}
                   isDark={isDark}
@@ -1260,6 +1261,7 @@ const Assets = () => {
                 {/* Illiquid Assets Matrix */}
                 <MatrixChart
                   assets={activeAssets}
+                  transactions={transactions}
                   title="Illiquid Assets Matrix"
                   isLiquid={false}
                   isDark={isDark}

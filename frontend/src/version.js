@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.135',
-  buildDate: '2024-12-28', 
-  deploymentId: 'matrix-asset-purpose-fix',
-  description: 'Fixed Matrix Chart x-axis to show Asset Purpose instead of Asset Type for proper strategic classification visualization'
+  version: 'v0.136',
+  buildDate: '2024-12-28',
+  deploymentId: 'matrix-improvements',
+  description: 'Fixed asset values in matrix tooltips, improved spacing and text wrapping'
 }
 
 export const getVersionDisplay = () => {
