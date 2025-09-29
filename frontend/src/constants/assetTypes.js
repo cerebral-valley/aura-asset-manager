@@ -22,12 +22,7 @@ export const assetTypes = {
     { value: 'private_equity', label: 'Private Equity' },
     { value: 'esops', label: 'ESOPs (Employee Stock Options)' }
   ],
-  'Annuities & Insurance': [
-    { value: 'annuity_fixed', label: 'Fixed Annuity' },
-    { value: 'annuity_variable', label: 'Variable Annuity' },
-    { value: 'annuity_indexed', label: 'Indexed Annuity' },
-    { value: 'annuity_immediate', label: 'Immediate Annuity' },
-    { value: 'annuity_deferred', label: 'Deferred Annuity' },
+  'Insurance': [
     { value: 'life_insurance_term', label: 'Term Life Insurance' },
     { value: 'life_insurance_whole', label: 'Whole Life Insurance' },
     { value: 'life_insurance_universal', label: 'Universal Life Insurance' },

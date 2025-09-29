@@ -45,28 +45,6 @@ export const queryKeys = {
     detail: (id) => [...queryKeys.insurance.baseKey, 'detail', id],
   },
 
-  // Annuity-related queries
-  annuities: {
-    baseKey: ['aura', 'annuities'],
-    all: () => [...queryKeys.annuities.baseKey],
-    list: (filters) => {
-      if (!filters || Object.keys(filters).length === 0) {
-        return [...queryKeys.annuities.baseKey, 'list']
-      }
-      return [...queryKeys.annuities.baseKey, 'list', normalizeFilters(filters)]
-    },
-    detail: (id) => [...queryKeys.annuities.baseKey, 'detail', id],
-    summary: () => [...queryKeys.annuities.baseKey, 'summary'],
-    contributions: (annuityId) => [...queryKeys.annuities.baseKey, 'contributions', annuityId],
-    valuations: (annuityId, limit) => {
-      if (limit) {
-        return [...queryKeys.annuities.baseKey, 'valuations', annuityId, { limit }]
-      }
-      return [...queryKeys.annuities.baseKey, 'valuations', annuityId]
-    },
-    performance: (annuityId) => [...queryKeys.annuities.baseKey, 'performance', annuityId],
-  },
-
   // Dashboard and aggregated queries
   dashboard: {
     baseKey: ['aura', 'dashboard'],
@@ -141,11 +119,6 @@ export const invalidationHelpers = {
   // Invalidate insurance data (independent of assets/transactions)
   invalidateInsurance: (queryClient) => {
     queryClient.invalidateQueries({ queryKey: queryKeys.insurance.baseKey })
-  },
-
-  // Invalidate annuity data (independent of other data)
-  invalidateAnnuities: (queryClient) => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.annuities.baseKey })
   },
 
   // Invalidate dashboard summaries (use when underlying data changes)

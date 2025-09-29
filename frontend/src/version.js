@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.141',
-  buildDate: '2024-12-29',
-  deploymentId: 'annuities-comprehensive-fix',
-  description: 'Fixed annuities functionality - all CRUD operations working, comprehensive testing completed'
+  version: 'v0.142',
+  buildDate: '2024-09-29',
+  deploymentId: 'remove-annuities-feature',
+  description: 'Completely removed annuities feature - simplified application by removing all annuity-related components, services, backend endpoints, and navigation'
 }
 
 export const getVersionDisplay = () => {
