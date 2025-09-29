@@ -15,6 +15,7 @@ class UserSettingsBase(BaseModel):
     currency: str = "USD"
     date_format: str = "MM/DD/YYYY"
     dark_mode: bool = False
+    theme: str = "default"
 
 class UserSettingsCreate(UserSettingsBase):
     """Schema for creating user settings."""

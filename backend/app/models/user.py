@@ -18,7 +18,7 @@ class User(Base):
     user_code = Column(String(8), unique=True, nullable=True, index=True)  # Unique 8-char code for user identification
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-    theme = Column(Text, default="sanctuary_builder")
+    theme = Column(Text, default="default")
     
     # User settings fields
     first_name = Column(String(100))

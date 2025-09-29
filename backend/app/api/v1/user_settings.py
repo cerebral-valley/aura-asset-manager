@@ -34,6 +34,7 @@ async def get_user_settings(
             "currency": current_user.currency or "USD",
             "date_format": current_user.date_format or "MM/DD/YYYY",
             "dark_mode": current_user.dark_mode or False,
+            "theme": current_user.theme or "default",
             "created_at": current_user.created_at,
             "updated_at": current_user.updated_at,
         }
@@ -71,6 +72,7 @@ async def create_user_settings(
             "currency": current_user.currency or "USD",
             "date_format": current_user.date_format or "MM/DD/YYYY",
             "dark_mode": current_user.dark_mode or False,
+            "theme": current_user.theme or "default",
             "created_at": current_user.created_at,
             "updated_at": current_user.updated_at,
         }
@@ -108,6 +110,7 @@ async def update_user_settings(
             "currency": current_user.currency or "USD",
             "date_format": current_user.date_format or "MM/DD/YYYY",
             "dark_mode": current_user.dark_mode or False,
+            "theme": current_user.theme or "default",
             "created_at": current_user.created_at,
             "updated_at": current_user.updated_at,
         }

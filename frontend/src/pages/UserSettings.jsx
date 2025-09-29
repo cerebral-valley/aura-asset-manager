@@ -26,7 +26,7 @@ const UserSettings = () => {
   if (!apiClient) warn('UserSettings:import', 'apiClient not available');
   
   const { user } = useAuth()
-  const { darkMode, setDarkMode } = useTheme()
+  const { darkMode, setDarkMode, theme } = useTheme()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState('')
@@ -39,7 +39,8 @@ const UserSettings = () => {
     country: '',
     currency: 'USD',
     date_format: 'MM/DD/YYYY',
-    dark_mode: false
+    dark_mode: false,
+    theme: 'default'
   })
 
   // Feedback state and handlers
@@ -270,6 +271,7 @@ const UserSettings = () => {
       if (data && typeof data.dark_mode === 'boolean') {
         setDarkMode(data.dark_mode)
       }
+      // Sync theme with theme context - theme change will be handled by ThemeContext useEffect
     } catch (err) {
       error('UserSettings:fetchSettings:error', 'Error fetching settings', {
         message: err.message,

@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.136',
-  buildDate: '2024-12-28',
-  deploymentId: 'matrix-improvements',
-  description: 'Fixed asset values in matrix tooltips, improved spacing and text wrapping'
+  version: 'v0.137',
+  buildDate: '2024-12-29',
+  deploymentId: 'theme-persistence-fix',
+  description: 'Implemented theme persistence across login sessions, database integration, matrix optimization'
 }
 
 export const getVersionDisplay = () => {

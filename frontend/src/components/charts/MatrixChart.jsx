@@ -150,10 +150,10 @@ const MatrixChart = ({
   };
 
   return (
-    <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-lg shadow-lg p-6 relative`}>
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">{title}</h3>
-        <p className={`text-sm ${isDark ? 'text-neutral-400' : 'text-gray-600'}`}>
+    <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-lg shadow-lg p-3 relative`}>
+      <div className="mb-3">
+        <h3 className="text-base font-semibold mb-1">{title}</h3>
+        <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-gray-600'}`}>
           Asset distribution by purpose and time horizon • Total: {formatCurrency(totalValue)}
         </p>
       </div>
@@ -162,13 +162,13 @@ const MatrixChart = ({
       <div className="overflow-x-auto">
         <div className="min-w-max">
           {/* Header Row */}
-          <div className="grid grid-cols-[160px_repeat(var(--cols),minmax(100px,1fr))] gap-1 mb-1"
+          <div className="grid grid-cols-[120px_repeat(var(--cols),minmax(80px,1fr))] gap-0.5 mb-0.5"
                style={{ '--cols': assetPurposes.length }}>
-            <div className="p-2"></div>
+            <div className="p-1"></div>
             {assetPurposes.map(assetPurpose => (
               <div key={assetPurpose} 
-                   className={`p-2 text-center rounded font-medium text-xs leading-tight ${isDark ? 'bg-neutral-800 text-neutral-300' : 'bg-gray-100 text-gray-700'}`}>
-                <div className="font-semibold whitespace-normal break-words">
+                   className={`p-1 text-center rounded font-medium text-xs leading-tight ${isDark ? 'bg-neutral-800 text-neutral-300' : 'bg-gray-100 text-gray-700'}`}>
+                <div className="font-semibold whitespace-normal break-words text-xs leading-3">
                   {getAssetPurposeLabel(assetPurpose)}
                 </div>
               </div>
@@ -178,12 +178,12 @@ const MatrixChart = ({
           {/* Matrix Rows */}
           {timeHorizons.map(horizon => (
             <div key={horizon.value} 
-                 className="grid grid-cols-[160px_repeat(var(--cols),minmax(100px,1fr))] gap-1 mb-1"
+                 className="grid grid-cols-[120px_repeat(var(--cols),minmax(80px,1fr))] gap-0.5 mb-0.5"
                  style={{ '--cols': assetPurposes.length }}>
               {/* Row Header */}
-              <div className={`p-2 rounded font-medium text-xs ${isDark ? 'bg-neutral-800 text-neutral-300' : 'bg-gray-100 text-gray-700'}`}>
-                <div className="font-semibold">{horizon.label}</div>
-                <div className="text-xs opacity-75 mt-1">{horizon.description}</div>
+              <div className={`p-1 rounded font-medium text-xs ${isDark ? 'bg-neutral-800 text-neutral-300' : 'bg-gray-100 text-gray-700'}`}>
+                <div className="font-semibold text-xs leading-3 whitespace-normal break-words">{horizon.label}</div>
+                <div className="text-xs opacity-75 mt-0.5 leading-3">{horizon.description}</div>
               </div>
 
               {/* Matrix Cells */}
@@ -195,7 +195,7 @@ const MatrixChart = ({
                   <div
                     key={`${horizon.value}-${assetPurpose}`}
                     className={`
-                      p-2 rounded cursor-pointer transition-all duration-200 min-h-[60px] flex flex-col justify-center
+                      p-1 rounded cursor-pointer transition-all duration-200 min-h-[45px] flex flex-col justify-center
                       ${getCellColor(cellData.percentage)}
                       ${hasData ? 'hover:scale-105 hover:shadow-md' : ''}
                       ${hoveredCell?.horizon === horizon.value && hoveredCell?.assetPurpose === assetPurpose ? 'ring-2 ring-blue-500' : ''}
@@ -206,9 +206,9 @@ const MatrixChart = ({
                     <div className={`text-center ${getTextColor(cellData.percentage)}`}>
                       {hasData ? (
                         <>
-                          <div className="font-bold text-base">{cellData.count}</div>
+                          <div className="font-bold text-sm">{cellData.count}</div>
                           <div className="text-xs font-semibold">{cellData.percentage.toFixed(1)}%</div>
-                          <div className="text-xs mt-1">{formatCurrency(cellData.value)}</div>
+                          <div className="text-xs">{formatCurrency(cellData.value)}</div>
                         </>
                       ) : (
                         <div className="text-xs">-</div>
@@ -259,18 +259,18 @@ const MatrixChart = ({
       )}
 
       {/* Legend */}
-      <div className="mt-4 pt-3 border-t border-gray-200">
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center space-x-4">
+      <div className="mt-2 pt-2 border-t border-gray-200">
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center space-x-3">
             <span className={isDark ? 'text-neutral-400' : 'text-gray-600'}>Color intensity represents portfolio share</span>
-            <div className="flex items-center space-x-2">
-              <div className={`w-3 h-3 rounded ${isDark ? 'bg-neutral-800' : 'bg-gray-50'}`}></div>
+            <div className="flex items-center space-x-1">
+              <div className={`w-2 h-2 rounded ${isDark ? 'bg-neutral-800' : 'bg-gray-50'}`}></div>
               <span className="text-xs">0%</span>
-              <div className={`w-3 h-3 rounded ${isDark ? 'bg-blue-900/30' : 'bg-blue-100'}`}></div>
+              <div className={`w-2 h-2 rounded ${isDark ? 'bg-blue-900/30' : 'bg-blue-100'}`}></div>
               <span className="text-xs">&lt;5%</span>
-              <div className={`w-3 h-3 rounded ${isDark ? 'bg-blue-700/50' : 'bg-blue-300'}`}></div>
+              <div className={`w-2 h-2 rounded ${isDark ? 'bg-blue-700/50' : 'bg-blue-300'}`}></div>
               <span className="text-xs">&lt;30%</span>
-              <div className={`w-3 h-3 rounded ${isDark ? 'bg-blue-600/60' : 'bg-blue-400'}`}></div>
+              <div className={`w-2 h-2 rounded ${isDark ? 'bg-blue-600/60' : 'bg-blue-400'}`}></div>
               <span className="text-xs">30%+</span>
             </div>
           </div>

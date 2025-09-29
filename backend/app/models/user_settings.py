@@ -28,6 +28,7 @@ class UserSettings(Base):
     currency = Column(String(10), default="USD")
     date_format = Column(String(20), default="MM/DD/YYYY")
     dark_mode = Column(Boolean, default=False)
+    theme = Column(String(20), default="default")
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())

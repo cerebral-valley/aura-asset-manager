@@ -52,11 +52,23 @@ export function ThemeProvider({ children }) {
     }
   }
 
-  const changeTheme = (newTheme) => {
+  const changeTheme = async (newTheme) => {
     if (THEMES[newTheme]) {
       setTheme(newTheme)
       localStorage.setItem('theme', newTheme)
       applyThemeColors(newTheme)
+      
+      // Save to database for persistence across sessions
+      try {
+        const currentSettings = await userSettingsService.getSettings()
+        await userSettingsService.saveSettings({
+          ...currentSettings,
+          theme: newTheme
+        })
+      } catch (error) {
+        console.warn('Could not save theme to database:', error)
+        // Continue with local storage only
+      }
     }
   }
 
@@ -81,9 +93,19 @@ export function ThemeProvider({ children }) {
 
         // Then fetch from database to ensure consistency
         const settings = await userSettingsService.getSettings()
-        if (settings && typeof settings.dark_mode === 'boolean') {
-          applyDarkMode(settings.dark_mode)
-          localStorage.setItem('globalDarkMode', settings.dark_mode.toString())
+        if (settings) {
+          // Sync theme from database
+          if (settings.theme && THEMES[settings.theme]) {
+            setTheme(settings.theme)
+            localStorage.setItem('theme', settings.theme)
+            applyThemeColors(settings.theme)
+          }
+          
+          // Sync dark mode from database
+          if (typeof settings.dark_mode === 'boolean') {
+            applyDarkMode(settings.dark_mode)
+            localStorage.setItem('globalDarkMode', settings.dark_mode.toString())
+          }
         }
       } catch (error) {
         console.warn('Could not load theme preferences:', error)
