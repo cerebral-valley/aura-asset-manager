@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.145',
+  version: 'v0.146',
   buildDate: '2025-01-28',
-  deploymentId: 'goals-api-fix',
-  description: 'Fixed Goals API HTTP/HTTPS and trailing slash issues for CSP compliance'
+  deploymentId: 'complete-goals-system',
+  description: 'Complete Goals system implementation: CRUD operations, goal completion, progress tracking, asset selection fixes, comprehensive UI enhancements'
 }
 
 export const getVersionDisplay = () => {

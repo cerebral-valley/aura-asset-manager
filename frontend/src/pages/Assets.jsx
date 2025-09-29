@@ -232,16 +232,26 @@ const Assets = () => {
     },
   })
 
-  // Handle goal assignment toggle
+  // Handle goal assignment toggle with improved error handling
   const handleGoalToggle = async (assetId, currentValue) => {
+    // Prevent multiple simultaneous toggles
+    if (updateAssetMutation.isPending) {
+      console.warn('Asset update already in progress, ignoring toggle')
+      return
+    }
+
     try {
+      console.log(`🔄 Toggling goal assignment for asset ${assetId}: ${currentValue} -> ${!currentValue}`)
+      
       await updateAssetMutation.mutateAsync({
         id: assetId,
         assetData: { is_selected_for_goal: !currentValue }
       })
+      
+      console.log(`✅ Successfully toggled goal assignment for asset ${assetId}`)
     } catch (error) {
-      console.error('Failed to toggle goal assignment:', error)
-      toast.error('Failed to update goal assignment')
+      console.error('❌ Failed to toggle goal assignment:', error)
+      toast.error(`Failed to ${!currentValue ? 'assign to' : 'remove from'} goals: ${error.response?.data?.detail || error.message}`)
     }
   }
 
@@ -1403,16 +1413,21 @@ const Assets = () => {
                               onChange={() => handleGoalToggle(asset.id, asset.is_selected_for_goal)}
                               disabled={updateAssetMutation.isPending}
                             />
-                            <div className={`w-11 h-6 rounded-full ${
+                            <div className={`w-11 h-6 rounded-full transition-all duration-200 ${
+                              updateAssetMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''
+                            } ${
                               asset.is_selected_for_goal 
                                 ? 'bg-blue-600' 
                                 : isDark ? 'bg-gray-600' : 'bg-gray-200'
-                            } relative transition-colors duration-200 ease-in-out ${
-                              updateAssetMutation.isPending ? 'opacity-50' : ''
-                            }`}>
+                            } relative transition-colors duration-200 ease-in-out`}>
                               <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 ease-in-out ${
                                 asset.is_selected_for_goal ? 'translate-x-5' : 'translate-x-0'
-                              }`} />
+                              } ${updateAssetMutation.isPending ? 'animate-pulse' : ''}`} />
+                              {updateAssetMutation.isPending && (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                              )}
                             </div>
                           </label>
                         </td>
