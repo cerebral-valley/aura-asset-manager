@@ -117,6 +117,7 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
   const navigation = [
     { name: 'Dashboard', href: '/', icon: Home, id: 'dashboard' },
     { name: 'Assets', href: '/portfolio', icon: Briefcase, id: 'assets' },
+    { name: 'Goals', href: '/goals', icon: Target, id: 'goals' },
     { name: 'Insurance', href: '/insurance', icon: Shield, id: 'insurance' },
     { name: 'Transactions', href: '/transactions', icon: ArrowRightLeft, id: 'transactions' },
     { name: 'Analytics', href: '/analytics', icon: BarChart3, id: 'analytics' },

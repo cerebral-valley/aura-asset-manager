@@ -232,6 +232,19 @@ const Assets = () => {
     },
   })
 
+  // Handle goal assignment toggle
+  const handleGoalToggle = async (assetId, currentValue) => {
+    try {
+      await updateAssetMutation.mutateAsync({
+        id: assetId,
+        assetData: { is_selected_for_goal: !currentValue }
+      })
+    } catch (error) {
+      console.error('Failed to toggle goal assignment:', error)
+      toast.error('Failed to update goal assignment')
+    }
+  }
+
   // Calculate overall loading state
   const loading = assetsLoading || transactionsLoading;
   const criticalError = assetsError || transactionsError;
@@ -1360,6 +1373,7 @@ const Assets = () => {
                       Asset Purpose {sortField === 'asset_purpose' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
                     <th className="text-left py-2 px-4">Notes</th>
+                    <th className="text-left py-2 px-4">Assign to Goals</th>
                     <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('share_percentage')}>
                       % Share {sortField === 'share_percentage' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
@@ -1380,6 +1394,28 @@ const Assets = () => {
                         <td className="py-2 px-4">{asset.time_horizon ? asset.time_horizon.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : '-'}</td>
                         <td className="py-2 px-4">{asset.asset_purpose ? asset.asset_purpose.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : '-'}</td>
                         <td className="py-2 px-4">{asset.description || '-'}</td>
+                        <td className="py-2 px-4">
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              className="sr-only"
+                              checked={asset.is_selected_for_goal || false}
+                              onChange={() => handleGoalToggle(asset.id, asset.is_selected_for_goal)}
+                              disabled={updateAssetMutation.isPending}
+                            />
+                            <div className={`w-11 h-6 rounded-full ${
+                              asset.is_selected_for_goal 
+                                ? 'bg-blue-600' 
+                                : isDark ? 'bg-gray-600' : 'bg-gray-200'
+                            } relative transition-colors duration-200 ease-in-out ${
+                              updateAssetMutation.isPending ? 'opacity-50' : ''
+                            }`}>
+                              <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 ease-in-out ${
+                                asset.is_selected_for_goal ? 'translate-x-5' : 'translate-x-0'
+                              }`} />
+                            </div>
+                          </label>
+                        </td>
                         <td className="py-2 px-4">{formatPercentage(getPresentValue(asset), filteredTotalPresent)}</td>
                       </tr>
                     </React.Fragment>
@@ -1396,6 +1432,7 @@ const Assets = () => {
                     <td className="py-2 px-4">-</td>
                     <td className="py-2 px-4">-</td>
                     <td className="py-2 px-4">{filteredAndSortedAssets.length} assets</td>
+                    <td className="py-2 px-4">-</td>
                     <td className="py-2 px-4">100%</td>
                   </tr>
                 </tbody>

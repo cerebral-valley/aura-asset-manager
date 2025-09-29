@@ -9,6 +9,7 @@ import { useQuerySync } from './lib/queryUtils'
 import LoginForm from './components/auth/LoginForm'
 import Dashboard from './pages/Dashboard'
 import Assets from './pages/Assets'
+import Goals from './pages/Goals'
 import Transactions from './pages/Transactions'
 import Insurance from './pages/Insurance'
 import Analytics from './pages/Analytics'
@@ -83,6 +84,7 @@ function AppContent() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/dashboard" element={<Navigate to="/" replace />} />
         <Route path="/portfolio" element={<AssetsPage />} />
+        <Route path="/goals" element={<Goals />} />
         <Route path="/insurance" element={<Insurance />} />
         <Route path="/transactions" element={<TransactionsPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />

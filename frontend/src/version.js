@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.143',
+  version: 'v0.144',
   buildDate: '2024-09-30',
-  deploymentId: 'goals-feature-backend-phase',
-  description: 'Phase 1-4: Complete backend API and services for Goals feature - database schema, models, schemas, endpoints, and frontend service layer'
+  deploymentId: 'goals-feature-ui-phase',
+  description: 'Phase 5-6: Added asset selection toggle switches and basic Goals page with Available Amount calculation, Net Worth Goal display, and Custom Goals sections'
 }
 
 export const getVersionDisplay = () => {
