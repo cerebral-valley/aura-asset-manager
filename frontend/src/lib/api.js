@@ -1,10 +1,10 @@
 import axios from 'axios'
 import { supabase } from './supabase'
 
-// Ensure HTTPS is always used - force HTTPS for security and CSP compliance
+// Force HTTPS for security and CSP compliance - CRITICAL for Goals API
 const rawUrl = import.meta.env.VITE_API_BASE_URL || 'https://aura-asset-manager-production.up.railway.app/api/v1'
-// TEMPORARY: Force HTTPS URL to resolve CSP violations
-const API_BASE_URL = 'https://aura-asset-manager-production.up.railway.app/api/v1'
+// Ensure URL is always HTTPS regardless of environment variable
+const API_BASE_URL = rawUrl.replace(/^http:/, 'https:')
 
 // Debug log to ensure correct URL (remove in production)
 if (import.meta.env.DEV) {

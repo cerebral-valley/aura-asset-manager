@@ -15,7 +15,7 @@ from uuid import UUID
 
 router = APIRouter()
 
-@router.get("/", response_model=List[UserGoalSchema])
+@router.get("", response_model=List[UserGoalSchema])
 async def get_goals(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
@@ -35,7 +35,7 @@ async def get_goals(
     
     return goals
 
-@router.post("/", response_model=UserGoalSchema)
+@router.post("", response_model=UserGoalSchema)
 async def create_goal(
     goal_data: UserGoalCreate,
     current_user: User = Depends(get_current_active_user),

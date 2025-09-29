@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.144',
-  buildDate: '2024-09-30',
-  deploymentId: 'goals-feature-ui-phase',
-  description: 'Phase 5-6: Added asset selection toggle switches and basic Goals page with Available Amount calculation, Net Worth Goal display, and Custom Goals sections'
+  version: 'v0.145',
+  buildDate: '2025-01-28',
+  deploymentId: 'goals-api-fix',
+  description: 'Fixed Goals API HTTP/HTTPS and trailing slash issues for CSP compliance'
 }
 
 export const getVersionDisplay = () => {
