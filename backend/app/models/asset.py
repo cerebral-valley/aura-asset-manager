@@ -35,6 +35,7 @@ class Asset(Base):
     # Asset selection fields for targets functionality
     liquid_assets = Column(Boolean, default=False)  # Whether this asset can be used in liquid calculations
     is_selected = Column(Boolean, default=False)  # Whether this asset is currently selected for targets
+    is_selected_for_goal = Column(Boolean, default=False)  # Whether this asset is selected for goals calculation
     time_horizon = Column(Text)  # Investment time horizon: 'short_term', 'medium_term', 'long_term'
     asset_purpose = Column(Text)  # Investment purpose: 'Hyper Growth', 'Growth', 'Financial Security', 'Emergency Fund', 'Children's Education', 'Retirement Fund'
     

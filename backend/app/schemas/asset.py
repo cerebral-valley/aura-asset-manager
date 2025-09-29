@@ -29,6 +29,7 @@ class AssetBase(BaseModel):
     # Asset selection fields for targets functionality
     liquid_assets: Optional[bool] = False
     is_selected: Optional[bool] = False
+    is_selected_for_goal: Optional[bool] = False
     time_horizon: Optional[str] = None
     asset_purpose: Optional[str] = None
     
@@ -67,6 +68,7 @@ class AssetUpdate(BaseModel):
     # Asset selection fields for targets functionality
     liquid_assets: Optional[bool] = None
     is_selected: Optional[bool] = None
+    is_selected_for_goal: Optional[bool] = None
     time_horizon: Optional[str] = None
     asset_purpose: Optional[str] = None
     

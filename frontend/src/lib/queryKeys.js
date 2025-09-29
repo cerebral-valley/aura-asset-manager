@@ -45,6 +45,16 @@ export const queryKeys = {
     detail: (id) => [...queryKeys.insurance.baseKey, 'detail', id],
   },
 
+  // Goals-related queries
+  goals: {
+    baseKey: ['aura', 'goals'],
+    all: () => [...queryKeys.goals.baseKey],
+    list: (includeCompleted = false) => [...queryKeys.goals.baseKey, 'list', { includeCompleted }],
+    detail: (id) => [...queryKeys.goals.baseKey, 'detail', id],
+    active: () => [...queryKeys.goals.baseKey, 'active'],
+    completed: () => [...queryKeys.goals.baseKey, 'completed'],
+  },
+
   // Dashboard and aggregated queries
   dashboard: {
     baseKey: ['aura', 'dashboard'],
@@ -119,6 +129,17 @@ export const invalidationHelpers = {
   // Invalidate insurance data (independent of assets/transactions)
   invalidateInsurance: (queryClient) => {
     queryClient.invalidateQueries({ queryKey: queryKeys.insurance.baseKey })
+  },
+
+  // Invalidate goals data
+  invalidateGoals: (queryClient) => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.goals.baseKey })
+  },
+
+  // When goals change, also invalidate dashboard summaries
+  invalidateGoalsAndDashboard: (queryClient) => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.goals.baseKey })
+    queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.baseKey })
   },
 
   // Invalidate dashboard summaries (use when underlying data changes)
