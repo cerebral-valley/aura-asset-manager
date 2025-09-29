@@ -26,7 +26,7 @@ const UserSettings = () => {
   if (!apiClient) warn('UserSettings:import', 'apiClient not available');
   
   const { user } = useAuth()
-  const { darkMode, setDarkMode, theme } = useTheme()
+  const { darkMode, setDarkMode, theme, changeTheme } = useTheme()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState('')
@@ -259,6 +259,14 @@ const UserSettings = () => {
     fetchSettings()
   }, [])
 
+  // Sync theme changes from ThemeSelector to settings state
+  useEffect(() => {
+    setSettings(prev => ({
+      ...prev,
+      theme: theme
+    }))
+  }, [theme])
+
   const fetchSettings = async () => {
     try {
       setLoading(true)
@@ -271,7 +279,11 @@ const UserSettings = () => {
       if (data && typeof data.dark_mode === 'boolean') {
         setDarkMode(data.dark_mode)
       }
-      // Sync theme with theme context - theme change will be handled by ThemeContext useEffect
+      // Sync theme with theme context - make sure settings state reflects current theme
+      setSettings(prev => ({
+        ...prev,
+        theme: theme
+      }))
     } catch (err) {
       error('UserSettings:fetchSettings:error', 'Error fetching settings', {
         message: err.message,
@@ -298,7 +310,15 @@ const UserSettings = () => {
       setError('')
       setSuccess('')
 
+      // Save settings to database
       await userSettingsService.saveSettings(settings)
+      
+      // If theme changed, also call the ThemeContext changeTheme function
+      // to ensure database consistency
+      if (settings.theme && settings.theme !== theme) {
+        await changeTheme(settings.theme)
+      }
+      
       setSuccess('Settings saved successfully!')
       
       // Update localStorage to apply changes immediately

@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.137',
+  version: 'v0.138',
   buildDate: '2024-12-29',
-  deploymentId: 'theme-persistence-fix',
-  description: 'Implemented theme persistence across login sessions, database integration, matrix optimization'
+  deploymentId: 'theme-persistence-debug',
+  description: 'Fixed theme save synchronization between ThemeSelector and UserSettings components'
 }
 
 export const getVersionDisplay = () => {
