@@ -17,7 +17,7 @@ export const annuityService = {
   // Get portfolio summary
   getPortfolioSummary: async (config = {}) => {
     try {
-      const response = await api.get('/annuities/summary/', config);
+      const response = await api.get('/annuities/summary', config);
       return response.data;
     } catch (error) {
       console.error('Error fetching portfolio summary:', error);
@@ -28,7 +28,7 @@ export const annuityService = {
   // Get single annuity
   getAnnuity: async (annuityId, config = {}) => {
     try {
-      const response = await api.get(`/annuities/${annuityId}/`, config);
+      const response = await api.get(`/annuities/${annuityId}`, config);
       return response.data;
     } catch (error) {
       console.error('Error fetching annuity:', error);
@@ -39,7 +39,7 @@ export const annuityService = {
   // Create new annuity
   createAnnuity: async (annuityData, config = {}) => {
     try {
-      const response = await api.post('/annuities/', annuityData, config);
+      const response = await api.post('/annuities', annuityData, config);
       return response.data;
     } catch (error) {
       console.error('Error creating annuity:', error);
@@ -50,7 +50,7 @@ export const annuityService = {
   // Update annuity
   updateAnnuity: async (annuityId, updateData, config = {}) => {
     try {
-      const response = await api.put(`/annuities/${annuityId}/`, updateData, config);
+      const response = await api.put(`/annuities/${annuityId}`, updateData, config);
       return response.data;
     } catch (error) {
       console.error('Error updating annuity:', error);
@@ -61,7 +61,7 @@ export const annuityService = {
   // Delete annuity
   deleteAnnuity: async (annuityId, config = {}) => {
     try {
-      const response = await api.delete(`/annuities/${annuityId}/`, config);
+      const response = await api.delete(`/annuities/${annuityId}`, config);
       return response.data;
     } catch (error) {
       console.error('Error deleting annuity:', error);
@@ -72,7 +72,7 @@ export const annuityService = {
   // Contribution management
   addContribution: async (annuityId, contributionData, config = {}) => {
     try {
-      const response = await api.post(`/annuities/${annuityId}/contributions/`, contributionData, config);
+      const response = await api.post(`/annuities/${annuityId}/contributions`, contributionData, config);
       return response.data;
     } catch (error) {
       console.error('Error adding contribution:', error);
@@ -82,7 +82,7 @@ export const annuityService = {
 
   getContributions: async (annuityId, config = {}) => {
     try {
-      const response = await api.get(`/annuities/${annuityId}/contributions/`, config);
+      const response = await api.get(`/annuities/${annuityId}/contributions`, config);
       return response.data;
     } catch (error) {
       console.error('Error fetching contributions:', error);
@@ -93,7 +93,7 @@ export const annuityService = {
   // Valuation management
   addValuation: async (annuityId, valuationData, config = {}) => {
     try {
-      const response = await api.post(`/annuities/${annuityId}/valuations/`, valuationData, config);
+      const response = await api.post(`/annuities/${annuityId}/valuations`, valuationData, config);
       return response.data;
     } catch (error) {
       console.error('Error adding valuation:', error);
@@ -103,7 +103,7 @@ export const annuityService = {
 
   getValuations: async (annuityId, limit = 50, config = {}) => {
     try {
-      const response = await api.get(`/annuities/${annuityId}/valuations/?limit=${limit}`, config);
+      const response = await api.get(`/annuities/${annuityId}/valuations?limit=${limit}`, config);
       return response.data;
     } catch (error) {
       console.error('Error fetching valuations:', error);
@@ -114,7 +114,7 @@ export const annuityService = {
   // Performance metrics
   getPerformance: async (annuityId, config = {}) => {
     try {
-      const response = await api.get(`/annuities/${annuityId}/performance/`, config);
+      const response = await api.get(`/annuities/${annuityId}/performance`, config);
       return response.data;
     } catch (error) {
       console.error('Error fetching performance:', error);

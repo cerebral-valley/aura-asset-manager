@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.139',
+  version: 'v0.140',
   buildDate: '2024-12-29',
-  deploymentId: 'typescript-migration-analysis',
-  description: 'Provided comprehensive TypeScript migration strategy with 3-4 day AI agent timeline analysis'
+  deploymentId: 'annuities-api-fix',
+  description: 'Fixed annuities API trailing slash issues causing CORS and HTTPS redirect problems'
 }
 
 export const getVersionDisplay = () => {
