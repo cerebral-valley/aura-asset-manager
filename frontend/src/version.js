@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.140',
+  version: 'v0.141',
   buildDate: '2024-12-29',
-  deploymentId: 'annuities-api-fix',
-  description: 'Fixed annuities API trailing slash issues causing CORS and HTTPS redirect problems'
+  deploymentId: 'annuities-comprehensive-fix',
+  description: 'Fixed annuities functionality - all CRUD operations working, comprehensive testing completed'
 }
 
 export const getVersionDisplay = () => {
