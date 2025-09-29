@@ -197,6 +197,71 @@ const generateMultiPagePDF = async (pdf, canvas, pdfWidth, pdfHeight) => {
 }
 
 /**
+ * Generate matrix rows for asset distribution
+ */
+const generateMatrixRows = (assets, formatCurrency) => {
+  const timeHorizons = [
+    { value: 'short_term', label: 'Short Term (< 1 year)' },
+    { value: 'medium_term', label: 'Medium Term (1-3 years)' },
+    { value: 'long_term', label: 'Long Term (> 3 years)' }
+  ];
+  
+  const assetPurposes = [
+    'childrens_education',
+    'emergency_fund', 
+    'financial_security',
+    'growth',
+    'hyper_growth',
+    'retirement_fund',
+    'speculation'
+  ];
+
+  // Build matrix data
+  const matrix = {};
+  timeHorizons.forEach(horizon => {
+    matrix[horizon.value] = {};
+    assetPurposes.forEach(purpose => {
+      matrix[horizon.value][purpose] = {
+        count: 0,
+        value: 0
+      };
+    });
+  });
+
+  // Populate matrix with asset data
+  assets.forEach(asset => {
+    const horizon = asset.time_horizon || 'short_term';
+    const purpose = asset.asset_purpose || 'speculation';
+    
+    if (matrix[horizon] && matrix[horizon][purpose]) {
+      matrix[horizon][purpose].count++;
+      matrix[horizon][purpose].value += Number(asset.current_value || asset.initial_value || 0);
+    }
+  });
+
+  // Generate rows
+  return timeHorizons.map(horizon => {
+    const cells = assetPurposes.map(purpose => {
+      const cellData = matrix[horizon.value][purpose];
+      const hasData = cellData.count > 0;
+      
+      return `
+        <td style="padding: 6px; text-align: center; border: 1px solid #ccc; background: ${hasData ? '#e3f2fd' : '#f9f9f9'};">
+          ${hasData ? `${cellData.count} assets<br/>${formatCurrency(cellData.value)}` : '-'}
+        </td>
+      `;
+    }).join('');
+    
+    return `
+      <tr style="border: 1px solid #ccc;">
+        <td style="padding: 6px; border: 1px solid #ccc; font-weight: bold; background: #f1f5f9;">${horizon.label}</td>
+        ${cells}
+      </tr>
+    `;
+  }).join('');
+};
+
+/**
  * Generate the HTML content for the PDF
  */
 const generatePDFContent = ({
@@ -296,16 +361,19 @@ const generatePDFContent = ({
         <h3 style="font-size: 16px; font-weight: bold; margin: 0 0 15px 0; color: #000; border-bottom: 1px solid #ccc; padding-bottom: 5px;">
           Individual Assets (${assets.length} total)
         </h3>
-        <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
           <thead>
             <tr style="background: #f1f5f9; border: 1px solid #ccc;">
-              <th style="padding: 6px; text-align: left; font-weight: bold; border: 1px solid #ccc;">Asset Name</th>
-              <th style="padding: 6px; text-align: left; font-weight: bold; border: 1px solid #ccc;">Type</th>
-              <th style="padding: 6px; text-align: center; font-weight: bold; border: 1px solid #ccc;">Purchase Date</th>
-              <th style="padding: 6px; text-align: right; font-weight: bold; border: 1px solid #ccc;">Quantity</th>
-              <th style="padding: 6px; text-align: right; font-weight: bold; border: 1px solid #ccc;">Acquisition Value</th>
-              <th style="padding: 6px; text-align: right; font-weight: bold; border: 1px solid #ccc;">Current Value</th>
-              <th style="padding: 6px; text-align: right; font-weight: bold; border: 1px solid #ccc;">Gain/Loss</th>
+              <th style="padding: 5px; text-align: left; font-weight: bold; border: 1px solid #ccc;">Asset Name</th>
+              <th style="padding: 5px; text-align: left; font-weight: bold; border: 1px solid #ccc;">Type</th>
+              <th style="padding: 5px; text-align: center; font-weight: bold; border: 1px solid #ccc;">Purchase Date</th>
+              <th style="padding: 5px; text-align: center; font-weight: bold; border: 1px solid #ccc;">Liquidity</th>
+              <th style="padding: 5px; text-align: center; font-weight: bold; border: 1px solid #ccc;">Time Horizon</th>
+              <th style="padding: 5px; text-align: center; font-weight: bold; border: 1px solid #ccc;">Purpose</th>
+              <th style="padding: 5px; text-align: right; font-weight: bold; border: 1px solid #ccc;">Quantity</th>
+              <th style="padding: 5px; text-align: right; font-weight: bold; border: 1px solid #ccc;">Acquisition Value</th>
+              <th style="padding: 5px; text-align: right; font-weight: bold; border: 1px solid #ccc;">Current Value</th>
+              <th style="padding: 5px; text-align: right; font-weight: bold; border: 1px solid #ccc;">Gain/Loss</th>
             </tr>
           </thead>
           <tbody>
@@ -315,15 +383,47 @@ const generatePDFContent = ({
               const gainLoss = currentValue - acquisitionValue
               const gainLossPercent = acquisitionValue > 0 ? ((gainLoss / acquisitionValue) * 100).toFixed(1) : '0.0'
               
+              // Helper functions for display labels
+              const getLiquidityLabel = (liquidAssets) => {
+                if (liquidAssets === true || liquidAssets === 'true') return 'Liquid';
+                if (liquidAssets === false || liquidAssets === 'false') return 'Not Liquid';
+                return liquidAssets ? 'Liquid' : 'Not Liquid';
+              };
+              
+              const getTimeHorizonLabel = (timeHorizon) => {
+                switch(timeHorizon) {
+                  case 'short_term': return 'Short Term';
+                  case 'medium_term': return 'Medium Term';
+                  case 'long_term': return 'Long Term';
+                  default: return timeHorizon || 'N/A';
+                }
+              };
+              
+              const getAssetPurposeLabel = (assetPurpose) => {
+                const purposeLabels = {
+                  'hyper_growth': 'Hyper Growth',
+                  'growth': 'Growth',
+                  'financial_security': 'Financial Security',
+                  'emergency_fund': 'Emergency Fund',
+                  'childrens_education': "Children's Education",
+                  'retirement_fund': 'Retirement Fund',
+                  'speculation': 'Speculation'
+                };
+                return purposeLabels[assetPurpose] || assetPurpose || 'N/A';
+              };
+              
               return `
                 <tr style="border: 1px solid #ccc;">
-                  <td style="padding: 6px; border: 1px solid #ccc; font-weight: 500;">${asset.name || 'N/A'}</td>
-                  <td style="padding: 6px; border: 1px solid #ccc;">${asset.asset_type || 'N/A'}</td>
-                  <td style="padding: 6px; text-align: center; border: 1px solid #ccc;">${asset.purchase_date ? formatDate(asset.purchase_date) : 'N/A'}</td>
-                  <td style="padding: 6px; text-align: right; border: 1px solid #ccc;">${asset.quantity || 'N/A'}</td>
-                  <td style="padding: 6px; text-align: right; border: 1px solid #ccc;">${formatCurrency(acquisitionValue)}</td>
-                  <td style="padding: 6px; text-align: right; border: 1px solid #ccc;">${formatCurrency(currentValue)}</td>
-                  <td style="padding: 6px; text-align: right; border: 1px solid #ccc; color: ${gainLoss >= 0 ? '#16a34a' : '#dc2626'};">
+                  <td style="padding: 5px; border: 1px solid #ccc; font-weight: 500;">${asset.name || 'N/A'}</td>
+                  <td style="padding: 5px; border: 1px solid #ccc;">${asset.asset_type || 'N/A'}</td>
+                  <td style="padding: 5px; text-align: center; border: 1px solid #ccc;">${asset.purchase_date ? formatDate(asset.purchase_date) : 'N/A'}</td>
+                  <td style="padding: 5px; text-align: center; border: 1px solid #ccc;">${getLiquidityLabel(asset.liquid_assets)}</td>
+                  <td style="padding: 5px; text-align: center; border: 1px solid #ccc;">${getTimeHorizonLabel(asset.time_horizon)}</td>
+                  <td style="padding: 5px; text-align: center; border: 1px solid #ccc;">${getAssetPurposeLabel(asset.asset_purpose)}</td>
+                  <td style="padding: 5px; text-align: right; border: 1px solid #ccc;">${asset.quantity || 'N/A'}</td>
+                  <td style="padding: 5px; text-align: right; border: 1px solid #ccc;">${formatCurrency(acquisitionValue)}</td>
+                  <td style="padding: 5px; text-align: right; border: 1px solid #ccc;">${formatCurrency(currentValue)}</td>
+                  <td style="padding: 5px; text-align: right; border: 1px solid #ccc; color: ${gainLoss >= 0 ? '#16a34a' : '#dc2626'};">
                     ${formatCurrency(gainLoss)} (${gainLossPercent}%)
                   </td>
                 </tr>
@@ -363,6 +463,53 @@ const generatePDFContent = ({
           </table>
         </div>
       ` : ''}
+
+      <!-- Asset Distribution Matrix -->
+      <div style="margin-bottom: 30px;">
+        <h3 style="font-size: 16px; font-weight: bold; margin: 0 0 15px 0; color: #000; border-bottom: 1px solid #ccc; padding-bottom: 5px;">
+          Asset Distribution Matrix
+        </h3>
+        <div style="margin-bottom: 20px;">
+          <h4 style="font-size: 14px; font-weight: bold; margin: 0 0 10px 0; color: #333;">Liquid Assets Distribution</h4>
+          <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 20px;">
+            <thead>
+              <tr style="background: #f1f5f9; border: 1px solid #ccc;">
+                <th style="padding: 6px; text-align: left; font-weight: bold; border: 1px solid #ccc;">Time Horizon</th>
+                <th style="padding: 6px; text-align: center; font-weight: bold; border: 1px solid #ccc;">Children's Education</th>
+                <th style="padding: 6px; text-align: center; font-weight: bold; border: 1px solid #ccc;">Emergency Fund</th>
+                <th style="padding: 6px; text-align: center; font-weight: bold; border: 1px solid #ccc;">Financial Security</th>
+                <th style="padding: 6px; text-align: center; font-weight: bold; border: 1px solid #ccc;">Growth</th>
+                <th style="padding: 6px; text-align: center; font-weight: bold; border: 1px solid #ccc;">Hyper Growth</th>
+                <th style="padding: 6px; text-align: center; font-weight: bold; border: 1px solid #ccc;">Retirement Fund</th>
+                <th style="padding: 6px; text-align: center; font-weight: bold; border: 1px solid #ccc;">Speculation</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${generateMatrixRows(assets.filter(a => a.liquid_assets === true || a.liquid_assets === 'true'), formatCurrency)}
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <h4 style="font-size: 14px; font-weight: bold; margin: 0 0 10px 0; color: #333;">Illiquid Assets Distribution</h4>
+          <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+            <thead>
+              <tr style="background: #f1f5f9; border: 1px solid #ccc;">
+                <th style="padding: 6px; text-align: left; font-weight: bold; border: 1px solid #ccc;">Time Horizon</th>
+                <th style="padding: 6px; text-align: center; font-weight: bold; border: 1px solid #ccc;">Children's Education</th>
+                <th style="padding: 6px; text-align: center; font-weight: bold; border: 1px solid #ccc;">Emergency Fund</th>
+                <th style="padding: 6px; text-align: center; font-weight: bold; border: 1px solid #ccc;">Financial Security</th>
+                <th style="padding: 6px; text-align: center; font-weight: bold; border: 1px solid #ccc;">Growth</th>
+                <th style="padding: 6px; text-align: center; font-weight: bold; border: 1px solid #ccc;">Hyper Growth</th>
+                <th style="padding: 6px; text-align: center; font-weight: bold; border: 1px solid #ccc;">Retirement Fund</th>
+                <th style="padding: 6px; text-align: center; font-weight: bold; border: 1px solid #ccc;">Speculation</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${generateMatrixRows(assets.filter(a => a.liquid_assets === false || a.liquid_assets === 'false'), formatCurrency)}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       <!-- Footer/Disclaimer -->
       <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ccc; font-size: 10px; color: #666; text-align: center;">

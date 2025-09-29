@@ -280,20 +280,51 @@ export const exportAssetsToPDF = async (data) => {
       yPosition += 6
     }
 
-    // Asset Performance Table
-    const assetHeaders = ['ASSET_NAME', 'TYPE', 'INITIAL', 'CURRENT', 'RETURN_%', 'STATUS']
-    const assetRows = assets.slice(0, 20).map(asset => { // Limit to first 20 assets for space
+    // Asset Performance Table with Liquidity, Time Horizon, and Purpose
+    const assetHeaders = ['ASSET_NAME', 'TYPE', 'LIQUIDITY', 'TIME_HORIZON', 'PURPOSE', 'INITIAL', 'CURRENT', 'RETURN_%']
+    const assetRows = assets.slice(0, 15).map(asset => { // Limit to first 15 assets for space with new columns
       const initial = getNumericValue(asset.initial_value)
       const current = getNumericValue(asset.current_value || asset.initial_value)
       const returnPct = initial > 0 ? ((current - initial) / initial * 100) : 0
       
+      // Helper functions for display labels
+      const getLiquidityLabel = (liquidAssets) => {
+        if (liquidAssets === true || liquidAssets === 'true') return 'LIQUID';
+        if (liquidAssets === false || liquidAssets === 'false') return 'ILLIQUID';
+        return liquidAssets ? 'LIQUID' : 'ILLIQUID';
+      };
+      
+      const getTimeHorizonLabel = (timeHorizon) => {
+        switch(timeHorizon) {
+          case 'short_term': return 'SHORT';
+          case 'medium_term': return 'MEDIUM';
+          case 'long_term': return 'LONG';
+          default: return 'SHORT';
+        }
+      };
+      
+      const getAssetPurposeLabel = (assetPurpose) => {
+        const purposeLabels = {
+          'hyper_growth': 'HYPER_GRW',
+          'growth': 'GROWTH',
+          'financial_security': 'FIN_SEC',
+          'emergency_fund': 'EMERGENCY',
+          'childrens_education': 'EDUCATION',
+          'retirement_fund': 'RETIRE',
+          'speculation': 'SPECULATE'
+        };
+        return purposeLabels[assetPurpose] || 'SPECULATE';
+      };
+      
       return [
-        (asset.name || 'UNNAMED').substring(0, 12),
+        (asset.name || 'UNNAMED').substring(0, 10),
         (asset.asset_type || 'UNKNOWN').substring(0, 8),
-        formatNumber(initial).substring(0, 10),
-        formatNumber(current).substring(0, 10),
-        returnPct.toFixed(1),
-        returnPct > 0 ? 'PROFIT' : returnPct < 0 ? 'LOSS' : 'NEUTRAL'
+        getLiquidityLabel(asset.liquid_assets).substring(0, 8),
+        getTimeHorizonLabel(asset.time_horizon).substring(0, 8),
+        getAssetPurposeLabel(asset.asset_purpose).substring(0, 10),
+        formatNumber(initial).substring(0, 8),
+        formatNumber(current).substring(0, 8),
+        returnPct.toFixed(1)
       ]
     })
 
@@ -302,7 +333,7 @@ export const exportAssetsToPDF = async (data) => {
       yPosition = 15
     }
 
-    const assetTable = createASCIITable(assetHeaders, assetRows, 'TOP ASSETS PERFORMANCE')
+    const assetTable = createASCIITable(assetHeaders, assetRows, 'ASSETS WITH LIQUIDITY & ALLOCATION')
     assetTable.forEach(line => {
       if (yPosition > pageHeight - 15) {
         pdf.addPage()
@@ -311,6 +342,127 @@ export const exportAssetsToPDF = async (data) => {
       yPosition = addMonospaceText(line, margin, yPosition, { fontSize: 7 })
     })
     yPosition += 6
+
+    // Asset Distribution Matrix
+    if (yPosition > pageHeight - 120) {
+      pdf.addPage()
+      yPosition = 15
+    }
+
+    // Generate matrix data
+    const timeHorizons = [
+      { value: 'short_term', label: 'SHORT_TERM' },
+      { value: 'medium_term', label: 'MEDIUM_TERM' },
+      { value: 'long_term', label: 'LONG_TERM' }
+    ];
+    
+    const assetPurposes = [
+      { value: 'childrens_education', label: 'EDUCATION' },
+      { value: 'emergency_fund', label: 'EMERGENCY' },
+      { value: 'financial_security', label: 'FIN_SEC' },
+      { value: 'growth', label: 'GROWTH' },
+      { value: 'hyper_growth', label: 'HYPER_GRW' },
+      { value: 'retirement_fund', label: 'RETIRE' },
+      { value: 'speculation', label: 'SPECULATE' }
+    ];
+
+    // Build matrix for liquid assets
+    const liquidAssets = assets.filter(a => a.liquid_assets === true || a.liquid_assets === 'true');
+    const liquidMatrix = {};
+    timeHorizons.forEach(horizon => {
+      liquidMatrix[horizon.value] = {};
+      assetPurposes.forEach(purpose => {
+        liquidMatrix[horizon.value][purpose.value] = {
+          count: 0,
+          value: 0
+        };
+      });
+    });
+
+    liquidAssets.forEach(asset => {
+      const horizon = asset.time_horizon || 'short_term';
+      const purpose = asset.asset_purpose || 'speculation';
+      
+      if (liquidMatrix[horizon] && liquidMatrix[horizon][purpose]) {
+        liquidMatrix[horizon][purpose].count++;
+        liquidMatrix[horizon][purpose].value += getNumericValue(asset.current_value || asset.initial_value || 0);
+      }
+    });
+
+    // Create Liquid Assets Matrix Table
+    pdf.setFont('courier', 'bold')
+    yPosition = addMonospaceText('LIQUID ASSETS DISTRIBUTION MATRIX', margin, yPosition, { fontSize: 9, bold: true })
+    pdf.setFont('courier', 'normal')
+    yPosition += 4
+
+    const matrixHeaders = ['TIME_HORIZON', ...assetPurposes.map(p => p.label.substring(0, 8))];
+    const liquidMatrixRows = timeHorizons.map(horizon => {
+      const row = [horizon.label];
+      assetPurposes.forEach(purpose => {
+        const cellData = liquidMatrix[horizon.value][purpose.value];
+        const hasData = cellData.count > 0;
+        row.push(hasData ? `${cellData.count}(${formatNumber(cellData.value).substring(0, 6)})` : '-');
+      });
+      return row;
+    });
+
+    const liquidMatrixTable = createASCIITable(matrixHeaders, liquidMatrixRows, '');
+    liquidMatrixTable.forEach(line => {
+      if (yPosition > pageHeight - 15) {
+        pdf.addPage()
+        yPosition = 15
+      }
+      yPosition = addMonospaceText(line, margin, yPosition, { fontSize: 6 })
+    })
+    yPosition += 6
+
+    // Illiquid Assets Matrix
+    const illiquidAssets = assets.filter(a => a.liquid_assets === false || a.liquid_assets === 'false');
+    const illiquidMatrix = {};
+    timeHorizons.forEach(horizon => {
+      illiquidMatrix[horizon.value] = {};
+      assetPurposes.forEach(purpose => {
+        illiquidMatrix[horizon.value][purpose.value] = {
+          count: 0,
+          value: 0
+        };
+      });
+    });
+
+    illiquidAssets.forEach(asset => {
+      const horizon = asset.time_horizon || 'short_term';
+      const purpose = asset.asset_purpose || 'speculation';
+      
+      if (illiquidMatrix[horizon] && illiquidMatrix[horizon][purpose]) {
+        illiquidMatrix[horizon][purpose].count++;
+        illiquidMatrix[horizon][purpose].value += getNumericValue(asset.current_value || asset.initial_value || 0);
+      }
+    });
+
+    pdf.setFont('courier', 'bold')
+    yPosition = addMonospaceText('ILLIQUID ASSETS DISTRIBUTION MATRIX', margin, yPosition, { fontSize: 9, bold: true })
+    pdf.setFont('courier', 'normal')
+    yPosition += 4
+
+    const illiquidMatrixRows = timeHorizons.map(horizon => {
+      const row = [horizon.label];
+      assetPurposes.forEach(purpose => {
+        const cellData = illiquidMatrix[horizon.value][purpose.value];
+        const hasData = cellData.count > 0;
+        row.push(hasData ? `${cellData.count}(${formatNumber(cellData.value).substring(0, 6)})` : '-');
+      });
+      return row;
+    });
+
+    const illiquidMatrixTable = createASCIITable(matrixHeaders, illiquidMatrixRows, '');
+    illiquidMatrixTable.forEach(line => {
+      if (yPosition > pageHeight - 15) {
+        pdf.addPage()
+        yPosition = 15
+      }
+      yPosition = addMonospaceText(line, margin, yPosition, { fontSize: 6 })
+    })
+    yPosition += 8
 
     // Risk Analysis Matrix
     const maxConcentration = Math.max(...aggregateByType.map(type => 

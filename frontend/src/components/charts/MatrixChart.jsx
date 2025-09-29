@@ -165,14 +165,37 @@ const MatrixChart = ({
           <div className="grid grid-cols-[120px_repeat(var(--cols),minmax(80px,1fr))] gap-0.5 mb-0.5"
                style={{ '--cols': assetPurposes.length }}>
             <div className="p-1"></div>
-            {assetPurposes.map(assetPurpose => (
-              <div key={assetPurpose} 
-                   className={`p-1 text-center rounded font-medium text-xs leading-tight ${isDark ? 'bg-neutral-800 text-neutral-300' : 'bg-gray-100 text-gray-700'}`}>
-                <div className="font-semibold whitespace-normal break-words text-xs leading-3">
-                  {getAssetPurposeLabel(assetPurpose)}
+            {assetPurposes.map(assetPurpose => {
+              const label = getAssetPurposeLabel(assetPurpose);
+              
+              // Helper function to split labels for better space utilization
+              const getWrappedLabel = (text) => {
+                const splitPatterns = {
+                  "Children's Education": ["Children's", "Education"],
+                  "Emergency Fund": ["Emergency", "Fund"],
+                  "Financial Security": ["Financial", "Security"],
+                  "Retirement Fund": ["Retirement", "Fund"],
+                  "Hyper Growth": ["Hyper", "Growth"]
+                };
+                
+                return splitPatterns[text] || [text];
+              };
+              
+              const wrappedLines = getWrappedLabel(label);
+              
+              return (
+                <div key={assetPurpose} 
+                     className={`p-1 text-center rounded font-medium text-xs leading-tight ${isDark ? 'bg-neutral-800 text-neutral-300' : 'bg-gray-100 text-gray-700'}`}>
+                  <div className="font-semibold text-xs leading-3 flex flex-col items-center justify-center h-8">
+                    {wrappedLines.map((line, index) => (
+                      <div key={index} className="leading-3">
+                        {line}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Matrix Rows */}

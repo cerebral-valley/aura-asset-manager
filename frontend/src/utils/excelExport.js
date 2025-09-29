@@ -122,7 +122,7 @@ export const exportToExcel = async (data) => {
     const assetsData = [
       ['INDIVIDUAL ASSET DETAILS'],
       [''],
-      ['Asset Name', 'Type', 'Purchase Date', 'Quantity', 'Unit Price', 'Initial Value', 'Current Value', 'Gain/Loss', 'Return %', 'Notes']
+      ['Asset Name', 'Type', 'Purchase Date', 'Liquidity Status', 'Time Horizon', 'Asset Purpose', 'Quantity', 'Unit Price', 'Initial Value', 'Current Value', 'Gain/Loss', 'Return %', 'Notes']
     ]
 
     assets.forEach(asset => {
@@ -132,10 +132,42 @@ export const exportToExcel = async (data) => {
       const returnPct = initialValue > 0 ? (gainLoss / initialValue * 100) : 0
       const unitPrice = asset.quantity && asset.quantity > 0 ? initialValue / asset.quantity : initialValue
 
+      // Helper functions for display labels
+      const getLiquidityLabel = (liquidAssets) => {
+        if (liquidAssets === true || liquidAssets === 'true') return 'Liquid';
+        if (liquidAssets === false || liquidAssets === 'false') return 'Not Liquid';
+        return liquidAssets ? 'Liquid' : 'Not Liquid';
+      };
+      
+      const getTimeHorizonLabel = (timeHorizon) => {
+        switch(timeHorizon) {
+          case 'short_term': return 'Short Term';
+          case 'medium_term': return 'Medium Term';
+          case 'long_term': return 'Long Term';
+          default: return timeHorizon || 'Short Term';
+        }
+      };
+      
+      const getAssetPurposeLabel = (assetPurpose) => {
+        const purposeLabels = {
+          'hyper_growth': 'Hyper Growth',
+          'growth': 'Growth',
+          'financial_security': 'Financial Security',
+          'emergency_fund': 'Emergency Fund',
+          'childrens_education': "Children's Education",
+          'retirement_fund': 'Retirement Fund',
+          'speculation': 'Speculation'
+        };
+        return purposeLabels[assetPurpose] || assetPurpose || 'Speculation';
+      };
+
       assetsData.push([
         asset.name || 'Unnamed Asset',
         asset.asset_type || 'Unknown',
         asset.purchase_date ? formatDate(asset.purchase_date) : 'N/A',
+        getLiquidityLabel(asset.liquid_assets),
+        getTimeHorizonLabel(asset.time_horizon),
+        getAssetPurposeLabel(asset.asset_purpose),
         asset.quantity || 1,
         unitPrice,
         initialValue,
@@ -148,21 +180,135 @@ export const exportToExcel = async (data) => {
 
     const assetsSheet = XLSX.utils.aoa_to_sheet(assetsData)
     assetsSheet['!cols'] = [
-      { width: 20 },
-      { width: 15 },
-      { width: 12 },
-      { width: 10 },
-      { width: 12 },
-      { width: 12 },
-      { width: 12 },
-      { width: 12 },
-      { width: 10 },
-      { width: 25 }
+      { width: 20 },  // Asset Name
+      { width: 15 },  // Type
+      { width: 12 },  // Purchase Date
+      { width: 12 },  // Liquidity Status
+      { width: 15 },  // Time Horizon
+      { width: 18 },  // Asset Purpose
+      { width: 10 },  // Quantity
+      { width: 12 },  // Unit Price
+      { width: 12 },  // Initial Value
+      { width: 12 },  // Current Value
+      { width: 12 },  // Gain/Loss
+      { width: 10 },  // Return %
+      { width: 25 }   // Notes
     ]
 
     XLSX.utils.book_append_sheet(workbook, assetsSheet, 'Individual Assets')
 
-    // Sheet 4: Performance Analysis
+    // Sheet 4: Asset Distribution Matrix
+    const matrixData = [
+      ['ASSET DISTRIBUTION MATRIX'],
+      [''],
+      ['LIQUID ASSETS DISTRIBUTION'],
+      ['Time Horizon', "Children's Education", 'Emergency Fund', 'Financial Security', 'Growth', 'Hyper Growth', 'Retirement Fund', 'Speculation']
+    ]
+
+    // Build matrix data
+    const timeHorizons = [
+      { value: 'short_term', label: 'Short Term (< 1 year)' },
+      { value: 'medium_term', label: 'Medium Term (1-3 years)' },
+      { value: 'long_term', label: 'Long Term (> 3 years)' }
+    ];
+    
+    const assetPurposes = [
+      'childrens_education',
+      'emergency_fund', 
+      'financial_security',
+      'growth',
+      'hyper_growth',
+      'retirement_fund',
+      'speculation'
+    ];
+
+    // Liquid Assets Matrix
+    const liquidAssets = assets.filter(a => a.liquid_assets === true || a.liquid_assets === 'true');
+    const liquidMatrix = {};
+    timeHorizons.forEach(horizon => {
+      liquidMatrix[horizon.value] = {};
+      assetPurposes.forEach(purpose => {
+        liquidMatrix[horizon.value][purpose] = {
+          count: 0,
+          value: 0
+        };
+      });
+    });
+
+    liquidAssets.forEach(asset => {
+      const horizon = asset.time_horizon || 'short_term';
+      const purpose = asset.asset_purpose || 'speculation';
+      
+      if (liquidMatrix[horizon] && liquidMatrix[horizon][purpose]) {
+        liquidMatrix[horizon][purpose].count++;
+        liquidMatrix[horizon][purpose].value += getNumericValue(asset.current_value || asset.initial_value || 0);
+      }
+    });
+
+    // Add liquid matrix rows
+    timeHorizons.forEach(horizon => {
+      const row = [horizon.label];
+      assetPurposes.forEach(purpose => {
+        const cellData = liquidMatrix[horizon.value][purpose];
+        const hasData = cellData.count > 0;
+        row.push(hasData ? `${cellData.count} assets (${formatCurrency ? formatCurrency(cellData.value) : cellData.value})` : '-');
+      });
+      matrixData.push(row);
+    });
+
+    matrixData.push(['']);
+    matrixData.push(['ILLIQUID ASSETS DISTRIBUTION']);
+    matrixData.push(['Time Horizon', "Children's Education", 'Emergency Fund', 'Financial Security', 'Growth', 'Hyper Growth', 'Retirement Fund', 'Speculation']);
+
+    // Illiquid Assets Matrix
+    const illiquidAssets = assets.filter(a => a.liquid_assets === false || a.liquid_assets === 'false');
+    const illiquidMatrix = {};
+    timeHorizons.forEach(horizon => {
+      illiquidMatrix[horizon.value] = {};
+      assetPurposes.forEach(purpose => {
+        illiquidMatrix[horizon.value][purpose] = {
+          count: 0,
+          value: 0
+        };
+      });
+    });
+
+    illiquidAssets.forEach(asset => {
+      const horizon = asset.time_horizon || 'short_term';
+      const purpose = asset.asset_purpose || 'speculation';
+      
+      if (illiquidMatrix[horizon] && illiquidMatrix[horizon][purpose]) {
+        illiquidMatrix[horizon][purpose].count++;
+        illiquidMatrix[horizon][purpose].value += getNumericValue(asset.current_value || asset.initial_value || 0);
+      }
+    });
+
+    // Add illiquid matrix rows
+    timeHorizons.forEach(horizon => {
+      const row = [horizon.label];
+      assetPurposes.forEach(purpose => {
+        const cellData = illiquidMatrix[horizon.value][purpose];
+        const hasData = cellData.count > 0;
+        row.push(hasData ? `${cellData.count} assets (${formatCurrency ? formatCurrency(cellData.value) : cellData.value})` : '-');
+      });
+      matrixData.push(row);
+    });
+
+    const matrixSheet = XLSX.utils.aoa_to_sheet(matrixData);
+    matrixSheet['!cols'] = [
+      { width: 25 },  // Time Horizon
+      { width: 18 },  // Children's Education
+      { width: 15 },  // Emergency Fund
+      { width: 18 },  // Financial Security
+      { width: 12 },  // Growth
+      { width: 15 },  // Hyper Growth
+      { width: 18 },  // Retirement Fund
+      { width: 15 }   // Speculation
+    ];
+
+    XLSX.utils.book_append_sheet(workbook, matrixSheet, 'Asset Distribution Matrix')
+
+    // Sheet 5: Performance Analysis
     const performanceData = [
       ['PERFORMANCE ANALYSIS'],
       [''],
@@ -232,7 +378,7 @@ export const exportToExcel = async (data) => {
 
     XLSX.utils.book_append_sheet(workbook, performanceSheet, 'Performance Analysis')
 
-    // Sheet 5: Risk Analysis
+    // Sheet 6: Risk Analysis
     const riskData = [
       ['RISK ANALYSIS REPORT'],
       [''],
@@ -274,7 +420,7 @@ export const exportToExcel = async (data) => {
 
     XLSX.utils.book_append_sheet(workbook, riskSheet, 'Risk Analysis')
 
-    // Sheet 6: Chart Data
+    // Sheet 7: Chart Data
     const chartDataSheet = []
     
     // Add value over time data if available
@@ -333,7 +479,7 @@ export const exportToExcel = async (data) => {
       XLSX.utils.book_append_sheet(workbook, chartSheet, 'Chart Data')
     }
 
-    // Sheet 7: AI Analysis Prompts
+    // Sheet 8: AI Analysis Prompts
     const promptsData = [
       ['AI ANALYSIS PROMPTS FOR PORTFOLIO OPTIMIZATION'],
       [''],
