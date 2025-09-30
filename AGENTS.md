@@ -88,8 +88,8 @@ After any GitHub push, **deployment verification approach**:
 - ❌ FAILED: [Specific issue found] - [recommendation for fix]
 
 ### Domain Models
-**Financial platform**: Assets (real_estate, stocks, annuities), Insurance, Transactions
-- UUID primary keys, JSONB metadata, payment schedules for annuities
+**Financial platform**: Assets (real_estate, stocks), Insurance, Transactions
+- UUID primary keys, JSONB metadata
 
 ## Project Mission & Workflow
 
@@ -109,7 +109,7 @@ After any GitHub push, **deployment verification approach**:
 - Missing auth token → 401 errors
 
 ### Asset Types & UX Focus
-- **Asset Types**: Real estate, stocks, annuities, insurance with JSONB metadata
+- **Asset Types**: Real estate, stocks, insurance with JSONB metadata
 - **UX Principle**: Simplicity over complexity, visual security, peace of mind
 - **Technical**: Supabase PostgreSQL, UUID primary keys, Railway deployment
 

@@ -25,13 +25,6 @@ class Asset(Base):
     quantity = Column(Numeric(18, 4))
     unit_of_measure = Column(Text)  # e.g., 'shares', 'oz', 'sqft', 'units'
     
-    # Annuity-specific fields
-    annuity_type = Column(Text)  # 'fixed', 'variable', 'indexed', 'immediate', 'deferred'
-    purchase_amount = Column(Numeric(18, 2))  # Initial lump sum paid for annuity
-    guaranteed_rate = Column(Numeric(5, 4))  # For fixed annuities (stored as decimal, e.g., 0.0525 for 5.25%)
-    accumulation_phase_end = Column(Date)  # When annuity payments start
-    has_payment_schedule = Column(Boolean, default=False)
-    
     # Asset selection fields for targets functionality
     liquid_assets = Column(Boolean, default=False)  # Whether this asset can be used in liquid calculations
     is_selected = Column(Boolean, default=False)  # Whether this asset is currently selected for targets

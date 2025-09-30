@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.140',
+  version: 'v0.141',
   buildDate: '2025-09-30',
-  deploymentId: 'repository-revert',
-  description: 'Repository reverted to clean state at v0.139 baseline'
+  deploymentId: 'deprecate-annuities-feature',
+  description: 'Removed annuities feature - deprecated all annuity-related code, routes, and database fields'
 }
 
 export const getVersionDisplay = () => {
