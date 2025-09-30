@@ -468,4 +468,11 @@ app.include_router(feature.router, prefix="/api/v1/feature", tags=["feature"])
 
 ---
 
+## 📚 Additional Resources
+
+For comprehensive guidance on feature deprecation, see:
+- `.github/special-instructions/Feature-Deprecation.md` - Complete guide based on annuities removal lessons
+
+---
+
 *This document is living documentation - update when new patterns or failure modes are discovered.*
