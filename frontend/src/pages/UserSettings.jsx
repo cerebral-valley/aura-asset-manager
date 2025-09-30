@@ -140,7 +140,6 @@ const UserSettings = () => {
     const { assetsService } = await import('../services/assets.js')
     const { transactionsService } = await import('../services/transactions.js')
     const { insuranceService } = await import('../services/insurance.js')
-    const { annuityService } = await import('../services/annuities.js')
     const { profileService } = await import('../services/profile.js')
 
     // Delete all data in sequence
@@ -161,12 +160,6 @@ const UserSettings = () => {
       const insurancePolicies = await insuranceService.getInsurancePolicies()
       for (const policy of insurancePolicies) {
         await insuranceService.deleteInsurance(policy.id)
-      }
-
-      // Delete annuities
-      const annuities = await annuityService.getAnnuities()
-      for (const annuity of annuities) {
-        await annuityService.deleteAnnuity(annuity.id)
       }
 
       // Reset profile to default values
@@ -657,7 +650,7 @@ const UserSettings = () => {
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
               <strong>Warning:</strong> This action cannot be undone. All your assets, transactions, 
-              insurance policies, annuities, and family data will be permanently deleted.
+              insurance policies, and family data will be permanently deleted.
             </AlertDescription>
           </Alert>
           
@@ -701,7 +694,6 @@ const UserSettings = () => {
                 <li>All assets and their details</li>
                 <li>All transaction records</li>
                 <li>All insurance policies</li>
-                <li>All annuity contracts</li>
                 <li>All family information</li>
                 <li>Profile data (except login credentials)</li>
               </ul>

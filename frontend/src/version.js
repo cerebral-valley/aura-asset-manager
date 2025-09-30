@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.141',
+  version: 'v0.142',
   buildDate: '2025-09-30',
-  deploymentId: 'deprecate-annuities-feature',
-  description: 'Removed annuities feature - deprecated all annuity-related code, routes, and database fields'
+  deploymentId: 'fix-annuity-references',
+  description: 'Fixed remaining annuity references in Assets, UserSettings, and Transactions pages'
 }
 
 export const getVersionDisplay = () => {

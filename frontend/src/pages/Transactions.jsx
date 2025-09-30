@@ -84,12 +84,7 @@ const assetLiquidityDefaults = {
   'cars': false,
   'antiques': false,
   
-  // Annuities and insurance - typically illiquid
-  'annuity_fixed': false,
-  'annuity_variable': false,
-  'annuity_indexed': false,
-  'annuity_immediate': false,
-  'annuity_deferred': false,
+  // Insurance - typically illiquid
   'life_insurance_term': false,
   'life_insurance_whole': false,
   'life_insurance_universal': false,

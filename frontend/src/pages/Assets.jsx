@@ -15,7 +15,6 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
 Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
 import { assetTypes, getAggregationCategories, getAssetTypeLabel, getAllAssetTypes } from '../constants/assetTypes';
-import AnnuityManager from '../components/assets/AnnuityManager';
 import ConfirmationDialog from '../components/ui/confirmation-dialog';
 import { exportAssetsToPDF } from '../utils/pdfExportTerminal';
 import { exportToExcel } from '../utils/excelExport';
@@ -261,7 +260,7 @@ const Assets = () => {
   const [projectionGrowthRate, setProjectionGrowthRate] = useState(7); // Default 7% annual growth
   const [showProjections, setShowProjections] = useState(false);
   const { colors, getColor, isDark } = useChartColors();
-  const [expandedAsset, setExpandedAsset] = useState(null); // For showing annuity manager
+  const [expandedAsset, setExpandedAsset] = useState(null); // For showing additional asset details
   
   // Confirmation dialog state
   const [confirmDialog, setConfirmDialog] = useState({
@@ -1383,22 +1382,6 @@ const Assets = () => {
                         <td className="py-2 px-4">{asset.description || '-'}</td>
                         <td className="py-2 px-4">{formatPercentage(getPresentValue(asset), filteredTotalPresent)}</td>
                       </tr>
-                      {expandedAsset === asset.id && (asset.asset_type?.includes('annuity') || asset.has_payment_schedule) && (
-                        <tr>
-                          <td colSpan="12" className="py-4 px-4 bg-gray-50">
-                            <AnnuityManager 
-                              asset={asset} 
-                              onUpdate={() => {
-                                // Use mutationHelpers for cross-tab broadcasting instead of manual invalidation
-                                mutationHelpers.onAssetSuccess(queryClient, 'update', { 
-                                  asset: asset,
-                                  userId: user?.id 
-                                })
-                              }}
-                            />
-                          </td>
-                        </tr>
-                      )}
                     </React.Fragment>
                   ))}
                   <tr className={`border-t-2 font-bold ${isDark ? 'bg-neutral-950 text-neutral-100' : 'bg-gray-50'}`}>
