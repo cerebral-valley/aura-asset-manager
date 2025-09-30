@@ -19,7 +19,7 @@ export const assetsService = {
   },
 
   async createAsset(asset, config = {}) {
-    const response = await apiClient.post('/assets', asset, config)
+    const response = await apiClient.post('/assets/', asset, config)
     return response.data
   },
 
