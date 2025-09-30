@@ -20,7 +20,6 @@ export const SYNC_MESSAGES = {
   INVALIDATE_ASSETS: 'invalidate_assets',
   INVALIDATE_TRANSACTIONS: 'invalidate_transactions',
   INVALIDATE_INSURANCE: 'invalidate_insurance',
-  INVALIDATE_ANNUITIES: 'invalidate_annuities',
   INVALIDATE_DASHBOARD: 'invalidate_dashboard',
   ASSET_CREATED: 'asset_created',
   ASSET_UPDATED: 'asset_updated',
@@ -31,9 +30,6 @@ export const SYNC_MESSAGES = {
   INSURANCE_CREATED: 'insurance_created',
   INSURANCE_UPDATED: 'insurance_updated',
   INSURANCE_DELETED: 'insurance_deleted',
-  ANNUITY_CREATED: 'annuity_created',
-  ANNUITY_UPDATED: 'annuity_updated',
-  ANNUITY_DELETED: 'annuity_deleted',
 }
 
 // BroadcastChannel utilities
@@ -76,10 +72,6 @@ export const broadcastUtils = {
             invalidationHelpers.invalidateInsurance(queryClient)
             break
 
-          case SYNC_MESSAGES.INVALIDATE_ANNUITIES:
-            invalidationHelpers.invalidateAnnuities(queryClient)
-            break
-
           case SYNC_MESSAGES.INVALIDATE_DASHBOARD:
             invalidationHelpers.invalidateDashboard(queryClient)
             break
@@ -105,14 +97,6 @@ export const broadcastUtils = {
           case SYNC_MESSAGES.INSURANCE_UPDATED:
           case SYNC_MESSAGES.INSURANCE_DELETED:
             invalidationHelpers.invalidateInsurance(queryClient)
-            invalidationHelpers.invalidateDashboard(queryClient)
-            break
-
-          // Annuity operations (independent)
-          case SYNC_MESSAGES.ANNUITY_CREATED:
-          case SYNC_MESSAGES.ANNUITY_UPDATED:
-          case SYNC_MESSAGES.ANNUITY_DELETED:
-            invalidationHelpers.invalidateAnnuities(queryClient)
             invalidationHelpers.invalidateDashboard(queryClient)
             break
 
@@ -194,24 +178,6 @@ export const mutationHelpers = {
       create: SYNC_MESSAGES.INSURANCE_CREATED,
       update: SYNC_MESSAGES.INSURANCE_UPDATED,
       delete: SYNC_MESSAGES.INSURANCE_DELETED,
-    }[type]
-    
-    if (messageType) {
-      broadcastUtils.broadcast(messageType, data)
-    }
-  },
-
-  // Annuity mutation helpers
-  onAnnuitySuccess: (queryClient, type, data = {}) => {
-    // Invalidate locally
-    invalidationHelpers.invalidateAnnuities(queryClient)
-    invalidationHelpers.invalidateDashboard(queryClient)
-    
-    // Broadcast to other tabs
-    const messageType = {
-      create: SYNC_MESSAGES.ANNUITY_CREATED,
-      update: SYNC_MESSAGES.ANNUITY_UPDATED,
-      delete: SYNC_MESSAGES.ANNUITY_DELETED,
     }[type]
     
     if (messageType) {

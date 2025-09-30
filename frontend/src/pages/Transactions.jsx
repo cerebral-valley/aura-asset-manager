@@ -1115,8 +1115,8 @@ export default function Transactions() {
                       </SelectTrigger>
                       <SelectContent>
                         {Object.entries(assetTypes).map(([category, types]) => (
-                          // Exclude annuities from dropdown
-                          category.includes('Annuities')
+                          // Exclude insurance from dropdown
+                          category.includes('Insurance')
                             ? null
                             : types.map((type) => (
                                 <SelectItem key={type.value} value={type.value}>
@@ -1393,8 +1393,8 @@ export default function Transactions() {
                   </SelectTrigger>
                   <SelectContent>
                     {Object.entries(assetTypes).map(([category, types]) => (
-                      // Exclude annuities from dropdown for transactions
-                      category.includes('Annuities')
+                      // Exclude insurance from dropdown for transactions
+                      category.includes('Insurance')
                         ? null
                         : (
                           <SelectGroup key={category}>

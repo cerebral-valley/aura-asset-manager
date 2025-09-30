@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.143',
-  buildDate: '2025-05-15',
-  deploymentId: 'complete-annuity-deprecation',
-  description: 'Removed final annuity references from useAuth hook - annuities feature completely deprecated'
+  version: 'v0.144',
+  buildDate: '2025-09-30',
+  deploymentId: 'final-annuity-cleanup',
+  description: 'Removed final annuity schema fields and query keys - annuities fully deprecated'
 }
 
 export const getVersionDisplay = () => {
