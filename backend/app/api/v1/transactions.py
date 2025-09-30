@@ -16,6 +16,7 @@ from uuid import UUID
 router = APIRouter()
 
 @router.get("/", response_model=List[TransactionWithAsset])
+@router.get("", response_model=List[TransactionWithAsset])  # Handle both /transactions/ and /transactions
 async def get_transactions(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)

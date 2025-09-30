@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.148',
+  version: 'v0.149',
   buildDate: '2024-12-19',
-  deploymentId: 'fastapi-redirect-fix',
-  description: 'Fixed FastAPI redirect_slashes to prevent HTTP downgrades and CSP violations - resolves assets API connection issues'
+  deploymentId: 'route-pattern-fix',
+  description: 'Fixed FastAPI route patterns to handle both slash and no-slash URLs for assets and transactions endpoints'
 }
 
 export const getVersionDisplay = () => {

@@ -16,6 +16,7 @@ from uuid import UUID
 router = APIRouter()
 
 @router.get("/", response_model=List[AssetSchema])
+@router.get("", response_model=List[AssetSchema])  # Handle both /assets/ and /assets
 async def get_assets(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
