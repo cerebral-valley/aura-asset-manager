@@ -62,7 +62,7 @@ async def create_asset(
     db.refresh(db_asset)
     return db_asset
 
-@router.get("/{asset_id}", response_model=AssetSchema)
+@router.get("/{asset_id}/", response_model=AssetSchema)
 async def get_asset(
     asset_id: UUID,
     current_user: User = Depends(get_current_active_user),
@@ -82,7 +82,7 @@ async def get_asset(
     
     return asset
 
-@router.put("/{asset_id}", response_model=AssetSchema)
+@router.put("/{asset_id}/", response_model=AssetSchema)
 async def update_asset(
     asset_id: UUID,
     asset_update: AssetUpdate,
@@ -109,7 +109,7 @@ async def update_asset(
     db.refresh(asset)
     return asset
 
-@router.delete("/{asset_id}")
+@router.delete("/{asset_id}/")
 async def delete_asset(
     asset_id: UUID,
     current_user: User = Depends(get_current_active_user),
