@@ -43,26 +43,43 @@ import annuityService from '../services/annuities.js'
 #### ✅ API URL Formatting Rules
 **Critical: URL patterns MUST match backend FastAPI routes exactly**
 
+**Current Pattern (as of 2025-09-30):**
+- **List endpoints**: Use trailing slash `/assets/`, `/transactions/`, `/insurance/`
+- **Detail endpoints**: Use trailing slash `/assets/{id}/`, `/transactions/{id}/`
+- **Action endpoints**: NO trailing slash `/dashboard/summary`, `/profile/options`
+
 ```javascript
-// ✅ CORRECT - No trailing slashes for most endpoints
-async getItems(config = {}) {
-  const response = await apiClient.get('/items', config)  // No trailing slash
+// ✅ CORRECT - Current codebase patterns
+// List endpoints - WITH trailing slash
+async getAssets(config = {}) {
+  const response = await apiClient.get('/assets/', config)  // Trailing slash required
   return response.data
 }
 
-async createItem(data, config = {}) {
-  const response = await apiClient.post('/items', data, config)  // No trailing slash
+// Detail endpoints - WITH trailing slash
+async getAsset(id, config = {}) {
+  const response = await apiClient.get(`/assets/${id}/`, config)  // Trailing slash required
   return response.data
 }
 
-// ❌ WRONG - Trailing slashes cause 307 redirects → HTTPS→HTTP downgrade → CSP blocks
-async getItems(config = {}) {
-  const response = await apiClient.get('/items/', config)  // Trailing slash breaks FastAPI
+// Action/summary endpoints - NO trailing slash
+async getSummary(config = {}) {
+  const response = await apiClient.get('/dashboard/summary', config)  // No trailing slash
+  return response.data
+}
+
+// ❌ WRONG - Inconsistent patterns cause 307 redirects
+async getAssets(config = {}) {
+  const response = await apiClient.get('/assets', config)  // Missing required trailing slash
   return response.data
 }
 ```
 
-**Exception: Some endpoints DO require trailing slashes - verify with backend routes**
+**Why this matters:**
+- Mismatched URLs → 307 Permanent Redirect
+- 307 redirect downgrades HTTPS→HTTP
+- CSP blocks HTTP requests → "Refused to connect" errors
+- **Always check backend route definition** in `backend/app/api/v1/[feature].py`
 
 ### Backend FastAPI Route Registration
 
@@ -242,7 +259,168 @@ if (isLoading) return <Loading pageName="Feature" />
 if (error) return <div>Error: {error.message}</div>
 ```
 
-## 🛡️ Security & Environment
+## � New Page/Feature Development Checklist
+
+### Complete Workflow for Adding New Features
+
+**Use this checklist when creating new pages or major features:**
+
+#### Phase 1: Backend Development
+- [ ] **Create database model** in `backend/app/models/[feature].py`
+  - UUID primary key: `id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)`
+  - User FK: `user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))`
+  - JSONB metadata if needed: `metadata = Column(JSONB, default=dict)`
+  
+- [ ] **Create Pydantic schemas** in `backend/app/schemas/[feature].py`
+  - `[Feature]Base` - shared fields
+  - `[Feature]Create` - creation payload
+  - `[Feature]Update` - update payload
+  - `[Feature]Response` - API response with computed fields
+  
+- [ ] **Create API endpoint** in `backend/app/api/v1/[feature].py`
+  - Use proper trailing slash pattern (list: `/`, detail: `/{id}/`)
+  - Add auth dependency: `current_user: User = Depends(get_current_user)`
+  - Implement CRUD operations: GET (list), GET (detail), POST, PUT/PATCH, DELETE
+  
+- [ ] **Register router in main.py** - CRITICAL STEP
+  ```python
+  from app.api.v1 import feature
+  app.include_router(feature.router, prefix="/api/v1/feature", tags=["feature"])
+  ```
+  
+- [ ] **Test endpoint via `/docs`** - FastAPI auto-generated documentation
+  - Test authentication with valid Bearer token
+  - Verify request/response schemas match expectations
+  - Check error handling (401, 404, 500)
+
+#### Phase 2: Frontend Service Layer
+- [ ] **Create service file** in `frontend/src/services/[feature].js`
+  - Use named export pattern: `export const featureService = { ... }`
+  - All methods accept optional `config = {}` for abort signals
+  - Use correct URL patterns (trailing slashes for list/detail)
+  
+  ```javascript
+  export const featureService = {
+    async getItems(config = {}) {
+      const response = await apiClient.get('/feature/', config)  // Note trailing slash
+      return response.data
+    },
+    async getItem(id, config = {}) {
+      const response = await apiClient.get(`/feature/${id}/`, config)
+      return response.data
+    },
+    async createItem(data, config = {}) {
+      const response = await apiClient.post('/feature/', data, config)
+      return response.data
+    },
+    async updateItem(id, data, config = {}) {
+      const response = await apiClient.put(`/feature/${id}/`, data, config)
+      return response.data
+    },
+    async deleteItem(id, config = {}) {
+      const response = await apiClient.delete(`/feature/${id}/`, config)
+      return response.data
+    }
+  }
+  ```
+
+#### Phase 3: Query Infrastructure
+- [ ] **Add query keys** in `frontend/src/lib/queryKeys.js`
+  ```javascript
+  export const queryKeys = {
+    // ... existing keys
+    feature: {
+      all: ['feature'],
+      list: () => [...queryKeys.feature.all, 'list'],
+      detail: (id) => [...queryKeys.feature.all, 'detail', id],
+    }
+  }
+  ```
+  
+- [ ] **Add to queryUtils** in `frontend/src/lib/queryUtils.js`
+  - Add to `SYNC_MESSAGES` array for real-time sync
+  - Add invalidation logic if needed
+
+#### Phase 4: Component Development
+- [ ] **Create page component** in `frontend/src/pages/[Feature]Page.jsx`
+  - Use `useAuth()` for authentication check
+  - Use TanStack Query with proper patterns:
+    ```javascript
+    const { user, session } = useAuth()
+    
+    const { data, isLoading, error } = useQuery({
+      queryKey: queryKeys.feature.list(),
+      queryFn: ({ signal }) => featureService.getItems({ signal }),
+      enabled: !!session,  // Wait for authentication
+      staleTime: 5 * 60 * 1000,  // 5 minutes
+    })
+    
+    if (isLoading) return <Loading pageName="Feature" />
+    if (error) return <div>Error: {error.message}</div>
+    ```
+  
+- [ ] **Add navigation links** in multiple locations:
+  - Desktop sidebar: `frontend/src/components/Sidebar.jsx`
+  - Mobile drawer: `frontend/src/components/MobileDrawer.jsx`
+  - Breadcrumbs if applicable
+  
+- [ ] **Create route** in `frontend/src/App.jsx`
+  ```javascript
+  import FeaturePage from './pages/FeaturePage'
+  
+  <Route path="/feature" element={<ProtectedRoute><FeaturePage /></ProtectedRoute>} />
+  ```
+
+#### Phase 5: Testing & Verification
+- [ ] **Local development testing**
+  - Start backend: `cd backend && uvicorn main:app --reload`
+  - Start frontend: `cd frontend && npm run dev`
+  - Test authentication flow
+  - Test CRUD operations
+  - Check browser console for errors
+  
+- [ ] **Update version** in `frontend/src/version.js`
+  ```javascript
+  export const VERSION_INFO = {
+    version: 'v0.1XX',  // Increment from current
+    buildDate: '2025-MM-DD',
+    deploymentId: 'feature-name',
+    description: 'Add [feature] page with full CRUD operations'
+  }
+  ```
+  
+- [ ] **Commit and push to GitHub**
+  ```bash
+  git add .
+  git commit -m "Version: v0.1XX - Add [feature] page with CRUD operations"
+  git push origin main
+  ```
+  
+- [ ] **Live deployment testing** - Use Playwright MCP
+  1. Close existing browser sessions: `mcp_playwright_browser_close()`
+  2. Navigate to live site: `mcp_playwright_browser_navigate("https://aura-asset-manager.vercel.app/")`
+  3. Authenticate with Google OAuth
+  4. Navigate to new feature page
+  5. Test all CRUD operations with real data
+  6. Check console: `mcp_playwright_browser_console_messages()`
+  7. Verify version number in dashboard top-right
+  
+- [ ] **Cross-feature validation**
+  - Test that existing pages still work
+  - Verify navigation doesn't break
+  - Check for authentication issues
+  - Test theme switching on new page
+
+#### Common Pitfalls to Avoid
+- ❌ Forgetting to register router in `backend/main.py` → 404 errors
+- ❌ Missing trailing slashes on URLs → 307 redirects → CSP blocks
+- ❌ Using default exports instead of named exports → import errors
+- ❌ Not adding `enabled: !!session` to queries → pre-auth API calls fail
+- ❌ Forgetting to add navigation links → users can't access new page
+- ❌ Not updating version before push → deployment verification confusion
+- ❌ Skipping live testing → production-only issues discovered by users
+
+## �🛡️ Security & Environment
 
 ### Environment Configuration
 
@@ -263,16 +441,62 @@ apiClient.interceptors.request.use(async (config) => {
 ```
 
 #### ✅ CORS Configuration
+**SECURITY CRITICAL: NEVER use wildcard origins in production**
+
 ```python
-# ✅ Backend CORS - Dynamic origins for Vercel previews
-origins = [
-    "http://localhost:5173",  # Local dev
-    "https://your-app.vercel.app",  # Production
-    # Vercel preview URLs
+# ✅ CORRECT - Explicit origins only (backend/app/core/config.py)
+ALLOWED_ORIGINS: List[str] = [
+    "https://aura-asset-manager.vercel.app",  # Production
+    "https://aura-asset-manager-git-main-cerebral-valley.vercel.app",  # Git main branch
+    "https://aura-asset-manager-cerebral-valley.vercel.app",  # Main deployment
+    "http://localhost:5173",  # Local Vite dev
+    "http://localhost:5176",  # Alternative local port
+    "http://localhost:3000"   # Alternative dev port
 ]
 
-if "*vercel.app" not in origins:
-    origins.append("*vercel.app")  # Allow all Vercel preview deployments
+# ✅ CORRECT - Dynamic Vercel preview handling (backend/main.py)
+def is_allowed_origin(origin: str) -> bool:
+    """Check if origin is allowed, including dynamic Vercel URLs."""
+    if origin in settings.ALLOWED_ORIGINS:
+        return True
+    
+    # Allow Vercel preview deployments with regex
+    import re
+    vercel_patterns = [
+        r'https://aura-asset-manager.*\.vercel\.app$',
+        r'https://.*--aura-asset-manager.*\.vercel\.app$'
+    ]
+    
+    for pattern in vercel_patterns:
+        if re.match(pattern, origin):
+            return True
+    
+    return False
+
+# ❌ WRONG - Wildcard origins are security vulnerability
+allow_origins=["*"]  # Exposes API to any origin
+origins.append("*vercel.app")  # Too permissive
+```
+
+**CSP Headers (Content Security Policy):**
+```python
+# ✅ CORRECT - Restrictive CSP (backend/app/core/security_middleware.py)
+response.headers["Content-Security-Policy"] = (
+    "default-src 'self'; "
+    "script-src 'self' 'unsafe-inline'; "  # Allow inline scripts for React
+    "style-src 'self' 'unsafe-inline'; "   # Allow inline styles
+    "img-src 'self' data: https:; "       # Allow data URIs and HTTPS images
+    "connect-src 'self' https://*.supabase.co; "  # API + Supabase only
+    "frame-ancestors 'none';"              # Prevent clickjacking
+)
+
+# Additional security headers
+response.headers["X-Content-Type-Options"] = "nosniff"
+response.headers["X-Frame-Options"] = "DENY"
+response.headers["X-XSS-Protection"] = "1; mode=block"
+response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
 ```
 
 ## 🧪 Testing & Debugging Protocols
@@ -432,11 +656,23 @@ type(scope): description
 ```javascript
 export const featureService = {
   async getItems(config = {}) {
-    const response = await apiClient.get('/feature', config)
+    const response = await apiClient.get('/feature/', config)  // Note trailing slash
+    return response.data
+  },
+  async getItem(id, config = {}) {
+    const response = await apiClient.get(`/feature/${id}/`, config)  // Trailing slash
     return response.data
   },
   async createItem(data, config = {}) {
-    const response = await apiClient.post('/feature', data, config)
+    const response = await apiClient.post('/feature/', data, config)
+    return response.data
+  },
+  async updateItem(id, data, config = {}) {
+    const response = await apiClient.put(`/feature/${id}/`, data, config)
+    return response.data
+  },
+  async deleteItem(id, config = {}) {
+    const response = await apiClient.delete(`/feature/${id}/`, config)
     return response.data
   }
 }
