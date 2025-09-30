@@ -22,7 +22,7 @@ export const goalsService = {
   },
 
   async createGoal(goal, config = {}) {
-    const response = await apiClient.post('/goals/', goal, config)
+    const response = await apiClient.post('/goals', goal, config)
     return response.data
   },
 
