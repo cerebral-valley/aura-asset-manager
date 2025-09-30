@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.144',
+  version: 'v0.145',
   buildDate: '2025-09-30',
-  deploymentId: 'final-annuity-cleanup',
-  description: 'Removed final annuity schema fields and query keys - annuities fully deprecated'
+  deploymentId: 'asset-selection-checkbox',
+  description: 'Added asset selection checkbox to Assets table with optimistic updates and race condition prevention'
 }
 
 export const getVersionDisplay = () => {

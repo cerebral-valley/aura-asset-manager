@@ -232,6 +232,45 @@ const Assets = () => {
     },
   })
 
+  // Toggle Asset Selection Mutation
+  // Critical: Uses optimistic updates to prevent race conditions and "snap back" UI bugs
+  const toggleAssetSelectionMutation = useMutation({
+    mutationFn: ({ id, isSelected }) => assetsService.toggleAssetSelection(id, isSelected),
+    onMutate: async ({ id, isSelected }) => {
+      // Cancel outgoing fetches to prevent overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: queryKeys.assets.list() })
+      
+      // Snapshot previous state for rollback
+      const previousAssets = queryClient.getQueryData(queryKeys.assets.list())
+      
+      // Optimistically update UI immediately (prevents "snap back")
+      queryClient.setQueryData(queryKeys.assets.list(), (old = []) =>
+        old.map(asset => asset.id === id ? { ...asset, is_selected: isSelected } : asset)
+      )
+      
+      return { previousAssets }
+    },
+    onError: (error, variables, context) => {
+      // Rollback to previous state on error
+      if (context?.previousAssets) {
+        queryClient.setQueryData(queryKeys.assets.list(), context.previousAssets)
+      }
+      console.error('Asset selection toggle failed:', error)
+      toast.error('Failed to update asset selection: ' + (error.response?.data?.detail || error.message))
+    },
+    onSuccess: (result, { id }) => {
+      console.log('✅ Asset selection toggled:', result)
+      
+      // Use mutation helpers for proper invalidation and broadcasting
+      mutationHelpers.onAssetSuccess(queryClient, 'update', { 
+        assetId: id,
+        assetData: result 
+      })
+      
+      // Silent success (no toast for quick toggles)
+    },
+  })
+
   // Calculate overall loading state
   const loading = assetsLoading || transactionsLoading;
   const criticalError = assetsError || transactionsError;
@@ -242,10 +281,10 @@ const Assets = () => {
   const modalRef = useRef(null);
 
   // Compute mutation loading state
-  const actionLoading = deleteAssetMutation.isPending || createAssetMutation.isPending || updateAssetMutation.isPending;
+  const actionLoading = deleteAssetMutation.isPending || createAssetMutation.isPending || updateAssetMutation.isPending || toggleAssetSelectionMutation.isPending;
   
   // Compute mutation error state
-  const actionError = deleteAssetMutation.error || createAssetMutation.error || updateAssetMutation.error;
+  const actionError = deleteAssetMutation.error || createAssetMutation.error || updateAssetMutation.error || toggleAssetSelectionMutation.error;
 
   // Sorting and filtering states
   const [sortField, setSortField] = useState('name');
@@ -806,6 +845,12 @@ const Assets = () => {
     deleteAssetMutation.mutate(id);
   };
 
+  // Toggle asset selection
+  const handleToggleSelection = (assetId, currentValue) => {
+    const newValue = !currentValue;
+    toggleAssetSelectionMutation.mutate({ id: assetId, isSelected: newValue });
+  };
+
   // PDF Export Function
   const handleExportToPDF = async () => {
     if (pdfExporting) return; // Prevent multiple clicks
@@ -1331,6 +1376,9 @@ const Assets = () => {
               <table className="min-w-full text-sm" aria-label="Assets Table">
                 <thead>
                   <tr>
+                    <th className="text-center py-2 px-4" title="Toggle asset selection">
+                      Selected
+                    </th>
                     <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('name')}>
                       Name {sortField === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
@@ -1369,6 +1417,16 @@ const Assets = () => {
                   {filteredAndSortedAssets.map((asset, idx) => (
                     <React.Fragment key={asset.id || idx}>
                       <tr className={`border-t ${isDark ? 'border-gray-600' : ''}`}>
+                        <td className="py-2 px-4 text-center">
+                          <input
+                            type="checkbox"
+                            checked={asset.is_selected || false}
+                            onChange={() => handleToggleSelection(asset.id, asset.is_selected)}
+                            disabled={toggleAssetSelectionMutation.isPending}
+                            className="w-4 h-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            aria-label={`Toggle selection for ${asset.name}`}
+                          />
+                        </td>
                         <td className="py-2 px-4">{asset.name || 'Asset'}</td>
                         <td className="py-2 px-4">{getAssetTypeLabel(asset.asset_type)}</td>
                         <td className="py-2 px-4">{formatCurrency(getAcquisitionValue(asset))}</td>
@@ -1385,6 +1443,7 @@ const Assets = () => {
                     </React.Fragment>
                   ))}
                   <tr className={`border-t-2 font-bold ${isDark ? 'bg-neutral-950 text-neutral-100' : 'bg-gray-50'}`}>
+                    <td className="py-2 px-4">-</td>
                     <td className="py-2 px-4">Total</td>
                     <td className="py-2 px-4">-</td>
                     <td className="py-2 px-4">{formatCurrency(filteredTotalAcquisition)}</td>

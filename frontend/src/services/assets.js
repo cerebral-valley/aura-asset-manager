@@ -21,6 +21,13 @@ export const assetsService = {
     return response.data
   },
 
+  async toggleAssetSelection(id, isSelected, config = {}) {
+    // Use PUT endpoint with minimal payload to toggle selection
+    // This reduces race conditions by sending only the field that changed
+    const response = await apiClient.put(`/assets/${id}/`, { is_selected: isSelected }, config)
+    return response.data
+  },
+
   async deleteAsset(id, config = {}) {
     const response = await apiClient.delete(`/assets/${id}/`, config)
     return response.data
