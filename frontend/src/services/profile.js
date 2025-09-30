@@ -2,7 +2,7 @@
  * Profile API Service
  */
 
-import apiClient from '../lib/api.js'
+import apiClient from '@/lib/api'
 
 class ProfileService {
   constructor() {

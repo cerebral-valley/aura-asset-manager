@@ -2,7 +2,7 @@
  * Simple test for PDF export functionality
  */
 
-import { exportAssetsToPDF } from '../utils/pdfExport'
+import { exportAssetsToPDF } from '@/utils/pdfExport'
 
 // Mock data for testing
 const testData = {

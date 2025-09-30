@@ -1,4 +1,4 @@
-import { useTheme } from '../contexts/ThemeContext'
+import { useTheme } from '@/contexts/ThemeContext'
 import { useMemo } from 'react'
 
 // Define color palettes for each theme with proper HSL values that work with Recharts

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { validateDateOfBirth, validatePhoneNumber } from '../utils/profileUtils.js'
+import { validateDateOfBirth, validatePhoneNumber } from '@/utils/profileUtils'
 
 export const useProfileValidation = (profile) => {
   const [fieldErrors, setFieldErrors] = useState({})

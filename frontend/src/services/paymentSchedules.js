@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase } from '@/lib/supabase'
 
 // Service for managing payment schedules for annuities and insurance
 export const paymentScheduleService = {

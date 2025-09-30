@@ -44,25 +44,90 @@ import annuityService from '../services/annuities.js'
 **Critical: URL patterns MUST match backend FastAPI routes exactly**
 
 ```javascript
-// ✅ CORRECT - No trailing slashes for most endpoints
+// ✅ CORRECT - ROOT ENDPOINTS: Use trailing slashes (matches FastAPI expectations)
 async getItems(config = {}) {
-  const response = await apiClient.get('/items', config)  // No trailing slash
+  const response = await apiClient.get('/items/', config)  // Trailing slash for root endpoints
   return response.data
 }
 
 async createItem(data, config = {}) {
-  const response = await apiClient.post('/items', data, config)  // No trailing slash
+  const response = await apiClient.post('/items/', data, config)  // Trailing slash for root endpoints
   return response.data
 }
 
-// ❌ WRONG - Trailing slashes cause 307 redirects → HTTPS→HTTP downgrade → CSP blocks
-async getItems(config = {}) {
-  const response = await apiClient.get('/items/', config)  // Trailing slash breaks FastAPI
+// ✅ CORRECT - SPECIFIC RESOURCES: No trailing slashes
+async getItem(id, config = {}) {
+  const response = await apiClient.get(`/items/${id}`, config)  // No trailing slash for specific resources
+  return response.data
+}
+
+async updateItem(id, data, config = {}) {
+  const response = await apiClient.put(`/items/${id}`, data, config)  // No trailing slash for specific resources
+  return response.data
+}
+
+// ✅ CORRECT - SUB-ROUTES: No trailing slashes
+async getItemSummary(config = {}) {
+  const response = await apiClient.get('/items/summary', config)  // No trailing slash for sub-routes
   return response.data
 }
 ```
 
-**Exception: Some endpoints DO require trailing slashes - verify with backend routes**
+**Standard Examples:**
+```javascript
+// ✅ ROOT ENDPOINTS - Always use trailing slashes
+'/assets/'           // GET/POST root collection
+'/transactions/'     // GET/POST root collection
+'/insurance/'        // GET/POST root collection
+
+// ✅ SPECIFIC RESOURCES - Never use trailing slashes
+'/assets/{id}'       // GET/PUT/DELETE specific resource
+'/goals/{goal_id}'   // GET/PUT/DELETE specific resource
+
+// ✅ SUB-ROUTES - Never use trailing slashes
+'/dashboard/summary' // GET sub-route
+'/transactions/asset/{id}' // GET nested resource
+```
+
+#### ✅ Import Path Standards
+**ALL imports MUST use @ alias pattern for consistency:**
+
+```javascript
+// ✅ CORRECT - @ alias pattern (preferred)
+import apiClient from '@/lib/api'
+import { serviceFunction } from '@/services/assets'
+import { useTheme } from '@/contexts/ThemeContext'
+import { validateForm } from '@/utils/validation'
+
+// ❌ WRONG - Relative path pattern (legacy, avoid)
+import apiClient from '../lib/api'
+import { serviceFunction } from '../services/assets'
+import { useTheme } from '../contexts/ThemeContext'
+```
+
+**File Extension Rules:**
+```javascript
+// ✅ CORRECT - No .js extension for internal modules
+import apiClient from '@/lib/api'
+import { assetsService } from '@/services/assets'
+
+// ✅ CORRECT - Always include extension for external packages
+import { createClient } from '@supabase/supabase-js'
+import { defineConfig } from 'vite'
+
+// ❌ WRONG - Inconsistent extension usage
+import apiClient from '@/lib/api.js'  // Internal module shouldn't have .js
+```
+
+**Vite Configuration (already configured):**
+```javascript
+// ✅ CONFIGURED - @ alias resolves to ./src
+resolve: {
+  alias: {
+    "@": path.resolve(__dirname, "./src"),
+  }
+}
+```
 
 ### Backend FastAPI Route Registration
 
@@ -75,6 +140,42 @@ app.include_router(feature.router, prefix="/api/v1/feature", tags=["feature"])
 ```
 
 **Common failure mode:** Creating endpoints without router registration → 404 errors
+
+#### ✅ Backend Route Patterns
+**ALL FastAPI routes MUST follow dual pattern for compatibility:**
+
+```python
+# ✅ CORRECT - Dual pattern handles both slash and no-slash
+@router.get("/", response_model=List[ItemSchema])    # Primary: with trailing slash
+@router.get("", response_model=List[ItemSchema])     # Compatibility: without trailing slash
+
+@router.post("/", response_model=ItemSchema)         # Primary: with trailing slash
+
+# ✅ SPECIFIC RESOURCES - No trailing slashes
+@router.get("/{item_id}", response_model=ItemSchema)
+@router.put("/{item_id}", response_model=ItemSchema)
+@router.delete("/{item_id}")
+
+# ✅ SUB-ROUTES - No trailing slashes  
+@router.get("/summary")                              # /items/summary
+@router.get("/asset/{asset_id}")                     # /items/asset/{id}
+```
+
+**Router Registration Pattern:**
+```python
+# ✅ STANDARD - No trailing slashes in prefixes
+app.include_router(assets.router, prefix="/api/v1/assets", tags=["assets"])
+app.include_router(goals.router, prefix="/api/v1/goals", tags=["goals"])
+```
+
+**FastAPI Configuration:**
+```python
+# ✅ REQUIRED - Prevent unwanted redirects
+app = FastAPI(
+    title="API Title",
+    redirect_slashes=False  # Prevent 307 redirects that downgrade HTTPS→HTTP
+)
+```
 
 ## 🔑 Authentication & Authorization Patterns
 

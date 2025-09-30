@@ -7,12 +7,12 @@
  * - CSP policies block HTTP requests → "Refused to connect" errors
  */
 
-import apiClient from '../lib/api'
+import apiClient from '@/lib/api'
 
 export const goalsService = {
   async getGoals(includeCompleted = false, config = {}) {
     const params = includeCompleted ? '?include_completed=true' : ''
-    const response = await apiClient.get(`/goals${params}`, config)
+    const response = await apiClient.get(`/goals/${params}`, config)
     return response.data
   },
 
@@ -22,7 +22,7 @@ export const goalsService = {
   },
 
   async createGoal(goal, config = {}) {
-    const response = await apiClient.post('/goals', goal, config)
+    const response = await apiClient.post('/goals/', goal, config)
     return response.data
   },
 

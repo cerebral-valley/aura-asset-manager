@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.149',
+  version: 'v0.150',
   buildDate: '2024-12-19',
-  deploymentId: 'route-pattern-fix',
-  description: 'Fixed FastAPI route patterns to handle both slash and no-slash URLs for assets and transactions endpoints'
+  deploymentId: 'coding-standards-implementation',
+  description: 'Standardized all import paths to @ alias pattern and enforced consistent API URL trailing slash patterns across all services'
 }
 
 export const getVersionDisplay = () => {
