@@ -72,9 +72,15 @@ const apiClient = axios.create({
 // Add auth token to requests
 apiClient.interceptors.request.use(async (config) => {
   try {
-    // Ensure the URL is always HTTPS
-    if (config.baseURL.startsWith('http:')) {
+    // Ensure the URL is always HTTPS - check BOTH baseURL AND url
+    if (config.baseURL && config.baseURL.startsWith('http:')) {
       config.baseURL = config.baseURL.replace('http:', 'https:')
+    }
+    
+    // CRITICAL: Also check the actual request URL (not just baseURL)
+    // This handles cases where axios constructs absolute URLs
+    if (config.url && config.url.startsWith('http:')) {
+      config.url = config.url.replace('http:', 'https:')
     }
     
     // Get cached or fresh access token
