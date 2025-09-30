@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.146',
-  buildDate: '2025-01-28',
-  deploymentId: 'complete-goals-system',
-  description: 'Complete Goals system implementation: CRUD operations, goal completion, progress tracking, asset selection fixes, comprehensive UI enhancements'
+  version: 'v0.148',
+  buildDate: '2024-12-19',
+  deploymentId: 'fastapi-redirect-fix',
+  description: 'Fixed FastAPI redirect_slashes to prevent HTTP downgrades and CSP violations - resolves assets API connection issues'
 }
 
 export const getVersionDisplay = () => {

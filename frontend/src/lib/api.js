@@ -77,6 +77,14 @@ apiClient.interceptors.request.use(async (config) => {
       config.baseURL = config.baseURL.replace('http:', 'https:')
     }
     
+    // CRITICAL: Remove trailing slashes to prevent 307 redirects → HTTP downgrade → CSP blocks
+    if (config.url && config.url.endsWith('/') && config.url !== '/') {
+      config.url = config.url.slice(0, -1)
+      if (import.meta.env.DEV) {
+        console.log(`🔧 Removed trailing slash from URL: ${config.url}`)
+      }
+    }
+    
     // Get cached or fresh access token
     const accessToken = await getAccessToken()
     

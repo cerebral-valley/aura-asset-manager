@@ -19,7 +19,8 @@ app = FastAPI(
     description="Backend API for the Aura Personal Asset Manager",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    redirect_slashes=False  # Prevent 307 redirects that downgrade HTTPS→HTTP
 )
 
 # Custom validation exception handler for debugging
