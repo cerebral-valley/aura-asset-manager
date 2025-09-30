@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.139',
-  buildDate: '2024-12-29',
-  deploymentId: 'typescript-migration-analysis',
-  description: 'Provided comprehensive TypeScript migration strategy with 3-4 day AI agent timeline analysis'
+  version: 'v0.140',
+  buildDate: '2025-09-30',
+  deploymentId: 'repository-revert',
+  description: 'Repository reverted to clean state at v0.139 baseline'
 }
 
 export const getVersionDisplay = () => {
