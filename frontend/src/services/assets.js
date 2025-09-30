@@ -4,13 +4,12 @@ import apiClient from '../lib/api'
  * Assets API Service
  * 
  * CRITICAL: URL formatting must match FastAPI backend routes exactly:
- * - Root endpoints use NO trailing slash
- * - Mismatched URLs cause 307 redirects → HTTPS→HTTP downgrade
- * - CSP policies block HTTP requests → "Refused to connect" errors
+ * - Root endpoints use trailing slash to match FastAPI behavior
+ * - FastAPI serves directory-style routes with trailing slashes
  */
 export const assetsService = {
   async getAssets(config = {}) {
-    const response = await apiClient.get('/assets', config)
+    const response = await apiClient.get('/assets/', config)
     return response.data
   },
 
