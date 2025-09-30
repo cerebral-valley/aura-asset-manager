@@ -5,7 +5,6 @@ import { queryKeys } from '@/lib/queryKeys'
 import { assetsService } from '@/services/assets'
 import { transactionsService } from '@/services/transactions'
 import { insuranceService } from '@/services/insurance'
-import { annuityService } from '@/services/annuities'
 import { dashboardService } from '@/services/dashboard'
 
 const AuthContext = createContext({})
@@ -43,14 +42,6 @@ export const AuthProvider = ({ children }) => {
         queryClient.prefetchQuery({
           queryKey: queryKeys.insurance.list(),
           queryFn: ({ signal }) => insuranceService.getPolicies({ signal })
-        }),
-        queryClient.prefetchQuery({
-          queryKey: queryKeys.annuities.list(),
-          queryFn: ({ signal }) => annuityService.getAnnuities({}, { signal })
-        }),
-        queryClient.prefetchQuery({
-          queryKey: queryKeys.annuities.summary(),
-          queryFn: ({ signal }) => annuityService.getSummary({ signal })
         }),
         queryClient.prefetchQuery({
           queryKey: queryKeys.dashboard.summary(),

@@ -54,7 +54,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.clients = defaultdict(list)
     
     async def dispatch(self, request: Request, call_next):
-        client_ip = request.client.host
+        client_ip = request.client.host if request.client else "unknown"
         now = datetime.now()
         
         # Clean old entries
@@ -84,9 +84,10 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         start_time = time.time()
         
         # Log request
+        client_host = request.client.host if request.client else "unknown"
         logger.info(
             f"Request: {request.method} {request.url.path} "
-            f"from {request.client.host}"
+            f"from {client_host}"
         )
         
         response = await call_next(request)
