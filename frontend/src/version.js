@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.150',
+  version: 'v0.151',
   buildDate: '2025-10-04',
-  deploymentId: 'frontend-goals-service',
-  description: 'Frontend Goals Service Layer - Created goalsService with named export pattern (getGoals, getGoal, createGoal, updateGoal, completeGoal, deleteGoal), proper trailing slashes matching backend routes, abort signal support. Added goals query keys to queryKeys.js with list/detail/byType/completed keys and invalidation helpers (invalidateGoals, invalidateGoalsAndAssets)'
+  deploymentId: 'goals-page-foundation',
+  description: 'Goals Page Foundation - Created GoalsPage.jsx with selected assets table showing assets where is_selected=true, calculating present values and percentages. Added /goals route to App.jsx with Goals import. Added Goals navigation link to AppLayout.jsx with Target icon. Page includes placeholders for Net Worth Goal (Phase 5), Custom Goals (Phase 6), and Goal Logs (Phase 8) sections.'
 }
 
 export const getVersionDisplay = () => {
