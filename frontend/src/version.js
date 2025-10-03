@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.151',
+  version: 'v0.152',
   buildDate: '2025-10-04',
-  deploymentId: 'goals-page-foundation',
-  description: 'Goals Page Foundation - Created GoalsPage.jsx with selected assets table showing assets where is_selected=true, calculating present values and percentages. Added /goals route to App.jsx with Goals import. Added Goals navigation link to AppLayout.jsx with Target icon. Page includes placeholders for Net Worth Goal (Phase 5), Custom Goals (Phase 6), and Goal Logs (Phase 8) sections.'
+  deploymentId: 'net-worth-goal-section',
+  description: 'Net Worth Goal Section - Enhanced GoalsPage.jsx with full net worth goal functionality: displays present net worth from selected assets, set/edit/delete target with optional date, animated progress bar showing completion percentage, monthly growth calculation showing required growth rate to reach target by date. Uses TanStack Query mutations for CRUD operations with optimistic updates and error handling. Includes confirmation dialogs for delete actions.'
 }
 
 export const getVersionDisplay = () => {
