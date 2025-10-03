@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.148-part1',
-  buildDate: '2025-10-03',
-  deploymentId: 'assets-selection-enhancements',
-  description: 'Assets page selection enhancements: wrapped column header "Asset Selection for Goals" and added selected assets total row. Database prep: added allocate_amount column to user_goals table for Goals feature.'
+  version: 'v0.149',
+  buildDate: '2025-10-04',
+  deploymentId: 'backend-goals-api',
+  description: 'Backend Goals API: Created SQLAlchemy UserGoal model, Pydantic schemas (GoalBase, GoalCreate, GoalUpdate, GoalResponse), and full CRUD endpoints (GET /, GET /{id}/, POST /, PUT /{id}/, DELETE /{id}/) with proper trailing slashes and authentication. Registered goals router in main.py.'
 }
 
 export const getVersionDisplay = () => {
