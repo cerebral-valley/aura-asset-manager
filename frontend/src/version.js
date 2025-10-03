@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.153',
+  version: 'v0.154',
   buildDate: '2025-10-04',
-  deploymentId: 'custom-goals-section',
-  description: 'Custom Goals Section - Enhanced GoalsPage.jsx with custom goals functionality: +Add New Goal button, 3-goal maximum enforced with yellow notice, inline create/edit form with goal_type selection (asset/expense/income), title, target_amount, target_date (optional), allocate_amount from selected assets. Grid layout for goal cards with type badges (🎯/💰/📈), progress bars (green), Edit/Delete icons, confirmation dialogs. Uses TanStack Query mutations for CRUD operations.'
+  deploymentId: 'goals-feature-complete',
+  description: 'Goals Feature Complete (Phases 1-6) - Full Goals page with: (1) Selected assets table showing is_selected=true assets with all columns, (2) Net worth goal with target setting, progress bar, monthly growth calculation, (3) Custom goals with +Add button, 3-goal limit, type selection (asset/expense/income), allocation tracking, Edit/Delete actions, (4) TanStack Query mutations for all CRUD operations. Ready for Phase 7-8: UI polish, allocation validation warning, Mark as Complete functionality, Goal Logs section.'
 }
 
 export const getVersionDisplay = () => {
