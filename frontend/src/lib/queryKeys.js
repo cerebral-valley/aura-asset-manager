@@ -58,6 +58,21 @@ export const queryKeys = {
     profile: () => [...queryKeys.user.baseKey, 'profile'],
     settings: () => [...queryKeys.user.baseKey, 'settings'],
   },
+
+  // Goals-related queries
+  goals: {
+    baseKey: ['aura', 'goals'],
+    all: () => [...queryKeys.goals.baseKey],
+    list: (filters) => {
+      if (!filters || Object.keys(filters).length === 0) {
+        return [...queryKeys.goals.baseKey, 'list']
+      }
+      return [...queryKeys.goals.baseKey, 'list', normalizeFilters(filters)]
+    },
+    detail: (id) => [...queryKeys.goals.baseKey, 'detail', id],
+    byType: (goalType) => [...queryKeys.goals.baseKey, 'by-type', goalType],
+    completed: () => [...queryKeys.goals.baseKey, 'completed'],
+  },
 }
 
 // Utility function to normalize filter objects for consistent caching
@@ -119,6 +134,17 @@ export const invalidationHelpers = {
   // Invalidate insurance data (independent of assets/transactions)
   invalidateInsurance: (queryClient) => {
     queryClient.invalidateQueries({ queryKey: queryKeys.insurance.baseKey })
+  },
+
+  // Invalidate goals data (use when goals change)
+  invalidateGoals: (queryClient) => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.goals.baseKey })
+  },
+
+  // Invalidate goals and assets (use when goal allocations change)
+  invalidateGoalsAndAssets: (queryClient) => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.goals.baseKey })
+    queryClient.invalidateQueries({ queryKey: queryKeys.assets.baseKey })
   },
 
   // Invalidate dashboard summaries (use when underlying data changes)
