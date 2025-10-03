@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.146',
-  buildDate: '2025-09-30',
-  deploymentId: 'fix-https-enforcement-interceptor',
-  description: 'Fixed HTTPS enforcement in API interceptor to check both baseURL and url properties, preventing HTTP downgrades on PUT requests'
+  version: 'v0.148-part1',
+  buildDate: '2025-10-03',
+  deploymentId: 'assets-selection-enhancements',
+  description: 'Assets page selection enhancements: wrapped column header "Asset Selection for Goals" and added selected assets total row. Database prep: added allocate_amount column to user_goals table for Goals feature.'
 }
 
 export const getVersionDisplay = () => {

@@ -9,8 +9,8 @@ import { Button } from '../components/ui/button';
 import { assetsService } from '../services/assets';
 import { transactionsService } from '../services/transactions';
 import { userSettingsService } from '../services/user-settings';
-import { queryKeys } from '../lib/queryKeys';
-import { mutationHelpers } from '../lib/queryUtils';
+import { queryKeys, invalidationHelpers } from '../lib/queryKeys';
+import { mutationHelpers, broadcastUtils, SYNC_MESSAGES } from '../lib/queryUtils';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
 Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
@@ -41,6 +41,7 @@ const Assets = () => {
     enabled: !!user,
     staleTime: 30 * 60 * 1000, // 30 minutes (align with global default)
     gcTime: 60 * 60 * 1000, // 1 hour (align with global default)
+    refetchOnWindowFocus: false, // Prevent race conditions from window focus refetch
     // Smart retry: don't retry on 4xx client errors, only on 5xx/network
     retry: (failureCount, error) => {
       if (error?.response?.status >= 400 && error?.response?.status < 500) {
@@ -261,11 +262,22 @@ const Assets = () => {
     onSuccess: (result, { id }) => {
       console.log('✅ Asset selection toggled:', result)
       
-      // Use mutation helpers for proper invalidation and broadcasting
-      mutationHelpers.onAssetSuccess(queryClient, 'update', { 
-        assetId: id,
-        assetData: result 
-      })
+      // CRITICAL: Manually update cache with server response instead of invalidating
+      // This prevents race condition where refetch could return stale data
+      // and overwrite the optimistic update ("snap back" bug)
+      queryClient.setQueryData(queryKeys.assets.list(), (old = []) =>
+        old.map(asset => asset.id === id ? result : asset)
+      )
+      
+      // DON'T use mutationHelpers.onAssetSuccess here - it invalidates and refetches
+      // which creates a race condition window where stale data could overwrite
+      // the optimistic update. Instead, trust optimistic + manual cache update.
+      
+      // Invalidate dashboard only (not assets) for aggregate recalculation
+      invalidationHelpers.invalidateDashboard(queryClient)
+      
+      // Broadcast to other tabs for cross-tab sync (without invalidation)
+      broadcastUtils.broadcast(SYNC_MESSAGES.ASSET_UPDATED, { assetId: id, assetData: result })
       
       // Silent success (no toast for quick toggles)
     },
@@ -627,6 +639,10 @@ const Assets = () => {
   // Calculate totals for the filtered assets
   const filteredTotalAcquisition = filteredAndSortedAssets.reduce((sum, asset) => sum + getAcquisitionValue(asset), 0);
   const filteredTotalPresent = filteredAndSortedAssets.reduce((sum, asset) => sum + getPresentValue(asset), 0);
+  
+  // Calculate totals for selected assets (is_selected = true)
+  const selectedAssets = filteredAndSortedAssets.filter(asset => asset.is_selected === true);
+  const selectedTotalPresent = selectedAssets.reduce((sum, asset) => sum + getPresentValue(asset), 0);
 
   // Helper function to match asset types to categories
   const matchesAssetCategory = (assetType, categoryConfig) => {
@@ -1376,8 +1392,10 @@ const Assets = () => {
               <table className="min-w-full text-sm" aria-label="Assets Table">
                 <thead>
                   <tr>
-                    <th className="text-center py-2 px-4" title="Toggle asset selection">
-                      Selected
+                    <th className="text-center py-2 px-4 min-w-[100px]" title="Toggle asset selection for goals">
+                      <div className="text-xs leading-tight">
+                        Asset Selection<br />for Goals
+                      </div>
                     </th>
                     <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('name')}>
                       Name {sortField === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
@@ -1456,6 +1474,21 @@ const Assets = () => {
                     <td className="py-2 px-4">-</td>
                     <td className="py-2 px-4">{filteredAndSortedAssets.length} assets</td>
                     <td className="py-2 px-4">100%</td>
+                  </tr>
+                  <tr className={`border-t font-semibold ${isDark ? 'bg-blue-950/30 text-blue-100' : 'bg-blue-50 text-blue-900'}`}>
+                    <td className="py-2 px-4 text-center">✓</td>
+                    <td className="py-2 px-4">Selected Assets Total</td>
+                    <td className="py-2 px-4">-</td>
+                    <td className="py-2 px-4">-</td>
+                    <td className="py-2 px-4">{formatCurrency(selectedTotalPresent)}</td>
+                    <td className="py-2 px-4">-</td>
+                    <td className="py-2 px-4">-</td>
+                    <td className="py-2 px-4">-</td>
+                    <td className="py-2 px-4">-</td>
+                    <td className="py-2 px-4">-</td>
+                    <td className="py-2 px-4">-</td>
+                    <td className="py-2 px-4">{selectedAssets.length} selected</td>
+                    <td className="py-2 px-4">{formatPercentage(selectedTotalPresent, filteredTotalPresent)}</td>
                   </tr>
                 </tbody>
               </table>
