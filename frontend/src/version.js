@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.152',
+  version: 'v0.153',
   buildDate: '2025-10-04',
-  deploymentId: 'net-worth-goal-section',
-  description: 'Net Worth Goal Section - Enhanced GoalsPage.jsx with full net worth goal functionality: displays present net worth from selected assets, set/edit/delete target with optional date, animated progress bar showing completion percentage, monthly growth calculation showing required growth rate to reach target by date. Uses TanStack Query mutations for CRUD operations with optimistic updates and error handling. Includes confirmation dialogs for delete actions.'
+  deploymentId: 'custom-goals-section',
+  description: 'Custom Goals Section - Enhanced GoalsPage.jsx with custom goals functionality: +Add New Goal button, 3-goal maximum enforced with yellow notice, inline create/edit form with goal_type selection (asset/expense/income), title, target_amount, target_date (optional), allocate_amount from selected assets. Grid layout for goal cards with type badges (🎯/💰/📈), progress bars (green), Edit/Delete icons, confirmation dialogs. Uses TanStack Query mutations for CRUD operations.'
 }
 
 export const getVersionDisplay = () => {

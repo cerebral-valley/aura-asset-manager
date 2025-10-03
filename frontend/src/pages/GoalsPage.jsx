@@ -160,6 +160,115 @@ const GoalsPage = () => {
     return amountNeeded / monthsRemaining;
   }, [netWorthGoal, selectedTotalPresent]);
 
+  // Filter custom goals (not net_worth, not completed)
+  const customGoals = useMemo(() => {
+    return goals.filter(goal => goal.goal_type !== 'net_worth' && !goal.goal_completed);
+  }, [goals]);
+
+  // State for custom goals form
+  const [showCustomGoalForm, setShowCustomGoalForm] = useState(false);
+  const [editingGoalId, setEditingGoalId] = useState(null);
+  const [customGoalType, setCustomGoalType] = useState('asset');
+  const [customGoalTitle, setCustomGoalTitle] = useState('');
+  const [customGoalTargetAmount, setCustomGoalTargetAmount] = useState('');
+  const [customGoalTargetDate, setCustomGoalTargetDate] = useState('');
+  const [customGoalAllocateAmount, setCustomGoalAllocateAmount] = useState('');
+
+  // Mutation for creating/updating custom goal
+  const createOrUpdateCustomGoal = useMutation({
+    mutationFn: async (goalData) => {
+      if (editingGoalId) {
+        return await goalsService.updateGoal(editingGoalId, goalData);
+      } else {
+        return await goalsService.createGoal(goalData);
+      }
+    },
+    onSuccess: () => {
+      invalidationHelpers.invalidateGoals(queryClient);
+      toast.success(editingGoalId ? 'Goal updated' : 'Goal created');
+      resetCustomGoalForm();
+    },
+    onError: (error) => {
+      console.error('Failed to save custom goal:', error);
+      toast.error('Failed to save custom goal');
+    }
+  });
+
+  // Mutation for deleting custom goal
+  const deleteCustomGoal = useMutation({
+    mutationFn: async (goalId) => {
+      return await goalsService.deleteGoal(goalId);
+    },
+    onSuccess: () => {
+      invalidationHelpers.invalidateGoals(queryClient);
+      toast.success('Goal deleted');
+    },
+    onError: (error) => {
+      console.error('Failed to delete custom goal:', error);
+      toast.error('Failed to delete custom goal');
+    }
+  });
+
+  // Reset custom goal form
+  const resetCustomGoalForm = () => {
+    setShowCustomGoalForm(false);
+    setEditingGoalId(null);
+    setCustomGoalType('asset');
+    setCustomGoalTitle('');
+    setCustomGoalTargetAmount('');
+    setCustomGoalTargetDate('');
+    setCustomGoalAllocateAmount('');
+  };
+
+  // Handle save custom goal
+  const handleSaveCustomGoal = () => {
+    if (!customGoalTitle.trim()) {
+      toast.error('Please enter a goal title');
+      return;
+    }
+
+    const targetAmount = parseFloat(customGoalTargetAmount);
+    if (isNaN(targetAmount) || targetAmount <= 0) {
+      toast.error('Please enter a valid target amount');
+      return;
+    }
+
+    const allocateAmount = parseFloat(customGoalAllocateAmount) || 0;
+    if (allocateAmount < 0) {
+      toast.error('Allocate amount cannot be negative');
+      return;
+    }
+
+    const goalData = {
+      goal_type: customGoalType,
+      title: customGoalTitle.trim(),
+      target_amount: targetAmount,
+      target_date: customGoalTargetDate || null,
+      allocate_amount: allocateAmount
+    };
+
+    createOrUpdateCustomGoal.mutate(goalData);
+  };
+
+  // Handle edit custom goal
+  const handleEditCustomGoal = (goal) => {
+    setEditingGoalId(goal.id);
+    setCustomGoalType(goal.goal_type);
+    setCustomGoalTitle(goal.title);
+    setCustomGoalTargetAmount(goal.target_amount.toString());
+    setCustomGoalTargetDate(goal.target_date || '');
+    setCustomGoalAllocateAmount(goal.allocate_amount.toString());
+    setShowCustomGoalForm(true);
+  };
+
+  // Calculate progress for custom goal
+  const calculateCustomGoalProgress = (goal) => {
+    if (!goal || !goal.target_amount) return 0;
+    const allocateAmount = parseFloat(goal.allocate_amount) || 0;
+    const progress = (allocateAmount / parseFloat(goal.target_amount)) * 100;
+    return Math.min(progress, 100);
+  };
+
   // Loading state
   if (assetsLoading || goalsLoading) {
     return <Loading pageName="Goals" />;
@@ -409,12 +518,209 @@ const GoalsPage = () => {
         </div>
       </SafeSection>
 
-      {/* Placeholder for Custom Goals Section (Phase 6) */}
+      {/* Custom Goals Section */}
       <SafeSection title="Custom Goals">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <p className="text-gray-500 dark:text-gray-400 text-sm">
-            Custom Goals section coming in Phase 6
-          </p>
+        <div className="space-y-4">
+          {/* Add New Goal Button */}
+          {!showCustomGoalForm && customGoals.length < 3 && (
+            <div className="flex justify-end">
+              <Button onClick={() => setShowCustomGoalForm(true)} size="sm">
+                + Add New Goal
+              </Button>
+            </div>
+          )}
+
+          {/* Maximum goals notice */}
+          {customGoals.length >= 3 && !showCustomGoalForm && (
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                Maximum of 3 custom goals reached. Delete a goal to add another.
+              </p>
+            </div>
+          )}
+
+          {/* Custom Goal Form */}
+          {showCustomGoalForm && (
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-4">
+              <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
+                {editingGoalId ? 'Edit Goal' : 'Add New Goal'}
+              </h3>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Goal Type *
+                </label>
+                <select
+                  value={customGoalType}
+                  onChange={(e) => setCustomGoalType(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                >
+                  <option value="asset">Asset Goal</option>
+                  <option value="expense">Expense Goal</option>
+                  <option value="income">Income Goal</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Goal Title *
+                </label>
+                <input
+                  type="text"
+                  value={customGoalTitle}
+                  onChange={(e) => setCustomGoalTitle(e.target.value)}
+                  placeholder="e.g., Buy a new car, Vacation fund"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Target Amount *
+                </label>
+                <input
+                  type="number"
+                  value={customGoalTargetAmount}
+                  onChange={(e) => setCustomGoalTargetAmount(e.target.value)}
+                  placeholder="e.g., 50000"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Target Date (Optional)
+                </label>
+                <input
+                  type="date"
+                  value={customGoalTargetDate}
+                  onChange={(e) => setCustomGoalTargetDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Allocate from Selected Assets
+                </label>
+                <input
+                  type="number"
+                  value={customGoalAllocateAmount}
+                  onChange={(e) => setCustomGoalAllocateAmount(e.target.value)}
+                  placeholder="e.g., 10000"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  Selected assets total: {formatCurrency(selectedTotalPresent)}
+                </p>
+              </div>
+
+              <div className="flex gap-2">
+                <Button onClick={handleSaveCustomGoal} disabled={createOrUpdateCustomGoal.isPending}>
+                  {createOrUpdateCustomGoal.isPending ? 'Saving...' : 'Save Goal'}
+                </Button>
+                <Button variant="outline" onClick={resetCustomGoalForm}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Display Custom Goals */}
+          {customGoals.length === 0 && !showCustomGoalForm && (
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
+              <p className="text-gray-600 dark:text-gray-400 mb-2">
+                No custom goals yet
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-500">
+                Create up to 3 custom goals for assets, expenses, or income targets
+              </p>
+            </div>
+          )}
+
+          {customGoals.length > 0 && !showCustomGoalForm && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {customGoals.map((goal) => {
+                const progress = calculateCustomGoalProgress(goal);
+                return (
+                  <div
+                    key={goal.id}
+                    className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 space-y-3"
+                  >
+                    {/* Goal Header */}
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <span className="inline-block px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 mb-2">
+                          {goal.goal_type === 'asset' ? '🎯 Asset' : goal.goal_type === 'expense' ? '💰 Expense' : '📈 Income'}
+                        </span>
+                        <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                          {goal.title}
+                        </h4>
+                      </div>
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => handleEditCustomGoal(goal)}
+                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                        >
+                          <Edit className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm(`Are you sure you want to delete "${goal.title}"?`)) {
+                              deleteCustomGoal.mutate(goal.id);
+                            }
+                          }}
+                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                        >
+                          <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Goal Details */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">Target:</span>
+                        <span className="font-medium text-gray-900 dark:text-gray-100">
+                          {formatCurrency(parseFloat(goal.target_amount))}
+                        </span>
+                      </div>
+                      {goal.target_date && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600 dark:text-gray-400">Date:</span>
+                          <span className="text-gray-900 dark:text-gray-100">
+                            {new Date(goal.target_date).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">Allocated:</span>
+                        <span className="font-medium text-gray-900 dark:text-gray-100">
+                          {formatCurrency(parseFloat(goal.allocate_amount) || 0)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-gray-600 dark:text-gray-400">Progress</span>
+                        <span className="font-medium text-gray-900 dark:text-gray-100">
+                          {progress.toFixed(1)}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                        <div
+                          className="bg-green-600 dark:bg-green-500 h-full transition-all duration-300"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </SafeSection>
 
