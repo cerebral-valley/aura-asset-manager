@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.156',
+  version: 'v0.157',
   buildDate: '2025-10-08',
-  deploymentId: 'goals-phase8-complete',
-  description: 'Goals Feature Phase 8 COMPLETE - Mark as Complete & Goal Logs: Added CheckCircle buttons to Net Worth and Custom goal cards with completion mutations, implemented full Goal Logs functionality displaying completed goals with completion dates/details/achievement status, added delete functionality for completed goals, comprehensive filtering for active vs completed goals. All 8 phases of Goals feature now complete with full CRUD operations, progress tracking, completion management, and historical goal logging.'
+  deploymentId: 'goals-completion-fix',
+  description: 'Goals completion functionality fix - Removed frontend completed_date override to let backend handle completion date automatically. Fixed tick button functionality for marking goals as complete and moving them to Goal Logs section.'
 }
 
 export const getVersionDisplay = () => {

@@ -119,8 +119,8 @@ const GoalsPage = () => {
     mutationFn: async () => {
       if (netWorthGoal) {
         return await goalsService.updateGoal(netWorthGoal.id, { 
-          goal_completed: true,
-          completed_date: new Date().toISOString()
+          goal_completed: true
+          // Backend automatically sets completed_date to current date
         });
       }
     },
@@ -260,8 +260,8 @@ const GoalsPage = () => {
   const completeCustomGoal = useMutation({
     mutationFn: async (goalId) => {
       return await goalsService.updateGoal(goalId, { 
-        goal_completed: true,
-        completed_date: new Date().toISOString()
+        goal_completed: true
+        // Backend automatically sets completed_date to current date
       });
     },
     onSuccess: () => {
