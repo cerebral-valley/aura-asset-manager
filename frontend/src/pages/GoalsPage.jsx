@@ -625,12 +625,11 @@ const GoalsPage = () => {
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className={`text-xl font-semibold ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
-            Custom Goals ({formatCurrency(selectedTotalPresent)} | {formatCurrency(availableForAllocation)})
+            Custom Goals (Amount Allocated: {formatCurrency(selectedTotalPresent)} | Available: {formatCurrency(availableForAllocation)})
           </h2>
           {!showCustomGoalForm && customGoals.length < 3 && (
             <Button 
-              onClick={() => setShowCustomGoalForm(true)} 
-              className="bg-pink-500 hover:bg-pink-600 text-white"
+              onClick={() => setShowCustomGoalForm(true)}
             >
               + Add New Goal
             </Button>
@@ -810,6 +809,12 @@ const GoalsPage = () => {
                         <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Allocated:</span>
                         <span className={`font-medium ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
                           {formatCurrency(parseFloat(goal.allocate_amount) || 0)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Remaining:</span>
+                        <span className={`font-medium ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                          {formatCurrency(Math.max(0, parseFloat(goal.target_amount) - (parseFloat(goal.allocate_amount) || 0)))}
                         </span>
                       </div>
                     </div>

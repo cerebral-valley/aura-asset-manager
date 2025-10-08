@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.159',
+  version: 'v0.160',
   buildDate: '2025-10-08',
-  deploymentId: 'custom-goals-allocation-display',
-  description: 'Enhanced Custom Goals header to display Amount Allocated and Available for Allocation amounts. Removed redundant selected assets total text from form for cleaner UI.'
+  deploymentId: 'custom-goals-ui-improvements',
+  description: 'Enhanced Custom Goals UX: Added clear labels to allocation header (Amount Allocated vs Available), added remaining amount display for each goal, and fixed Add New Goal button to follow theme colors instead of hardcoded pink.'
 }
 
 export const getVersionDisplay = () => {
