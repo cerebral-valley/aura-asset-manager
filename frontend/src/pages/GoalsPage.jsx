@@ -114,6 +114,26 @@ const GoalsPage = () => {
     }
   });
 
+  // Mutation for completing net worth goal
+  const completeNetWorthGoal = useMutation({
+    mutationFn: async () => {
+      if (netWorthGoal) {
+        return await goalsService.updateGoal(netWorthGoal.id, { 
+          goal_completed: true,
+          completed_date: new Date().toISOString()
+        });
+      }
+    },
+    onSuccess: () => {
+      invalidationHelpers.invalidateGoals(queryClient);
+      toast.success('Net worth goal marked as complete!');
+    },
+    onError: (error) => {
+      console.error('Failed to complete net worth goal:', error);
+      toast.error('Failed to complete net worth goal');
+    }
+  });
+
   // Handle save net worth goal
   const handleSaveNetWorthGoal = () => {
     const targetAmount = parseFloat(netWorthTargetAmount);
@@ -137,6 +157,27 @@ const GoalsPage = () => {
       setNetWorthTargetAmount(netWorthGoal.target_amount.toString());
       setNetWorthTargetDate(netWorthGoal.target_date || '');
       setShowNetWorthForm(true);
+    }
+  };
+
+  // Handle complete net worth goal
+  const handleCompleteNetWorthGoal = () => {
+    if (confirm('Mark this net worth goal as complete? This will move it to Goal Logs.')) {
+      completeNetWorthGoal.mutate();
+    }
+  };
+
+  // Handle complete custom goal
+  const handleCompleteCustomGoal = (goalId, goalTitle) => {
+    if (confirm(`Mark "${goalTitle}" as complete? This will move it to Goal Logs.`)) {
+      completeCustomGoal.mutate(goalId);
+    }
+  };
+
+  // Handle delete completed goal from Goal Logs
+  const handleDeleteCompletedGoal = (goalId, goalTitle) => {
+    if (confirm(`Permanently delete "${goalTitle}" from Goal Logs? This action cannot be undone.`)) {
+      deleteCompletedGoal.mutate(goalId);
     }
   };
 
@@ -164,6 +205,11 @@ const GoalsPage = () => {
   // Filter custom goals (not net_worth, not completed)
   const customGoals = useMemo(() => {
     return goals.filter(goal => goal.goal_type !== 'net_worth' && !goal.goal_completed);
+  }, [goals]);
+
+  // Filter completed goals for Goal Logs
+  const completedGoals = useMemo(() => {
+    return goals.filter(goal => goal.goal_completed === true);
   }, [goals]);
 
   // State for custom goals form
@@ -207,6 +253,39 @@ const GoalsPage = () => {
     onError: (error) => {
       console.error('Failed to delete custom goal:', error);
       toast.error('Failed to delete custom goal');
+    }
+  });
+
+  // Mutation for completing custom goal
+  const completeCustomGoal = useMutation({
+    mutationFn: async (goalId) => {
+      return await goalsService.updateGoal(goalId, { 
+        goal_completed: true,
+        completed_date: new Date().toISOString()
+      });
+    },
+    onSuccess: () => {
+      invalidationHelpers.invalidateGoals(queryClient);
+      toast.success('Goal marked as complete!');
+    },
+    onError: (error) => {
+      console.error('Failed to complete custom goal:', error);
+      toast.error('Failed to complete custom goal');
+    }
+  });
+
+  // Mutation for deleting completed goals from Goal Logs
+  const deleteCompletedGoal = useMutation({
+    mutationFn: async (goalId) => {
+      return await goalsService.deleteGoal(goalId);
+    },
+    onSuccess: () => {
+      invalidationHelpers.invalidateGoals(queryClient);
+      toast.success('Completed goal removed from logs');
+    },
+    onError: (error) => {
+      console.error('Failed to delete completed goal:', error);
+      toast.error('Failed to delete completed goal');
     }
   });
 
@@ -468,6 +547,15 @@ const GoalsPage = () => {
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={handleCompleteNetWorthGoal}
+                    className="border-green-500 text-green-600 hover:bg-green-50"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-1" />
+                    Mark Complete
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => {
                       if (confirm('Are you sure you want to delete this net worth goal?')) {
                         deleteNetWorthGoal.mutate();
@@ -674,6 +762,13 @@ const GoalsPage = () => {
                           <Edit className={`h-4 w-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
                         </button>
                         <button
+                          onClick={() => handleCompleteCustomGoal(goal.id, goal.title)}
+                          className={`p-1 rounded ${isDark ? 'hover:bg-green-800/20' : 'hover:bg-green-100'}`}
+                          title="Mark as complete"
+                        >
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        </button>
+                        <button
                           onClick={() => {
                             if (confirm(`Are you sure you want to delete "${goal.title}"?`)) {
                               deleteCustomGoal.mutate(goal.id);
@@ -750,15 +845,98 @@ const GoalsPage = () => {
         );
       })()}
 
-      {/* Goal Logs Section (Phase 8) */}
+      {/* Goal Logs Section */}
       <div className="mb-6">
         <h2 className={`text-xl font-semibold mb-4 ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
           Goal Logs
         </h2>
         <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded shadow p-6`}>
-          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-            Goal Logs section coming in Phase 8
-          </p>
+          {completedGoals.length === 0 ? (
+            <div className="text-center py-8">
+              <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'} mb-2`}>
+                No completed goals yet
+              </p>
+              <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                Completed goals will appear here for tracking your achievements
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                {completedGoals.length} completed goal{completedGoals.length !== 1 ? 's' : ''}
+              </p>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {completedGoals.map((goal) => (
+                  <div
+                    key={goal.id}
+                    className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'} border rounded-lg p-4 space-y-3`}
+                  >
+                    {/* Completed Goal Header */}
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                          <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${isDark ? 'bg-green-900/50 text-green-200' : 'bg-green-100 text-green-800'}`}>
+                            {goal.goal_type === 'net_worth' ? '📊 Net Worth' : 
+                             goal.goal_type === 'asset' ? '🎯 Asset' : 
+                             goal.goal_type === 'expense' ? '💰 Expense' : '📈 Income'} - Completed
+                          </span>
+                        </div>
+                        <h4 className={`font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} mb-1`}>
+                          {goal.goal_type === 'net_worth' ? 'Net Worth Goal' : goal.title}
+                        </h4>
+                        {goal.completed_date && (
+                          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                            Completed: {new Date(goal.completed_date).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => handleDeleteCompletedGoal(goal.id, goal.goal_type === 'net_worth' ? 'Net Worth Goal' : goal.title)}
+                        className={`p-2 rounded ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
+                        title="Remove from logs"
+                      >
+                        <Trash2 className={`h-4 w-4 ${isDark ? 'text-red-400' : 'text-red-600'}`} />
+                      </button>
+                    </div>
+
+                    {/* Completed Goal Details */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <span className={`block ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Target Amount:</span>
+                        <span className={`font-medium ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                          {formatCurrency(parseFloat(goal.target_amount))}
+                        </span>
+                      </div>
+                      {goal.goal_type !== 'net_worth' && (
+                        <div>
+                          <span className={`block ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Allocated:</span>
+                          <span className={`font-medium ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                            {formatCurrency(parseFloat(goal.allocate_amount) || 0)}
+                          </span>
+                        </div>
+                      )}
+                      {goal.target_date && (
+                        <div>
+                          <span className={`block ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Target Date:</span>
+                          <span className={`font-medium ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                            {new Date(goal.target_date).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+                      <div>
+                        <span className={`block ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Achievement:</span>
+                        <span className="font-medium text-green-600">
+                          ✓ Completed
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

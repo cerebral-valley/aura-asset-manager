@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.155',
+  version: 'v0.156',
   buildDate: '2025-10-08',
-  deploymentId: 'goals-ui-complete',
-  description: 'Goals Feature Phase 7 Complete - UI Overhaul with Dark Theme Matching: Fixed critical JSX structure error, completed comprehensive UI redesign with isDark conditionals throughout all sections (Net Worth, Custom Goals, Goal Logs), added allocation validation warning with AlertTriangle icon, removed all dark: Tailwind prefixes in favor of ternary conditionals, updated form fields/buttons/cards to match app aesthetic (dark slate backgrounds, pink accent buttons). Phase 8 ready: Mark as Complete functionality and Goal Logs enhancement.'
+  deploymentId: 'goals-phase8-complete',
+  description: 'Goals Feature Phase 8 COMPLETE - Mark as Complete & Goal Logs: Added CheckCircle buttons to Net Worth and Custom goal cards with completion mutations, implemented full Goal Logs functionality displaying completed goals with completion dates/details/achievement status, added delete functionality for completed goals, comprehensive filtering for active vs completed goals. All 8 phases of Goals feature now complete with full CRUD operations, progress tracking, completion management, and historical goal logging.'
 }
 
 export const getVersionDisplay = () => {
