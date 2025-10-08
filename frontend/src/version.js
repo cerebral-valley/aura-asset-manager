@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.158',
+  version: 'v0.159',
   buildDate: '2025-10-08',
-  deploymentId: 'completion-date-preservation',
-  description: 'Goal completion date preservation fix - Backend now preserves original completion dates instead of overwriting with current date. Prevents all completed goals from showing same completion date.'
+  deploymentId: 'custom-goals-allocation-display',
+  description: 'Enhanced Custom Goals header to display Amount Allocated and Available for Allocation amounts. Removed redundant selected assets total text from form for cleaner UI.'
 }
 
 export const getVersionDisplay = () => {

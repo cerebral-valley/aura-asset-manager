@@ -212,6 +212,18 @@ const GoalsPage = () => {
     return goals.filter(goal => goal.goal_completed === true);
   }, [goals]);
 
+  // Calculate total allocated amount from incomplete goals
+  const totalAllocatedAmount = useMemo(() => {
+    return customGoals.reduce((sum, goal) => {
+      return sum + (parseFloat(goal.allocate_amount) || 0);
+    }, 0);
+  }, [customGoals]);
+
+  // Calculate available allocation (Amount Allocated - Sum of allocate_amount for incomplete goals)
+  const availableForAllocation = useMemo(() => {
+    return selectedTotalPresent - totalAllocatedAmount;
+  }, [selectedTotalPresent, totalAllocatedAmount]);
+
   // State for custom goals form
   const [showCustomGoalForm, setShowCustomGoalForm] = useState(false);
   const [editingGoalId, setEditingGoalId] = useState(null);
@@ -613,7 +625,7 @@ const GoalsPage = () => {
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className={`text-xl font-semibold ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
-            Custom Goals
+            Custom Goals ({formatCurrency(selectedTotalPresent)} | {formatCurrency(availableForAllocation)})
           </h2>
           {!showCustomGoalForm && customGoals.length < 3 && (
             <Button 
@@ -706,9 +718,6 @@ const GoalsPage = () => {
                   placeholder="e.g., 10000"
                   className={`w-full px-3 py-2 border rounded-md ${isDark ? 'border-gray-600 bg-gray-800 text-gray-100' : 'border-gray-300 bg-white text-gray-900'}`}
                 />
-                <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'} mt-1`}>
-                  Selected assets total: {formatCurrency(selectedTotalPresent)}
-                </p>
               </div>
 
               <div className="flex gap-2">
