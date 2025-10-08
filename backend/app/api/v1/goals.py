@@ -92,10 +92,12 @@ async def update_goal(
     # Special handling for goal completion
     if 'goal_completed' in update_data:
         if update_data['goal_completed']:
-            # Mark as completed with current date
-            update_data['completed_date'] = date.today()
+            # Only set completion date if not already set (preserve original)
+            if goal.completed_date is None:
+                update_data['completed_date'] = date.today()
+            # If goal.completed_date already exists, preserve it
         else:
-            # Un-complete the goal
+            # Un-complete the goal - clear completion date
             update_data['completed_date'] = None
     
     for field, value in update_data.items():

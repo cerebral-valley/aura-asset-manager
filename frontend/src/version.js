@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.157',
+  version: 'v0.158',
   buildDate: '2025-10-08',
-  deploymentId: 'goals-completion-fix',
-  description: 'Goals completion functionality fix - Removed frontend completed_date override to let backend handle completion date automatically. Fixed tick button functionality for marking goals as complete and moving them to Goal Logs section.'
+  deploymentId: 'completion-date-preservation',
+  description: 'Goal completion date preservation fix - Backend now preserves original completion dates instead of overwriting with current date. Prevents all completed goals from showing same completion date.'
 }
 
 export const getVersionDisplay = () => {
