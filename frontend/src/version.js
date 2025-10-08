@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.154',
-  buildDate: '2025-10-04',
-  deploymentId: 'goals-feature-complete',
-  description: 'Goals Feature Complete (Phases 1-6) - Full Goals page with: (1) Selected assets table showing is_selected=true assets with all columns, (2) Net worth goal with target setting, progress bar, monthly growth calculation, (3) Custom goals with +Add button, 3-goal limit, type selection (asset/expense/income), allocation tracking, Edit/Delete actions, (4) TanStack Query mutations for all CRUD operations. Ready for Phase 7-8: UI polish, allocation validation warning, Mark as Complete functionality, Goal Logs section.'
+  version: 'v0.155',
+  buildDate: '2025-10-08',
+  deploymentId: 'goals-ui-complete',
+  description: 'Goals Feature Phase 7 Complete - UI Overhaul with Dark Theme Matching: Fixed critical JSX structure error, completed comprehensive UI redesign with isDark conditionals throughout all sections (Net Worth, Custom Goals, Goal Logs), added allocation validation warning with AlertTriangle icon, removed all dark: Tailwind prefixes in favor of ternary conditionals, updated form fields/buttons/cards to match app aesthetic (dark slate backgrounds, pink accent buttons). Phase 8 ready: Mark as Complete functionality and Goal Logs enhancement.'
 }
 
 export const getVersionDisplay = () => {

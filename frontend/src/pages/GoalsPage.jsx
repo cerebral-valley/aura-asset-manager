@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
+import { useChartColors } from '../hooks/useChartColors';
 import { useCurrency } from '../hooks/useCurrency';
 import { Button } from '../components/ui/button';
 import { assetsService } from '../services/assets';
@@ -8,12 +9,12 @@ import { goalsService } from '../services/goals';
 import { queryKeys, invalidationHelpers } from '../lib/queryKeys';
 import { toast } from 'sonner';
 import Loading from '../components/ui/Loading';
-import SafeSection from '../components/util/SafeSection';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, CheckCircle, AlertTriangle } from 'lucide-react';
 
 const GoalsPage = () => {
   const { user } = useAuth();
   const { formatCurrency } = useCurrency();
+  const { isDark } = useChartColors();
 
   // Fetch assets for selected assets display
   const {
@@ -277,62 +278,61 @@ const GoalsPage = () => {
   // Error state
   if (assetsError || goalsError) {
     return (
-      <div className="p-6">
-        <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
-          <p className="text-red-800 dark:text-red-200">
-            Error loading data. Please refresh the page.
-          </p>
+      <div className={`p-6 min-h-screen ${isDark ? 'bg-black text-neutral-100' : 'bg-gray-50'}`}>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <p>Error loading data. Please refresh the page.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className={`p-6 min-h-screen ${isDark ? 'bg-black text-neutral-100' : 'bg-gray-50'}`}>
       {/* Page Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            Financial Goals
-          </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Track your financial goals and allocate selected assets towards achieving them
-          </p>
-        </div>
+      <div className="mb-6">
+        <h1 className={`text-3xl font-bold ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
+          Financial Goals
+        </h1>
+        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
+          Track your financial goals and allocate selected assets towards achieving them
+        </p>
       </div>
 
       {/* Selected Assets Section */}
-      <SafeSection title="Selected Assets for Goals Allocation">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="mb-6">
+        <h2 className={`text-xl font-semibold mb-4 ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
+          Selected Assets for Goals Allocation
+        </h2>
+        <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded shadow p-4 overflow-x-auto`}>
           {selectedAssets.length === 0 ? (
             <div className="p-8 text-center">
-              <p className="text-gray-600 dark:text-gray-400 mb-2">
+              <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'} mb-2`}>
                 No assets selected for goals allocation
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-500">
+              <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
                 Go to Assets page and select assets you want to allocate towards your goals
               </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-900/50">
-                  <tr>
-                    <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <table className="min-w-full">
+                <thead>
+                  <tr className={`${isDark ? 'border-gray-600' : 'border-gray-200'} border-b`}>
+                    <th className={`py-3 px-4 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>
                       Asset Name
                     </th>
-                    <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className={`py-3 px-4 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>
                       Type
                     </th>
-                    <th className="py-3 px-4 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className={`py-3 px-4 text-right text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>
                       Present Value
                     </th>
-                    <th className="py-3 px-4 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className={`py-3 px-4 text-right text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>
                       % of Total
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody>
                   {selectedAssets.map((asset) => {
                     const presentValue = getPresentValue(asset);
                     const percentage = selectedTotalPresent > 0 
@@ -340,17 +340,17 @@ const GoalsPage = () => {
                       : 0;
                     
                     return (
-                      <tr key={asset.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                        <td className="py-2 px-4 text-sm text-gray-900 dark:text-gray-100">
+                      <tr key={asset.id} className={`border-t ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
+                        <td className={`py-2 px-4 text-sm ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
                           {asset.name}
                         </td>
-                        <td className="py-2 px-4 text-sm text-gray-600 dark:text-gray-400">
+                        <td className={`py-2 px-4 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                           {asset.asset_type}
                         </td>
-                        <td className="py-2 px-4 text-sm text-right font-medium text-gray-900 dark:text-gray-100">
+                        <td className={`py-2 px-4 text-sm text-right font-medium ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
                           {formatCurrency(presentValue)}
                         </td>
-                        <td className="py-2 px-4 text-sm text-right text-gray-600 dark:text-gray-400">
+                        <td className={`py-2 px-4 text-sm text-right ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                           {percentage}%
                         </td>
                       </tr>
@@ -358,17 +358,17 @@ const GoalsPage = () => {
                   })}
                   
                   {/* Total Row */}
-                  <tr className="bg-gray-100 dark:bg-gray-900/70 font-semibold">
-                    <td className="py-3 px-4 text-sm text-gray-900 dark:text-gray-100">
+                  <tr className={`border-t-2 font-bold ${isDark ? 'border-neutral-700 bg-neutral-950' : 'border-gray-300 bg-gray-50'}`}>
+                    <td className={`py-3 px-4 text-sm ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
                       Total Selected Assets
                     </td>
-                    <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
+                    <td className={`py-3 px-4 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                       {selectedAssets.length} asset{selectedAssets.length !== 1 ? 's' : ''}
                     </td>
-                    <td className="py-3 px-4 text-sm text-right font-bold text-gray-900 dark:text-gray-100">
+                    <td className={`py-3 px-4 text-sm text-right font-bold ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
                       {formatCurrency(selectedTotalPresent)}
                     </td>
-                    <td className="py-3 px-4 text-sm text-right text-gray-900 dark:text-gray-100">
+                    <td className={`py-3 px-4 text-sm text-right ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
                       100%
                     </td>
                   </tr>
@@ -377,16 +377,19 @@ const GoalsPage = () => {
             </div>
           )}
         </div>
-      </SafeSection>
+      </div>
 
       {/* Net Worth Goal Section */}
-      <SafeSection title="Net Worth Goal">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-4">
+      <div className="mb-6">
+        <h2 className={`text-xl font-semibold mb-4 ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
+          Net Worth Goal
+        </h2>
+        <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded shadow p-6`}>
           {/* Display current net worth */}
-          <div className="flex justify-between items-center pb-4 border-b border-gray-200 dark:border-gray-700">
+          <div className={`flex justify-between items-center pb-4 border-b ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Present Net Worth (Selected Assets)</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Present Net Worth (Selected Assets)</p>
+              <p className={`text-2xl font-bold ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
                 {formatCurrency(selectedTotalPresent)}
               </p>
             </div>
@@ -399,9 +402,9 @@ const GoalsPage = () => {
 
           {/* Net Worth Goal Form */}
           {showNetWorthForm && (
-            <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+            <div className={`space-y-4 p-4 ${isDark ? 'bg-neutral-800/50' : 'bg-gray-50'} rounded-lg mt-4`}>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
                   Target Net Worth Amount *
                 </label>
                 <input
@@ -409,18 +412,18 @@ const GoalsPage = () => {
                   value={netWorthTargetAmount}
                   onChange={(e) => setNetWorthTargetAmount(e.target.value)}
                   placeholder="e.g., 1000000"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  className={`w-full px-3 py-2 rounded border text-sm ${isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100' : 'bg-white border-gray-300 text-gray-900'}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
                   Target Date (Optional)
                 </label>
                 <input
                   type="date"
                   value={netWorthTargetDate}
                   onChange={(e) => setNetWorthTargetDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  className={`w-full px-3 py-2 rounded border text-sm ${isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100' : 'bg-white border-gray-300 text-gray-900'}`}
                 />
               </div>
               <div className="flex gap-2">
@@ -441,14 +444,14 @@ const GoalsPage = () => {
           {/* Display existing net worth goal */}
           {!showNetWorthForm && netWorthGoal && (
             <div className="space-y-4">
-              <div className="flex justify-between items-start">
+              <div className="flex justify-between items-start mt-4">
                 <div className="flex-1">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Target Net Worth</p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Target Net Worth</p>
+                  <p className={`text-xl font-bold ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
                     {formatCurrency(parseFloat(netWorthGoal.target_amount))}
                   </p>
                   {netWorthGoal.target_date && (
-                    <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                    <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'} mt-1`}>
                       Target Date: {new Date(netWorthGoal.target_date).toLocaleDateString()}
                     </p>
                   )}
@@ -480,22 +483,22 @@ const GoalsPage = () => {
               {/* Progress Bar */}
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-600 dark:text-gray-400">Progress</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">
+                  <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Progress</span>
+                  <span className={`font-medium ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
                     {netWorthProgress.toFixed(1)}%
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 overflow-hidden">
+                <div className={`w-full ${isDark ? 'bg-neutral-700' : 'bg-gray-200'} rounded-full h-4 overflow-hidden`}>
                   <div
-                    className="bg-blue-600 dark:bg-blue-500 h-full transition-all duration-300"
+                    className="bg-blue-600 h-full transition-all duration-300"
                     style={{ width: `${netWorthProgress}%` }}
                   />
                 </div>
                 <div className="flex justify-between text-sm mt-2">
-                  <span className="text-gray-600 dark:text-gray-400">
+                  <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>
                     Current: {formatCurrency(selectedTotalPresent)}
                   </span>
-                  <span className="text-gray-600 dark:text-gray-400">
+                  <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>
                     Remaining: {formatCurrency(Math.max(0, parseFloat(netWorthGoal.target_amount) - selectedTotalPresent))}
                   </span>
                 </div>
@@ -503,12 +506,12 @@ const GoalsPage = () => {
 
               {/* Monthly Growth Calculation */}
               {monthlyGrowthNeeded !== null && netWorthGoal.target_date && (
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                <div className={`${isDark ? 'bg-blue-900/20 border border-blue-800' : 'bg-blue-50 border border-blue-200'} p-4 rounded-lg`}>
+                  <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                     To reach your target by {new Date(netWorthGoal.target_date).toLocaleDateString()}, 
                     you need to grow your net worth by approximately:
                   </p>
-                  <p className="text-xl font-bold text-blue-700 dark:text-blue-400 mt-2">
+                  <p className={`text-xl font-bold ${isDark ? 'text-blue-400' : 'text-blue-700'} mt-2`}>
                     {formatCurrency(monthlyGrowthNeeded)} / month
                   </p>
                 </div>
@@ -516,44 +519,49 @@ const GoalsPage = () => {
             </div>
           )}
         </div>
-      </SafeSection>
+      </div>
 
       {/* Custom Goals Section */}
-      <SafeSection title="Custom Goals">
-        <div className="space-y-4">
-          {/* Add New Goal Button */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className={`text-xl font-semibold ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
+            Custom Goals
+          </h2>
           {!showCustomGoalForm && customGoals.length < 3 && (
-            <div className="flex justify-end">
-              <Button onClick={() => setShowCustomGoalForm(true)} size="sm">
-                + Add New Goal
-              </Button>
-            </div>
+            <Button 
+              onClick={() => setShowCustomGoalForm(true)} 
+              className="bg-pink-500 hover:bg-pink-600 text-white"
+            >
+              + Add New Goal
+            </Button>
           )}
+        </div>
 
-          {/* Maximum goals notice */}
-          {customGoals.length >= 3 && !showCustomGoalForm && (
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
-              <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                Maximum of 3 custom goals reached. Delete a goal to add another.
-              </p>
-            </div>
-          )}
+        {/* Maximum goals notice */}
+        {customGoals.length >= 3 && !showCustomGoalForm && (
+          <div className={`${isDark ? 'bg-yellow-900/20 border-yellow-800' : 'bg-yellow-50 border-yellow-200'} border rounded-lg p-3 mb-4`}>
+            <p className={`text-sm ${isDark ? 'text-yellow-200' : 'text-yellow-800'}`}>
+              Maximum of 3 custom goals reached. Delete a goal to add another.
+            </p>
+          </div>
+        )}
 
-          {/* Custom Goal Form */}
-          {showCustomGoalForm && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-4">
-              <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
-                {editingGoalId ? 'Edit Goal' : 'Add New Goal'}
-              </h3>
-              
+        {/* Custom Goal Form */}
+        {showCustomGoalForm && (
+          <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded shadow p-6 mb-4`}>
+            <h3 className={`font-semibold text-lg mb-4 ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
+              {editingGoalId ? 'Edit Goal' : 'Add New Goal'}
+            </h3>
+            
+            <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
                   Goal Type *
                 </label>
                 <select
                   value={customGoalType}
                   onChange={(e) => setCustomGoalType(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  className={`w-full px-3 py-2 border rounded-md ${isDark ? 'border-gray-600 bg-gray-800 text-gray-100' : 'border-gray-300 bg-white text-gray-900'}`}
                 >
                   <option value="asset">Asset Goal</option>
                   <option value="expense">Expense Goal</option>
@@ -562,7 +570,7 @@ const GoalsPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
                   Goal Title *
                 </label>
                 <input
@@ -570,12 +578,12 @@ const GoalsPage = () => {
                   value={customGoalTitle}
                   onChange={(e) => setCustomGoalTitle(e.target.value)}
                   placeholder="e.g., Buy a new car, Vacation fund"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  className={`w-full px-3 py-2 border rounded-md ${isDark ? 'border-gray-600 bg-gray-800 text-gray-100' : 'border-gray-300 bg-white text-gray-900'}`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
                   Target Amount *
                 </label>
                 <input
@@ -583,24 +591,24 @@ const GoalsPage = () => {
                   value={customGoalTargetAmount}
                   onChange={(e) => setCustomGoalTargetAmount(e.target.value)}
                   placeholder="e.g., 50000"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  className={`w-full px-3 py-2 border rounded-md ${isDark ? 'border-gray-600 bg-gray-800 text-gray-100' : 'border-gray-300 bg-white text-gray-900'}`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
                   Target Date (Optional)
                 </label>
                 <input
                   type="date"
                   value={customGoalTargetDate}
                   onChange={(e) => setCustomGoalTargetDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  className={`w-full px-3 py-2 border rounded-md ${isDark ? 'border-gray-600 bg-gray-800 text-gray-100' : 'border-gray-300 bg-white text-gray-900'}`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
                   Allocate from Selected Assets
                 </label>
                 <input
@@ -608,9 +616,9 @@ const GoalsPage = () => {
                   value={customGoalAllocateAmount}
                   onChange={(e) => setCustomGoalAllocateAmount(e.target.value)}
                   placeholder="e.g., 10000"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  className={`w-full px-3 py-2 border rounded-md ${isDark ? 'border-gray-600 bg-gray-800 text-gray-100' : 'border-gray-300 bg-white text-gray-900'}`}
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'} mt-1`}>
                   Selected assets total: {formatCurrency(selectedTotalPresent)}
                 </p>
               </div>
@@ -624,15 +632,16 @@ const GoalsPage = () => {
                 </Button>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
           {/* Display Custom Goals */}
           {customGoals.length === 0 && !showCustomGoalForm && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
-              <p className="text-gray-600 dark:text-gray-400 mb-2">
+            <div className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-sm border p-8 text-center`}>
+              <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'} mb-2`}>
                 No custom goals yet
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-500">
+              <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
                 Create up to 3 custom goals for assets, expenses, or income targets
               </p>
             </div>
@@ -645,24 +654,24 @@ const GoalsPage = () => {
                 return (
                   <div
                     key={goal.id}
-                    className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 space-y-3"
+                    className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-sm border p-4 space-y-3`}
                   >
                     {/* Goal Header */}
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <span className="inline-block px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 mb-2">
+                        <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${isDark ? 'bg-blue-900/50 text-blue-200' : 'bg-blue-100 text-blue-800'} mb-2`}>
                           {goal.goal_type === 'asset' ? '🎯 Asset' : goal.goal_type === 'expense' ? '💰 Expense' : '📈 Income'}
                         </span>
-                        <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                        <h4 className={`font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
                           {goal.title}
                         </h4>
                       </div>
                       <div className="flex gap-1">
                         <button
                           onClick={() => handleEditCustomGoal(goal)}
-                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                          className={`p-1 rounded ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
                         >
-                          <Edit className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                          <Edit className={`h-4 w-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
                         </button>
                         <button
                           onClick={() => {
@@ -670,9 +679,9 @@ const GoalsPage = () => {
                               deleteCustomGoal.mutate(goal.id);
                             }
                           }}
-                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                          className={`p-1 rounded ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
                         >
-                          <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
+                          <Trash2 className={`h-4 w-4 ${isDark ? 'text-red-400' : 'text-red-600'}`} />
                         </button>
                       </div>
                     </div>
@@ -680,22 +689,22 @@ const GoalsPage = () => {
                     {/* Goal Details */}
                     <div className="space-y-1">
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600 dark:text-gray-400">Target:</span>
-                        <span className="font-medium text-gray-900 dark:text-gray-100">
+                        <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Target:</span>
+                        <span className={`font-medium ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
                           {formatCurrency(parseFloat(goal.target_amount))}
                         </span>
                       </div>
                       {goal.target_date && (
                         <div className="flex justify-between text-sm">
-                          <span className="text-gray-600 dark:text-gray-400">Date:</span>
-                          <span className="text-gray-900 dark:text-gray-100">
+                          <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Date:</span>
+                          <span className={isDark ? 'text-gray-100' : 'text-gray-900'}>
                             {new Date(goal.target_date).toLocaleDateString()}
                           </span>
                         </div>
                       )}
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600 dark:text-gray-400">Allocated:</span>
-                        <span className="font-medium text-gray-900 dark:text-gray-100">
+                        <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Allocated:</span>
+                        <span className={`font-medium ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
                           {formatCurrency(parseFloat(goal.allocate_amount) || 0)}
                         </span>
                       </div>
@@ -704,14 +713,14 @@ const GoalsPage = () => {
                     {/* Progress Bar */}
                     <div>
                       <div className="flex justify-between text-xs mb-1">
-                        <span className="text-gray-600 dark:text-gray-400">Progress</span>
-                        <span className="font-medium text-gray-900 dark:text-gray-100">
+                        <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Progress</span>
+                        <span className={`font-medium ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
                           {progress.toFixed(1)}%
                         </span>
                       </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                      <div className={`w-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-2 overflow-hidden`}>
                         <div
-                          className="bg-green-600 dark:bg-green-500 h-full transition-all duration-300"
+                          className={`${isDark ? 'bg-green-500' : 'bg-green-600'} h-full transition-all duration-300`}
                           style={{ width: `${progress}%` }}
                         />
                       </div>
@@ -721,17 +730,37 @@ const GoalsPage = () => {
               })}
             </div>
           )}
-        </div>
-      </SafeSection>
+      </div>
 
-      {/* Placeholder for Goal Logs Section (Phase 8) */}
-      <SafeSection title="Goal Logs">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <p className="text-gray-500 dark:text-gray-400 text-sm">
+      {/* Allocation Validation Warning */}
+      {(() => {
+        const totalAllocated = customGoals.reduce((sum, goal) => sum + (parseFloat(goal.allocate_amount) || 0), 0);
+        return totalAllocated > selectedTotalPresent && (
+          <div className={`rounded p-4 mb-6 ${isDark ? 'bg-red-900/20 border border-red-800' : 'bg-red-50 border border-red-200'}`}>
+            <div className="flex items-center">
+              <AlertTriangle className={`h-5 w-5 mr-2 ${isDark ? 'text-red-400' : 'text-red-600'}`} />
+              <p className={`font-medium ${isDark ? 'text-red-200' : 'text-red-800'}`}>
+                Allocation Exceeds Available Funds
+              </p>
+            </div>
+            <p className={`text-sm mt-2 ${isDark ? 'text-red-300' : 'text-red-700'}`}>
+              Total allocated: {formatCurrency(totalAllocated)} exceeds selected assets: {formatCurrency(selectedTotalPresent)}
+            </p>
+          </div>
+        );
+      })()}
+
+      {/* Goal Logs Section (Phase 8) */}
+      <div className="mb-6">
+        <h2 className={`text-xl font-semibold mb-4 ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
+          Goal Logs
+        </h2>
+        <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded shadow p-6`}>
+          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
             Goal Logs section coming in Phase 8
           </p>
         </div>
-      </SafeSection>
+      </div>
     </div>
   );
 };
