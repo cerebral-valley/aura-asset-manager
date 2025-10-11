@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.172',
-  buildDate: '2025-01-13',
-  deploymentId: 'insurance-document-display-fixes',
-  description: 'Fix document metadata display issues - correct property names and date formatting'
+  version: 'v0.173',
+  buildDate: '2025-10-12',
+  deploymentId: 'sentry-integration-debug',
+  description: 'Debug Sentry integration - add comprehensive logging and test button visibility'
 }
 
 export const getVersionDisplay = () => {
