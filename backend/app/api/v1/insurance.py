@@ -156,10 +156,10 @@ async def delete_insurance_policy(
 
 
 # Insurance Document Management Functions
-async def ensure_storage_bucket_exists(bucket_name: str = "insurance-documents") -> bool:
+async def ensure_storage_bucket_exists(bucket_name: str = "asset-documents") -> bool:
     """
-    Ensure the storage bucket exists for insurance documents.
-    Creates the bucket if it doesn't exist.
+    Ensure the Supabase storage bucket exists for insurance documents.
+    Uses the same bucket as assets for consistent storage structure.
     """
     try:
         print(f"🔍 Checking if bucket '{bucket_name}' exists...")
@@ -190,7 +190,7 @@ async def ensure_storage_bucket_exists(bucket_name: str = "insurance-documents")
                     "id": bucket_name,
                     "name": bucket_name,
                     "public": False,  # Private bucket for user documents
-                    "file_size_limit": 5242880,  # 5MB for insurance docs
+                    "file_size_limit": 52428800,  # 50MB per file (same as assets)
                     "allowed_mime_types": ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
                 }
             )
@@ -207,10 +207,10 @@ async def ensure_storage_bucket_exists(bucket_name: str = "insurance-documents")
         return False
 
 
-async def ensure_user_folder_exists(user_id: UUID, bucket_name: str = "insurance-documents") -> bool:
+async def ensure_user_folder_exists(user_id: UUID, bucket_name: str = "asset-documents") -> bool:
     """
-    Ensure the user-specific folder exists in the storage bucket.
-    Creates a placeholder file to establish the folder structure.
+    Ensure the user-specific folder exists in the asset-documents bucket.
+    Creates a placeholder file to establish the folder structure for insurance docs.
     """
     try:
         user_id_str = str(user_id)
@@ -306,14 +306,14 @@ async def upload_insurance_document(
 
     try:
         # Ensure bucket and user folder exist
-        bucket_exists = await ensure_storage_bucket_exists("insurance-documents")
+        bucket_exists = await ensure_storage_bucket_exists("asset-documents")
         if not bucket_exists:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to initialize storage"
             )
 
-        user_folder_exists = await ensure_user_folder_exists(UUID(str(current_user.id)), "insurance-documents")
+        user_folder_exists = await ensure_user_folder_exists(UUID(str(current_user.id)), "asset-documents")
         if not user_folder_exists:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -327,7 +327,7 @@ async def upload_insurance_document(
         
         # Upload to Supabase Storage
         async with httpx.AsyncClient() as client:
-            upload_url = f"{settings.SUPABASE_URL}/storage/v1/object/insurance-documents/{unique_filename}"
+            upload_url = f"{settings.SUPABASE_URL}/storage/v1/object/asset-documents/{unique_filename}"
             upload_response = await client.post(
                 upload_url,
                 headers={
@@ -462,7 +462,7 @@ async def download_insurance_document(
         # Get download URL from Supabase Storage
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{settings.SUPABASE_URL}/storage/v1/object/sign/insurance-documents/{document_path}",
+                f"{settings.SUPABASE_URL}/storage/v1/object/sign/asset-documents/{document_path}",
                 headers={
                     "Authorization": f"Bearer {settings.SUPABASE_SERVICE_KEY}",
                     "Content-Type": "application/json"
@@ -535,7 +535,7 @@ async def delete_insurance_document(
         # Delete from Supabase Storage
         async with httpx.AsyncClient() as client:
             response = await client.delete(
-                f"{settings.SUPABASE_URL}/storage/v1/object/insurance-documents/{document_path}",
+                f"{settings.SUPABASE_URL}/storage/v1/object/asset-documents/{document_path}",
                 headers={
                     "Authorization": f"Bearer {settings.SUPABASE_SERVICE_KEY}"
                 }
