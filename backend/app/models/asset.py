@@ -2,7 +2,7 @@
 Asset model for SQLAlchemy.
 """
 
-from sqlalchemy import Column, String, DateTime, Text, Date, ForeignKey, Numeric, Boolean
+from sqlalchemy import Column, String, DateTime, Text, Date, ForeignKey, Numeric, Boolean, Integer
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -30,6 +30,13 @@ class Asset(Base):
     is_selected = Column(Boolean, default=False)  # Whether this asset is currently selected for targets
     time_horizon = Column(Text)  # Investment time horizon: 'short_term', 'medium_term', 'long_term'
     asset_purpose = Column(Text)  # Investment purpose: 'Hyper Growth', 'Growth', 'Financial Security', 'Emergency Fund', 'Children's Education', 'Retirement Fund'
+    
+    # Document attachment fields
+    document_path = Column(Text)  # Storage path in Supabase Storage
+    document_name = Column(Text)  # Original filename
+    document_size = Column(Integer)  # File size in bytes
+    document_type = Column(Text)  # File type: 'pdf', 'jpeg', 'jpg', 'docx'
+    document_uploaded_at = Column(DateTime(timezone=True))  # Upload timestamp
     
     asset_metadata = Column("metadata", JSONB)  # Flexible JSON field for asset-specific characteristics
     created_at = Column(DateTime(timezone=True), server_default=func.now())

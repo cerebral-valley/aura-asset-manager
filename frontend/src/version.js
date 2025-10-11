@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.161',
+  version: 'v0.162',
   buildDate: '2025-10-11',
-  deploymentId: 'ui-improvements-goals-dashboard-guide',
-  description: 'Multiple UI improvements: Fixed Goals page asset type display to show user-friendly names instead of underscores, added comprehensive Goals page documentation to User Guide, and added total assets count and value display to Dashboard Portfolio Composition chart matching Insurance breakdown format.'
+  deploymentId: 'document-upload-phase-1-2-3',
+  description: 'Document Upload Feature Phase 1-3 Implementation: Database schema extension with 5 new document columns, Supabase Storage bucket setup with file validation, Backend API endpoints for upload/download/delete with 3MB/25MB limits, Frontend document service and AssetDocumentUpload component with drag-drop interface, Integration into asset edit modal for existing assets only.'
 }
 
 export const getVersionDisplay = () => {

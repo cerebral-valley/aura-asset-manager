@@ -23,6 +23,7 @@ import SafeSection from '../components/util/SafeSection';
 import { log, warn, error } from '@/lib/debug';
 import { Download, FileSpreadsheet, Plus } from 'lucide-react';
 import MatrixChart from '../components/charts/MatrixChart';
+import AssetDocumentUpload from '../components/assets/AssetDocumentUpload';
 
 const Assets = () => {
   const navigate = useNavigate();
@@ -1646,6 +1647,26 @@ const Assets = () => {
                     disabled={actionLoading}
                   />
                 </div>
+
+                {/* Document Upload Section - Only show for existing assets */}
+                {editAsset && (
+                  <div>
+                    <label className="block mb-3 font-medium">Document Attachment</label>
+                    <AssetDocumentUpload
+                      asset={editAsset}
+                      onUploadSuccess={(data) => {
+                        if (data) {
+                          toast.success(`Document "${data.document_name}" uploaded successfully`)
+                        } else {
+                          toast.success('Document removed successfully')
+                        }
+                      }}
+                      onUploadError={(error) => {
+                        toast.error(`Upload failed: ${error}`)
+                      }}
+                    />
+                  </div>
+                )}
 
                 {actionError && <div className="text-red-600 bg-red-50 p-3 rounded">{actionError}</div>}
 

@@ -25,6 +25,13 @@ class AssetBase(BaseModel):
     time_horizon: Optional[str] = None
     asset_purpose: Optional[str] = None
     
+    # Document attachment fields
+    document_path: Optional[str] = None
+    document_name: Optional[str] = None
+    document_size: Optional[int] = None
+    document_type: Optional[str] = None
+    document_uploaded_at: Optional[datetime] = None
+    
     asset_metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
     
     @field_validator('asset_metadata', mode='before')
@@ -55,6 +62,13 @@ class AssetUpdate(BaseModel):
     is_selected: Optional[bool] = None
     time_horizon: Optional[str] = None
     asset_purpose: Optional[str] = None
+    
+    # Document attachment fields (updatable)
+    document_path: Optional[str] = None
+    document_name: Optional[str] = None
+    document_size: Optional[int] = None
+    document_type: Optional[str] = None
+    document_uploaded_at: Optional[datetime] = None
     
     asset_metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
     
