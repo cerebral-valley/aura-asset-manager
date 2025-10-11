@@ -12,6 +12,22 @@ import { Alert, AlertDescription } from '../components/ui/alert.jsx'
 import Loading from '../components/ui/Loading'
 import SafeSection from '../components/util/SafeSection'
 import { log, warn, error } from '@/lib/debug'
+import * as Sentry from '@sentry/react'
+
+// Sentry Test Component - Remove this in production
+function SentryErrorButton() {
+  return (
+    <button
+      onClick={() => {
+        throw new Error('This is your first error!');
+      }}
+      className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+      title="Test Sentry Error Tracking (Development Only)"
+    >
+      Test Sentry Error
+    </button>
+  );
+}
 
 const Dashboard = () => {
   const { user } = useAuth()
@@ -105,10 +121,16 @@ const Dashboard = () => {
             {themeLabels.subtitle}
           </p>
         </div>
-        <div className="text-right">
+        <div className="text-right space-y-2">
           <div className="text-xs text-muted-foreground font-mono">
             {getVersionDisplay()}
           </div>
+          {/* Sentry Test Button - Remove in production */}
+          {import.meta.env.MODE === 'development' && (
+            <div className="flex justify-end">
+              <SentryErrorButton />
+            </div>
+          )}
         </div>
       </div>
 
