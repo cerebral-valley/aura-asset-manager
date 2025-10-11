@@ -1430,6 +1430,7 @@ const Assets = () => {
                     <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('share_percentage')}>
                       % Share {sortField === 'share_percentage' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
+                    <th className="text-left py-2 px-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1458,6 +1459,19 @@ const Assets = () => {
                         <td className="py-2 px-4">{asset.asset_purpose ? asset.asset_purpose.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : '-'}</td>
                         <td className="py-2 px-4">{asset.description || '-'}</td>
                         <td className="py-2 px-4">{formatPercentage(getPresentValue(asset), filteredTotalPresent)}</td>
+                        <td className="py-2 px-4">
+                          <button
+                            onClick={() => openModal(asset)}
+                            className={`px-3 py-1 text-xs rounded ${
+                              isDark 
+                                ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                : 'bg-blue-500 hover:bg-blue-600 text-white'
+                            } transition-colors`}
+                            aria-label={`Edit ${asset.name}`}
+                          >
+                            Edit
+                          </button>
+                        </td>
                       </tr>
                     </React.Fragment>
                   ))}
@@ -1475,6 +1489,7 @@ const Assets = () => {
                     <td className="py-2 px-4">-</td>
                     <td className="py-2 px-4">{filteredAndSortedAssets.length} assets</td>
                     <td className="py-2 px-4">100%</td>
+                    <td className="py-2 px-4">-</td>
                   </tr>
                   <tr className={`border-t font-semibold ${isDark ? 'bg-blue-950/30 text-blue-100' : 'bg-blue-50 text-blue-900'}`}>
                     <td className="py-2 px-4 text-center">✓</td>
@@ -1490,6 +1505,7 @@ const Assets = () => {
                     <td className="py-2 px-4">-</td>
                     <td className="py-2 px-4">{selectedAssets.length} selected</td>
                     <td className="py-2 px-4">{formatPercentage(selectedTotalPresent, filteredTotalPresent)}</td>
+                    <td className="py-2 px-4">-</td>
                   </tr>
                 </tbody>
               </table>

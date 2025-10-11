@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.163',
+  version: 'v0.164',
   buildDate: '2025-10-11',
-  deploymentId: 'fix-import-path-useauth',
-  description: 'Hotfix: Fixed import path for useAuth in AssetDocumentUpload component causing Vercel build failure. Changed from useAuth.js to useAuth (no extension) for proper Vite resolution.'
+  deploymentId: 'add-edit-buttons-access-documents',
+  description: 'Critical UI Fix: Added Edit buttons to Assets table to make document upload feature accessible to users. The feature was fully implemented but lacked UI access points.'
 }
 
 export const getVersionDisplay = () => {
