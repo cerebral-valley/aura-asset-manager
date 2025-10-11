@@ -1,6 +1,7 @@
 -- Migration: Add document attachment columns to assets table
 -- Created: October 11, 2025
--- Purpose: Support document uploads for assets (PDF, JPEG, DOCX files)
+-- Updated: October 11, 2025 - Added support for user-specific folder structure
+-- Purpose: Support document uploads for assets (PDF, JPEG, DOCX files) with user-specific folders
 
 -- Add document columns to assets table if they don't exist
 DO $$
@@ -27,9 +28,9 @@ $$;
 CREATE INDEX IF NOT EXISTS idx_assets_document_path ON assets(document_path);
 CREATE INDEX IF NOT EXISTS idx_assets_document_uploaded_at ON assets(document_uploaded_at);
 
--- Comment the new columns
-COMMENT ON COLUMN assets.document_path IS 'Storage path in Supabase Storage (bucket/user_id/filename)';
+-- Comment the new columns with updated structure information
+COMMENT ON COLUMN assets.document_path IS 'Storage path in Supabase Storage with user-specific folders (user_id/asset_id_filename.ext)';
 COMMENT ON COLUMN assets.document_name IS 'Original filename of uploaded document';
-COMMENT ON COLUMN assets.document_size IS 'File size in bytes (max 3MB per file)';
+COMMENT ON COLUMN assets.document_size IS 'File size in bytes (max 3MB per file, 25MB total per user)';
 COMMENT ON COLUMN assets.document_type IS 'File extension: pdf, jpeg, jpg, docx';
 COMMENT ON COLUMN assets.document_uploaded_at IS 'Timestamp when document was uploaded';

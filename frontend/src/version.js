@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.167',
-  buildDate: '2025-01-24',
-  deploymentId: 'backend-document-upload-debug',
-  description: 'Enhanced backend document upload with comprehensive debug logging and migration'
+  version: 'v0.168',
+  buildDate: '2025-10-11',
+  deploymentId: 'user-specific-storage-security',
+  description: 'Implement user-specific folder storage with Supabase security policies for document isolation'
 }
 
 export const getVersionDisplay = () => {

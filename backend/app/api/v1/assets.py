@@ -23,11 +23,10 @@ router = APIRouter()
 async def ensure_storage_bucket_exists(bucket_name: str = "asset-documents") -> bool:
     """
     Ensure the Supabase storage bucket exists, create it if it doesn't.
-    Returns True if bucket exists or was created successfully, False otherwise.
     """
     try:
+        print(f"🔍 Checking if storage bucket '{bucket_name}' exists...")
         async with httpx.AsyncClient() as client:
-            # First, try to get bucket info
             response = await client.get(
                 f"{settings.SUPABASE_URL}/storage/v1/bucket/{bucket_name}",
                 headers={
@@ -39,9 +38,8 @@ async def ensure_storage_bucket_exists(bucket_name: str = "asset-documents") -> 
             if response.status_code == 200:
                 print(f"✅ Storage bucket '{bucket_name}' already exists")
                 return True
-            
-            # If bucket doesn't exist (404), create it
-            if response.status_code == 404:
+            elif response.status_code == 404:
+                # Bucket doesn't exist, create it
                 print(f"📁 Creating storage bucket '{bucket_name}'...")
                 create_response = await client.post(
                     f"{settings.SUPABASE_URL}/storage/v1/bucket",
@@ -53,10 +51,10 @@ async def ensure_storage_bucket_exists(bucket_name: str = "asset-documents") -> 
                         "id": bucket_name,
                         "name": bucket_name,
                         "public": False,  # Private bucket for user documents
-                        "file_size_limit": 3145728,  # 3MB limit per file
+                        "file_size_limit": 52428800,  # 50MB per file
                         "allowed_mime_types": [
                             "application/pdf",
-                            "image/jpeg", 
+                            "image/jpeg",
                             "image/jpg",
                             "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                         ]
@@ -69,12 +67,68 @@ async def ensure_storage_bucket_exists(bucket_name: str = "asset-documents") -> 
                 else:
                     print(f"❌ Failed to create storage bucket: {create_response.status_code} - {create_response.text}")
                     return False
-            
-            print(f"❌ Unexpected response when checking bucket: {response.status_code} - {response.text}")
-            return False
-            
+            else:
+                print(f"❌ Unexpected response checking bucket: {response.status_code} - {response.text}")
+                return False
+                
     except Exception as e:
         print(f"❌ Error ensuring storage bucket exists: {str(e)}")
+        return False
+
+
+async def ensure_user_folder_exists(user_id: UUID, bucket_name: str = "asset-documents") -> bool:
+    """
+    Ensure the user-specific folder exists in the storage bucket.
+    Creates a placeholder file to establish the folder structure.
+    """
+    try:
+        user_id_str = str(user_id)
+        print(f"🔍 Checking if user folder '{user_id_str}/' exists in bucket '{bucket_name}'...")
+        
+        # Create a placeholder file to ensure the folder exists
+        placeholder_filename = f"{user_id_str}/.folder_placeholder"
+        placeholder_content = f"User folder created for {user_id_str}"
+        
+        async with httpx.AsyncClient() as client:
+            # Check if folder already has files (indicating it exists)
+            list_response = await client.post(
+                f"{settings.SUPABASE_URL}/storage/v1/object/list/{bucket_name}",
+                headers={
+                    "Authorization": f"Bearer {settings.SUPABASE_SERVICE_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "prefix": user_id_str,
+                    "limit": 1
+                }
+            )
+            
+            if list_response.status_code == 200:
+                files = list_response.json()
+                if files and len(files) > 0:
+                    print(f"✅ User folder '{user_id_str}/' already exists with {len(files)} files")
+                    return True
+            
+            # Folder doesn't exist or is empty, create placeholder
+            print(f"📁 Creating user folder '{user_id_str}/' with placeholder...")
+            upload_response = await client.post(
+                f"{settings.SUPABASE_URL}/storage/v1/object/{bucket_name}/{placeholder_filename}",
+                headers={
+                    "Authorization": f"Bearer {settings.SUPABASE_SERVICE_KEY}",
+                    "Content-Type": "text/plain"
+                },
+                content=placeholder_content.encode('utf-8')
+            )
+            
+            if upload_response.status_code in [200, 201]:
+                print(f"✅ User folder '{user_id_str}/' created successfully")
+                return True
+            else:
+                print(f"❌ Failed to create user folder: {upload_response.status_code} - {upload_response.text}")
+                return False
+                
+    except Exception as e:
+        print(f"❌ Error ensuring user folder exists: {str(e)}")
         return False
 
 @router.get("/", response_model=List[AssetSchema])
@@ -298,6 +352,17 @@ async def upload_asset_document(
                 detail="Storage service configuration error"
             )
         print(f"✅ Storage bucket ready")
+        
+        # Ensure the user-specific folder exists
+        print(f"👤 Checking/creating user folder...")
+        user_folder_exists = await ensure_user_folder_exists(UUID(str(current_user.id)), "asset-documents")
+        if not user_folder_exists:
+            print(f"❌ Failed to create/access user folder")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="User storage folder configuration error"
+            )
+        print(f"✅ User folder ready")
         
         # Upload to Supabase Storage using REST API
         print(f"🚀 Uploading to Supabase Storage...")
