@@ -125,9 +125,7 @@ const AssetDocumentUpload = ({ asset, onUploadSuccess, onUploadError }) => {
   const isDownloading = downloadMutation.isPending
   const isDeleting = deleteMutation.isPending
 
-  if (!session) {
-    return null // Don't render if not authenticated
-  }
+  // Authentication is handled at the app level, no need to check session here
 
   return (
     <div className="space-y-4">
