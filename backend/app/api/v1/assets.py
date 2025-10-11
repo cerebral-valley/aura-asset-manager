@@ -20,6 +20,63 @@ from app.core.config import settings
 
 router = APIRouter()
 
+async def ensure_storage_bucket_exists(bucket_name: str = "asset-documents") -> bool:
+    """
+    Ensure the Supabase storage bucket exists, create it if it doesn't.
+    Returns True if bucket exists or was created successfully, False otherwise.
+    """
+    try:
+        async with httpx.AsyncClient() as client:
+            # First, try to get bucket info
+            response = await client.get(
+                f"{settings.SUPABASE_URL}/storage/v1/bucket/{bucket_name}",
+                headers={
+                    "Authorization": f"Bearer {settings.SUPABASE_SERVICE_KEY}",
+                    "Content-Type": "application/json"
+                }
+            )
+            
+            if response.status_code == 200:
+                print(f"✅ Storage bucket '{bucket_name}' already exists")
+                return True
+            
+            # If bucket doesn't exist (404), create it
+            if response.status_code == 404:
+                print(f"📁 Creating storage bucket '{bucket_name}'...")
+                create_response = await client.post(
+                    f"{settings.SUPABASE_URL}/storage/v1/bucket",
+                    headers={
+                        "Authorization": f"Bearer {settings.SUPABASE_SERVICE_KEY}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "id": bucket_name,
+                        "name": bucket_name,
+                        "public": False,  # Private bucket for user documents
+                        "file_size_limit": 3145728,  # 3MB limit per file
+                        "allowed_mime_types": [
+                            "application/pdf",
+                            "image/jpeg", 
+                            "image/jpg",
+                            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        ]
+                    }
+                )
+                
+                if create_response.status_code in [200, 201]:
+                    print(f"✅ Storage bucket '{bucket_name}' created successfully")
+                    return True
+                else:
+                    print(f"❌ Failed to create storage bucket: {create_response.status_code} - {create_response.text}")
+                    return False
+            
+            print(f"❌ Unexpected response when checking bucket: {response.status_code} - {response.text}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Error ensuring storage bucket exists: {str(e)}")
+        return False
+
 @router.get("/", response_model=List[AssetSchema])
 async def get_assets(
     current_user: User = Depends(get_current_active_user),
@@ -168,6 +225,13 @@ async def upload_asset_document(
 ):
     """Upload a document for an asset."""
     
+    print(f"🔄 Document upload started:")
+    print(f"   Asset ID: {asset_id}")
+    print(f"   User ID: {current_user.id}")
+    print(f"   File: {file.filename}")
+    print(f"   Content Type: {file.content_type}")
+    print(f"   Supabase URL: {settings.SUPABASE_URL}")
+    
     # Validate asset exists and belongs to user
     asset = db.query(Asset).filter(
         Asset.id == asset_id,
@@ -175,22 +239,31 @@ async def upload_asset_document(
     ).first()
     
     if not asset:
+        print(f"❌ Asset not found: {asset_id} for user {current_user.id}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Asset not found"
         )
     
+    print(f"✅ Asset found: {asset.name} (type: {asset.asset_type})")
+    
     # Validate file type
     allowed_types = ["application/pdf", "image/jpeg", "image/jpg", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
     if file.content_type not in allowed_types:
+        print(f"❌ Invalid file type: {file.content_type}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"File type not allowed. Allowed types: PDF, JPEG, DOCX"
         )
     
+    print(f"✅ File type validated: {file.content_type}")
+    
     # Validate file size (3MB limit)
     content = await file.read()
+    print(f"📄 File size: {len(content)} bytes ({len(content) / (1024*1024):.2f} MB)")
+    
     if len(content) > 3 * 1024 * 1024:  # 3MB
+        print(f"❌ File too large: {len(content)} bytes")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="File size exceeds 3MB limit"
@@ -212,11 +285,28 @@ async def upload_asset_document(
     file_extension = file.filename.split('.')[-1] if file.filename and '.' in file.filename else 'bin'
     unique_filename = f"{current_user.id}/{asset_id}_{secrets.token_hex(8)}.{file_extension}"
     
+    print(f"📁 Generated filename: {unique_filename}")
+    
     try:
+        # Ensure the storage bucket exists
+        print(f"🪣 Checking/creating storage bucket...")
+        bucket_exists = await ensure_storage_bucket_exists("asset-documents")
+        if not bucket_exists:
+            print(f"❌ Failed to create/access storage bucket")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Storage service configuration error"
+            )
+        print(f"✅ Storage bucket ready")
+        
         # Upload to Supabase Storage using REST API
+        print(f"🚀 Uploading to Supabase Storage...")
         async with httpx.AsyncClient() as client:
+            upload_url = f"{settings.SUPABASE_URL}/storage/v1/object/asset-documents/{unique_filename}"
+            print(f"   Upload URL: {upload_url}")
+            
             response = await client.post(
-                f"{settings.SUPABASE_URL}/storage/v1/object/asset-documents/{unique_filename}",
+                upload_url,
                 headers={
                     "Authorization": f"Bearer {settings.SUPABASE_SERVICE_KEY}",
                     "Content-Type": file.content_type or "application/octet-stream"
@@ -224,14 +314,20 @@ async def upload_asset_document(
                 content=content
             )
             
+            print(f"📡 Upload response: {response.status_code}")
+            print(f"   Response text: {response.text}")
+            
             if response.status_code not in [200, 201]:
-                print(f"Storage upload failed: {response.status_code} - {response.text}")
+                print(f"❌ Storage upload failed: {response.status_code} - {response.text}")
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="Failed to upload file to storage"
                 )
         
+        print(f"✅ File uploaded to storage successfully")
+        
         # Update asset with document information
+        print(f"💾 Updating asset with document metadata...")
         update_data = {
             "document_path": unique_filename,
             "document_name": file.filename,
@@ -240,11 +336,18 @@ async def upload_asset_document(
             "document_uploaded_at": datetime.utcnow()
         }
         
+        print(f"   Document data: {update_data}")
+        
         for field, value in update_data.items():
             setattr(asset, field, value)
         
         db.commit()
         db.refresh(asset)
+        
+        print(f"✅ Document upload completed successfully!")
+        print(f"   Asset ID: {asset.id}")
+        print(f"   Document path: {asset.document_path}")
+        print(f"   Document name: {asset.document_name}")
         
         return {
             "message": "Document uploaded successfully",
@@ -253,11 +356,25 @@ async def upload_asset_document(
             "document_type": file_extension.lower()
         }
         
+    except HTTPException:
+        # Re-raise HTTP exceptions (like bucket creation failure)
+        raise
     except Exception as e:
-        print(f"Document upload error: {str(e)}")
+        print(f"🚨 Document upload error: {str(e)}")
+        print(f"   File: {file.filename if file and file.filename else 'unknown'}")
+        print(f"   Content type: {file.content_type if file else 'unknown'}")
+        print(f"   Asset ID: {asset_id}")
+        print(f"   User ID: {current_user.id}")
+        
+        # Check if it's a storage-related error
+        if "storage" in str(e).lower() or "supabase" in str(e).lower():
+            detail = "Storage service error - please try again"
+        else:
+            detail = f"Failed to upload document: {str(e)}"
+            
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to upload document"
+            detail=detail
         )
 
 
