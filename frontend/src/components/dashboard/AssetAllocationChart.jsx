@@ -62,6 +62,29 @@ const AssetAllocationChart = ({ data, title = "Asset Allocation" }) => {
             />
           </PieChart>
         </ResponsiveContainer>
+        
+        {/* Summary stats */}
+        <div className="mt-4 pt-4 border-t">
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="text-muted-foreground">Total Assets:</span>
+              <span className="ml-2 font-semibold">{data.length}</span>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Total Value:</span>
+              <span className="ml-2 font-semibold">
+                {(() => {
+                  const totalValue = data.reduce((sum, item) => {
+                    const value = parseFloat(item.value) || 0
+                    return sum + value
+                  }, 0)
+                  
+                  return totalValue > 0 ? formatCurrency(totalValue) : formatCurrency(0)
+                })()}
+              </span>
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   )

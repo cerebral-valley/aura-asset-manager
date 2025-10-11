@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.160',
-  buildDate: '2025-10-08',
-  deploymentId: 'custom-goals-ui-improvements',
-  description: 'Enhanced Custom Goals UX: Added clear labels to allocation header (Amount Allocated vs Available), added remaining amount display for each goal, and fixed Add New Goal button to follow theme colors instead of hardcoded pink.'
+  version: 'v0.161',
+  buildDate: '2025-10-11',
+  deploymentId: 'ui-improvements-goals-dashboard-guide',
+  description: 'Multiple UI improvements: Fixed Goals page asset type display to show user-friendly names instead of underscores, added comprehensive Goals page documentation to User Guide, and added total assets count and value display to Dashboard Portfolio Composition chart matching Insurance breakdown format.'
 }
 
 export const getVersionDisplay = () => {

@@ -11,6 +11,7 @@ const UserGuide = () => {
     { id: 'getting-started', title: 'Getting Started', icon: '🚀' },
     { id: 'dashboard', title: 'Dashboard', icon: '📊' },
     { id: 'assets', title: 'Managing Assets', icon: '💎' },
+    { id: 'goals', title: 'Financial Goals', icon: '🎯' },
     { id: 'exports', title: 'Export & Analysis', icon: '📄' },
     { id: 'insurance', title: 'Insurance', icon: '🛡️' },
     { id: 'ai-analysis', title: 'AI Analysis', icon: '🤖' },
@@ -490,6 +491,176 @@ const UserGuide = () => {
                       <li className="flex items-start gap-2">
                         <span className="text-blue-500 mt-1">📅</span>
                         <span>Annually: Full portfolio strategic assessment</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Goals Section */}
+            <section id="goals" className="mb-16">
+              <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
+                <span className="text-2xl">🎯</span>
+                Financial Goals Management
+              </h2>
+              
+              <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 mb-8 shadow-sm`}>
+                <h3 className="text-xl font-semibold mb-4">Overview</h3>
+                <p className={`${isDark ? 'text-neutral-300' : 'text-gray-700'} mb-4`}>
+                  The Goals page helps you track financial objectives and allocate your selected assets towards achieving them. It's designed to provide clarity on your progress and help you visualize how your current holdings contribute to your financial aspirations.
+                </p>
+                <p className={`${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
+                  Goals work with your selected assets - those marked as "selected" on the Assets page are automatically included in your goal calculations, giving you real-time progress tracking.
+                </p>
+              </div>
+
+              {/* Key Features */}
+              <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 mb-8 shadow-sm`}>
+                <h3 className="text-xl font-semibold mb-4">Key Features</h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <div className={`w-10 h-10 rounded-lg ${isDark ? 'bg-blue-600' : 'bg-blue-100'} flex items-center justify-center flex-shrink-0 mt-1`}>
+                        <span className="text-lg">🎯</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">Net Worth Goals</h4>
+                        <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
+                          Set and track your overall net worth target with visual progress indicators and timeline projections.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-3">
+                      <div className={`w-10 h-10 rounded-lg ${isDark ? 'bg-green-600' : 'bg-green-100'} flex items-center justify-center flex-shrink-0 mt-1`}>
+                        <span className="text-lg">📊</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">Custom Goals</h4>
+                        <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
+                          Create specific goals like vacation funds, emergency funds, or major purchases with allocation tracking.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <div className={`w-10 h-10 rounded-lg ${isDark ? 'bg-purple-600' : 'bg-purple-100'} flex items-center justify-center flex-shrink-0 mt-1`}>
+                        <span className="text-lg">💰</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">Asset Allocation</h4>
+                        <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
+                          View which assets are selected for goal allocation and their contribution percentages.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-3">
+                      <div className={`w-10 h-10 rounded-lg ${isDark ? 'bg-orange-600' : 'bg-orange-100'} flex items-center justify-center flex-shrink-0 mt-1`}>
+                        <span className="text-lg">📈</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">Progress Tracking</h4>
+                        <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
+                          Real-time progress bars and monthly growth calculations to reach your targets.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* How to Use Goals */}
+              <div className={`${isDark ? 'bg-gradient-to-br from-blue-900 to-purple-900' : 'bg-gradient-to-br from-blue-50 to-purple-50'} rounded-xl p-6 mb-8 shadow-sm`}>
+                <h3 className="text-xl font-semibold mb-4">How to Use Goals</h3>
+                <div className="grid md:grid-cols-4 gap-4">
+                  {[
+                    { step: 1, title: 'Select Assets', desc: 'Choose assets for goals on Assets page' },
+                    { step: 2, title: 'Set Net Worth Goal', desc: 'Create your primary net worth target' },
+                    { step: 3, title: 'Add Custom Goals', desc: 'Create specific savings objectives' },
+                    { step: 4, title: 'Track Progress', desc: 'Monitor your journey to each goal' }
+                  ].map((item) => (
+                    <div key={item.step} className={`text-center p-4 rounded-lg ${isDark ? 'bg-neutral-800' : 'bg-white'}`}>
+                      <div className={`w-8 h-8 rounded-full ${isDark ? 'bg-blue-600' : 'bg-blue-100'} flex items-center justify-center mx-auto mb-2`}>
+                        <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-blue-600'}`}>{item.step}</span>
+                      </div>
+                      <h4 className="font-semibold text-sm mb-1">{item.title}</h4>
+                      <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-gray-600'}`}>{item.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Goal Types */}
+              <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 mb-8 shadow-sm`}>
+                <h3 className="text-xl font-semibold mb-4">Goal Types</h3>
+                <div className="space-y-6">
+                  <div className={`p-4 rounded-lg ${isDark ? 'bg-blue-800/50' : 'bg-blue-50'}`}>
+                    <h4 className="font-semibold mb-2 text-blue-600">Net Worth Goal</h4>
+                    <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'} mb-3`}>
+                      Your primary financial target representing the total value you want to achieve across all selected assets.
+                    </p>
+                    <ul className="text-sm space-y-1 list-disc list-inside">
+                      <li>Set target amount and optional target date</li>
+                      <li>Progress calculated from total selected asset value</li>
+                      <li>Shows monthly growth needed to reach target</li>
+                      <li>Can be edited, completed, or deleted</li>
+                    </ul>
+                  </div>
+                  
+                  <div className={`p-4 rounded-lg ${isDark ? 'bg-green-800/50' : 'bg-green-50'}`}>
+                    <h4 className="font-semibold mb-2 text-green-600">Custom Goals</h4>
+                    <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'} mb-3`}>
+                      Specific savings objectives with dedicated allocation from your selected assets.
+                    </p>
+                    <ul className="text-sm space-y-1 list-disc list-inside">
+                      <li><strong>Asset Goals:</strong> Buy a new property, investment, or tangible item</li>
+                      <li><strong>Experience Goals:</strong> Vacation, education, or life experiences</li>
+                      <li><strong>Security Goals:</strong> Emergency fund or insurance coverage</li>
+                      <li><strong>Allocate Amount:</strong> Portion of selected assets dedicated to this goal</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Best Practices */}
+              <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                <h3 className="text-xl font-semibold mb-4 text-green-600">Best Practices</h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold mb-3">Asset Selection Strategy</h4>
+                    <ul className="space-y-2 text-sm">
+                      <li className="flex items-start gap-2">
+                        <span className="text-green-500 mt-1">✓</span>
+                        <span>Select liquid assets for shorter-term goals</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-green-500 mt-1">✓</span>
+                        <span>Include growth assets for long-term net worth goals</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-green-500 mt-1">✓</span>
+                        <span>Regularly review and update asset selections</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-3">Goal Management</h4>
+                    <ul className="space-y-2 text-sm">
+                      <li className="flex items-start gap-2">
+                        <span className="text-green-500 mt-1">✓</span>
+                        <span>Set realistic and achievable targets</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-green-500 mt-1">✓</span>
+                        <span>Review progress monthly or quarterly</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-green-500 mt-1">✓</span>
+                        <span>Celebrate completed goals and set new ones</span>
                       </li>
                     </ul>
                   </div>

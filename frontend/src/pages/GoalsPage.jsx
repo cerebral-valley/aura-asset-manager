@@ -10,6 +10,7 @@ import { queryKeys, invalidationHelpers } from '../lib/queryKeys';
 import { toast } from 'sonner';
 import Loading from '../components/ui/Loading';
 import { Edit, Trash2, CheckCircle, AlertTriangle } from 'lucide-react';
+import { getAssetTypeLabel } from '../constants/assetTypes';
 
 const GoalsPage = () => {
   const { user } = useAuth();
@@ -436,7 +437,7 @@ const GoalsPage = () => {
                           {asset.name}
                         </td>
                         <td className={`py-2 px-4 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                          {asset.asset_type}
+                          {getAssetTypeLabel(asset.asset_type)}
                         </td>
                         <td className={`py-2 px-4 text-sm text-right font-medium ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
                           {formatCurrency(presentValue)}
