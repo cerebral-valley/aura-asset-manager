@@ -1527,14 +1527,14 @@ const Assets = () => {
           }}
         >
           <div
-            className="bg-white rounded shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto relative"
+            className={`${isDark ? 'bg-neutral-900 text-neutral-100' : 'bg-white'} rounded shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto relative`}
             ref={modalRef}
             tabIndex={0}
             aria-label={editAsset ? 'Edit Asset Modal' : 'Add Asset Modal'}
           >
-            <div className="sticky top-0 bg-white border-b p-6 pb-4">
+            <div className={`sticky top-0 ${isDark ? 'bg-neutral-900 border-neutral-700' : 'bg-white border-gray-200'} border-b p-6 pb-4`}>
               <button
-                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                className={`absolute top-2 right-2 ${isDark ? 'text-neutral-400 hover:text-neutral-200' : 'text-gray-500 hover:text-gray-700'}`}
                 onClick={closeModal}
                 aria-label="Close"
               >✕</button>
@@ -1547,7 +1547,7 @@ const Assets = () => {
                     <label className="block mb-1 font-medium" htmlFor="name">Asset Name</label>
                     <input
                       id="name"
-                      className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className={`border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDark ? 'bg-neutral-800 border-neutral-600 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'}`}
                       {...register('name', { required: 'Asset name is required' })}
                       disabled={actionLoading}
                       aria-required="true"
@@ -1558,7 +1558,7 @@ const Assets = () => {
                     <label className="block mb-1 font-medium" htmlFor="asset_type">Asset Type</label>
                     <select
                       id="asset_type"
-                      className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className={`border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDark ? 'bg-neutral-800 border-neutral-600 text-neutral-100' : 'bg-white border-gray-300'}`}
                       {...register('asset_type', { required: 'Asset type is required' })}
                       disabled={actionLoading}
                       aria-required="true"
@@ -1586,7 +1586,7 @@ const Assets = () => {
                       type="number"
                       step="0.01"
                       min="0"
-                      className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className={`border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDark ? 'bg-neutral-800 border-neutral-600 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'}`}
                       {...register('initial_value', {
                         min: { value: 0, message: 'Value must be positive' },
                         valueAsNumber: true
@@ -1602,7 +1602,7 @@ const Assets = () => {
                       type="number"
                       step="0.01"
                       min="0"
-                      className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className={`border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDark ? 'bg-neutral-800 border-neutral-600 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'}`}
                       {...register('current_value', {
                         min: { value: 0, message: 'Value must be positive' },
                         valueAsNumber: true
@@ -1621,7 +1621,7 @@ const Assets = () => {
                       type="number"
                       step="0.0001"
                       min="0"
-                      className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className={`border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDark ? 'bg-neutral-800 border-neutral-600 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'}`}
                       {...register('quantity', {
                         min: { value: 0, message: 'Quantity must be positive' },
                         valueAsNumber: true
@@ -1634,7 +1634,7 @@ const Assets = () => {
                     <label className="block mb-1 font-medium" htmlFor="unit_of_measure">Unit</label>
                     <input
                       id="unit_of_measure"
-                      className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className={`border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDark ? 'bg-neutral-800 border-neutral-600 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'}`}
                       placeholder="e.g., shares, grams, sqft, BTC"
                       {...register('unit_of_measure')}
                       disabled={actionLoading}
@@ -1647,7 +1647,7 @@ const Assets = () => {
                   <input
                     id="purchase_date"
                     type="date"
-                    className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDark ? 'bg-neutral-800 border-neutral-600 text-neutral-100' : 'bg-white border-gray-300'}`}
                     {...register('purchase_date')}
                     disabled={actionLoading}
                   />
@@ -1658,7 +1658,7 @@ const Assets = () => {
                   <textarea
                     id="description"
                     rows="3"
-                    className={`border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-400' : ''}`}
+                    className={`border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDark ? 'bg-neutral-800 border-neutral-600 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'}`}
                     {...register('description')}
                     disabled={actionLoading}
                   />
@@ -1684,13 +1684,13 @@ const Assets = () => {
                   </div>
                 )}
 
-                {actionError && <div className="text-red-600 bg-red-50 p-3 rounded">{actionError}</div>}
+                {actionError && <div className={`text-red-600 ${isDark ? 'bg-red-900/20 border border-red-800' : 'bg-red-50'} p-3 rounded`}>{actionError}</div>}
 
                 <div className="flex gap-3 pt-4">
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50"
+                    className={`flex-1 border px-4 py-2 rounded hover:opacity-80 ${isDark ? 'border-neutral-600 text-neutral-300 hover:bg-neutral-800' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
                     disabled={actionLoading}
                   >
                     Cancel

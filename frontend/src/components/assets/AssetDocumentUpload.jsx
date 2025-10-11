@@ -116,7 +116,9 @@ const AssetDocumentUpload = ({ asset, onUploadSuccess, onUploadError }) => {
     }
   }
 
-  const openFileDialog = () => {
+  const openFileDialog = (e) => {
+    e?.preventDefault()
+    e?.stopPropagation()
     fileInputRef.current?.click()
   }
 
@@ -200,6 +202,7 @@ const AssetDocumentUpload = ({ asset, onUploadSuccess, onUploadError }) => {
               <button
                 onClick={openFileDialog}
                 disabled={isUploading}
+                type="button"
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isUploading ? 'Uploading...' : 'Select File'}
