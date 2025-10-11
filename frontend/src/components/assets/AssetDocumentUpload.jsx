@@ -13,7 +13,7 @@
 import { useState, useRef } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { documentService } from '../../services/documents.js'
-import { useAuth } from '../../hooks/useAuth.js'
+import { useAuth } from '../../hooks/useAuth'
 import { queryKeys } from '../../lib/queryKeys.js'
 
 const AssetDocumentUpload = ({ asset, onUploadSuccess, onUploadError }) => {
