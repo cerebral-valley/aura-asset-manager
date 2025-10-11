@@ -1306,19 +1306,19 @@ const Insurance = () => {
                               <File className="h-5 w-5 text-blue-600" />
                               <div>
                                 <p className="text-sm font-medium text-gray-900">
-                                  {doc.document_name}
+                                  {doc.name}
                                 </p>
                                 <p className="text-xs text-gray-500">
-                                  {insuranceService.formatFileSize(doc.document_size)} • 
-                                  {doc.document_type === 'application/pdf' ? 'PDF' : 'DOCX'} • 
-                                  {new Date(doc.document_uploaded_at).toLocaleDateString()}
+                                  {insuranceService.formatFileSize(doc.size)} • 
+                                  {doc.type?.toUpperCase() || 'UNKNOWN'} • 
+                                  {doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString() : 'Unknown Date'}
                                 </p>
                               </div>
                             </div>
                             <div className="flex items-center space-x-2">
                               <button
                                 type="button"
-                                onClick={() => handleDocumentDownload(index, doc.document_name)}
+                                onClick={() => handleDocumentDownload(index, doc.name)}
                                 className="p-1 text-blue-600 hover:text-blue-800 focus:outline-none"
                                 title="Download document"
                               >
@@ -1326,7 +1326,7 @@ const Insurance = () => {
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleDocumentDelete(index, doc.document_name)}
+                                onClick={() => handleDocumentDelete(index, doc.name)}
                                 disabled={documentDeleteMutation.isPending}
                                 className="p-1 text-red-600 hover:text-red-800 focus:outline-none disabled:opacity-50"
                                 title="Delete document"

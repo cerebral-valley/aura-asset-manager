@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.171',
+  version: 'v0.172',
   buildDate: '2025-01-13',
-  deploymentId: 'insurance-document-getDocuments-fix',
-  description: 'Fix missing getDocuments endpoint for insurance document upload feature'
+  deploymentId: 'insurance-document-display-fixes',
+  description: 'Fix document metadata display issues - correct property names and date formatting'
 }
 
 export const getVersionDisplay = () => {
