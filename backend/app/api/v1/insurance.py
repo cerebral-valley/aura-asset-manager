@@ -268,6 +268,43 @@ async def ensure_user_folder_exists(user_id: UUID, bucket_name: str = "asset-doc
 
 # Document Upload Endpoints (copied exactly from Assets)
 
+@router.get("/{policy_id}/documents/")
+async def get_insurance_documents(
+    policy_id: UUID,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get documents for an insurance policy."""
+    
+    # Validate policy exists and belongs to user
+    policy = db.query(InsurancePolicy).filter(
+        InsurancePolicy.id == policy_id,
+        InsurancePolicy.user_id == current_user.id
+    ).first()
+    
+    if not policy:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Insurance policy not found"
+        )
+    
+    # Return document information if exists
+    documents = []
+    if policy.document_path is not None and policy.document_name is not None:
+        documents.append({
+            "name": policy.document_name,
+            "size": policy.document_size,
+            "type": policy.document_type,
+            "uploaded_at": policy.document_uploaded_at,
+            "path": policy.document_path
+        })
+    
+    return {
+        "documents": documents,
+        "policy_id": str(policy_id),
+        "policy_name": policy.policy_name
+    }
+
 @router.post("/{policy_id}/upload-document/")
 async def upload_insurance_document(
     policy_id: UUID,

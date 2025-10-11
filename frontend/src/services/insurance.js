@@ -28,6 +28,17 @@ export const insuranceService = {
 
   // Insurance Document Management Methods (same pattern as Assets)
   /**
+   * Get documents for an insurance policy
+   * @param {string} policyId - Policy UUID
+   * @param {Object} config - Axios configuration (for abort signals)
+   * @returns {Promise} Documents data for the policy
+   */
+  async getDocuments(policyId, config = {}) {
+    const response = await apiClient.get(`/insurance/${policyId}/documents/`, config)
+    return response.data
+  },
+
+  /**
    * Upload a document for an insurance policy
    * @param {string} policyId - Policy UUID
    * @param {File} file - File to upload (PDF/JPEG/DOCX, max 3MB)
