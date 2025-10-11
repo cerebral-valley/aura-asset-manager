@@ -14,15 +14,28 @@ import SafeSection from '../components/util/SafeSection'
 import { log, warn, error } from '@/lib/debug'
 import * as Sentry from '@sentry/react'
 
-// Sentry Test Component - Remove this in production
+// Sentry Test Component - For testing error tracking
 function SentryErrorButton() {
+  const handleClick = () => {
+    console.log('Sentry test button clicked');
+    console.log('Sentry available:', typeof window.Sentry !== 'undefined');
+    console.log('Environment:', import.meta.env.MODE);
+    
+    // Try to capture a test error with Sentry if available
+    if (typeof window.Sentry !== 'undefined') {
+      console.log('Sending error to Sentry...');
+      window.Sentry.captureException(new Error('This is your first error!'));
+    } else {
+      console.warn('Sentry not available, throwing regular error');
+      throw new Error('This is your first error!');
+    }
+  };
+
   return (
     <button
-      onClick={() => {
-        throw new Error('This is your first error!');
-      }}
+      onClick={handleClick}
       className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-      title="Test Sentry Error Tracking (Development Only)"
+      title="Test Sentry Error Tracking"
     >
       Test Sentry Error
     </button>
@@ -125,12 +138,10 @@ const Dashboard = () => {
           <div className="text-xs text-muted-foreground font-mono">
             {getVersionDisplay()}
           </div>
-          {/* Sentry Test Button - Remove in production */}
-          {import.meta.env.MODE === 'development' && (
-            <div className="flex justify-end">
-              <SentryErrorButton />
-            </div>
-          )}
+          {/* Sentry Test Button - Always visible for testing */}
+          <div className="flex justify-end">
+            <SentryErrorButton />
+          </div>
         </div>
       </div>
 
