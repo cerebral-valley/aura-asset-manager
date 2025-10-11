@@ -22,7 +22,7 @@ import SafeSection from '@/components/util/SafeSection'
 import { log, warn, error } from '@/lib/debug';
 import { queryKeys } from '@/lib/queryKeys';
 import { mutationHelpers } from '@/lib/queryUtils';
-import { Download, FileSpreadsheet, Plus } from 'lucide-react';
+import { Download, FileSpreadsheet, Plus, Upload, File, Trash2, ExternalLink } from 'lucide-react';
 
 const Insurance = () => {
   log('Insurance:init', 'Component initializing');
@@ -159,12 +159,64 @@ const Insurance = () => {
     },
   })
 
+  // Document management mutations
+  const documentUploadMutation = useMutation({
+    mutationFn: async ({ policyId, file }) => {
+      const validation = insuranceService.validateDocument(file)
+      if (!validation.success) {
+        throw new Error(validation.error)
+      }
+      return insuranceService.uploadDocument(policyId, file)
+    },
+    onSuccess: (data) => {
+      setDocumentUploading(false)
+      setDocumentError('')
+      toast.success(`Document "${data.document_name}" uploaded successfully`)
+      // Refresh documents for current policy
+      if (editPolicy?.id) {
+        loadDocuments(editPolicy.id)
+      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.insurance.list() })
+    },
+    onError: (error) => {
+      setDocumentUploading(false)
+      const errorMessage = error.response?.data?.detail || error.message
+      setDocumentError(errorMessage)
+      toast.error(`Upload failed: ${errorMessage}`)
+    }
+  })
+
+  const documentDeleteMutation = useMutation({
+    mutationFn: ({ policyId, documentIndex }) => 
+      insuranceService.deleteDocument(policyId, documentIndex),
+    onSuccess: (data) => {
+      setDocumentError('')
+      toast.success(`Document "${data.document_name}" deleted successfully`)
+      // Refresh documents for current policy
+      if (editPolicy?.id) {
+        loadDocuments(editPolicy.id)
+      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.insurance.list() })
+    },
+    onError: (error) => {
+      const errorMessage = error.response?.data?.detail || 'Failed to delete document'
+      setDocumentError(errorMessage)
+      toast.error(`Delete failed: ${errorMessage}`)
+    }
+  })
+
   // Local state for UI management
   const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editPolicy, setEditPolicy] = useState(null);
   const [actionError, setActionError] = useState(null);
   const modalRef = useRef(null);
+
+  // Document management state
+  const [documents, setDocuments] = useState([]);
+  const [documentUploading, setDocumentUploading] = useState(false);
+  const [documentError, setDocumentError] = useState('');
+  const fileInputRef = useRef(null);
 
   // Compute mutation loading state
   const actionLoading = createPolicyMutation.isPending || updatePolicyMutation.isPending || deletePolicyMutation.isPending;
@@ -416,8 +468,58 @@ const Insurance = () => {
     setModalOpen(false);
     setEditPolicy(null);
     setActionError(null);
+    setDocuments([]);
+    setDocumentError('');
     reset();
   };
+
+  // Document management functions
+  const loadDocuments = async (policyId) => {
+    try {
+      const result = await insuranceService.getDocuments(policyId)
+      setDocuments(result.documents || [])
+    } catch (error) {
+      console.error('Failed to load documents:', error)
+      setDocumentError('Failed to load documents')
+    }
+  }
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files?.[0]
+    if (!file || !editPolicy?.id) return
+
+    setDocumentError('')
+    setDocumentUploading(true)
+    documentUploadMutation.mutate({ policyId: editPolicy.id, file })
+  }
+
+  const handleDocumentDownload = async (documentIndex, documentName) => {
+    try {
+      const result = await insuranceService.downloadDocument(editPolicy.id, documentIndex)
+      window.open(result.download_url, '_blank')
+      toast.success(`Downloading ${documentName}`)
+    } catch (error) {
+      const errorMessage = error.response?.data?.detail || 'Failed to download document'
+      setDocumentError(errorMessage)
+      toast.error(`Download failed: ${errorMessage}`)
+    }
+  }
+
+  const handleDocumentDelete = (documentIndex, documentName) => {
+    if (confirm(`Are you sure you want to delete "${documentName}"?`)) {
+      documentDeleteMutation.mutate({ 
+        policyId: editPolicy.id, 
+        documentIndex 
+      })
+    }
+  }
+
+  // Load documents when editing a policy
+  useEffect(() => {
+    if (editPolicy?.id && modalOpen) {
+      loadDocuments(editPolicy.id)
+    }
+  }, [editPolicy?.id, modalOpen])
 
   // Add or update policy using TanStack Query mutations
   const onSubmit = async (data) => {
@@ -1149,6 +1251,95 @@ const Insurance = () => {
                     disabled={actionLoading}
                   />
                 </div>
+
+                {/* Document Upload Section - Only show for existing policies */}
+                {editPolicy && (
+                  <div className="border-t pt-4">
+                    <label className="block mb-3 font-medium">Document Attachments</label>
+                    
+                    {/* Upload Area */}
+                    <div className="mb-4">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileUpload}
+                        accept=".pdf,.docx"
+                        className="hidden"
+                        disabled={documentUploading || actionLoading}
+                      />
+                      
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={documentUploading || actionLoading}
+                        className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 focus:border-blue-500 focus:outline-none disabled:opacity-50"
+                      >
+                        <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                        <p className="text-sm text-gray-600">
+                          {documentUploading ? 'Uploading...' : 'Click to upload documents'}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          PDF and DOCX files only, max 5MB
+                        </p>
+                      </button>
+                    </div>
+
+                    {/* Document Error */}
+                    {documentError && (
+                      <div className="text-red-600 bg-red-50 p-3 rounded mb-4 text-sm">
+                        {documentError}
+                      </div>
+                    )}
+
+                    {/* Document List */}
+                    {documents.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">
+                          Uploaded Documents ({documents.length})
+                        </h4>
+                        {documents.map((doc, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-3 border rounded-lg bg-gray-50"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <File className="h-5 w-5 text-blue-600" />
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">
+                                  {doc.document_name}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {insuranceService.formatFileSize(doc.document_size)} • 
+                                  {doc.document_type === 'application/pdf' ? 'PDF' : 'DOCX'} • 
+                                  {new Date(doc.document_uploaded_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <button
+                                type="button"
+                                onClick={() => handleDocumentDownload(index, doc.document_name)}
+                                className="p-1 text-blue-600 hover:text-blue-800 focus:outline-none"
+                                title="Download document"
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDocumentDelete(index, doc.document_name)}
+                                disabled={documentDeleteMutation.isPending}
+                                className="p-1 text-red-600 hover:text-red-800 focus:outline-none disabled:opacity-50"
+                                title="Delete document"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {actionError && <div className="text-destructive bg-destructive/10 p-3 rounded">{actionError}</div>}
 

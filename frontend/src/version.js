@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.168',
+  version: 'v0.169',
   buildDate: '2025-10-11',
-  deploymentId: 'user-specific-storage-security',
-  description: 'Implement user-specific folder storage with Supabase security policies for document isolation'
+  deploymentId: 'insurance-document-upload',
+  description: 'Add comprehensive insurance document upload system with PDF/DOCX support, user folder isolation, and full CRUD operations'
 }
 
 export const getVersionDisplay = () => {
