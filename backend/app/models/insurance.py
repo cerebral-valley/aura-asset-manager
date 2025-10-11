@@ -2,7 +2,7 @@
 Insurance model for SQLAlchemy.
 """
 
-from sqlalchemy import Column, String, DateTime, Text, Date, ForeignKey, Numeric
+from sqlalchemy import Column, String, DateTime, Text, Date, ForeignKey, Numeric, Integer
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -31,6 +31,13 @@ class InsurancePolicy(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     modified_at = Column(DateTime(timezone=True), nullable=True)
     status = Column(Text, default='active')  # e.g., 'active', 'expired', 'cancelled'
+    
+    # Document fields (same as Asset model)
+    document_path = Column(Text)  # Storage path in Supabase Storage
+    document_name = Column(Text)  # Original filename
+    document_size = Column(Integer)  # File size in bytes
+    document_type = Column(Text)  # File type: 'pdf', 'jpeg', 'jpg', 'docx'
+    document_uploaded_at = Column(DateTime(timezone=True))  # Upload timestamp
     
     def __repr__(self):
         return f"<InsurancePolicy(id={self.id}, name={self.policy_name}, type={self.policy_type})>"

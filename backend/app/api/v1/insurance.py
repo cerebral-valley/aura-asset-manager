@@ -4,6 +4,7 @@ Insurance API endpoints for insurance policy management.
 
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from app.core.database import get_db
 from app.api.deps import get_current_active_user
 from app.models.user import User
@@ -15,6 +16,8 @@ import httpx
 from app.core.config import settings
 from datetime import datetime
 import uuid as uuid_lib
+import os
+import secrets
 
 router = APIRouter()
 
@@ -263,7 +266,8 @@ async def ensure_user_folder_exists(user_id: UUID, bucket_name: str = "asset-doc
         return False
 
 
-# Insurance Document API Endpoints
+# Document Upload Endpoints (copied exactly from Assets)
+
 @router.post("/{policy_id}/upload-document/")
 async def upload_insurance_document(
     policy_id: UUID,
@@ -273,6 +277,13 @@ async def upload_insurance_document(
 ):
     """Upload a document for an insurance policy."""
     
+    print(f"🔄 Document upload started:")
+    print(f"   Policy ID: {policy_id}")
+    print(f"   User ID: {current_user.id}")
+    print(f"   File: {file.filename}")
+    print(f"   Content Type: {file.content_type}")
+    print(f"   Supabase URL: {settings.SUPABASE_URL}")
+    
     # Validate policy exists and belongs to user
     policy = db.query(InsurancePolicy).filter(
         InsurancePolicy.id == policy_id,
@@ -280,189 +291,182 @@ async def upload_insurance_document(
     ).first()
     
     if not policy:
+        print(f"❌ Policy not found: {policy_id} for user {current_user.id}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Insurance policy not found"
         )
-
-    # Validate file type - PDF and DOCX only for insurance
-    allowed_types = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
+    
+    print(f"✅ Policy found: {policy.policy_name} (type: {policy.policy_type})")
+    
+    # Validate file type
+    allowed_types = ["application/pdf", "image/jpeg", "image/jpg", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
     if file.content_type not in allowed_types:
+        print(f"❌ Invalid file type: {file.content_type}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only PDF and DOCX files are allowed for insurance documents"
+            detail=f"File type not allowed. Allowed types: PDF, JPEG, DOCX"
         )
-
-    # Validate file size (5MB limit for insurance)
-    file_content = await file.read()
-    file_size = len(file_content)
-    max_size = 5 * 1024 * 1024  # 5MB
     
-    if file_size > max_size:
+    print(f"✅ File type validated: {file.content_type}")
+    
+    # Validate file size (3MB limit)
+    content = await file.read()
+    print(f"📄 File size: {len(content)} bytes ({len(content) / (1024*1024):.2f} MB)")
+    
+    if len(content) > 3 * 1024 * 1024:  # 3MB
+        print(f"❌ File too large: {len(content)} bytes")
         raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"File size ({file_size} bytes) exceeds maximum allowed size ({max_size} bytes)"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File size exceeds 3MB limit"
         )
-
+    
+    # Check user's total storage usage (25MB limit)
+    total_usage = db.query(InsurancePolicy).filter(
+        InsurancePolicy.user_id == current_user.id,
+        InsurancePolicy.document_size.isnot(None)
+    ).with_entities(func.sum(InsurancePolicy.document_size)).scalar() or 0
+    
+    if total_usage + len(content) > 25 * 1024 * 1024:  # 25MB total
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Total storage limit (25MB) would be exceeded"
+        )
+    
+    # Generate unique filename
+    file_extension = file.filename.split('.')[-1] if file.filename and '.' in file.filename else 'bin'
+    unique_filename = f"{current_user.id}/{policy_id}_{secrets.token_hex(8)}.{file_extension}"
+    
+    print(f"📁 Generated filename: {unique_filename}")
+    
     try:
-        # Ensure bucket and user folder exist
+        # Ensure the storage bucket exists
+        print(f"🚃 Checking/creating storage bucket...")
         bucket_exists = await ensure_storage_bucket_exists("asset-documents")
         if not bucket_exists:
+            print(f"❌ Failed to create/access storage bucket")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to initialize storage"
+                detail="Storage service configuration error"
             )
-
+        print(f"✅ Storage bucket ready")
+        
+        # Ensure the user-specific folder exists
+        print(f"👤 Checking/creating user folder...")
         user_folder_exists = await ensure_user_folder_exists(UUID(str(current_user.id)), "asset-documents")
         if not user_folder_exists:
+            print(f"❌ Failed to create/access user folder")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to ensure user folder"
+                detail="User storage folder configuration error"
             )
-
-        # Generate unique filename with policy prefix for easy identification
-        user_id_str = str(current_user.id)
-        file_extension = file.filename.split('.')[-1] if file.filename and '.' in file.filename else ''
-        unique_filename = f"{user_id_str}/policy_{str(policy_id)[:8]}_{uuid_lib.uuid4().hex[:8]}.{file_extension}"
+        print(f"✅ User folder ready")
         
-        # Upload to Supabase Storage
+        # Upload to Supabase Storage using REST API
+        print(f"📤 Uploading to Supabase Storage...")
         async with httpx.AsyncClient() as client:
             upload_url = f"{settings.SUPABASE_URL}/storage/v1/object/asset-documents/{unique_filename}"
-            upload_response = await client.post(
+            print(f"   Upload URL: {upload_url}")
+            
+            response = await client.post(
                 upload_url,
                 headers={
                     "Authorization": f"Bearer {settings.SUPABASE_SERVICE_KEY}",
-                    "Content-Type": file.content_type
+                    "Content-Type": file.content_type or "application/octet-stream"
                 },
-                content=file_content
+                content=content
             )
-
-            if upload_response.status_code not in [200, 201]:
+            
+            print(f"📡 Upload response: {response.status_code}")
+            print(f"   Response text: {response.text}")
+            
+            if response.status_code not in [200, 201]:
+                print(f"❌ Storage upload failed: {response.status_code} - {response.text}")
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail=f"Failed to upload file: {upload_response.text}"
+                    detail="Failed to upload file to storage"
                 )
-
-        # Update policy metadata with document information
-        # Get current metadata as a dictionary
-        current_metadata = getattr(policy, 'policy_metadata') or {}
         
-        # Store document info in metadata
-        document_info = {
+        print(f"✅ File uploaded to storage successfully")
+        
+        # Update policy with document information
+        print(f"💾 Updating policy with document metadata...")
+        update_data = {
             "document_path": unique_filename,
             "document_name": file.filename,
-            "document_size": file_size,
-            "document_type": file.content_type,
-            "document_uploaded_at": datetime.utcnow().isoformat()
+            "document_size": len(content),
+            "document_type": file_extension.lower(),
+            "document_uploaded_at": datetime.utcnow()
         }
         
-        # Add to documents array in metadata
-        if "documents" not in current_metadata:
-            current_metadata["documents"] = []
+        print(f"   Document data: {update_data}")
         
-        current_metadata["documents"].append(document_info)
-        
-        # Update the policy metadata
-        setattr(policy, 'policy_metadata', current_metadata)
-        
-        # Mark the metadata as modified to trigger SQLAlchemy update
-        from sqlalchemy.orm.attributes import flag_modified
-        flag_modified(policy, "policy_metadata")
+        for field, value in update_data.items():
+            setattr(policy, field, value)
         
         db.commit()
         db.refresh(policy)
-
+        
+        print(f"✅ Document upload completed successfully!")
+        print(f"   Policy ID: {policy.id}")
+        print(f"   Document path: {policy.document_path}")
+        print(f"   Document name: {policy.document_name}")
+        
         return {
             "message": "Document uploaded successfully",
             "document_name": file.filename,
-            "document_size": file_size,
-            "document_path": unique_filename,
-            "policy_id": str(policy_id)
+            "document_size": len(content),
+            "document_type": file_extension.lower()
         }
-
+        
     except HTTPException:
+        # Re-raise HTTP exceptions (like bucket creation failure)
         raise
     except Exception as e:
-        print(f"Document upload error: {str(e)}")
+        print(f"🚨 Document upload error: {str(e)}")
+        print(f"   File: {file.filename if file and file.filename else 'unknown'}")
+        print(f"   Content type: {file.content_type if file else 'unknown'}")
+        print(f"   Policy ID: {policy_id}")
+        print(f"   User ID: {current_user.id}")
+        
+        # Check if it's a storage-related error
+        if "storage" in str(e).lower() or "supabase" in str(e).lower():
+            detail = "Storage service error - please try again"
+        else:
+            detail = f"Failed to upload document: {str(e)}"
+            
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to upload document"
+            detail=detail
         )
 
 
-@router.get("/{policy_id}/documents/")
-async def get_insurance_documents(
-    policy_id: UUID,
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    """Get all documents for an insurance policy."""
-    
-    # Validate policy exists and belongs to user
-    policy = db.query(InsurancePolicy).filter(
-        InsurancePolicy.id == policy_id,
-        InsurancePolicy.user_id == current_user.id
-    ).first()
-    
-    if not policy:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Insurance policy not found"
-        )
-    
-    # Extract documents from metadata
-    documents = []
-    metadata = getattr(policy, 'policy_metadata') or {}
-    if metadata and "documents" in metadata:
-        documents = metadata["documents"]
-    
-    return {
-        "policy_id": str(policy_id),
-        "policy_name": policy.policy_name,
-        "documents": documents
-    }
-
-
-@router.get("/{policy_id}/download-document/{document_index}/")
+@router.get("/{policy_id}/download-document/")
 async def download_insurance_document(
     policy_id: UUID,
-    document_index: int,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """Download a specific document for an insurance policy."""
+    """Download a document for an insurance policy."""
     
-    # Validate policy exists and belongs to user
+    # Validate policy exists, belongs to user, and has a document
     policy = db.query(InsurancePolicy).filter(
         InsurancePolicy.id == policy_id,
-        InsurancePolicy.user_id == current_user.id
+        InsurancePolicy.user_id == current_user.id,
+        InsurancePolicy.document_path.isnot(None)
     ).first()
     
     if not policy:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Insurance policy not found"
+            detail="Insurance policy or document not found"
         )
     
-    # Check if document exists
-    metadata = getattr(policy, 'policy_metadata') or {}
-    if (not metadata or 
-        "documents" not in metadata or 
-        document_index >= len(metadata["documents"]) or
-        document_index < 0):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Document not found"
-        )
-    
-    document_info = metadata["documents"][document_index]
-    document_path = document_info["document_path"]
-
     try:
         # Get download URL from Supabase Storage
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{settings.SUPABASE_URL}/storage/v1/object/sign/asset-documents/{document_path}",
+                f"{settings.SUPABASE_URL}/storage/v1/object/sign/asset-documents/{policy.document_path}",
                 headers={
                     "Authorization": f"Bearer {settings.SUPABASE_SERVICE_KEY}",
                     "Content-Type": "application/json"
@@ -481,9 +485,9 @@ async def download_insurance_document(
             
             return {
                 "download_url": download_url,
-                "document_name": document_info["document_name"],
-                "document_size": document_info["document_size"],
-                "document_type": document_info["document_type"],
+                "document_name": policy.document_name,
+                "document_size": policy.document_size,
+                "document_type": policy.document_type,
                 "expires_in": 3600
             }
             
@@ -495,42 +499,30 @@ async def download_insurance_document(
         )
 
 
-@router.delete("/{policy_id}/delete-document/{document_index}/")
+@router.delete("/{policy_id}/delete-document/")
 async def delete_insurance_document(
     policy_id: UUID,
-    document_index: int,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """Delete a specific document for an insurance policy."""
+    """Delete a document for an insurance policy."""
     
-    # Validate policy exists and belongs to user
+    # Validate policy exists, belongs to user, and has a document
     policy = db.query(InsurancePolicy).filter(
         InsurancePolicy.id == policy_id,
-        InsurancePolicy.user_id == current_user.id
+        InsurancePolicy.user_id == current_user.id,
+        InsurancePolicy.document_path.isnot(None)
     ).first()
     
     if not policy:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Insurance policy not found"
+            detail="Insurance policy or document not found"
         )
     
-    # Check if document exists
-    metadata = getattr(policy, 'policy_metadata') or {}
-    if (not metadata or 
-        "documents" not in metadata or 
-        document_index >= len(metadata["documents"]) or
-        document_index < 0):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Document not found"
-        )
+    document_path = policy.document_path
+    document_name = policy.document_name
     
-    document_info = metadata["documents"][document_index]
-    document_path = document_info["document_path"]
-    document_name = document_info["document_name"]
-
     try:
         # Delete from Supabase Storage
         async with httpx.AsyncClient() as client:
@@ -545,15 +537,17 @@ async def delete_insurance_document(
             if response.status_code not in [200, 204, 404]:
                 print(f"Storage deletion warning: {response.status_code} - {response.text}")
         
-        # Remove document from metadata
-        updated_metadata = getattr(policy, 'policy_metadata') or {}
-        if "documents" in updated_metadata:
-            updated_metadata["documents"].pop(document_index)
-            setattr(policy, 'policy_metadata', updated_metadata)
+        # Clear document fields from policy
+        clear_data = {
+            "document_path": None,
+            "document_name": None,
+            "document_size": None,
+            "document_type": None,
+            "document_uploaded_at": None
+        }
         
-        # Mark the metadata as modified to trigger SQLAlchemy update
-        from sqlalchemy.orm.attributes import flag_modified
-        flag_modified(policy, "policy_metadata")
+        for field, value in clear_data.items():
+            setattr(policy, field, value)
         
         db.commit()
         
