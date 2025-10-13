@@ -13,3 +13,4 @@ sqlalchemy==2.0.25
 alembic==1.13.1
 psycopg2-binary==2.9.9
 email-validator==2.1.0
+sentry-sdk[fastapi]==2.41.0
