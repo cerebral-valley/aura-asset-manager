@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.179',
-  buildDate: '2025-10-13',
-  deploymentId: 'cors-preflight-fix',
-  description: 'Fix CORS 400 errors on OPTIONS preflight requests - allow all headers'
+  version: 'v0.180',
+  buildDate: '2025-10-14',
+  deploymentId: 'secure-cors-headers',
+  description: 'Replace wildcard CORS headers with explicit Sentry-compatible allowlist for security'
 }
 
 export const getVersionDisplay = () => {

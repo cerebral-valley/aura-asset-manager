@@ -121,7 +121,27 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["*"],  # Allow all headers to fix preflight issues
+    allow_headers=[
+        # Core API Headers
+        "Authorization",      # Your JWT tokens
+        "Content-Type",      # JSON payloads, form data  
+        "Accept",           # Response format preferences
+        
+        # CORS Preflight Headers
+        "Origin",           # CORS origin identification
+        "X-Requested-With", # AJAX request identification
+        
+        # Sentry Distributed Tracing (Critical!)
+        "sentry-trace",     # Distributed tracing header
+        "baggage",          # Trace baggage propagation
+        "X-CSRF-Token",     # CSRF protection (if implemented)
+        "X-Sentry-Auth",    # Sentry authentication (if using direct API)
+        "X-Sentry-Version"  # Sentry SDK version
+        "X-Sentry-Error",   # Sentry error reporting
+
+        # Standard Browser Headers
+        "User-Agent",       # Browser identification
+    ],
     expose_headers=["Content-Length"],
     max_age=600,  # Cache preflight requests for 10 minutes
 )
