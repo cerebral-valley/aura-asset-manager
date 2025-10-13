@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.175',
+  version: 'v0.176',
   buildDate: '2025-10-13',
-  deploymentId: 'sentry-production-dsn',
-  description: 'Update Sentry integration with production DSN for real error tracking'
+  deploymentId: 'sentry-tunnel-fix',
+  description: 'Fix CORS issues with Sentry tunnel through backend - enables full error tracking'
 }
 
 export const getVersionDisplay = () => {

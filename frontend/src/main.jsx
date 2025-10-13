@@ -8,6 +8,11 @@ Sentry.init({
   integrations: [Sentry.browserTracingIntegration()],
   environment: import.meta.env.MODE, // 'development' or 'production'
   
+  // Tunnel through backend to avoid CORS issues and ad-blocker blocking
+  tunnel: import.meta.env.PROD 
+    ? "/api/v1/sentry-tunnel"  // Production: route through same domain
+    : undefined,               // Development: direct to Sentry for easier debugging
+  
   // Set tracesSampleRate to 1.0 to capture 100%
   // of transactions for performance monitoring.
   // We recommend adjusting this value in production

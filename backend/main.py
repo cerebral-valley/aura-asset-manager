@@ -165,6 +165,52 @@ async def cors_debug():
         "message": "CORS Debug Info"
     }
 
+# Sentry Tunnel Endpoint - Routes Sentry requests through backend to avoid CORS
+@app.post("/api/v1/sentry-tunnel")
+async def sentry_tunnel(request: Request):
+    """
+    Sentry tunnel to avoid CORS issues and ad-blocker blocking.
+    Forwards Sentry envelope data from frontend to Sentry's ingestion API.
+    """
+    import httpx
+    
+    try:
+        # Get the raw request body (Sentry envelope format)
+        envelope_data = await request.body()
+        
+        # Sentry ingestion URL from your DSN
+        sentry_dsn_host = "https://o4510169956679680.ingest.de.sentry.io"
+        sentry_project_id = "4510172314665040"
+        tunnel_url = f"{sentry_dsn_host}/api/{sentry_project_id}/envelope/"
+        
+        # Forward the request to Sentry with proper headers
+        headers = {
+            "Content-Type": "application/x-sentry-envelope",
+            "User-Agent": request.headers.get("user-agent", ""),
+        }
+        
+        # Forward to Sentry's ingestion API
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                tunnel_url,
+                content=envelope_data,
+                headers=headers,
+                timeout=10.0
+            )
+            
+        # Return success response to frontend
+        return JSONResponse(
+            status_code=response.status_code,
+            content={"status": "forwarded", "sentry_status": response.status_code}
+        )
+        
+    except Exception as e:
+        print(f"Sentry tunnel error: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Tunnel failed", "detail": str(e)}
+        )
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
