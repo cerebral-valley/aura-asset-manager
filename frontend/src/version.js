@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.174',
-  buildDate: '2025-01-28',
-  deploymentId: 'sentry-dependency-fix',
-  description: 'Fix missing @sentry/react package dependency - resolves build failures'
+  version: 'v0.175',
+  buildDate: '2025-10-13',
+  deploymentId: 'sentry-production-dsn',
+  description: 'Update Sentry integration with production DSN for real error tracking'
 }
 
 export const getVersionDisplay = () => {

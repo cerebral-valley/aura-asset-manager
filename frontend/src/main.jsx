@@ -5,7 +5,21 @@ console.log('Environment:', import.meta.env.MODE);
 
 Sentry.init({
   dsn: "https://27a3645cd8e778c6be27cf19eca40635@o4510169956679680.ingest.de.sentry.io/4510172314665040",
+  integrations: [Sentry.browserTracingIntegration()],
   environment: import.meta.env.MODE, // 'development' or 'production'
+  
+  // Set tracesSampleRate to 1.0 to capture 100%
+  // of transactions for performance monitoring.
+  // We recommend adjusting this value in production
+  tracesSampleRate: 1.0,
+  
+  // Set `tracePropagationTargets` to control for which URLs distributed tracing should be enabled
+  tracePropagationTargets: [
+    "localhost", 
+    /^https:\/\/aura-asset-manager\.vercel\.app\/api/,
+    /^https:\/\/.*\.railway\.app\/api/
+  ],
+  
   // Setting this option to true will send default PII data to Sentry.
   // For example, automatic IP address collection on events
   sendDefaultPii: true,
