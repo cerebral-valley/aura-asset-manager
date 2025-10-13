@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.178',
+  version: 'v0.179',
   buildDate: '2025-10-13',
-  deploymentId: 'vercel-csp-sentry-fix',
-  description: 'Add Sentry domains to Vercel CSP configuration - simple fix for error tracking'
+  deploymentId: 'cors-preflight-fix',
+  description: 'Fix CORS 400 errors on OPTIONS preflight requests - allow all headers'
 }
 
 export const getVersionDisplay = () => {

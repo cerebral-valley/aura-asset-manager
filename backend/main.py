@@ -113,7 +113,7 @@ def get_allowed_origins():
     print(f"🔒 SECURE CORS: Using explicit origins: {base_origins}")
     return base_origins
 
-# SECURE CORS configuration
+# SECURE CORS configuration with proper preflight handling
 origins = get_allowed_origins()
 print(f"🔒 CORS: Adding middleware with secure origins: {origins}")
 app.add_middleware(
@@ -121,8 +121,7 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", 
-                   "X-Requested-With", "Content-Length"],
+    allow_headers=["*"],  # Allow all headers to fix preflight issues
     expose_headers=["Content-Length"],
     max_age=600,  # Cache preflight requests for 10 minutes
 )
@@ -133,6 +132,14 @@ async def add_security_headers(request: Request, call_next):
     """Add security headers including CSP for Sentry integration."""
     method = request.method
     path = str(request.url.path)
+    origin = request.headers.get("origin")
+    
+    # Debug CORS preflight requests
+    if method == "OPTIONS":
+        print(f"🔍 CORS Preflight: {method} {path}")
+        print(f"   Origin: {origin}")
+        print(f"   Headers: {dict(request.headers)}")
+    
     response = await call_next(request)
     
     # Add Content Security Policy (CSP) headers
