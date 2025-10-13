@@ -127,13 +127,43 @@ app.add_middleware(
     max_age=600,  # Cache preflight requests for 10 minutes
 )
 
-# Enhanced debugging for CORS/Auth errors
+# Enhanced debugging for CORS/Auth errors + CSP Security Headers
 @app.middleware("http")
-async def log_requests(request: Request, call_next):
-    """Log all HTTP requests for debugging."""
+async def add_security_headers(request: Request, call_next):
+    """Add security headers including CSP for Sentry integration."""
     method = request.method
     path = str(request.url.path)
     response = await call_next(request)
+    
+    # Add Content Security Policy (CSP) headers
+    # This allows Sentry integration while maintaining security
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "connect-src 'self' "
+        "https://*.sentry.io "
+        "https://o4510169956679680.ingest.de.sentry.io "
+        "https://aura-asset-manager-production.up.railway.app "
+        "https://api.supabase.com "
+        "https://buuyvrysvjwqqfoyfbdr.supabase.co; "
+        "img-src 'self' data: https:; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "font-src 'self' data:; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self';"
+    )
+    
+    # Additional security headers
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    
+    # HSTS in production
+    if settings.ENVIRONMENT == "production":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    
     return response
 
 # Include API routers
