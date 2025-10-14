@@ -15,6 +15,7 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
 Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
 import { assetTypes, getAggregationCategories, getAssetTypeLabel, getAllAssetTypes } from '../constants/assetTypes';
+import { assetPurposeOptions } from '../constants/assetPurpose';
 import ConfirmationDialog from '../components/ui/confirmation-dialog';
 import { exportAssetsToPDF } from '../utils/pdfExportTerminal';
 import { exportToExcel } from '../utils/excelExport';
@@ -558,6 +559,21 @@ const Assets = () => {
     }
   };
 
+  // Time Horizon options for dropdown
+  const timeHorizonOptions = [
+    { value: 'short_term', label: 'Short Term' },
+    { value: 'medium_term', label: 'Medium Term' },
+    { value: 'long_term', label: 'Long Term' }
+  ];
+
+  // Get all unique asset types for Type dropdown
+  const allAssetTypeLabels = useMemo(() => {
+    const types = getAllAssetTypes();
+    // Get unique labels from assets in use
+    const usedTypes = [...new Set(activeAssets.map(asset => getAssetTypeLabel(asset.asset_type)).filter(Boolean))];
+    return usedTypes.sort();
+  }, [activeAssets]);
+
   // Helper to normalize liquidity status from various backend formats
   const normalizeLiquidityStatus = (value) => {
     if (value === true || value === 'true') return 'liquid';
@@ -585,7 +601,7 @@ const Assets = () => {
 
     if (typeFilter) {
       filtered = filtered.filter(asset => 
-        asset.asset_type.toLowerCase().includes(typeFilter.toLowerCase())
+        getAssetTypeLabel(asset.asset_type) === typeFilter
       );
     }
 
@@ -608,13 +624,13 @@ const Assets = () => {
 
     if (timeHorizonFilter) {
       filtered = filtered.filter(asset => 
-        asset.time_horizon && asset.time_horizon.toLowerCase().includes(timeHorizonFilter.toLowerCase())
+        asset.time_horizon && asset.time_horizon === timeHorizonFilter
       );
     }
 
     if (assetPurposeFilter) {
       filtered = filtered.filter(asset => 
-        asset.asset_purpose && asset.asset_purpose.toLowerCase().includes(assetPurposeFilter.toLowerCase())
+        asset.asset_purpose && asset.asset_purpose === assetPurposeFilter
       );
     }
 
@@ -1386,15 +1402,20 @@ const Assets = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1">Type</label>
-                  <input
-                    type="text"
-                    placeholder="Search..."
+                  <select
                     className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'
+                      isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100' : 'bg-white border-gray-300'
                     }`}
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
-                  />
+                  >
+                    <option value="">All</option>
+                    {allAssetTypeLabels.map((typeLabel) => (
+                      <option key={typeLabel} value={typeLabel}>
+                        {typeLabel}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1">Liquidity</label>
@@ -1412,27 +1433,37 @@ const Assets = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1">Time Horizon</label>
-                  <input
-                    type="text"
-                    placeholder="Short/Mid/Long"
+                  <select
                     className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'
+                      isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100' : 'bg-white border-gray-300'
                     }`}
                     value={timeHorizonFilter}
                     onChange={(e) => setTimeHorizonFilter(e.target.value)}
-                  />
+                  >
+                    <option value="">All</option>
+                    {timeHorizonOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1">Purpose</label>
-                  <input
-                    type="text"
-                    placeholder="retirement/growth..."
+                  <select
                     className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'
+                      isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100' : 'bg-white border-gray-300'
                     }`}
                     value={assetPurposeFilter}
                     onChange={(e) => setAssetPurposeFilter(e.target.value)}
-                  />
+                  >
+                    <option value="">All</option>
+                    {assetPurposeOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1">Date From</label>

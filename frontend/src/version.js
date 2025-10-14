@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.191',
-  buildDate: '2025-10-14',
-  deploymentId: 'liquidity-filter-dropdown',
-  description: 'Convert Liquidity filter from textbox to dropdown select for better UX - users can directly select "Liquid" or "Not Liquid"'
+  version: 'v0.192',
+  buildDate: '2025-01-14',
+  deploymentId: 'all-filter-dropdowns',
+  description: 'Convert Type, Liquidity, Time Horizon, and Purpose filters to dropdown selects - consistent UX with exact matching for all filters'
 }
 
 export const getVersionDisplay = () => {
