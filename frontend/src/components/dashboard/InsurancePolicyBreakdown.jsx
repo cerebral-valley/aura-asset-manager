@@ -84,8 +84,8 @@ const InsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown" }) => {
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
+        <ResponsiveContainer width="100%" height={350}>
+          <PieChart margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
             <Pie
               data={pieData}
               cx="50%"
@@ -105,7 +105,9 @@ const InsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown" }) => {
               ))}
             </Pie>
             <Tooltip formatter={formatTooltip} />
-            <Legend />
+            <Legend 
+              wrapperStyle={{ paddingTop: '20px' }}
+            />
           </PieChart>
         </ResponsiveContainer>
         
