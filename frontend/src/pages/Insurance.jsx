@@ -966,7 +966,7 @@ const Insurance = () => {
             {actionError && <div className="text-red-600 mb-2">{actionError}</div>}
             <table className="min-w-full text-sm" aria-label="Insurance Policies Table">
               <thead>
-                <tr>
+                <tr className={isDark ? 'bg-neutral-900 text-gray-300' : 'bg-gray-50 text-gray-700'}>
                   <th className="text-left py-2 px-4">Policy Name</th>
                   <th className="text-left py-2 px-4">Policy Number</th>
                   <th className="text-left py-2 px-4">Type</th>
@@ -990,7 +990,7 @@ const Insurance = () => {
                     displayPolicyNumber = '***' + displayPolicyNumber.slice(-5);
                   }
                   return (
-                    <tr key={p.id || idx} className="border-t">
+                    <tr key={p.id || idx} className={`border-t ${isDark ? 'border-gray-700 text-neutral-300' : 'text-gray-700'}`}>
                       <td className="py-2 px-4">{p.policy_name || 'Policy'}</td>
                       <td className="py-2 px-4">{displayPolicyNumber}</td>
                       <td className="py-2 px-4 capitalize">{p.policy_type || '-'}</td>

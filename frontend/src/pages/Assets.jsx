@@ -1392,42 +1392,42 @@ const Assets = () => {
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm" aria-label="Assets Table">
                 <thead>
-                  <tr>
+                  <tr className={isDark ? 'bg-neutral-900 text-gray-300' : 'bg-gray-50 text-gray-700'}>
                     <th className="text-center py-2 px-4 min-w-[100px]" title="Toggle asset selection for goals">
                       <div className="text-xs leading-tight">
                         Asset Selection<br />for Goals
                       </div>
                     </th>
-                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('name')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`} onClick={() => handleSort('name')}>
                       Name {sortField === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('type')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`} onClick={() => handleSort('type')}>
                       Type {sortField === 'type' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('acquisition_value')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`} onClick={() => handleSort('acquisition_value')}>
                       Acquisition Value {sortField === 'acquisition_value' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('present_value')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`} onClick={() => handleSort('present_value')}>
                       Present Value {sortField === 'present_value' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('quantity')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`} onClick={() => handleSort('quantity')}>
                       Quantity {sortField === 'quantity' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
                     <th className="text-left py-2 px-4">Unit</th>
-                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('purchase_date')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`} onClick={() => handleSort('purchase_date')}>
                       Purchase Date {sortField === 'purchase_date' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('liquid_assets')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`} onClick={() => handleSort('liquid_assets')}>
                       Liquidity Status {sortField === 'liquid_assets' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('time_horizon')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`} onClick={() => handleSort('time_horizon')}>
                       Time Horizon {sortField === 'time_horizon' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('asset_purpose')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`} onClick={() => handleSort('asset_purpose')}>
                       Asset Purpose {sortField === 'asset_purpose' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
                     <th className="text-left py-2 px-4">Notes</th>
-                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`} onClick={() => handleSort('share_percentage')}>
+                    <th className={`text-left py-2 px-4 cursor-pointer ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`} onClick={() => handleSort('share_percentage')}>
                       % Share {sortField === 'share_percentage' && (sortDirection === 'asc' ? '↑' : '↓')}
                     </th>
                     <th className="text-left py-2 px-4">Actions</th>
@@ -1436,7 +1436,7 @@ const Assets = () => {
                 <tbody>
                   {filteredAndSortedAssets.map((asset, idx) => (
                     <React.Fragment key={asset.id || idx}>
-                      <tr className={`border-t ${isDark ? 'border-gray-600' : ''}`}>
+                      <tr className={`border-t ${isDark ? 'border-gray-700 text-neutral-300' : 'text-gray-700'}`}>
                         <td className="py-2 px-4 text-center">
                           <input
                             type="checkbox"

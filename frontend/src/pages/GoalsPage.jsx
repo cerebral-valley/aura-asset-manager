@@ -409,17 +409,20 @@ const GoalsPage = () => {
             <div className="overflow-x-auto">
               <table className="min-w-full">
                 <thead>
-                  <tr className={`${isDark ? 'border-gray-600' : 'border-gray-200'} border-b`}>
-                    <th className={`py-3 px-4 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>
+                  <tr className={`${isDark ? 'border-gray-700 bg-neutral-900' : 'border-gray-200 bg-gray-50'} border-b`}>
+                    <th className={`py-3 px-4 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                       Asset Name
                     </th>
-                    <th className={`py-3 px-4 text-left text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>
+                    <th className={`py-3 px-4 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                       Type
                     </th>
-                    <th className={`py-3 px-4 text-right text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>
+                    <th className={`py-3 px-4 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
+                      Liquidity Status
+                    </th>
+                    <th className={`py-3 px-4 text-right text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                       Present Value
                     </th>
-                    <th className={`py-3 px-4 text-right text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider`}>
+                    <th className={`py-3 px-4 text-right text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                       % of Total
                     </th>
                   </tr>
@@ -432,17 +435,20 @@ const GoalsPage = () => {
                       : 0;
                     
                     return (
-                      <tr key={asset.id} className={`border-t ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
+                      <tr key={asset.id} className={`border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                         <td className={`py-2 px-4 text-sm ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
                           {asset.name}
                         </td>
-                        <td className={`py-2 px-4 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                        <td className={`py-2 px-4 text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
                           {getAssetTypeLabel(asset.asset_type)}
+                        </td>
+                        <td className={`py-2 px-4 text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
+                          {asset.liquidity_status || 'Liquid'}
                         </td>
                         <td className={`py-2 px-4 text-sm text-right font-medium ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
                           {formatCurrency(presentValue)}
                         </td>
-                        <td className={`py-2 px-4 text-sm text-right ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                        <td className={`py-2 px-4 text-sm text-right ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
                           {percentage}%
                         </td>
                       </tr>
@@ -450,12 +456,15 @@ const GoalsPage = () => {
                   })}
                   
                   {/* Total Row */}
-                  <tr className={`border-t-2 font-bold ${isDark ? 'border-neutral-700 bg-neutral-950' : 'border-gray-300 bg-gray-50'}`}>
+                  <tr className={`border-t-2 font-bold ${isDark ? 'border-neutral-700 bg-neutral-900' : 'border-gray-300 bg-gray-50'}`}>
                     <td className={`py-3 px-4 text-sm ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
                       Total Selected Assets
                     </td>
-                    <td className={`py-3 px-4 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <td className={`py-3 px-4 text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
                       {selectedAssets.length} asset{selectedAssets.length !== 1 ? 's' : ''}
+                    </td>
+                    <td className={`py-3 px-4 text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
+                      -
                     </td>
                     <td className={`py-3 px-4 text-sm text-right font-bold ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
                       {formatCurrency(selectedTotalPresent)}
