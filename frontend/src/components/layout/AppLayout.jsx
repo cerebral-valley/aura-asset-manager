@@ -83,10 +83,12 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
   const { user, signOut } = useAuth()
   const [userSettings, setUserSettings] = useState(null)
   const location = useLocation()
+  const { state } = useSidebar()
   
   console.log('🏗️ AppLayout: Rendering with location:', location.pathname)
   console.log('🏗️ AppLayout: User:', user?.email || 'No user')
   console.log('🏗️ AppLayout: Children:', !!children)
+  console.log('🏗️ AppLayout: Sidebar state:', state)
 
   // Fetch user settings for display name
   useEffect(() => {
@@ -151,7 +153,7 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
 
   return (
     <>
-      <Sidebar collapsible="icon">
+      <Sidebar collapsible="icon" className="overflow-x-hidden">
         <SidebarHeader>
           <div className="flex items-center gap-2 px-2 py-2">
             <h1 className="text-2xl font-bold text-primary">Aura</h1>
@@ -229,26 +231,48 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <div className="flex items-center gap-2 p-2">
-                <ProfileAvatar 
-                  user={user} 
-                  userSettings={userSettings} 
-                  getUserInitials={getUserInitials} 
-                />
-                <div className="flex-1 min-w-0 overflow-hidden">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {getUserDisplayName()}
-                  </p>
+              {state === "collapsed" ? (
+                // Collapsed state: Stack vertically with icons only
+                <div className="flex flex-col items-center gap-2 p-2">
+                  <ProfileAvatar 
+                    user={user} 
+                    userSettings={userSettings} 
+                    getUserInitials={getUserInitials} 
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleSignOut}
+                    className="text-muted-foreground hover:text-foreground p-1"
+                    title="Sign out"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleSignOut}
-                  className="text-muted-foreground hover:text-foreground shrink-0"
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </div>
+              ) : (
+                // Expanded state: Horizontal layout with text
+                <div className="flex items-center gap-2 p-2 overflow-hidden">
+                  <ProfileAvatar 
+                    user={user} 
+                    userSettings={userSettings} 
+                    getUserInitials={getUserInitials} 
+                  />
+                  <div className="flex-1 min-w-0 overflow-hidden">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {getUserDisplayName()}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleSignOut}
+                    className="text-muted-foreground hover:text-foreground shrink-0"
+                    title="Sign out"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>

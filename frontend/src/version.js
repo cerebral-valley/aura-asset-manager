@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.182',
+  version: 'v0.183',
   buildDate: '2025-10-14',
-  deploymentId: 'collapsible-sidebar',
-  description: 'Implement collapsible sidebar using Shadcn UI components with icon mode and toggle functionality'
+  deploymentId: 'sidebar-layout-fixes',
+  description: 'Fix sidebar footer layout in collapsed state, remove horizontal scroll, standardize page titles'
 }
 
 export const getVersionDisplay = () => {

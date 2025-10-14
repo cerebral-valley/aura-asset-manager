@@ -970,7 +970,7 @@ export default function Transactions() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Transactions</h2>
+          <h1 className="text-3xl font-bold tracking-tight">Transactions</h1>
           <p className="text-muted-foreground">
             Manage all your asset transactions - create, update, and track your portfolio changes.
           </p>
