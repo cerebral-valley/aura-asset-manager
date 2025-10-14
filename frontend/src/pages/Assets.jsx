@@ -558,6 +558,20 @@ const Assets = () => {
     }
   };
 
+  // Helper to normalize liquidity status from various backend formats
+  const normalizeLiquidityStatus = (value) => {
+    if (value === true || value === 'true') return 'liquid';
+    if (value === false || value === 'false') return 'not liquid';
+
+    if (typeof value === 'string') {
+      const normalized = value.trim().toLowerCase();
+      if (['liquid', 'yes'].includes(normalized)) return 'liquid';
+      if (['not liquid', 'non-liquid', 'no'].includes(normalized)) return 'not liquid';
+    }
+
+    return 'not liquid'; // default when unclear
+  };
+
   // Filter and sort assets for the table
   const filteredAndSortedAssets = useMemo(() => {
     let filtered = [...assetsToProcess];
@@ -588,10 +602,8 @@ const Assets = () => {
     }
 
     if (liquidityFilter) {
-      filtered = filtered.filter(asset => {
-        const isLiquid = asset.liquid_assets ? 'liquid' : 'not liquid';
-        return isLiquid === liquidityFilter.toLowerCase().trim();
-      });
+      const target = liquidityFilter.trim().toLowerCase();
+      filtered = filtered.filter(asset => normalizeLiquidityStatus(asset.liquid_assets) === target);
     }
 
     if (timeHorizonFilter) {
@@ -1386,15 +1398,17 @@ const Assets = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1">Liquidity</label>
-                  <input
-                    type="text"
-                    placeholder="liquid/not liquid"
+                  <select
                     className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'
+                      isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100' : 'bg-white border-gray-300'
                     }`}
                     value={liquidityFilter}
                     onChange={(e) => setLiquidityFilter(e.target.value)}
-                  />
+                  >
+                    <option value="">All</option>
+                    <option value="liquid">Liquid</option>
+                    <option value="not liquid">Not Liquid</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1">Time Horizon</label>
