@@ -986,8 +986,8 @@ const Assets = () => {
   }
 
   return (
-    <div className={`p-6 min-h-screen ${isDark ? 'bg-black text-neutral-100' : 'bg-gray-50'}`}>
-      <div className="flex justify-between items-center mb-4">
+    <div className={`min-h-screen space-y-6 ${isDark ? 'bg-black text-neutral-100' : 'bg-gray-50'}`}>
+      <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Assets</h1>
         <div className="flex items-center gap-3">
           {/* PDF Download Button */}

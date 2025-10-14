@@ -379,9 +379,9 @@ const GoalsPage = () => {
   }
 
   return (
-    <div className={`p-6 min-h-screen ${isDark ? 'bg-black text-neutral-100' : 'bg-gray-50'}`}>
+    <div className={`min-h-screen space-y-6 ${isDark ? 'bg-black text-neutral-100' : 'bg-gray-50'}`}>
       {/* Page Header */}
-      <div className="mb-6">
+      <div>
         <h1 className={`text-3xl font-bold ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
           Financial Goals
         </h1>

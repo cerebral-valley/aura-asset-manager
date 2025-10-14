@@ -154,13 +154,13 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
   return (
     <>
       <Sidebar collapsible="icon" className="overflow-x-hidden">
-        <SidebarHeader>
-          <div className="flex items-center gap-2 px-2 py-2">
+        <SidebarHeader className="overflow-hidden">
+          <div className="flex items-center gap-2 px-2 py-2 w-full box-border">
             <h1 className="text-2xl font-bold text-primary">Aura</h1>
           </div>
         </SidebarHeader>
         
-        <SidebarContent>
+        <SidebarContent className="overflow-x-hidden">
           <SidebarGroup>
             <SidebarGroupLabel>Navigation</SidebarGroupLabel>
             <SidebarGroupContent>
@@ -251,7 +251,7 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
                 </div>
               ) : (
                 // Expanded state: Horizontal layout with text
-                <div className="flex items-center gap-2 p-2 overflow-hidden">
+                <div className="flex items-center gap-2 p-2 w-full overflow-hidden box-border">
                   <ProfileAvatar 
                     user={user} 
                     userSettings={userSettings} 

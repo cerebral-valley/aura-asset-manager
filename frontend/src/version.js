@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.183',
-  buildDate: '2025-10-14',
-  deploymentId: 'sidebar-layout-fixes',
-  description: 'Fix sidebar footer layout in collapsed state, remove horizontal scroll, standardize page titles'
+  version: 'v0.184',
+  buildDate: '2025-01-14',
+  deploymentId: 'sidebar-optimization',
+  description: 'Reduce sidebar width (14rem), enable word wrapping, fix horizontal scroll, align page titles consistently'
 }
 
 export const getVersionDisplay = () => {
