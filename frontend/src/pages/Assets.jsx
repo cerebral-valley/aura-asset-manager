@@ -590,7 +590,7 @@ const Assets = () => {
     if (liquidityFilter) {
       filtered = filtered.filter(asset => {
         const isLiquid = asset.liquid_assets ? 'liquid' : 'not liquid';
-        return isLiquid.includes(liquidityFilter.toLowerCase());
+        return isLiquid === liquidityFilter.toLowerCase().trim();
       });
     }
 
@@ -1359,13 +1359,13 @@ const Assets = () => {
               <h2 className="font-semibold mb-3">All Assets</h2>
               
               {/* Filters */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-3 mb-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Filter by Name</label>
+                  <label className="block text-xs font-medium mb-1">Name</label>
                   <input
                     type="text"
-                    placeholder="Search asset name..."
-                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    placeholder="Search..."
+                    className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'
                     }`}
                     value={nameFilter}
@@ -1373,11 +1373,11 @@ const Assets = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Filter by Type</label>
+                  <label className="block text-xs font-medium mb-1">Type</label>
                   <input
                     type="text"
-                    placeholder="Search asset type..."
-                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    placeholder="Search..."
+                    className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'
                     }`}
                     value={typeFilter}
@@ -1385,11 +1385,11 @@ const Assets = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Liquidity Status</label>
+                  <label className="block text-xs font-medium mb-1">Liquidity</label>
                   <input
                     type="text"
-                    placeholder="liquid or not liquid..."
-                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    placeholder="liquid/not liquid"
+                    className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'
                     }`}
                     value={liquidityFilter}
@@ -1397,11 +1397,11 @@ const Assets = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Time Horizon</label>
+                  <label className="block text-xs font-medium mb-1">Time Horizon</label>
                   <input
                     type="text"
-                    placeholder="short_term, mid_term..."
-                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    placeholder="Short/Mid/Long"
+                    className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'
                     }`}
                     value={timeHorizonFilter}
@@ -1409,11 +1409,11 @@ const Assets = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Asset Purpose</label>
+                  <label className="block text-xs font-medium mb-1">Purpose</label>
                   <input
                     type="text"
-                    placeholder="retirement, growth..."
-                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    placeholder="retirement/growth..."
+                    className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'
                     }`}
                     value={assetPurposeFilter}
@@ -1421,10 +1421,10 @@ const Assets = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Date From</label>
+                  <label className="block text-xs font-medium mb-1">Date From</label>
                   <input
                     type="date"
-                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100' : 'bg-white border-gray-300'
                     }`}
                     value={dateFromFilter}
@@ -1432,10 +1432,10 @@ const Assets = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Date To</label>
+                  <label className="block text-xs font-medium mb-1">Date To</label>
                   <input
                     type="date"
-                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100' : 'bg-white border-gray-300'
                     }`}
                     value={dateToFilter}

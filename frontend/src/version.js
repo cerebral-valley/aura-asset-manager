@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.186',
+  version: 'v0.188',
   buildDate: '2025-01-14',
-  deploymentId: 'liquidity-fix-filters-goals-insurance',
-  description: 'Fix liquidity status bug in Goals, add columns and filters, fix Insurance page naming conflict that caused blank page'
+  deploymentId: 'insurance-page-fix',
+  description: 'CRITICAL FIX: Insurance page blank screen - added missing isDark destructuring from useChartColors hook'
 }
 
 export const getVersionDisplay = () => {

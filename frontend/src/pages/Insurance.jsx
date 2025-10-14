@@ -33,7 +33,7 @@ const Insurance = () => {
   if (!exportInsuranceToPDF) warn('Insurance:import', 'exportInsuranceToPDF not available');
   
   const { user } = useAuth();
-  const { colors, getColor } = useChartColors();
+  const { colors, getColor, isDark } = useChartColors();
   const queryClient = useQueryClient();
   
   // TanStack Query data fetching
