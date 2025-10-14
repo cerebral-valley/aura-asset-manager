@@ -590,7 +590,7 @@ const Assets = () => {
     if (liquidityFilter) {
       filtered = filtered.filter(asset => {
         const isLiquid = asset.liquid_assets ? 'liquid' : 'not liquid';
-        return isLiquid.includes(liquidityFilter.toLowerCase().trim());
+        return isLiquid === liquidityFilter.toLowerCase().trim();
       });
     }
 

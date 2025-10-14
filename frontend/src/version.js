@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.189',
-  buildDate: '2025-01-14',
-  deploymentId: 'assets-liquidity-filter-fix',
-  description: 'Fix Assets page Liquidity filter - changed from exact match to partial match (includes) for flexible filtering'
+  version: 'v0.190',
+  buildDate: '2025-10-14',
+  deploymentId: 'liquidity-filter-exact-match',
+  description: 'Fix Liquidity filter substring issue - changed back to exact match (===) to prevent "liquid" from matching "not liquid"'
 }
 
 export const getVersionDisplay = () => {
