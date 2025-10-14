@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { persistQueryClient } from '@tanstack/react-query-persist-client'
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
 import { useQuerySync } from './lib/queryUtils'
+import { SidebarProvider } from './components/ui/sidebar'
 import LoginForm from './components/auth/LoginForm'
 import Dashboard from './pages/Dashboard'
 import Assets from './pages/Assets'
@@ -78,22 +79,24 @@ function AppContent() {
 
   log('App', 'render:authenticated')
   return (
-    <AppLayout>
-      <DebugLocation />
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/dashboard" element={<Navigate to="/" replace />} />
-        <Route path="/portfolio" element={<AssetsPage />} />
-        <Route path="/insurance" element={<Insurance />} />
-        <Route path="/transactions" element={<TransactionsPage />} />
-        <Route path="/analytics" element={<AnalyticsPage />} />
-        <Route path="/goals" element={<Goals />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<UserSettings />} />
-        <Route path="/guide" element={<UserGuide />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </AppLayout>
+    <SidebarProvider>
+      <AppLayout>
+        <DebugLocation />
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Navigate to="/" replace />} />
+          <Route path="/portfolio" element={<AssetsPage />} />
+          <Route path="/insurance" element={<Insurance />} />
+          <Route path="/transactions" element={<TransactionsPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/goals" element={<Goals />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<UserSettings />} />
+          <Route path="/guide" element={<UserGuide />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AppLayout>
+    </SidebarProvider>
   )
 }
 

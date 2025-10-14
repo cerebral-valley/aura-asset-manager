@@ -4,6 +4,22 @@ import { useAuth } from '../../hooks/useAuth.jsx'
 import { userSettingsService } from '../../services/user-settings.js'
 import { Button } from '../ui/button.jsx'
 import { 
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarSeparator,
+  SidebarTrigger,
+  useSidebar
+} from '../ui/sidebar.jsx'
+import { 
   Home, 
   Briefcase, 
   Shield, 
@@ -65,7 +81,6 @@ const ProfileAvatar = ({ user, userSettings, getUserInitials }) => {
 
 const AppLayout = ({ children, currentPage = 'dashboard' }) => {
   const { user, signOut } = useAuth()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [userSettings, setUserSettings] = useState(null)
   const location = useLocation()
   
@@ -135,147 +150,125 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Mobile sidebar backdrop */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
-        <div className="flex flex-col h-full">
-          {/* Logo/Header */}
-          <div className="flex items-center justify-between p-6 border-b">
+    <>
+      <Sidebar collapsible="icon">
+        <SidebarHeader>
+          <div className="flex items-center gap-2 px-2 py-2">
             <h1 className="text-2xl font-bold text-primary">Aura</h1>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="lg:hidden"
-              onClick={() => setSidebarOpen(false)}
-            >
-              <X className="h-5 w-5" />
-            </Button>
           </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2">
-            {/* Main Navigation */}
-            {navigation.map((item) => {
-              const Icon = item.icon
-              const isActive = location.pathname === item.href
-              console.log(`🔗 Navigation: ${item.name} - current: ${location.pathname}, href: ${item.href}, active: ${isActive}`)
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  onClick={() => {
-                    console.log(`🔗 Navigation CLICK: ${item.name} -> ${item.href}`)
-                    setSidebarOpen(false)
-                  }}
-                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                    isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                  }`}
-                >
-                  <Icon className="mr-3 h-5 w-5" />
-                  {item.name}
-                </Link>
-              )
-            })}
-            
-            {/* Separator */}
-            <div className="py-4">
-              <div className="border-t border-border opacity-50"></div>
-              <div className="mt-4 mb-2 px-4">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Account & App
-                </span>
-              </div>
-            </div>
-            
-            {/* Account & App Navigation */}
-            {accountNavigation.map((item) => {
-              const Icon = item.icon
-              const isActive = location.pathname === item.href
-              console.log(`🔗 Account Navigation: ${item.name} - current: ${location.pathname}, href: ${item.href}, active: ${isActive}`)
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  onClick={() => {
-                    console.log(`🔗 Account Navigation CLICK: ${item.name} -> ${item.href}`)
-                    setSidebarOpen(false)
-                  }}
-                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                    isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                  }`}
-                >
-                  <Icon className="mr-3 h-5 w-5" />
-                  {item.name}
-                </Link>
-              )
-            })}
-          </nav>
-
-          {/* User section */}
-          <div className="p-4 border-t">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
+        </SidebarHeader>
+        
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {navigation.map((item) => {
+                  const Icon = item.icon
+                  const isActive = location.pathname === item.href
+                  console.log(`🔗 Navigation: ${item.name} - current: ${location.pathname}, href: ${item.href}, active: ${isActive}`)
+                  return (
+                    <SidebarMenuItem key={item.name}>
+                      <SidebarMenuButton 
+                        asChild 
+                        isActive={isActive}
+                        tooltip={item.name}
+                      >
+                        <Link
+                          to={item.href}
+                          onClick={() => {
+                            console.log(`🔗 Navigation CLICK: ${item.name} -> ${item.href}`)
+                          }}
+                        >
+                          <Icon className="h-5 w-5" />
+                          <span>{item.name}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          
+          <SidebarSeparator />
+          
+          <SidebarGroup>
+            <SidebarGroupLabel>Account & App</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {accountNavigation.map((item) => {
+                  const Icon = item.icon
+                  const isActive = location.pathname === item.href
+                  console.log(`🔗 Account Navigation: ${item.name} - current: ${location.pathname}, href: ${item.href}, active: ${isActive}`)
+                  return (
+                    <SidebarMenuItem key={item.name}>
+                      <SidebarMenuButton 
+                        asChild 
+                        isActive={isActive}
+                        tooltip={item.name}
+                      >
+                        <Link
+                          to={item.href}
+                          onClick={() => {
+                            console.log(`🔗 Account Navigation CLICK: ${item.name} -> ${item.href}`)
+                          }}
+                        >
+                          <Icon className="h-5 w-5" />
+                          <span>{item.name}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <div className="flex items-center gap-2 p-2">
                 <ProfileAvatar 
                   user={user} 
                   userSettings={userSettings} 
                   getUserInitials={getUserInitials} 
                 />
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 overflow-hidden">
                   <p className="text-sm font-medium text-foreground truncate">
                     {getUserDisplayName()}
                   </p>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="text-muted-foreground hover:text-foreground shrink-0"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSignOut}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main content */}
-      <div className="lg:pl-64">
-        {/* Top bar */}
-        <div className="sticky top-0 z-40 bg-background border-b px-4 py-3 lg:px-6">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="lg:hidden"
-              onClick={() => setSidebarOpen(true)}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
+      
+      <SidebarInset>
+        {/* Top bar with trigger */}
+        <header className="sticky top-0 z-40 bg-background border-b">
+          <div className="flex items-center gap-2 px-4 py-3 lg:px-6">
+            <SidebarTrigger className="-ml-1" />
             <div className="flex-1" />
           </div>
-        </div>
+        </header>
 
         {/* Page content */}
-        <main className="p-4 lg:p-6">
+        <main className="flex-1 p-4 lg:p-6">
           {children}
         </main>
-      </div>
-    </div>
+      </SidebarInset>
+    </>
   )
 }
 

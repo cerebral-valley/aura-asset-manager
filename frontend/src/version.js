@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.181',
+  version: 'v0.182',
   buildDate: '2025-10-14',
-  deploymentId: 'ui-cleanup-chart-alignment',
-  description: 'Remove Test Sentry Error button and fix dashboard chart alignment consistency'
+  deploymentId: 'collapsible-sidebar',
+  description: 'Implement collapsible sidebar using Shadcn UI components with icon mode and toggle functionality'
 }
 
 export const getVersionDisplay = () => {
