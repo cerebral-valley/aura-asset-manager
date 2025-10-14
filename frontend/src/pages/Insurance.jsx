@@ -206,7 +206,6 @@ const Insurance = () => {
   })
 
   // Local state for UI management
-  const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editPolicy, setEditPolicy] = useState(null);
   const [actionError, setActionError] = useState(null);

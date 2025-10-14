@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.185',
+  version: 'v0.186',
   buildDate: '2025-01-14',
-  deploymentId: 'table-consistency-sidebar-wrapping',
-  description: 'Fix sidebar word wrapping consistency, add Liquidity Status to Goals table, standardize table colors app-wide (Assets, Goals, Insurance)'
+  deploymentId: 'liquidity-fix-filters-goals-insurance',
+  description: 'Fix liquidity status bug in Goals, add columns and filters, fix Insurance page naming conflict that caused blank page'
 }
 
 export const getVersionDisplay = () => {

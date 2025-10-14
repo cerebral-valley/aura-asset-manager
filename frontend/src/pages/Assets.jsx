@@ -306,6 +306,9 @@ const Assets = () => {
   const [typeFilter, setTypeFilter] = useState('');
   const [dateFromFilter, setDateFromFilter] = useState('');
   const [dateToFilter, setDateToFilter] = useState('');
+  const [liquidityFilter, setLiquidityFilter] = useState('');
+  const [timeHorizonFilter, setTimeHorizonFilter] = useState('');
+  const [assetPurposeFilter, setAssetPurposeFilter] = useState('');
 
   // Projection and visualization states
   const [projectionTimeframe, setProjectionTimeframe] = useState(5); // Default 5 years
@@ -584,6 +587,25 @@ const Assets = () => {
       );
     }
 
+    if (liquidityFilter) {
+      filtered = filtered.filter(asset => {
+        const isLiquid = asset.liquid_assets ? 'liquid' : 'not liquid';
+        return isLiquid.includes(liquidityFilter.toLowerCase());
+      });
+    }
+
+    if (timeHorizonFilter) {
+      filtered = filtered.filter(asset => 
+        asset.time_horizon && asset.time_horizon.toLowerCase().includes(timeHorizonFilter.toLowerCase())
+      );
+    }
+
+    if (assetPurposeFilter) {
+      filtered = filtered.filter(asset => 
+        asset.asset_purpose && asset.asset_purpose.toLowerCase().includes(assetPurposeFilter.toLowerCase())
+      );
+    }
+
     // Apply sorting
     filtered.sort((a, b) => {
       let aValue, bValue;
@@ -635,7 +657,7 @@ const Assets = () => {
     });
 
     return filtered;
-  }, [assetsToProcess, nameFilter, typeFilter, dateFromFilter, dateToFilter, sortField, sortDirection]);
+  }, [assetsToProcess, nameFilter, typeFilter, dateFromFilter, dateToFilter, liquidityFilter, timeHorizonFilter, assetPurposeFilter, sortField, sortDirection]);
 
   // Calculate totals for the filtered assets
   const filteredTotalAcquisition = filteredAndSortedAssets.reduce((sum, asset) => sum + getAcquisitionValue(asset), 0);
@@ -1360,6 +1382,42 @@ const Assets = () => {
                     }`}
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Liquidity Status</label>
+                  <input
+                    type="text"
+                    placeholder="liquid or not liquid..."
+                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'
+                    }`}
+                    value={liquidityFilter}
+                    onChange={(e) => setLiquidityFilter(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Time Horizon</label>
+                  <input
+                    type="text"
+                    placeholder="short_term, mid_term..."
+                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'
+                    }`}
+                    value={timeHorizonFilter}
+                    onChange={(e) => setTimeHorizonFilter(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Asset Purpose</label>
+                  <input
+                    type="text"
+                    placeholder="retirement, growth..."
+                    className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-400' : 'bg-white border-gray-300'
+                    }`}
+                    value={assetPurposeFilter}
+                    onChange={(e) => setAssetPurposeFilter(e.target.value)}
                   />
                 </div>
                 <div>

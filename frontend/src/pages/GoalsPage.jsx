@@ -419,6 +419,12 @@ const GoalsPage = () => {
                     <th className={`py-3 px-4 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                       Liquidity Status
                     </th>
+                    <th className={`py-3 px-4 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
+                      Time Horizon
+                    </th>
+                    <th className={`py-3 px-4 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
+                      Asset Purpose
+                    </th>
                     <th className={`py-3 px-4 text-right text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                       Present Value
                     </th>
@@ -443,7 +449,13 @@ const GoalsPage = () => {
                           {getAssetTypeLabel(asset.asset_type)}
                         </td>
                         <td className={`py-2 px-4 text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
-                          {asset.liquidity_status || 'Liquid'}
+                          {asset.liquid_assets ? 'Liquid' : 'Not Liquid'}
+                        </td>
+                        <td className={`py-2 px-4 text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
+                          {asset.time_horizon ? asset.time_horizon.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : '-'}
+                        </td>
+                        <td className={`py-2 px-4 text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
+                          {asset.asset_purpose ? asset.asset_purpose.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : '-'}
                         </td>
                         <td className={`py-2 px-4 text-sm text-right font-medium ${isDark ? 'text-neutral-100' : 'text-gray-900'}`}>
                           {formatCurrency(presentValue)}
@@ -462,6 +474,12 @@ const GoalsPage = () => {
                     </td>
                     <td className={`py-3 px-4 text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
                       {selectedAssets.length} asset{selectedAssets.length !== 1 ? 's' : ''}
+                    </td>
+                    <td className={`py-3 px-4 text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
+                      -
+                    </td>
+                    <td className={`py-3 px-4 text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
+                      -
                     </td>
                     <td className={`py-3 px-4 text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'}`}>
                       -
