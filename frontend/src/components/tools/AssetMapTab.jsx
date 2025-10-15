@@ -1,16 +1,18 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState, useCallback, useMemo, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../../hooks/useAuth'
 import { useCurrency } from '../../hooks/useCurrency'
 import { toolsService, DEFAULT_HIERARCHY } from '../../services/tools'
 import { queryKeys } from '../../lib/queryKeys'
-import { ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState } from '@xyflow/react'
+import { ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState, useReactFlow } from '@xyflow/react'
 import dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
 import { Button } from '../ui/button'
-import { Download, Settings2 } from 'lucide-react'
+import { Download, Maximize2, Minimize2 } from 'lucide-react'
 import Loading from '../ui/Loading'
 import { toast } from 'sonner'
+import html2canvas from 'html2canvas'
+import jsPDF from 'jspdf'
 
 // Dagre graph configuration
 const dagreGraph = new dagre.graphlib.Graph()
@@ -86,6 +88,8 @@ const AssetMapTab = () => {
   const { formatCurrency } = useCurrency()
   const [hierarchy, setHierarchy] = useState(DEFAULT_HIERARCHY)
   const [depth, setDepth] = useState(5)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const reactFlowWrapper = useRef(null)
 
   // Fetch asset hierarchy data
   const {
@@ -119,13 +123,24 @@ const AssetMapTab = () => {
       position: { x: 0, y: 0 }, // Will be set by dagre
     }))
 
+    const isDark = document.documentElement.classList.contains('dark')
+    
     const rawEdges = hierarchyData.edges.map((edge, index) => ({
       id: `${edge.source}-${edge.target}`,
       source: edge.source,
       target: edge.target,
       type: 'smoothstep',
-      animated: true,
-      style: { stroke: '#94a3b8', strokeWidth: 2 },
+      animated: false,
+      style: { 
+        stroke: isDark ? '#60a5fa' : '#3b82f6',
+        strokeWidth: 2
+      },
+      markerEnd: {
+        type: 'arrowclosed',
+        width: 20,
+        height: 20,
+        color: isDark ? '#60a5fa' : '#3b82f6',
+      },
     }))
 
     return getLayoutedElements(rawNodes, rawEdges)
@@ -150,14 +165,80 @@ const AssetMapTab = () => {
     setDepth(newDepth)
   }, [])
 
+  // Toggle fullscreen mode
+  const toggleFullscreen = useCallback(() => {
+    setIsFullscreen(!isFullscreen)
+  }, [isFullscreen])
+
   // Export as PNG
-  const handleExportPNG = useCallback(() => {
-    toast.info('PNG export feature coming soon!')
+  const handleExportPNG = useCallback(async () => {
+    if (!reactFlowWrapper.current) return
+
+    try {
+      toast.info('Generating PNG...')
+      
+      // Find the React Flow viewport element
+      const viewport = reactFlowWrapper.current.querySelector('.react-flow__viewport')
+      if (!viewport) {
+        toast.error('Could not find visualization to export')
+        return
+      }
+
+      // Capture the canvas
+      const canvas = await html2canvas(viewport, {
+        backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+        scale: 2, // Higher quality
+      })
+
+      // Download as PNG
+      const link = document.createElement('a')
+      link.download = `asset-map-${new Date().toISOString().split('T')[0]}.png`
+      link.href = canvas.toDataURL()
+      link.click()
+
+      toast.success('PNG downloaded successfully!')
+    } catch (error) {
+      console.error('PNG export error:', error)
+      toast.error('Failed to export PNG')
+    }
   }, [])
 
   // Export as PDF
-  const handleExportPDF = useCallback(() => {
-    toast.info('PDF export feature coming soon!')
+  const handleExportPDF = useCallback(async () => {
+    if (!reactFlowWrapper.current) return
+
+    try {
+      toast.info('Generating PDF...')
+      
+      // Find the React Flow viewport element
+      const viewport = reactFlowWrapper.current.querySelector('.react-flow__viewport')
+      if (!viewport) {
+        toast.error('Could not find visualization to export')
+        return
+      }
+
+      // Capture the canvas
+      const canvas = await html2canvas(viewport, {
+        backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+        scale: 2,
+      })
+
+      // Create PDF
+      const imgData = canvas.toDataURL('image/png')
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      })
+
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height)
+      pdf.save(`asset-map-${new Date().toISOString().split('T')[0]}.pdf`)
+
+      toast.success('PDF downloaded successfully!')
+    } catch (error) {
+      console.error('PDF export error:', error)
+      toast.error('Failed to export PDF')
+    }
   }, [])
 
   if (isLoading) {
@@ -188,17 +269,22 @@ const AssetMapTab = () => {
     )
   }
 
+  // Fullscreen wrapper class
+  const wrapperClass = isFullscreen
+    ? 'fixed inset-0 z-50 bg-white dark:bg-gray-900'
+    : 'flex flex-col h-full'
+
   return (
-    <div className="flex flex-col h-full">
+    <div className={wrapperClass}>
       {/* Controls */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
         <div className="flex flex-wrap items-center gap-4">
           <div>
             <label className="text-sm font-medium mr-2">Depth:</label>
             <select
               value={depth}
               onChange={(e) => handleDepthChange(Number(e.target.value))}
-              className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800"
+              className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             >
               {[1, 2, 3, 4, 5].map((d) => (
                 <option key={d} value={d}>
@@ -209,6 +295,25 @@ const AssetMapTab = () => {
           </div>
 
           <div className="flex gap-2 ml-auto">
+            <Button
+              onClick={toggleFullscreen}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+            >
+              {isFullscreen ? (
+                <>
+                  <Minimize2 className="w-4 h-4" />
+                  Exit Fullscreen
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="w-4 h-4" />
+                  Fullscreen
+                </>
+              )}
+            </Button>
             <Button
               onClick={handleExportPNG}
               variant="outline"
@@ -236,7 +341,14 @@ const AssetMapTab = () => {
       </div>
 
       {/* React Flow Canvas */}
-      <div className="flex-1" style={{ height: 'calc(100vh - 300px)', minHeight: '600px' }}>
+      <div 
+        ref={reactFlowWrapper}
+        className="flex-1" 
+        style={{ 
+          height: isFullscreen ? 'calc(100vh - 120px)' : 'calc(100vh - 300px)', 
+          minHeight: isFullscreen ? '100%' : '600px'
+        }}
+      >
         <ReactFlow
           nodes={reactFlowNodes}
           edges={reactFlowEdges}
@@ -247,14 +359,69 @@ const AssetMapTab = () => {
           attributionPosition="bottom-right"
         >
           <Background />
-          <Controls />
+          <Controls 
+            className="react-flow__controls-custom"
+            style={{
+              button: {
+                backgroundColor: 'var(--controls-bg)',
+                borderColor: 'var(--controls-border)',
+                color: 'var(--controls-color)',
+              }
+            }}
+          />
           <MiniMap
             nodeStrokeWidth={3}
             zoomable
             pannable
+            className="react-flow__minimap-custom"
+            style={{
+              backgroundColor: 'var(--minimap-bg)',
+              border: '1px solid var(--minimap-border)',
+            }}
           />
         </ReactFlow>
       </div>
+
+      {/* Custom CSS for dark mode controls */}
+      <style jsx>{`
+        :global(.react-flow__controls-custom button) {
+          background-color: white !important;
+          border: 1px solid #d1d5db !important;
+          color: #1f2937 !important;
+        }
+        
+        :global(.dark .react-flow__controls-custom button) {
+          background-color: #374151 !important;
+          border: 1px solid #4b5563 !important;
+          color: #f3f4f6 !important;
+        }
+        
+        :global(.react-flow__controls-custom button:hover) {
+          background-color: #f3f4f6 !important;
+        }
+        
+        :global(.dark .react-flow__controls-custom button:hover) {
+          background-color: #4b5563 !important;
+        }
+        
+        :global(.react-flow__controls-custom button svg) {
+          fill: currentColor !important;
+        }
+        
+        :global(.react-flow__minimap-custom) {
+          background-color: white !important;
+          border: 1px solid #d1d5db !important;
+        }
+        
+        :global(.dark .react-flow__minimap-custom) {
+          background-color: #1f2937 !important;
+          border: 1px solid #4b5563 !important;
+        }
+        
+        :global(.react-flow__edge-path) {
+          stroke-width: 2 !important;
+        }
+      `}</style>
     </div>
   )
 }

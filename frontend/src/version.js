@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.196',
+  version: 'v0.197',
   buildDate: '2025-10-15',
-  deploymentId: 'fix-react-flow-infinite-loop',
-  description: 'CRITICAL FIX: Resolve infinite loop in AssetMapTab causing React error #185 - Fixed useEffect dependency array to prevent repeated state updates'
+  deploymentId: 'asset-map-enhancements',
+  description: 'ENHANCEMENT: Asset Map visualization improvements - Visible connecting lines in dark mode, working PNG/PDF export, fullscreen mode, visible controls in dark mode'
 }
 
 export const getVersionDisplay = () => {
