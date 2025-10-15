@@ -215,12 +215,23 @@ const AssetMapTab = () => {
         onclone: (clonedDoc) => {
           // Convert any OKLCH colors to safe HEX equivalents in the cloned document
           const allElements = clonedDoc.querySelectorAll('*')
+          const clonedWindow = clonedDoc.defaultView || window
           allElements.forEach(el => {
-            const computedStyle = window.getComputedStyle(el)
-            // Force recompute colors to RGB which html2canvas can handle
-            if (computedStyle.color) el.style.color = computedStyle.color
-            if (computedStyle.backgroundColor) el.style.backgroundColor = computedStyle.backgroundColor
-            if (computedStyle.borderColor) el.style.borderColor = computedStyle.borderColor
+            try {
+              const computedStyle = clonedWindow.getComputedStyle(el)
+              // Force recompute colors to RGB which html2canvas can handle
+              if (computedStyle.color && computedStyle.color.includes('oklch')) {
+                el.style.color = 'rgb(59, 130, 246)' // Default blue
+              }
+              if (computedStyle.backgroundColor && computedStyle.backgroundColor.includes('oklch')) {
+                el.style.backgroundColor = 'rgb(255, 255, 255)' // Default white
+              }
+              if (computedStyle.borderColor && computedStyle.borderColor.includes('oklch')) {
+                el.style.borderColor = 'rgb(229, 231, 235)' // Default gray
+              }
+            } catch (e) {
+              // Ignore elements that can't be styled
+            }
           })
         }
       })
@@ -259,12 +270,23 @@ const AssetMapTab = () => {
         onclone: (clonedDoc) => {
           // Convert any OKLCH colors to safe RGB equivalents in the cloned document
           const allElements = clonedDoc.querySelectorAll('*')
+          const clonedWindow = clonedDoc.defaultView || window
           allElements.forEach(el => {
-            const computedStyle = window.getComputedStyle(el)
-            // Force recompute colors to RGB which html2canvas can handle
-            if (computedStyle.color) el.style.color = computedStyle.color
-            if (computedStyle.backgroundColor) el.style.backgroundColor = computedStyle.backgroundColor
-            if (computedStyle.borderColor) el.style.borderColor = computedStyle.borderColor
+            try {
+              const computedStyle = clonedWindow.getComputedStyle(el)
+              // Force recompute colors to RGB which html2canvas can handle
+              if (computedStyle.color && computedStyle.color.includes('oklch')) {
+                el.style.color = 'rgb(59, 130, 246)' // Default blue
+              }
+              if (computedStyle.backgroundColor && computedStyle.backgroundColor.includes('oklch')) {
+                el.style.backgroundColor = 'rgb(255, 255, 255)' // Default white
+              }
+              if (computedStyle.borderColor && computedStyle.borderColor.includes('oklch')) {
+                el.style.borderColor = 'rgb(229, 231, 235)' // Default gray
+              }
+            } catch (e) {
+              // Ignore elements that can't be styled
+            }
           })
         }
       })

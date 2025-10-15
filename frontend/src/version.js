@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.202',
+  version: 'v0.203',
   buildDate: '2025-01-10',
-  deploymentId: 'asset-map-edges-fix-handles',
-  description: 'FIX: Add Handle components (target/source) to CustomNode to restore edge rendering anchor points'
+  deploymentId: 'asset-map-complete-fix',
+  description: 'COMPLETE FIX: Asset Map edges rendering + OKLCH export workaround for PNG/PDF'
 }
 
 export const getVersionDisplay = () => {
