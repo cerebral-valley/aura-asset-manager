@@ -153,7 +153,7 @@ const AssetMapTab = () => {
   React.useEffect(() => {
     setNodes(nodes)
     setEdges(edges)
-  }, [nodes, edges, setNodes, setEdges])
+  }, [nodes, edges]) // setNodes and setEdges are stable from useNodesState/useEdgesState
 
   // Handle hierarchy reordering
   const handleHierarchyChange = useCallback((newHierarchy) => {

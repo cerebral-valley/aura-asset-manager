@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.198',
+  version: 'v0.199',
   buildDate: '2025-01-10',
-  deploymentId: 'asset-map-critical-fixes',
-  description: 'CRITICAL FIX: Asset Map edge rendering (missing dependency array) + OKLCH color export compatibility for PNG/PDF'
+  deploymentId: 'asset-map-infinite-loop-fix',
+  description: 'EMERGENCY FIX: React Error #185 infinite loop (removed setNodes/setEdges from useEffect deps)'
 }
 
 export const getVersionDisplay = () => {
