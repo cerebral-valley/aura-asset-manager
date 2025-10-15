@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.201',
+  version: 'v0.202',
   buildDate: '2025-01-10',
-  deploymentId: 'asset-map-edge-rendering-debug',
-  description: 'DEBUG: Remove length check from useEffect + add console logging to diagnose edge rendering issue'
+  deploymentId: 'asset-map-edges-fix-handles',
+  description: 'FIX: Add Handle components (target/source) to CustomNode to restore edge rendering anchor points'
 }
 
 export const getVersionDisplay = () => {

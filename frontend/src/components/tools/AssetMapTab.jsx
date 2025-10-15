@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useCurrency } from '../../hooks/useCurrency'
 import { toolsService, DEFAULT_HIERARCHY } from '../../services/tools'
 import { queryKeys } from '../../lib/queryKeys'
-import { ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState, useReactFlow } from '@xyflow/react'
+import { ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState, useReactFlow, Handle, Position } from '@xyflow/react'
 import dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
 import { Button } from '../ui/button'
@@ -66,6 +66,13 @@ const CustomNode = ({ data }) => {
         minHeight: nodeHeight,
       }}
     >
+      {/* Target handle (input - left side) */}
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{ background: '#555' }}
+      />
+      
       <div className="text-sm font-semibold truncate" title={data.label}>
         {data.label}
       </div>
@@ -75,6 +82,13 @@ const CustomNode = ({ data }) => {
       <div className="text-xs text-gray-500 mt-1">
         {data.percentage}% • {data.assetCount} {data.assetCount === 1 ? 'asset' : 'assets'}
       </div>
+      
+      {/* Source handle (output - right side) */}
+      <Handle
+        type="source"
+        position={Position.Right}
+        style={{ background: '#555' }}
+      />
     </div>
   )
 }
