@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.200',
+  version: 'v0.201',
   buildDate: '2025-01-10',
-  deploymentId: 'asset-map-final-infinite-loop-fix',
-  description: 'FINAL FIX: React #185 infinite loop - useMemo creates new object refs on every render, only depend on hierarchyData'
+  deploymentId: 'asset-map-edge-rendering-debug',
+  description: 'DEBUG: Remove length check from useEffect + add console logging to diagnose edge rendering issue'
 }
 
 export const getVersionDisplay = () => {
