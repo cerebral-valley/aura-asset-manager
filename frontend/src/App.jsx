@@ -17,6 +17,7 @@ import UserSettings from './pages/UserSettings'
 import UserGuide from './pages/UserGuide'
 import Profile from './pages/Profile'
 import Goals from './pages/GoalsPage'
+import ToolsPage from './pages/ToolsPage'
 import AppLayout from './components/layout/AppLayout'
 import { Toaster } from './components/ui/toaster'
 import Loading from './components/ui/Loading'
@@ -90,6 +91,7 @@ function AppContent() {
           <Route path="/transactions" element={<TransactionsPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/goals" element={<Goals />} />
+          <Route path="/tools" element={<ToolsPage />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<UserSettings />} />
           <Route path="/guide" element={<UserGuide />} />

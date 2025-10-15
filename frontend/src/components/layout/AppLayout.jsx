@@ -32,7 +32,8 @@ import {
   Settings,
   BookOpen,
   User,
-  Target
+  Target,
+  Wrench
 } from 'lucide-react'
 import './AppLayout.css'
 
@@ -138,6 +139,7 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
     { name: 'Insurance', href: '/insurance', icon: Shield, id: 'insurance' },
     { name: 'Transactions', href: '/transactions', icon: ArrowRightLeft, id: 'transactions' },
     { name: 'Analytics', href: '/analytics', icon: BarChart3, id: 'analytics' },
+    { name: 'Tools', href: '/tools', icon: Wrench, id: 'tools' },
   ]
 
   const accountNavigation = [

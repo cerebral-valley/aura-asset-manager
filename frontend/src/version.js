@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.192',
-  buildDate: '2025-01-14',
-  deploymentId: 'all-filter-dropdowns',
-  description: 'Convert Type, Liquidity, Time Horizon, and Purpose filters to dropdown selects - consistent UX with exact matching for all filters'
+  version: 'v0.193',
+  buildDate: '2025-10-15',
+  deploymentId: 'asset-map-tools-page',
+  description: 'New Tools page with Asset Mapping visualization - hierarchical mind map using React Flow with left-to-right layout showing assets by liquidity, time horizon, purpose, and type'
 }
 
 export const getVersionDisplay = () => {

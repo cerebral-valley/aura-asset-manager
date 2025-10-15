@@ -73,6 +73,17 @@ export const queryKeys = {
     byType: (goalType) => [...queryKeys.goals.baseKey, 'by-type', goalType],
     completed: () => [...queryKeys.goals.baseKey, 'completed'],
   },
+
+  // Tools-related queries
+  tools: {
+    baseKey: ['aura', 'tools'],
+    assetHierarchy: (config) => {
+      if (!config || Object.keys(config).length === 0) {
+        return [...queryKeys.tools.baseKey, 'asset-hierarchy']
+      }
+      return [...queryKeys.tools.baseKey, 'asset-hierarchy', normalizeFilters(config)]
+    },
+  },
 }
 
 // Utility function to normalize filter objects for consistent caching
