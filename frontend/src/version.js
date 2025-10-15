@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.194',
+  version: 'v0.195',
   buildDate: '2025-10-15',
-  deploymentId: 'fix-xyflow-dependency',
-  description: 'HOTFIX: Add @xyflow/react and @dagrejs/dagre to package.json - v0.193 build failed due to missing dependencies'
+  deploymentId: 'update-lockfile',
+  description: 'HOTFIX: Update pnpm-lock.yaml to match package.json dependencies - v0.194 failed due to frozen-lockfile mismatch'
 }
 
 export const getVersionDisplay = () => {
