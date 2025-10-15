@@ -151,9 +151,11 @@ const AssetMapTab = () => {
 
   // Update nodes/edges when hierarchy data changes
   React.useEffect(() => {
-    setNodes(nodes)
-    setEdges(edges)
-  }, [nodes, edges]) // setNodes and setEdges are stable from useNodesState/useEdgesState
+    if (nodes.length > 0 || edges.length > 0) {
+      setNodes(nodes)
+      setEdges(edges)
+    }
+  }, [hierarchyData]) // Only re-run when API data changes, not when useMemo creates new refs
 
   // Handle hierarchy reordering
   const handleHierarchyChange = useCallback((newHierarchy) => {
