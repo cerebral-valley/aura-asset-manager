@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.195',
+  version: 'v0.196',
   buildDate: '2025-10-15',
-  deploymentId: 'update-lockfile',
-  description: 'HOTFIX: Update pnpm-lock.yaml to match package.json dependencies - v0.194 failed due to frozen-lockfile mismatch'
+  deploymentId: 'fix-react-flow-infinite-loop',
+  description: 'CRITICAL FIX: Resolve infinite loop in AssetMapTab causing React error #185 - Fixed useEffect dependency array to prevent repeated state updates'
 }
 
 export const getVersionDisplay = () => {

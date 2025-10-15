@@ -131,14 +131,14 @@ const AssetMapTab = () => {
     return getLayoutedElements(rawNodes, rawEdges)
   }, [hierarchyData, formatCurrency])
 
-  const [reactFlowNodes, setNodes, onNodesChange] = useNodesState(nodes)
-  const [reactFlowEdges, setEdges, onEdgesChange] = useEdgesState(edges)
+  const [reactFlowNodes, setNodes, onNodesChange] = useNodesState([])
+  const [reactFlowEdges, setEdges, onEdgesChange] = useEdgesState([])
 
   // Update nodes/edges when hierarchy data changes
   React.useEffect(() => {
     setNodes(nodes)
     setEdges(edges)
-  }, [nodes, edges, setNodes, setEdges])
+  }, [hierarchyData])
 
   // Handle hierarchy reordering
   const handleHierarchyChange = useCallback((newHierarchy) => {
