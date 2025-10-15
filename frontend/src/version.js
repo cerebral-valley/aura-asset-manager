@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.193',
+  version: 'v0.194',
   buildDate: '2025-10-15',
-  deploymentId: 'asset-map-tools-page',
-  description: 'New Tools page with Asset Mapping visualization - hierarchical mind map using React Flow with left-to-right layout showing assets by liquidity, time horizon, purpose, and type'
+  deploymentId: 'fix-xyflow-dependency',
+  description: 'HOTFIX: Add @xyflow/react and @dagrejs/dagre to package.json - v0.193 build failed due to missing dependencies'
 }
 
 export const getVersionDisplay = () => {
