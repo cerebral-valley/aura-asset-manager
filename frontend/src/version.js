@@ -4,8 +4,8 @@
 export const VERSION_INFO = {
   version: 'v0.204',
   buildDate: '2025-01-10',
-  deploymentId: 'asset-map-oklch-export-fixed',
-  description: 'FINAL FIX: Force inline RGB styles to override OKLCH CSS variables in PNG/PDF exports'
+  deploymentId: 'asset-map-oklch-css-rewrite',
+  description: 'FIX: Strip oklch() from cloned CSS <style> blocks before html2canvas parsing for PNG/PDF export'
 }
 
 export const getVersionDisplay = () => {

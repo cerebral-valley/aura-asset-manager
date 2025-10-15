@@ -213,14 +213,26 @@ const AssetMapTab = () => {
           return false
         },
         onclone: (clonedDoc) => {
-          // Force inline styles to override CSS variables that use OKLCH
-          // getComputedStyle returns rgb() but html2canvas still sees the oklch() from CSS vars
+          // CRITICAL FIX: Rewrite all <style> blocks to strip oklch() which html2canvas can't parse
+          // CSS variables like var(--background) resolve to oklch() from App.css
+          const styleSheets = clonedDoc.querySelectorAll('style')
+          styleSheets.forEach(styleEl => {
+            if (styleEl.textContent) {
+              // Replace all oklch(...) with rgb() gray fallback
+              styleEl.textContent = styleEl.textContent.replace(
+                /oklch\([^)]+\)/gi, 
+                'rgb(128, 128, 128)'
+              )
+            }
+          })
+          
+          // Additionally force inline styles to override any remaining CSS variables
           const allElements = clonedDoc.querySelectorAll('*')
           const clonedWindow = clonedDoc.defaultView || window
           allElements.forEach(el => {
             try {
               const computedStyle = clonedWindow.getComputedStyle(el)
-              // Force inline styles with computed RGB values to override CSS variables
+              // Force inline styles with computed RGB values
               if (computedStyle.color && computedStyle.color !== 'rgba(0, 0, 0, 0)') {
                 el.style.color = computedStyle.color
               }
@@ -269,8 +281,20 @@ const AssetMapTab = () => {
         backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
         scale: 2,
         onclone: (clonedDoc) => {
-          // Force inline styles to override CSS variables that use OKLCH
-          // getComputedStyle returns rgb() but html2canvas still sees the oklch() from CSS vars
+          // CRITICAL FIX: Rewrite all <style> blocks to strip oklch() which html2canvas can't parse
+          // CSS variables like var(--background) resolve to oklch() from App.css
+          const styleSheets = clonedDoc.querySelectorAll('style')
+          styleSheets.forEach(styleEl => {
+            if (styleEl.textContent) {
+              // Replace all oklch(...) with rgb() gray fallback
+              styleEl.textContent = styleEl.textContent.replace(
+                /oklch\([^)]+\)/gi, 
+                'rgb(128, 128, 128)'
+              )
+            }
+          })
+          
+          // Additionally force inline styles to override any remaining CSS variables
           const allElements = clonedDoc.querySelectorAll('*')
           const clonedWindow = clonedDoc.defaultView || window
           allElements.forEach(el => {
