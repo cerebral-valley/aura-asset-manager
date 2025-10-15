@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.197',
-  buildDate: '2025-10-15',
-  deploymentId: 'asset-map-enhancements',
-  description: 'ENHANCEMENT: Asset Map visualization improvements - Visible connecting lines in dark mode, working PNG/PDF export, fullscreen mode, visible controls in dark mode'
+  version: 'v0.198',
+  buildDate: '2025-01-10',
+  deploymentId: 'asset-map-critical-fixes',
+  description: 'CRITICAL FIX: Asset Map edge rendering (missing dependency array) + OKLCH color export compatibility for PNG/PDF'
 }
 
 export const getVersionDisplay = () => {

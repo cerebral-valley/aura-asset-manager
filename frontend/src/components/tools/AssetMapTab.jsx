@@ -153,7 +153,7 @@ const AssetMapTab = () => {
   React.useEffect(() => {
     setNodes(nodes)
     setEdges(edges)
-  }, [hierarchyData])
+  }, [nodes, edges, setNodes, setEdges])
 
   // Handle hierarchy reordering
   const handleHierarchyChange = useCallback((newHierarchy) => {
@@ -184,10 +184,25 @@ const AssetMapTab = () => {
         return
       }
 
-      // Capture the canvas
+      // Capture the canvas with OKLCH color workaround
       const canvas = await html2canvas(viewport, {
         backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
         scale: 2, // Higher quality
+        ignoreElements: (element) => {
+          // Skip elements that might have OKLCH colors we can't handle
+          return false
+        },
+        onclone: (clonedDoc) => {
+          // Convert any OKLCH colors to safe HEX equivalents in the cloned document
+          const allElements = clonedDoc.querySelectorAll('*')
+          allElements.forEach(el => {
+            const computedStyle = window.getComputedStyle(el)
+            // Force recompute colors to RGB which html2canvas can handle
+            if (computedStyle.color) el.style.color = computedStyle.color
+            if (computedStyle.backgroundColor) el.style.backgroundColor = computedStyle.backgroundColor
+            if (computedStyle.borderColor) el.style.borderColor = computedStyle.borderColor
+          })
+        }
       })
 
       // Download as PNG
@@ -217,10 +232,21 @@ const AssetMapTab = () => {
         return
       }
 
-      // Capture the canvas
+      // Capture the canvas with OKLCH color workaround
       const canvas = await html2canvas(viewport, {
         backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
         scale: 2,
+        onclone: (clonedDoc) => {
+          // Convert any OKLCH colors to safe RGB equivalents in the cloned document
+          const allElements = clonedDoc.querySelectorAll('*')
+          allElements.forEach(el => {
+            const computedStyle = window.getComputedStyle(el)
+            // Force recompute colors to RGB which html2canvas can handle
+            if (computedStyle.color) el.style.color = computedStyle.color
+            if (computedStyle.backgroundColor) el.style.backgroundColor = computedStyle.backgroundColor
+            if (computedStyle.borderColor) el.style.borderColor = computedStyle.borderColor
+          })
+        }
       })
 
       // Create PDF
