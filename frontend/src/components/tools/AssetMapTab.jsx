@@ -390,10 +390,6 @@ const AssetMapTab = () => {
         return
       }
 
-      // Store current viewport state
-      const flowElement = reactFlowWrapper.current.querySelector('.react-flow')
-      const originalTransform = flowElement?.style?.transform
-      
       // Calculate bounding box of all nodes
       let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
       nodes.forEach(node => {
@@ -408,40 +404,78 @@ const AssetMapTab = () => {
         maxY = Math.max(maxY, y2)
       })
 
-      // Add padding around the content
-      const padding = 50
+      // Add generous padding around the content
+      const padding = 100
       const fullWidth = maxX - minX + (padding * 2)
       const fullHeight = maxY - minY + (padding * 2)
 
       // Temporarily fit view to show all nodes
       await fitView({ 
-        padding: 0.1,
+        padding: 0.2, // More padding to ensure edges are visible
         duration: 0 // Instant, no animation
       })
 
-      // Small delay to ensure DOM updates
-      await new Promise(resolve => setTimeout(resolve, 100))
+      // Longer delay to ensure DOM updates and edge rendering
+      await new Promise(resolve => setTimeout(resolve, 300))
 
-      // Find the React Flow viewport element
-      const viewport = reactFlowWrapper.current.querySelector('.react-flow__viewport')
-      if (!viewport) {
+      // Capture the entire React Flow container (not just viewport)
+      // This ensures we get both nodes AND edges (which are in separate SVG layer)
+      const reactFlowElement = reactFlowWrapper.current.querySelector('.react-flow')
+      if (!reactFlowElement) {
         toast.error('Could not find visualization to export')
         return
       }
 
       // Capture the canvas with OKLCH sanitisation
-      const canvas = await html2canvas(viewport, {
+      const canvas = await html2canvas(reactFlowElement, {
         backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
         scale: 2, // Higher quality
-        width: fullWidth,
-        height: fullHeight,
-        windowWidth: fullWidth,
-        windowHeight: fullHeight,
+        useCORS: true, // Allow cross-origin images
+        allowTaint: true, // Allow tainted canvas
+        logging: false, // Disable logging for cleaner console
         onclone: (clonedDoc) => {
+          // Apply OKLCH sanitization
           scrubOklchFromStylesheets(clonedDoc)
           scrubOklchFromInlineStyles(clonedDoc)
           overrideRootCustomProperties(clonedDoc)
           inlineCriticalColors(clonedDoc)
+          
+          // FIX TEXT TRUNCATION: Remove truncate class from all nodes
+          const truncatedElements = clonedDoc.querySelectorAll('.truncate')
+          truncatedElements.forEach(el => {
+            el.classList.remove('truncate')
+            el.style.whiteSpace = 'normal'
+            el.style.overflow = 'visible'
+            el.style.textOverflow = 'unset'
+          })
+          
+          // FIX EDGES: Ensure SVG edges are visible
+          const svgElements = clonedDoc.querySelectorAll('svg')
+          svgElements.forEach(svg => {
+            // Force SVG to be visible
+            svg.style.overflow = 'visible'
+            
+            // Ensure all paths (edges) are visible
+            const paths = svg.querySelectorAll('path')
+            paths.forEach(path => {
+              const currentStroke = path.getAttribute('stroke') || path.style.stroke
+              if (currentStroke) {
+                // Force stroke to be visible
+                path.style.stroke = currentStroke
+                path.style.strokeWidth = '2px'
+                path.style.fill = 'none'
+              }
+            })
+            
+            // Ensure markers (arrow heads) are visible
+            const markers = svg.querySelectorAll('marker path')
+            markers.forEach(marker => {
+              const currentFill = marker.getAttribute('fill') || marker.style.fill
+              if (currentFill) {
+                marker.style.fill = currentFill
+              }
+            })
+          })
         }
       })
 
