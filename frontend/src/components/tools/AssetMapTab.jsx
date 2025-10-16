@@ -14,6 +14,119 @@ import { toast } from 'sonner'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 
+// --- OKLCH → sRGB conversion helpers ---
+const clamp01 = (value) => Math.min(1, Math.max(0, value))
+
+const linearToSrgb = (value) => {
+  if (value <= 0.0031308) {
+    return 12.92 * value
+  }
+  return 1.055 * Math.pow(value, 1 / 2.4) - 0.055
+}
+
+const oklchTokenToRGBA = (token) => {
+  const match = token
+    .replace(/\s+/g, ' ')
+    .replace(/\/\s+/g, '/')
+    .replace(/\s+\//g, '/')
+    .match(/^oklch\(\s*([0-9.]+)\s+([0-9.]+)\s+([0-9.+-]+)(?:\s*\/\s*([0-9.]+%?))?\s*\)$/i)
+
+  if (!match) {
+    return token
+  }
+
+  const [, lRaw, cRaw, hRaw, alphaRaw] = match
+  const L = parseFloat(lRaw)
+  const C = parseFloat(cRaw)
+  const hDeg = parseFloat(hRaw)
+  const hRad = (hDeg * Math.PI) / 180
+  const a = Math.cos(hRad) * C
+  const b = Math.sin(hRad) * C
+
+  const l_ = L + 0.3963377774 * a + 0.2158037573 * b
+  const m_ = L - 0.1055613458 * a - 0.0638541728 * b
+  const s_ = L - 0.0894841775 * a - 1.2914855480 * b
+
+  const l3 = l_ * l_ * l_
+  const m3 = m_ * m_ * m_
+  const s3 = s_ * s_ * s_
+
+  let r = 4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3
+  let g = -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3
+  let bVal = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3
+
+  r = linearToSrgb(clamp01(r))
+  g = linearToSrgb(clamp01(g))
+  bVal = linearToSrgb(clamp01(bVal))
+
+  const r255 = Math.round(clamp01(r) * 255)
+  const g255 = Math.round(clamp01(g) * 255)
+  const b255 = Math.round(clamp01(bVal) * 255)
+
+  let alpha = 1
+  if (alphaRaw !== undefined) {
+    if (alphaRaw.endsWith('%')) {
+      alpha = clamp01(parseFloat(alphaRaw) / 100)
+    } else {
+      alpha = clamp01(parseFloat(alphaRaw))
+    }
+  }
+
+  if (alpha === 1) {
+    return `rgb(${r255}, ${g255}, ${b255})`
+  }
+  return `rgba(${r255}, ${g255}, ${b255}, ${alpha.toFixed(3)})`
+}
+
+const replaceOklchInValue = (value) => {
+  if (!value || typeof value !== 'string' || !value.toLowerCase().includes('oklch')) {
+    return value
+  }
+
+  return value.replace(/oklch\([^)]+\)/gi, (token) => oklchTokenToRGBA(token))
+}
+
+const scrubOklchFromStylesheets = (doc) => {
+  if (!doc?.styleSheets) return
+
+  const styleSheets = Array.from(doc.styleSheets)
+  styleSheets.forEach((sheet) => {
+    let cssRules
+    try {
+      cssRules = sheet.cssRules
+    } catch {
+      // Cross-origin or unreadable stylesheet; skip
+      return
+    }
+
+    if (!cssRules) return
+
+    Array.from(cssRules).forEach((rule) => {
+      if (!rule.style) return
+
+      const style = rule.style
+      for (let i = 0; i < style.length; i += 1) {
+        const propertyName = style[i]
+        const propertyValue = style.getPropertyValue(propertyName)
+        if (propertyValue && propertyValue.toLowerCase().includes('oklch')) {
+          const priority = style.getPropertyPriority(propertyName)
+          style.setProperty(propertyName, replaceOklchInValue(propertyValue), priority)
+        }
+      }
+    })
+  })
+}
+
+const scrubOklchFromInlineStyles = (doc) => {
+  const allElements = doc.querySelectorAll('[style]')
+  allElements.forEach((element) => {
+    const styleAttr = element.getAttribute('style')
+    if (styleAttr && styleAttr.toLowerCase().includes('oklch')) {
+      element.setAttribute('style', replaceOklchInValue(styleAttr))
+    }
+  })
+}
+
 // Dagre graph configuration
 const dagreGraph = new dagre.graphlib.Graph()
 dagreGraph.setDefaultEdgeLabel(() => ({}))
@@ -204,7 +317,7 @@ const AssetMapTab = () => {
         return
       }
 
-      // Capture the canvas with RGB-only export stylesheet
+      // Capture the canvas with OKLCH sanitisation
       const canvas = await html2canvas(viewport, {
         backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
         scale: 2, // Higher quality
@@ -212,68 +325,8 @@ const AssetMapTab = () => {
           return false
         },
         onclone: (clonedDoc) => {
-          // SOLUTION: Inject RGB-only stylesheet that overrides ALL oklch() CSS variables
-          // This gives html2canvas a clean DOM with zero oklch() strings
-          
-          const isDark = document.documentElement.classList.contains('dark')
-          
-          // Create export-specific stylesheet with RGB fallbacks for all theme variables
-          const exportStyles = clonedDoc.createElement('style')
-          exportStyles.textContent = `
-            /* Export-only RGB overrides - replaces oklch() with rgb() */
-            :root {
-              /* Base colors - light mode */
-              --background: ${isDark ? 'rgb(15, 23, 42)' : 'rgb(255, 255, 255)'};
-              --foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
-              --card: ${isDark ? 'rgb(15, 23, 42)' : 'rgb(255, 255, 255)'};
-              --card-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
-              --popover: ${isDark ? 'rgb(15, 23, 42)' : 'rgb(255, 255, 255)'};
-              --popover-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
-              --primary: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
-              --primary-foreground: ${isDark ? 'rgb(15, 23, 42)' : 'rgb(248, 250, 252)'};
-              --secondary: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(241, 245, 249)'};
-              --secondary-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
-              --muted: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(241, 245, 249)'};
-              --muted-foreground: ${isDark ? 'rgb(148, 163, 184)' : 'rgb(100, 116, 139)'};
-              --accent: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(241, 245, 249)'};
-              --accent-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
-              --destructive: ${isDark ? 'rgb(220, 38, 38)' : 'rgb(239, 68, 68)'};
-              --destructive-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(248, 250, 252)'};
-              --border: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(226, 232, 240)'};
-              --input: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(226, 232, 240)'};
-              --ring: ${isDark ? 'rgb(148, 163, 184)' : 'rgb(100, 116, 139)'};
-              
-              /* Chart colors - converted from useChartColors.js */
-              --chart-1: ${isDark ? 'hsl(264, 73%, 49%)' : 'hsl(41, 67%, 65%)'};
-              --chart-2: ${isDark ? 'hsl(162, 51%, 70%)' : 'hsl(185, 35%, 47%)'};
-              --chart-3: ${isDark ? 'hsl(70, 56%, 77%)' : 'hsl(227, 21%, 40%)'};
-              --chart-4: ${isDark ? 'hsl(304, 80%, 63%)' : 'hsl(84, 57%, 83%)'};
-              --chart-5: ${isDark ? 'hsl(16, 74%, 65%)' : 'hsl(70, 56%, 77%)'};
-            }
-          `
-          
-          // Inject the export stylesheet at the END (highest specificity)
-          clonedDoc.head.appendChild(exportStyles)
-          
-          // Force computed styles as additional safety net
-          const allElements = clonedDoc.querySelectorAll('*')
-          const clonedWindow = clonedDoc.defaultView || window
-          allElements.forEach(el => {
-            try {
-              const computedStyle = clonedWindow.getComputedStyle(el)
-              if (computedStyle.color && computedStyle.color !== 'rgba(0, 0, 0, 0)') {
-                el.style.color = computedStyle.color
-              }
-              if (computedStyle.backgroundColor && computedStyle.backgroundColor !== 'rgba(0, 0, 0, 0)') {
-                el.style.backgroundColor = computedStyle.backgroundColor
-              }
-              if (computedStyle.borderColor && computedStyle.borderColor !== 'rgba(0, 0, 0, 0)') {
-                el.style.borderColor = computedStyle.borderColor
-              }
-            } catch (e) {
-              // Ignore styling errors
-            }
-          })
+          scrubOklchFromStylesheets(clonedDoc)
+          scrubOklchFromInlineStyles(clonedDoc)
         }
       })
 
@@ -304,73 +357,13 @@ const AssetMapTab = () => {
         return
       }
 
-      // Capture the canvas with RGB-only export stylesheet
+      // Capture the canvas with OKLCH sanitisation
       const canvas = await html2canvas(viewport, {
         backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
         scale: 2,
         onclone: (clonedDoc) => {
-          // SOLUTION: Inject RGB-only stylesheet that overrides ALL oklch() CSS variables
-          // This gives html2canvas a clean DOM with zero oklch() strings
-          
-          const isDark = document.documentElement.classList.contains('dark')
-          
-          // Create export-specific stylesheet with RGB fallbacks for all theme variables
-          const exportStyles = clonedDoc.createElement('style')
-          exportStyles.textContent = `
-            /* Export-only RGB overrides - replaces oklch() with rgb() */
-            :root {
-              /* Base colors - light mode */
-              --background: ${isDark ? 'rgb(15, 23, 42)' : 'rgb(255, 255, 255)'};
-              --foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
-              --card: ${isDark ? 'rgb(15, 23, 42)' : 'rgb(255, 255, 255)'};
-              --card-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
-              --popover: ${isDark ? 'rgb(15, 23, 42)' : 'rgb(255, 255, 255)'};
-              --popover-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
-              --primary: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
-              --primary-foreground: ${isDark ? 'rgb(15, 23, 42)' : 'rgb(248, 250, 252)'};
-              --secondary: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(241, 245, 249)'};
-              --secondary-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
-              --muted: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(241, 245, 249)'};
-              --muted-foreground: ${isDark ? 'rgb(148, 163, 184)' : 'rgb(100, 116, 139)'};
-              --accent: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(241, 245, 249)'};
-              --accent-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
-              --destructive: ${isDark ? 'rgb(220, 38, 38)' : 'rgb(239, 68, 68)'};
-              --destructive-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(248, 250, 252)'};
-              --border: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(226, 232, 240)'};
-              --input: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(226, 232, 240)'};
-              --ring: ${isDark ? 'rgb(148, 163, 184)' : 'rgb(100, 116, 139)'};
-              
-              /* Chart colors - converted from useChartColors.js */
-              --chart-1: ${isDark ? 'hsl(264, 73%, 49%)' : 'hsl(41, 67%, 65%)'};
-              --chart-2: ${isDark ? 'hsl(162, 51%, 70%)' : 'hsl(185, 35%, 47%)'};
-              --chart-3: ${isDark ? 'hsl(70, 56%, 77%)' : 'hsl(227, 21%, 40%)'};
-              --chart-4: ${isDark ? 'hsl(304, 80%, 63%)' : 'hsl(84, 57%, 83%)'};
-              --chart-5: ${isDark ? 'hsl(16, 74%, 65%)' : 'hsl(70, 56%, 77%)'};
-            }
-          `
-          
-          // Inject the export stylesheet at the END (highest specificity)
-          clonedDoc.head.appendChild(exportStyles)
-          
-          // Force computed styles as additional safety net
-          const allElements = clonedDoc.querySelectorAll('*')
-          const clonedWindow = clonedDoc.defaultView || window
-          allElements.forEach(el => {
-            try {
-              const computedStyle = clonedWindow.getComputedStyle(el)
-              if (computedStyle.color && computedStyle.color !== 'rgba(0, 0, 0, 0)') {
-                el.style.color = computedStyle.color
-              }
-              if (computedStyle.backgroundColor && computedStyle.backgroundColor !== 'rgba(0, 0, 0, 0)') {
-                el.style.backgroundColor = computedStyle.backgroundColor
-              }
-              if (computedStyle.borderColor && computedStyle.borderColor !== 'rgba(0, 0, 0, 0)') {
-                el.style.borderColor = computedStyle.borderColor
-              }
-            } catch (e) {
-              // Ignore styling errors
-            }
-          })
+          scrubOklchFromStylesheets(clonedDoc)
+          scrubOklchFromInlineStyles(clonedDoc)
         }
       })
 

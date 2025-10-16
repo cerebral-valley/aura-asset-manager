@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.206',
+  version: 'v0.208',
   buildDate: '2025-01-10',
-  deploymentId: 'asset-map-rgb-export-stylesheet',
-  description: 'FIX: Inject RGB-only export stylesheet - clean approach to eliminate all oklch() for PNG/PDF export'
+  deploymentId: 'asset-map-oklch-sanitizer',
+  description: 'FIX: Convert OKLCH colors to sRGB within export clone so PNG/PDF generation retains styling'
 }
 
 export const getVersionDisplay = () => {
@@ -15,4 +15,3 @@ export const getVersionDisplay = () => {
 export const getFullVersionInfo = () => {
   return VERSION_INFO
 }
-
