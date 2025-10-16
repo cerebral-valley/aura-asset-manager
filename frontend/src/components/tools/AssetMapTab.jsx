@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useCurrency } from '../../hooks/useCurrency'
 import { toolsService, DEFAULT_HIERARCHY } from '../../services/tools'
 import { queryKeys } from '../../lib/queryKeys'
-import { ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState, useReactFlow, Handle, Position, ReactFlowProvider, getNodesBounds, getViewportForBounds, getRectOfNodes, getTransformForBounds } from '@xyflow/react'
+import { ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState, useReactFlow, Handle, Position, ReactFlowProvider, getNodesBounds, getViewportForBounds } from '@xyflow/react'
 import dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
 import { Button } from '../ui/button'
@@ -395,7 +395,8 @@ const AssetMapTab = () => {
       const imageWidth = nodesBounds.width
       const imageHeight = nodesBounds.height
       
-      const transform = getTransformForBounds(
+      // getViewportForBounds returns { x, y, zoom } in React Flow v12
+      const viewport = getViewportForBounds(
         nodesBounds,
         imageWidth,
         imageHeight,
@@ -436,16 +437,16 @@ const AssetMapTab = () => {
           // Find the cloned React Flow element
           const clonedReactFlow = clonedDoc.querySelector('.react-flow')
           if (clonedReactFlow) {
-            // Apply transform to show all content
+            // Apply transform to show all content (viewport object has { x, y, zoom })
             const clonedViewport = clonedReactFlow.querySelector('.react-flow__viewport')
             if (clonedViewport) {
-              clonedViewport.style.transform = `translate(${transform[0]}px, ${transform[1]}px) scale(${transform[2]})`
+              clonedViewport.style.transform = `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`
             }
             
             // Ensure edges layer is visible and properly styled
             const edgesLayer = clonedReactFlow.querySelector('.react-flow__edges')
             if (edgesLayer) {
-              edgesLayer.style.transform = `translate(${transform[0]}px, ${transform[1]}px) scale(${transform[2]})`
+              edgesLayer.style.transform = `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`
               edgesLayer.style.width = '100%'
               edgesLayer.style.height = '100%'
             }
