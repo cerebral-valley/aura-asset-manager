@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useCurrency } from '../../hooks/useCurrency'
 import { toolsService, DEFAULT_HIERARCHY } from '../../services/tools'
 import { queryKeys } from '../../lib/queryKeys'
-import { ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState, useReactFlow, Handle, Position, ReactFlowProvider } from '@xyflow/react'
+import { ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState, useReactFlow, Handle, Position, ReactFlowProvider, getNodesBounds, getViewportForBounds } from '@xyflow/react'
 import dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
 import { Button } from '../ui/button'
@@ -376,35 +376,62 @@ const AssetMapTab = () => {
     setIsFullscreen(!isFullscreen)
   }, [isFullscreen])
 
-  // Export as PDF - captures entire flow canvas
+  // Export as PDF - captures entire flow canvas including all nodes and edges
   const handleExportPDF = useCallback(async () => {
     if (!reactFlowWrapper.current) return
 
     try {
       toast.info('Generating PDF...')
       
-      // Get all nodes to calculate full canvas dimensions
+      // Get all nodes and edges
       const nodes = getNodes()
       if (!nodes || nodes.length === 0) {
         toast.error('No nodes to export')
         return
       }
 
-      // Temporarily fit view to show all nodes with generous padding
-      await fitView({ 
-        padding: 0.15,
-        duration: 0,
-        maxZoom: 1.5 // Prevent zooming in too much
-      })
+      // Calculate bounds of all nodes
+      const nodesBounds = getNodesBounds(nodes)
+      
+      // Add padding around content
+      const padding = 100
+      
+      // Calculate viewport transform to show all content
+      const viewport = getViewportForBounds(
+        nodesBounds,
+        reactFlowWrapper.current.offsetWidth,
+        reactFlowWrapper.current.offsetHeight,
+        0.5, // min zoom
+        2,   // max zoom
+        padding / 100 // padding as percentage
+      )
 
-      // Wait for React Flow to finish rendering
+      // Get the viewport element for capture
+      const viewportElement = reactFlowWrapper.current.querySelector('.react-flow__viewport')
+      if (!viewportElement) {
+        toast.error('Could not find visualization to export')
+        return
+      }
+
+      // Calculate the actual dimensions we need to capture
+      const captureWidth = nodesBounds.width + (padding * 2)
+      const captureHeight = nodesBounds.height + (padding * 2)
+
+      // Temporarily apply transform to show all content
+      const originalTransform = viewportElement.style.transform
+      viewportElement.style.transform = `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`
+      
+      // Wait for transform to apply
       await new Promise(resolve => setTimeout(resolve, 500))
 
-      // Capture the entire wrapper div that contains React Flow
-      // This should include both nodes and edges in the visible viewport
-      const canvas = await html2canvas(reactFlowWrapper.current, {
+      // Capture with html2canvas
+      const canvas = await html2canvas(viewportElement, {
         backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
         scale: 2,
+        width: captureWidth,
+        height: captureHeight,
+        x: nodesBounds.x - padding,
+        y: nodesBounds.y - padding,
         useCORS: true,
         allowTaint: false,
         logging: false,
@@ -415,7 +442,7 @@ const AssetMapTab = () => {
           overrideRootCustomProperties(clonedDoc)
           inlineCriticalColors(clonedDoc)
           
-          // FIX TEXT TRUNCATION: Remove truncate class to show full text
+          // Remove text truncation
           const truncatedElements = clonedDoc.querySelectorAll('.truncate')
           truncatedElements.forEach(el => {
             el.classList.remove('truncate')
@@ -424,7 +451,7 @@ const AssetMapTab = () => {
             el.style.textOverflow = 'clip'
           })
           
-          // FIX NODE WIDTH: Allow nodes to expand for full text
+          // Allow nodes to expand for full text
           const nodeElements = clonedDoc.querySelectorAll('[data-id]')
           nodeElements.forEach(node => {
             const innerDiv = node.querySelector('div')
@@ -437,7 +464,10 @@ const AssetMapTab = () => {
         }
       })
 
-      // Create PDF with proper dimensions
+      // Restore original transform
+      viewportElement.style.transform = originalTransform
+
+      // Create PDF
       const imgData = canvas.toDataURL('image/png')
       const pdfWidth = canvas.width
       const pdfHeight = canvas.height
@@ -456,7 +486,7 @@ const AssetMapTab = () => {
       console.error('PDF export error:', error)
       toast.error(`Failed to export PDF: ${error.message}`)
     }
-  }, [getNodes, fitView])
+  }, [getNodes])
 
   if (isLoading) {
     return <Loading pageName="Asset Map" />
