@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useCurrency } from '../../hooks/useCurrency'
 import { toolsService, DEFAULT_HIERARCHY } from '../../services/tools'
 import { queryKeys } from '../../lib/queryKeys'
-import { ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState, useReactFlow, Handle, Position, ReactFlowProvider, getNodesBounds, getViewportForBounds } from '@xyflow/react'
+import { ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState, useReactFlow, Handle, Position, ReactFlowProvider, getNodesBounds, getViewportForBounds, getRectOfNodes, getTransformForBounds } from '@xyflow/react'
 import dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
 import { Button } from '../ui/button'
@@ -376,71 +376,80 @@ const AssetMapTab = () => {
     setIsFullscreen(!isFullscreen)
   }, [isFullscreen])
 
-  // Export as PDF - captures entire flow canvas including all nodes and edges
+  // Export as PDF - uses React Flow's native bounds calculation with proper edge capture
   const handleExportPDF = useCallback(async () => {
     if (!reactFlowWrapper.current) return
 
     try {
       toast.info('Generating PDF...')
       
-      // Get all nodes and edges
+      // Get all nodes
       const nodes = getNodes()
       if (!nodes || nodes.length === 0) {
         toast.error('No nodes to export')
         return
       }
 
-      // Calculate bounds of all nodes
+      // Calculate dimensions using React Flow utilities
       const nodesBounds = getNodesBounds(nodes)
+      const imageWidth = nodesBounds.width
+      const imageHeight = nodesBounds.height
       
-      // Add padding around content
-      const padding = 100
-      
-      // Calculate viewport transform to show all content
-      const viewport = getViewportForBounds(
+      const transform = getTransformForBounds(
         nodesBounds,
-        reactFlowWrapper.current.offsetWidth,
-        reactFlowWrapper.current.offsetHeight,
+        imageWidth,
+        imageHeight,
         0.5, // min zoom
         2,   // max zoom
-        padding / 100 // padding as percentage
+        0.1  // padding
       )
 
-      // Get the viewport element for capture
-      const viewportElement = reactFlowWrapper.current.querySelector('.react-flow__viewport')
-      if (!viewportElement) {
+      // Find the React Flow container (parent of both viewport and edges)
+      const reactFlowElement = reactFlowWrapper.current.querySelector('.react-flow')
+      if (!reactFlowElement) {
         toast.error('Could not find visualization to export')
         return
       }
 
-      // Calculate the actual dimensions we need to capture
-      const captureWidth = nodesBounds.width + (padding * 2)
-      const captureHeight = nodesBounds.height + (padding * 2)
-
-      // Temporarily apply transform to show all content
-      const originalTransform = viewportElement.style.transform
-      viewportElement.style.transform = `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`
-      
-      // Wait for transform to apply
-      await new Promise(resolve => setTimeout(resolve, 500))
-
-      // Capture with html2canvas
-      const canvas = await html2canvas(viewportElement, {
+      // Capture using html2canvas with the entire React Flow container
+      // This includes BOTH .react-flow__viewport (nodes) AND .react-flow__edges (SVG sibling)
+      const canvas = await html2canvas(reactFlowElement, {
         backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
         scale: 2,
-        width: captureWidth,
-        height: captureHeight,
-        x: nodesBounds.x - padding,
-        y: nodesBounds.y - padding,
         useCORS: true,
         allowTaint: false,
         logging: false,
+        // Capture specific region
+        width: imageWidth,
+        height: imageHeight,
+        windowWidth: imageWidth,
+        windowHeight: imageHeight,
+        x: 0,
+        y: 0,
         onclone: (clonedDoc) => {
           // Apply OKLCH sanitization
           scrubOklchFromStylesheets(clonedDoc)
           scrubOklchFromInlineStyles(clonedDoc)
           overrideRootCustomProperties(clonedDoc)
           inlineCriticalColors(clonedDoc)
+          
+          // Find the cloned React Flow element
+          const clonedReactFlow = clonedDoc.querySelector('.react-flow')
+          if (clonedReactFlow) {
+            // Apply transform to show all content
+            const clonedViewport = clonedReactFlow.querySelector('.react-flow__viewport')
+            if (clonedViewport) {
+              clonedViewport.style.transform = `translate(${transform[0]}px, ${transform[1]}px) scale(${transform[2]})`
+            }
+            
+            // Ensure edges layer is visible and properly styled
+            const edgesLayer = clonedReactFlow.querySelector('.react-flow__edges')
+            if (edgesLayer) {
+              edgesLayer.style.transform = `translate(${transform[0]}px, ${transform[1]}px) scale(${transform[2]})`
+              edgesLayer.style.width = '100%'
+              edgesLayer.style.height = '100%'
+            }
+          }
           
           // Remove text truncation
           const truncatedElements = clonedDoc.querySelectorAll('.truncate')
@@ -463,9 +472,6 @@ const AssetMapTab = () => {
           })
         }
       })
-
-      // Restore original transform
-      viewportElement.style.transform = originalTransform
 
       // Create PDF
       const imgData = canvas.toDataURL('image/png')
