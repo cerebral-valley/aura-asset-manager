@@ -127,6 +127,24 @@ const scrubOklchFromInlineStyles = (doc) => {
   })
 }
 
+const overrideRootCustomProperties = (doc) => {
+  const { documentElement } = doc
+  const win = doc.defaultView
+  if (!documentElement || !win) return
+
+  const computed = win.getComputedStyle(documentElement)
+
+  for (let i = 0; i < computed.length; i += 1) {
+    const property = computed[i]
+    if (!property.startsWith('--')) continue
+
+    const value = computed.getPropertyValue(property)
+    if (value && value.toLowerCase().includes('oklch')) {
+      documentElement.style.setProperty(property, replaceOklchInValue(value))
+    }
+  }
+}
+
 // Dagre graph configuration
 const dagreGraph = new dagre.graphlib.Graph()
 dagreGraph.setDefaultEdgeLabel(() => ({}))
@@ -327,6 +345,7 @@ const AssetMapTab = () => {
         onclone: (clonedDoc) => {
           scrubOklchFromStylesheets(clonedDoc)
           scrubOklchFromInlineStyles(clonedDoc)
+          overrideRootCustomProperties(clonedDoc)
         }
       })
 
@@ -364,6 +383,7 @@ const AssetMapTab = () => {
         onclone: (clonedDoc) => {
           scrubOklchFromStylesheets(clonedDoc)
           scrubOklchFromInlineStyles(clonedDoc)
+          overrideRootCustomProperties(clonedDoc)
         }
       })
 
