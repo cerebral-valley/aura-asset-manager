@@ -204,53 +204,63 @@ const AssetMapTab = () => {
         return
       }
 
-      // Capture the canvas with OKLCH color workaround
+      // Capture the canvas with RGB-only export stylesheet
       const canvas = await html2canvas(viewport, {
         backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
         scale: 2, // Higher quality
         ignoreElements: (element) => {
-          // Skip elements that might have OKLCH colors we can't handle
           return false
         },
         onclone: (clonedDoc) => {
-          // CRITICAL FIX: Strip oklch() from CSS custom properties and stylesheets
-          // html2canvas cannot parse oklch() color format
+          // SOLUTION: Inject RGB-only stylesheet that overrides ALL oklch() CSS variables
+          // This gives html2canvas a clean DOM with zero oklch() strings
           
-          // Step 1: Rewrite all <style> block text content to replace oklch()
-          const styleElements = clonedDoc.querySelectorAll('style')
-          styleElements.forEach(styleEl => {
-            if (styleEl.textContent) {
-              styleEl.textContent = styleEl.textContent.replace(
-                /oklch\([^)]+\)/gi,
-                'rgb(128, 128, 128)' // Gray fallback
-              )
+          const isDark = document.documentElement.classList.contains('dark')
+          
+          // Create export-specific stylesheet with RGB fallbacks for all theme variables
+          const exportStyles = clonedDoc.createElement('style')
+          exportStyles.textContent = `
+            /* Export-only RGB overrides - replaces oklch() with rgb() */
+            :root {
+              /* Base colors - light mode */
+              --background: ${isDark ? 'rgb(15, 23, 42)' : 'rgb(255, 255, 255)'};
+              --foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
+              --card: ${isDark ? 'rgb(15, 23, 42)' : 'rgb(255, 255, 255)'};
+              --card-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
+              --popover: ${isDark ? 'rgb(15, 23, 42)' : 'rgb(255, 255, 255)'};
+              --popover-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
+              --primary: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
+              --primary-foreground: ${isDark ? 'rgb(15, 23, 42)' : 'rgb(248, 250, 252)'};
+              --secondary: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(241, 245, 249)'};
+              --secondary-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
+              --muted: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(241, 245, 249)'};
+              --muted-foreground: ${isDark ? 'rgb(148, 163, 184)' : 'rgb(100, 116, 139)'};
+              --accent: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(241, 245, 249)'};
+              --accent-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
+              --destructive: ${isDark ? 'rgb(220, 38, 38)' : 'rgb(239, 68, 68)'};
+              --destructive-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(248, 250, 252)'};
+              --border: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(226, 232, 240)'};
+              --input: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(226, 232, 240)'};
+              --ring: ${isDark ? 'rgb(148, 163, 184)' : 'rgb(100, 116, 139)'};
+              
+              /* Chart colors - converted from useChartColors.js */
+              --chart-1: ${isDark ? 'hsl(264, 73%, 49%)' : 'hsl(41, 67%, 65%)'};
+              --chart-2: ${isDark ? 'hsl(162, 51%, 70%)' : 'hsl(185, 35%, 47%)'};
+              --chart-3: ${isDark ? 'hsl(70, 56%, 77%)' : 'hsl(227, 21%, 40%)'};
+              --chart-4: ${isDark ? 'hsl(304, 80%, 63%)' : 'hsl(84, 57%, 83%)'};
+              --chart-5: ${isDark ? 'hsl(16, 74%, 65%)' : 'hsl(70, 56%, 77%)'};
             }
-          })
+          `
           
-          // Step 2: Rewrite CSS custom properties on :root element
-          // This handles CSS variables defined via JavaScript
-          const rootElement = clonedDoc.documentElement
-          if (rootElement && rootElement.style) {
-            // Get all custom properties
-            for (let i = 0; i < rootElement.style.length; i++) {
-              const prop = rootElement.style[i]
-              if (prop.startsWith('--')) {
-                const value = rootElement.style.getPropertyValue(prop)
-                if (value && value.includes('oklch')) {
-                  // Replace oklch with gray fallback
-                  rootElement.style.setProperty(prop, 'rgb(128, 128, 128)')
-                }
-              }
-            }
-          }
+          // Inject the export stylesheet at the END (highest specificity)
+          clonedDoc.head.appendChild(exportStyles)
           
-          // Step 3: Force inline styles with computed RGB values as final safety net
+          // Force computed styles as additional safety net
           const allElements = clonedDoc.querySelectorAll('*')
           const clonedWindow = clonedDoc.defaultView || window
           allElements.forEach(el => {
             try {
               const computedStyle = clonedWindow.getComputedStyle(el)
-              // Force inline styles with computed RGB values to override CSS variables
               if (computedStyle.color && computedStyle.color !== 'rgba(0, 0, 0, 0)') {
                 el.style.color = computedStyle.color
               }
@@ -261,7 +271,7 @@ const AssetMapTab = () => {
                 el.style.borderColor = computedStyle.borderColor
               }
             } catch (e) {
-              // Ignore elements that can't be styled
+              // Ignore styling errors
             }
           })
         }
@@ -294,49 +304,60 @@ const AssetMapTab = () => {
         return
       }
 
-      // Capture the canvas with OKLCH color workaround
+      // Capture the canvas with RGB-only export stylesheet
       const canvas = await html2canvas(viewport, {
         backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
         scale: 2,
         onclone: (clonedDoc) => {
-          // CRITICAL FIX: Strip oklch() from CSS custom properties and stylesheets
-          // html2canvas cannot parse oklch() color format
+          // SOLUTION: Inject RGB-only stylesheet that overrides ALL oklch() CSS variables
+          // This gives html2canvas a clean DOM with zero oklch() strings
           
-          // Step 1: Rewrite all <style> block text content to replace oklch()
-          const styleElements = clonedDoc.querySelectorAll('style')
-          styleElements.forEach(styleEl => {
-            if (styleEl.textContent) {
-              styleEl.textContent = styleEl.textContent.replace(
-                /oklch\([^)]+\)/gi,
-                'rgb(128, 128, 128)' // Gray fallback
-              )
+          const isDark = document.documentElement.classList.contains('dark')
+          
+          // Create export-specific stylesheet with RGB fallbacks for all theme variables
+          const exportStyles = clonedDoc.createElement('style')
+          exportStyles.textContent = `
+            /* Export-only RGB overrides - replaces oklch() with rgb() */
+            :root {
+              /* Base colors - light mode */
+              --background: ${isDark ? 'rgb(15, 23, 42)' : 'rgb(255, 255, 255)'};
+              --foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
+              --card: ${isDark ? 'rgb(15, 23, 42)' : 'rgb(255, 255, 255)'};
+              --card-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
+              --popover: ${isDark ? 'rgb(15, 23, 42)' : 'rgb(255, 255, 255)'};
+              --popover-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
+              --primary: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
+              --primary-foreground: ${isDark ? 'rgb(15, 23, 42)' : 'rgb(248, 250, 252)'};
+              --secondary: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(241, 245, 249)'};
+              --secondary-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
+              --muted: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(241, 245, 249)'};
+              --muted-foreground: ${isDark ? 'rgb(148, 163, 184)' : 'rgb(100, 116, 139)'};
+              --accent: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(241, 245, 249)'};
+              --accent-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(15, 23, 42)'};
+              --destructive: ${isDark ? 'rgb(220, 38, 38)' : 'rgb(239, 68, 68)'};
+              --destructive-foreground: ${isDark ? 'rgb(248, 250, 252)' : 'rgb(248, 250, 252)'};
+              --border: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(226, 232, 240)'};
+              --input: ${isDark ? 'rgb(51, 65, 85)' : 'rgb(226, 232, 240)'};
+              --ring: ${isDark ? 'rgb(148, 163, 184)' : 'rgb(100, 116, 139)'};
+              
+              /* Chart colors - converted from useChartColors.js */
+              --chart-1: ${isDark ? 'hsl(264, 73%, 49%)' : 'hsl(41, 67%, 65%)'};
+              --chart-2: ${isDark ? 'hsl(162, 51%, 70%)' : 'hsl(185, 35%, 47%)'};
+              --chart-3: ${isDark ? 'hsl(70, 56%, 77%)' : 'hsl(227, 21%, 40%)'};
+              --chart-4: ${isDark ? 'hsl(304, 80%, 63%)' : 'hsl(84, 57%, 83%)'};
+              --chart-5: ${isDark ? 'hsl(16, 74%, 65%)' : 'hsl(70, 56%, 77%)'};
             }
-          })
+          `
           
-          // Step 2: Rewrite CSS custom properties on :root element
-          // This handles CSS variables defined via JavaScript
-          const rootElement = clonedDoc.documentElement
-          if (rootElement && rootElement.style) {
-            // Get all custom properties
-            for (let i = 0; i < rootElement.style.length; i++) {
-              const prop = rootElement.style[i]
-              if (prop.startsWith('--')) {
-                const value = rootElement.style.getPropertyValue(prop)
-                if (value && value.includes('oklch')) {
-                  // Replace oklch with gray fallback
-                  rootElement.style.setProperty(prop, 'rgb(128, 128, 128)')
-                }
-              }
-            }
-          }
+          // Inject the export stylesheet at the END (highest specificity)
+          clonedDoc.head.appendChild(exportStyles)
           
-          // Step 3: Force inline styles with computed RGB values as final safety net
+          // Force computed styles as additional safety net
           const allElements = clonedDoc.querySelectorAll('*')
           const clonedWindow = clonedDoc.defaultView || window
           allElements.forEach(el => {
             try {
               const computedStyle = clonedWindow.getComputedStyle(el)
-              // Force inline styles with computed RGB values to override CSS variables
               if (computedStyle.color && computedStyle.color !== 'rgba(0, 0, 0, 0)') {
                 el.style.color = computedStyle.color
               }
@@ -347,7 +368,7 @@ const AssetMapTab = () => {
                 el.style.borderColor = computedStyle.borderColor
               }
             } catch (e) {
-              // Ignore elements that can't be styled
+              // Ignore styling errors
             }
           })
         }
