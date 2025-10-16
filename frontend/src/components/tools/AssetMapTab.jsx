@@ -86,6 +86,26 @@ const replaceOklchInValue = (value) => {
   return value.replace(/oklch\([^)]+\)/gi, (token) => oklchTokenToRGBA(token))
 }
 
+const scrubCssRule = (rule) => {
+  if (!rule) return
+
+  if ('style' in rule && rule.style) {
+    const { style } = rule
+    for (let i = 0; i < style.length; i += 1) {
+      const propertyName = style[i]
+      const propertyValue = style.getPropertyValue(propertyName)
+      if (propertyValue && propertyValue.toLowerCase().includes('oklch')) {
+        const priority = style.getPropertyPriority(propertyName)
+        style.setProperty(propertyName, replaceOklchInValue(propertyValue), priority)
+      }
+    }
+  }
+
+  if ('cssRules' in rule && rule.cssRules) {
+    Array.from(rule.cssRules).forEach((nestedRule) => scrubCssRule(nestedRule))
+  }
+}
+
 const scrubOklchFromStylesheets = (doc) => {
   if (!doc?.styleSheets) return
 
@@ -101,19 +121,7 @@ const scrubOklchFromStylesheets = (doc) => {
 
     if (!cssRules) return
 
-    Array.from(cssRules).forEach((rule) => {
-      if (!rule.style) return
-
-      const style = rule.style
-      for (let i = 0; i < style.length; i += 1) {
-        const propertyName = style[i]
-        const propertyValue = style.getPropertyValue(propertyName)
-        if (propertyValue && propertyValue.toLowerCase().includes('oklch')) {
-          const priority = style.getPropertyPriority(propertyName)
-          style.setProperty(propertyName, replaceOklchInValue(propertyValue), priority)
-        }
-      }
-    })
+    Array.from(cssRules).forEach((rule) => scrubCssRule(rule))
   })
 }
 
@@ -143,6 +151,52 @@ const overrideRootCustomProperties = (doc) => {
       documentElement.style.setProperty(property, replaceOklchInValue(value))
     }
   }
+}
+
+const inlineCriticalColors = (doc) => {
+  const win = doc.defaultView
+  if (!win) return
+
+  const colorProps = [
+    'color',
+    'backgroundColor',
+    'borderTopColor',
+    'borderRightColor',
+    'borderBottomColor',
+    'borderLeftColor',
+    'outlineColor',
+    'textDecorationColor',
+    'fill',
+    'stroke',
+  ]
+
+  const shadowProps = ['boxShadow', 'textShadow']
+
+  const toCssProperty = (prop) => prop.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`)
+
+  const elements = doc.querySelectorAll('*')
+  elements.forEach((element) => {
+    let computed
+    try {
+      computed = win.getComputedStyle(element)
+    } catch {
+      return
+    }
+
+    colorProps.forEach((prop) => {
+      const value = computed?.[prop]
+      if (value && value !== 'rgb(0, 0, 0)' && value !== 'rgba(0, 0, 0, 0)' && value !== 'none') {
+        element.style.setProperty(toCssProperty(prop), replaceOklchInValue(value))
+      }
+    })
+
+    shadowProps.forEach((prop) => {
+      const value = computed?.[prop]
+      if (value && value !== 'none') {
+        element.style.setProperty(toCssProperty(prop), replaceOklchInValue(value))
+      }
+    })
+  })
 }
 
 // Dagre graph configuration
@@ -346,6 +400,7 @@ const AssetMapTab = () => {
           scrubOklchFromStylesheets(clonedDoc)
           scrubOklchFromInlineStyles(clonedDoc)
           overrideRootCustomProperties(clonedDoc)
+          inlineCriticalColors(clonedDoc)
         }
       })
 
@@ -384,6 +439,7 @@ const AssetMapTab = () => {
           scrubOklchFromStylesheets(clonedDoc)
           scrubOklchFromInlineStyles(clonedDoc)
           overrideRootCustomProperties(clonedDoc)
+          inlineCriticalColors(clonedDoc)
         }
       })
 
