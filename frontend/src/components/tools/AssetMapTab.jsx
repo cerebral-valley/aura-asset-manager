@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useCurrency } from '../../hooks/useCurrency'
 import { toolsService, DEFAULT_HIERARCHY } from '../../services/tools'
 import { queryKeys } from '../../lib/queryKeys'
-import { ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState, useReactFlow, Handle, Position } from '@xyflow/react'
+import { ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState, useReactFlow, Handle, Position, ReactFlowProvider } from '@xyflow/react'
 import dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
 import { Button } from '../ui/button'
@@ -289,6 +289,7 @@ const AssetMapTab = () => {
   const [depth, setDepth] = useState(5)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const reactFlowWrapper = useRef(null)
+  const { fitView, getNodes } = useReactFlow()
 
   // Fetch asset hierarchy data
   const {
@@ -375,13 +376,52 @@ const AssetMapTab = () => {
     setIsFullscreen(!isFullscreen)
   }, [isFullscreen])
 
-  // Export as PNG
-  const handleExportPNG = useCallback(async () => {
+  // Export as PDF - captures entire flow canvas
+  const handleExportPDF = useCallback(async () => {
     if (!reactFlowWrapper.current) return
 
     try {
-      toast.info('Generating PNG...')
+      toast.info('Generating PDF...')
       
+      // Get all nodes to calculate full canvas dimensions
+      const nodes = getNodes()
+      if (!nodes || nodes.length === 0) {
+        toast.error('No nodes to export')
+        return
+      }
+
+      // Store current viewport state
+      const flowElement = reactFlowWrapper.current.querySelector('.react-flow')
+      const originalTransform = flowElement?.style?.transform
+      
+      // Calculate bounding box of all nodes
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+      nodes.forEach(node => {
+        const x1 = node.position.x
+        const y1 = node.position.y
+        const x2 = x1 + (node.width || nodeWidth)
+        const y2 = y1 + (node.height || nodeHeight)
+        
+        minX = Math.min(minX, x1)
+        minY = Math.min(minY, y1)
+        maxX = Math.max(maxX, x2)
+        maxY = Math.max(maxY, y2)
+      })
+
+      // Add padding around the content
+      const padding = 50
+      const fullWidth = maxX - minX + (padding * 2)
+      const fullHeight = maxY - minY + (padding * 2)
+
+      // Temporarily fit view to show all nodes
+      await fitView({ 
+        padding: 0.1,
+        duration: 0 // Instant, no animation
+      })
+
+      // Small delay to ensure DOM updates
+      await new Promise(resolve => setTimeout(resolve, 100))
+
       // Find the React Flow viewport element
       const viewport = reactFlowWrapper.current.querySelector('.react-flow__viewport')
       if (!viewport) {
@@ -393,9 +433,10 @@ const AssetMapTab = () => {
       const canvas = await html2canvas(viewport, {
         backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
         scale: 2, // Higher quality
-        ignoreElements: (element) => {
-          return false
-        },
+        width: fullWidth,
+        height: fullHeight,
+        windowWidth: fullWidth,
+        windowHeight: fullHeight,
         onclone: (clonedDoc) => {
           scrubOklchFromStylesheets(clonedDoc)
           scrubOklchFromInlineStyles(clonedDoc)
@@ -404,54 +445,20 @@ const AssetMapTab = () => {
         }
       })
 
-      // Download as PNG
-      const link = document.createElement('a')
-      link.download = `asset-map-${new Date().toISOString().split('T')[0]}.png`
-      link.href = canvas.toDataURL()
-      link.click()
-
-      toast.success('PNG downloaded successfully!')
-    } catch (error) {
-      console.error('PNG export error:', error)
-      toast.error('Failed to export PNG')
-    }
-  }, [])
-
-  // Export as PDF
-  const handleExportPDF = useCallback(async () => {
-    if (!reactFlowWrapper.current) return
-
-    try {
-      toast.info('Generating PDF...')
-      
-      // Find the React Flow viewport element
-      const viewport = reactFlowWrapper.current.querySelector('.react-flow__viewport')
-      if (!viewport) {
-        toast.error('Could not find visualization to export')
-        return
-      }
-
-      // Capture the canvas with OKLCH sanitisation
-      const canvas = await html2canvas(viewport, {
-        backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
-        scale: 2,
-        onclone: (clonedDoc) => {
-          scrubOklchFromStylesheets(clonedDoc)
-          scrubOklchFromInlineStyles(clonedDoc)
-          overrideRootCustomProperties(clonedDoc)
-          inlineCriticalColors(clonedDoc)
-        }
-      })
-
-      // Create PDF
+      // Create PDF with proper dimensions
       const imgData = canvas.toDataURL('image/png')
+      
+      // Calculate PDF dimensions to fit content
+      const pdfWidth = canvas.width
+      const pdfHeight = canvas.height
+      
       const pdf = new jsPDF({
-        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+        orientation: pdfWidth > pdfHeight ? 'landscape' : 'portrait',
         unit: 'px',
-        format: [canvas.width, canvas.height]
+        format: [pdfWidth, pdfHeight]
       })
 
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height)
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
       pdf.save(`asset-map-${new Date().toISOString().split('T')[0]}.pdf`)
 
       toast.success('PDF downloaded successfully!')
@@ -459,7 +466,7 @@ const AssetMapTab = () => {
       console.error('PDF export error:', error)
       toast.error('Failed to export PDF')
     }
-  }, [])
+  }, [getNodes, fitView])
 
   if (isLoading) {
     return <Loading pageName="Asset Map" />
@@ -535,22 +542,13 @@ const AssetMapTab = () => {
               )}
             </Button>
             <Button
-              onClick={handleExportPNG}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
-              <Download className="w-4 h-4" />
-              PNG
-            </Button>
-            <Button
               onClick={handleExportPDF}
               variant="outline"
               size="sm"
               className="gap-2"
             >
               <Download className="w-4 h-4" />
-              PDF
+              Export PDF
             </Button>
           </div>
         </div>
@@ -646,4 +644,11 @@ const AssetMapTab = () => {
   )
 }
 
-export default AssetMapTab
+// Wrap with ReactFlowProvider to enable useReactFlow hook
+const AssetMapTabWithProvider = () => (
+  <ReactFlowProvider>
+    <AssetMapTab />
+  </ReactFlowProvider>
+)
+
+export default AssetMapTabWithProvider

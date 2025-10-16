@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.210',
-  buildDate: '2025-01-10',
-  deploymentId: 'asset-map-oklch-inline-overrides',
-  description: 'FIX: Inline critical color properties after OKLCH→sRGB conversion to stabilise PNG/PDF export'
+  version: 'v0.211',
+  buildDate: '2025-10-16',
+  deploymentId: 'asset-map-full-canvas-export',
+  description: 'FIX: Capture entire asset map canvas for PDF export (not just viewport), remove PNG option'
 }
 
 export const getVersionDisplay = () => {
