@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.212',
+  version: 'v0.213',
   buildDate: '2025-10-16',
-  deploymentId: 'asset-map-edges-text-fix',
-  description: 'FIX: Show connecting edges (SVG layer) and full text (remove truncate) in PDF export'
+  deploymentId: 'asset-map-wrapper-capture',
+  description: 'FIX: Capture reactFlowWrapper (parent div) instead of inner elements - simpler and more reliable'
 }
 
 export const getVersionDisplay = () => {

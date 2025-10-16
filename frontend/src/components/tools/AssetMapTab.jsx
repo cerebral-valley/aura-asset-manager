@@ -390,49 +390,24 @@ const AssetMapTab = () => {
         return
       }
 
-      // Calculate bounding box of all nodes
-      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
-      nodes.forEach(node => {
-        const x1 = node.position.x
-        const y1 = node.position.y
-        const x2 = x1 + (node.width || nodeWidth)
-        const y2 = y1 + (node.height || nodeHeight)
-        
-        minX = Math.min(minX, x1)
-        minY = Math.min(minY, y1)
-        maxX = Math.max(maxX, x2)
-        maxY = Math.max(maxY, y2)
-      })
-
-      // Add generous padding around the content
-      const padding = 100
-      const fullWidth = maxX - minX + (padding * 2)
-      const fullHeight = maxY - minY + (padding * 2)
-
-      // Temporarily fit view to show all nodes
+      // Temporarily fit view to show all nodes with generous padding
       await fitView({ 
-        padding: 0.2, // More padding to ensure edges are visible
-        duration: 0 // Instant, no animation
+        padding: 0.15,
+        duration: 0,
+        maxZoom: 1.5 // Prevent zooming in too much
       })
 
-      // Longer delay to ensure DOM updates and edge rendering
-      await new Promise(resolve => setTimeout(resolve, 300))
+      // Wait for React Flow to finish rendering
+      await new Promise(resolve => setTimeout(resolve, 500))
 
-      // Capture the entire React Flow container (not just viewport)
-      // This ensures we get both nodes AND edges (which are in separate SVG layer)
-      const reactFlowElement = reactFlowWrapper.current.querySelector('.react-flow')
-      if (!reactFlowElement) {
-        toast.error('Could not find visualization to export')
-        return
-      }
-
-      // Capture the canvas with OKLCH sanitisation
-      const canvas = await html2canvas(reactFlowElement, {
+      // Capture the entire wrapper div that contains React Flow
+      // This should include both nodes and edges in the visible viewport
+      const canvas = await html2canvas(reactFlowWrapper.current, {
         backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
-        scale: 2, // Higher quality
-        useCORS: true, // Allow cross-origin images
-        allowTaint: true, // Allow tainted canvas
-        logging: false, // Disable logging for cleaner console
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        logging: false,
         onclone: (clonedDoc) => {
           // Apply OKLCH sanitization
           scrubOklchFromStylesheets(clonedDoc)
@@ -440,49 +415,30 @@ const AssetMapTab = () => {
           overrideRootCustomProperties(clonedDoc)
           inlineCriticalColors(clonedDoc)
           
-          // FIX TEXT TRUNCATION: Remove truncate class from all nodes
+          // FIX TEXT TRUNCATION: Remove truncate class to show full text
           const truncatedElements = clonedDoc.querySelectorAll('.truncate')
           truncatedElements.forEach(el => {
             el.classList.remove('truncate')
             el.style.whiteSpace = 'normal'
             el.style.overflow = 'visible'
-            el.style.textOverflow = 'unset'
+            el.style.textOverflow = 'clip'
           })
           
-          // FIX EDGES: Ensure SVG edges are visible
-          const svgElements = clonedDoc.querySelectorAll('svg')
-          svgElements.forEach(svg => {
-            // Force SVG to be visible
-            svg.style.overflow = 'visible'
-            
-            // Ensure all paths (edges) are visible
-            const paths = svg.querySelectorAll('path')
-            paths.forEach(path => {
-              const currentStroke = path.getAttribute('stroke') || path.style.stroke
-              if (currentStroke) {
-                // Force stroke to be visible
-                path.style.stroke = currentStroke
-                path.style.strokeWidth = '2px'
-                path.style.fill = 'none'
-              }
-            })
-            
-            // Ensure markers (arrow heads) are visible
-            const markers = svg.querySelectorAll('marker path')
-            markers.forEach(marker => {
-              const currentFill = marker.getAttribute('fill') || marker.style.fill
-              if (currentFill) {
-                marker.style.fill = currentFill
-              }
-            })
+          // FIX NODE WIDTH: Allow nodes to expand for full text
+          const nodeElements = clonedDoc.querySelectorAll('[data-id]')
+          nodeElements.forEach(node => {
+            const innerDiv = node.querySelector('div')
+            if (innerDiv) {
+              innerDiv.style.width = 'auto'
+              innerDiv.style.minWidth = '200px'
+              innerDiv.style.maxWidth = '300px'
+            }
           })
         }
       })
 
       // Create PDF with proper dimensions
       const imgData = canvas.toDataURL('image/png')
-      
-      // Calculate PDF dimensions to fit content
       const pdfWidth = canvas.width
       const pdfHeight = canvas.height
       
@@ -498,7 +454,7 @@ const AssetMapTab = () => {
       toast.success('PDF downloaded successfully!')
     } catch (error) {
       console.error('PDF export error:', error)
-      toast.error('Failed to export PDF')
+      toast.error(`Failed to export PDF: ${error.message}`)
     }
   }, [getNodes, fitView])
 
