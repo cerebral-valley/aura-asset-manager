@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.204',
+  version: 'v0.205',
   buildDate: '2025-01-10',
-  deploymentId: 'asset-map-oklch-css-rewrite',
-  description: 'FIX: Strip oklch() from cloned CSS <style> blocks before html2canvas parsing for PNG/PDF export'
+  deploymentId: 'asset-map-oklch-root-fix',
+  description: 'FIX: Comprehensive OKLCH stripping - <style> blocks + :root custom properties + inline styles for PNG/PDF export'
 }
 
 export const getVersionDisplay = () => {

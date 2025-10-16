@@ -213,26 +213,44 @@ const AssetMapTab = () => {
           return false
         },
         onclone: (clonedDoc) => {
-          // CRITICAL FIX: Rewrite all <style> blocks to strip oklch() which html2canvas can't parse
-          // CSS variables like var(--background) resolve to oklch() from App.css
-          const styleSheets = clonedDoc.querySelectorAll('style')
-          styleSheets.forEach(styleEl => {
+          // CRITICAL FIX: Strip oklch() from CSS custom properties and stylesheets
+          // html2canvas cannot parse oklch() color format
+          
+          // Step 1: Rewrite all <style> block text content to replace oklch()
+          const styleElements = clonedDoc.querySelectorAll('style')
+          styleElements.forEach(styleEl => {
             if (styleEl.textContent) {
-              // Replace all oklch(...) with rgb() gray fallback
               styleEl.textContent = styleEl.textContent.replace(
-                /oklch\([^)]+\)/gi, 
-                'rgb(128, 128, 128)'
+                /oklch\([^)]+\)/gi,
+                'rgb(128, 128, 128)' // Gray fallback
               )
             }
           })
           
-          // Additionally force inline styles to override any remaining CSS variables
+          // Step 2: Rewrite CSS custom properties on :root element
+          // This handles CSS variables defined via JavaScript
+          const rootElement = clonedDoc.documentElement
+          if (rootElement && rootElement.style) {
+            // Get all custom properties
+            for (let i = 0; i < rootElement.style.length; i++) {
+              const prop = rootElement.style[i]
+              if (prop.startsWith('--')) {
+                const value = rootElement.style.getPropertyValue(prop)
+                if (value && value.includes('oklch')) {
+                  // Replace oklch with gray fallback
+                  rootElement.style.setProperty(prop, 'rgb(128, 128, 128)')
+                }
+              }
+            }
+          }
+          
+          // Step 3: Force inline styles with computed RGB values as final safety net
           const allElements = clonedDoc.querySelectorAll('*')
           const clonedWindow = clonedDoc.defaultView || window
           allElements.forEach(el => {
             try {
               const computedStyle = clonedWindow.getComputedStyle(el)
-              // Force inline styles with computed RGB values
+              // Force inline styles with computed RGB values to override CSS variables
               if (computedStyle.color && computedStyle.color !== 'rgba(0, 0, 0, 0)') {
                 el.style.color = computedStyle.color
               }
@@ -281,20 +299,38 @@ const AssetMapTab = () => {
         backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
         scale: 2,
         onclone: (clonedDoc) => {
-          // CRITICAL FIX: Rewrite all <style> blocks to strip oklch() which html2canvas can't parse
-          // CSS variables like var(--background) resolve to oklch() from App.css
-          const styleSheets = clonedDoc.querySelectorAll('style')
-          styleSheets.forEach(styleEl => {
+          // CRITICAL FIX: Strip oklch() from CSS custom properties and stylesheets
+          // html2canvas cannot parse oklch() color format
+          
+          // Step 1: Rewrite all <style> block text content to replace oklch()
+          const styleElements = clonedDoc.querySelectorAll('style')
+          styleElements.forEach(styleEl => {
             if (styleEl.textContent) {
-              // Replace all oklch(...) with rgb() gray fallback
               styleEl.textContent = styleEl.textContent.replace(
-                /oklch\([^)]+\)/gi, 
-                'rgb(128, 128, 128)'
+                /oklch\([^)]+\)/gi,
+                'rgb(128, 128, 128)' // Gray fallback
               )
             }
           })
           
-          // Additionally force inline styles to override any remaining CSS variables
+          // Step 2: Rewrite CSS custom properties on :root element
+          // This handles CSS variables defined via JavaScript
+          const rootElement = clonedDoc.documentElement
+          if (rootElement && rootElement.style) {
+            // Get all custom properties
+            for (let i = 0; i < rootElement.style.length; i++) {
+              const prop = rootElement.style[i]
+              if (prop.startsWith('--')) {
+                const value = rootElement.style.getPropertyValue(prop)
+                if (value && value.includes('oklch')) {
+                  // Replace oklch with gray fallback
+                  rootElement.style.setProperty(prop, 'rgb(128, 128, 128)')
+                }
+              }
+            }
+          }
+          
+          // Step 3: Force inline styles with computed RGB values as final safety net
           const allElements = clonedDoc.querySelectorAll('*')
           const clonedWindow = clonedDoc.defaultView || window
           allElements.forEach(el => {
