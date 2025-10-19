@@ -600,3 +600,154 @@ async def delete_insurance_document(
             detail="Failed to delete document"
         )
 
+
+@router.get("/hierarchy/")
+async def get_insurance_hierarchy(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get insurance policies organized hierarchically by type.
+    Returns a structure suitable for visualization in a mind map.
+    
+    Structure:
+    {
+        "root": {
+            "total_coverage": float,
+            "total_annual_premium": float,
+            "policy_count": int
+        },
+        "types": [
+            {
+                "type": "life",
+                "type_label": "Life Insurance",
+                "total_coverage": float,
+                "total_annual_premium": float,
+                "policy_count": int,
+                "policies": [
+                    {
+                        "id": "uuid",
+                        "name": "Policy Name",
+                        "coverage": float,
+                        "annual_premium": float,
+                        "provider": "Provider Name",
+                        "status": "active"
+                    }
+                ]
+            }
+        ]
+    }
+    """
+    try:
+        # Fetch only active policies for the current user
+        policies = db.query(InsurancePolicy).filter(
+            InsurancePolicy.user_id == current_user.id,
+            InsurancePolicy.status == 'active'
+        ).all()
+        
+        if not policies:
+            return {
+                "root": {
+                    "total_coverage": 0,
+                    "total_annual_premium": 0,
+                    "policy_count": 0
+                },
+                "types": []
+            }
+        
+        # Helper function to annualize premiums
+        def annualize_premium(premium_amount, premium_frequency):
+            if not premium_amount:
+                return 0
+            
+            freq_map = {
+                'monthly': 12,
+                'quarterly': 4,
+                'annually': 1,
+                'annual': 1
+            }
+            
+            multiplier = freq_map.get(premium_frequency.lower() if premium_frequency else 'annually', 1)
+            return float(premium_amount) * multiplier
+        
+        # Type labels mapping
+        type_labels = {
+            'life': 'Life Insurance',
+            'health': 'Health Insurance',
+            'auto': 'Auto Insurance',
+            'home': 'Home Insurance',
+            'loan': 'Loan Insurance',
+            'travel': 'Travel Insurance',
+            'asset': 'Asset Insurance',
+            'factory': 'Factory Insurance',
+            'fire': 'Fire Insurance'
+        }
+        
+        # Group policies by type
+        types_data = {}
+        total_coverage = 0
+        total_annual_premium = 0
+        
+        for policy in policies:
+            policy_type = policy.policy_type or 'other'
+            
+            # Calculate annualized premium for this policy
+            annual_premium = annualize_premium(policy.premium_amount, policy.premium_frequency)
+            coverage = float(policy.coverage_amount) if policy.coverage_amount else 0
+            
+            # Add to totals
+            total_coverage += coverage
+            total_annual_premium += annual_premium
+            
+            # Initialize type group if not exists
+            if policy_type not in types_data:
+                types_data[policy_type] = {
+                    'type': policy_type,
+                    'type_label': type_labels.get(policy_type, policy_type.capitalize() + ' Insurance'),
+                    'total_coverage': 0,
+                    'total_annual_premium': 0,
+                    'policy_count': 0,
+                    'policies': []
+                }
+            
+            # Add to type totals
+            types_data[policy_type]['total_coverage'] += coverage
+            types_data[policy_type]['total_annual_premium'] += annual_premium
+            types_data[policy_type]['policy_count'] += 1
+            
+            # Add individual policy data
+            types_data[policy_type]['policies'].append({
+                'id': str(policy.id),
+                'name': policy.policy_name or 'Unnamed Policy',
+                'coverage': coverage,
+                'annual_premium': annual_premium,
+                'provider': policy.provider or 'Unknown Provider',
+                'status': policy.status or 'active',
+                'policy_number': policy.policy_number
+            })
+        
+        # Convert dict to sorted list
+        types_list = sorted(
+            types_data.values(),
+            key=lambda x: x['total_coverage'],
+            reverse=True
+        )
+        
+        return {
+            'root': {
+                'total_coverage': total_coverage,
+                'total_annual_premium': total_annual_premium,
+                'policy_count': len(policies)
+            },
+            'types': types_list
+        }
+        
+    except Exception as e:
+        print(f"Error generating insurance hierarchy: {str(e)}")
+        import traceback
+        print(f"Full traceback: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate insurance hierarchy: {str(e)}"
+        )
+

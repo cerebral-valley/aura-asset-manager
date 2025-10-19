@@ -34,5 +34,25 @@ export const toolsService = {
       console.error('Error fetching asset hierarchy:', error)
       throw error
     }
+  },
+
+  /**
+   * Get insurance hierarchy for visualization
+   * Returns insurance policies organized by type with coverage and premium totals
+   * @param {Object} axiosConfig - Axios configuration (for abort signal)
+   * @returns {Promise<Object>} Hierarchy data structure:
+   *   {
+   *     root: { total_coverage, total_annual_premium, policy_count },
+   *     types: [{ type, type_label, total_coverage, total_annual_premium, policy_count, policies: [...] }]
+   *   }
+   */
+  async getInsuranceHierarchy(axiosConfig = {}) {
+    try {
+      const response = await apiClient.get('/insurance/hierarchy/', axiosConfig)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching insurance hierarchy:', error)
+      throw error
+    }
   }
 }

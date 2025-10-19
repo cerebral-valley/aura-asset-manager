@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.216',
-  buildDate: '2025-10-17',
-  deploymentId: 'asset-map-fix-react-flow-v12-api',
-  description: 'FIX: Update to React Flow v12 API - getViewportForBounds returns object {x,y,zoom} not array'
+  version: 'v0.217',
+  buildDate: '2025-10-19',
+  deploymentId: 'insurance-mapping-visualization',
+  description: 'NEW: Insurance Coverage Map with React Flow visualization - shows policy hierarchy by type with coverage and premium totals, includes PDF export'
 }
 
 export const getVersionDisplay = () => {

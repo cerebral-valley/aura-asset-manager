@@ -43,6 +43,7 @@ export const queryKeys = {
       return [...queryKeys.insurance.baseKey, 'list', normalizeFilters(filters)]
     },
     detail: (id) => [...queryKeys.insurance.baseKey, 'detail', id],
+    hierarchy: () => [...queryKeys.insurance.baseKey, 'hierarchy'],
   },
 
   // Dashboard and aggregated queries
