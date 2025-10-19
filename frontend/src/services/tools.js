@@ -48,7 +48,7 @@ export const toolsService = {
    */
   async getInsuranceHierarchy(axiosConfig = {}) {
     try {
-      const response = await apiClient.get('/insurance/hierarchy/', axiosConfig)
+      const response = await apiClient.get('/insurance/hierarchy', axiosConfig)
       return response.data
     } catch (error) {
       console.error('Error fetching insurance hierarchy:', error)

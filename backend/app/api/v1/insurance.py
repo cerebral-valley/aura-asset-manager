@@ -155,7 +155,14 @@ async def delete_insurance_policy(
     
     db.delete(policy)
     db.commit()
-    return {"message": "Insurance policy deleted successfully"}
+    return {"message": "Document deleted successfully"}
+
+
+@router.get("/hierarchy")
+async def get_insurance_hierarchy(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
 
 
 # Insurance Document Management Functions

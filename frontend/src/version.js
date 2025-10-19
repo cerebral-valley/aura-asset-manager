@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.217',
+  version: 'v0.218',
   buildDate: '2025-10-19',
-  deploymentId: 'insurance-mapping-visualization',
-  description: 'NEW: Insurance Coverage Map with React Flow visualization - shows policy hierarchy by type with coverage and premium totals, includes PDF export'
+  deploymentId: 'fix-insurance-hierarchy-trailing-slash',
+  description: 'FIX: Insurance hierarchy endpoint trailing slash causing 307 redirects - removed trailing slash from /hierarchy/ to /hierarchy to match codebase pattern and prevent HTTPS downgrade'
 }
 
 export const getVersionDisplay = () => {
