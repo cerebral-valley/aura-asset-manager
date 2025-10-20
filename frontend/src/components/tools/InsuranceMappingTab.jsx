@@ -412,9 +412,9 @@ const InsuranceMappingTab = () => {
       position: { x: 0, y: 0 },
       data: {
         label: 'Total Insurance Coverage',
-        formattedCoverage: formatCurrency(hierarchyData.root.total_coverage),
-        formattedPremium: formatCurrency(hierarchyData.root.total_annual_premium),
-        policyCount: hierarchyData.root.policy_count,
+        formattedCoverage: String(formatCurrency(hierarchyData.root.total_coverage || 0)),
+        formattedPremium: String(formatCurrency(hierarchyData.root.total_annual_premium || 0)),
+        policyCount: Number(hierarchyData.root.policy_count || 0),
       },
     })
 
@@ -429,9 +429,9 @@ const InsuranceMappingTab = () => {
         position: { x: 0, y: 0 },
         data: {
           label: typeData.type_label,
-          formattedCoverage: formatCurrency(typeData.total_coverage),
-          formattedPremium: formatCurrency(typeData.total_annual_premium),
-          policyCount: typeData.policy_count,
+          formattedCoverage: String(formatCurrency(typeData.total_coverage || 0)),
+          formattedPremium: String(formatCurrency(typeData.total_annual_premium || 0)),
+          policyCount: Number(typeData.policy_count || 0),
         },
       })
 
@@ -454,11 +454,11 @@ const InsuranceMappingTab = () => {
           type: 'policy',
           position: { x: 0, y: 0 },
           data: {
-            label: policy.name,
-            formattedCoverage: formatCurrency(policy.coverage),
-            formattedPremium: formatCurrency(policy.annual_premium),
-            provider: policy.provider,
-            status: policy.status,
+            label: String(policy.name || 'Unnamed Policy'),
+            formattedCoverage: String(formatCurrency(policy.coverage || 0)),
+            formattedPremium: String(formatCurrency(policy.annual_premium || 0)),
+            provider: String(policy.provider || ''),
+            status: String(policy.status || 'active'),
           },
         })
 
