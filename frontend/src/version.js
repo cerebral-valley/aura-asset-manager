@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.218.4',
+  version: 'v0.218.5',
   buildDate: '2025-10-20',
-  deploymentId: 'insurance-route-ordering-redeploy',
-  description: 'REDEPLOY: Force Railway deployment of route ordering fix - /hierarchy before /{policy_id}'
+  deploymentId: 'railway-service-retry',
+  description: 'RETRY: Another deployment attempt for Railway route ordering fix'
 }
 
 export const getVersionDisplay = () => {

@@ -6,6 +6,10 @@
     {
       "source": "/((?!api)(?!_next)(?!static)(?!public)(?!favicon\\.ico)(?!.*\\..*).*)",
       "destination": "/index.html"
+    },
+    {
+      "source": "/api/v1/sentry-tunnel",
+      "destination": "https://aura-asset-manager-production.up.railway.app/api/v1/sentry-tunnel"
     }
   ]
 }
