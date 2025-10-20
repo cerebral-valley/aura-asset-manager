@@ -47,6 +47,37 @@ Refer to the `docs/` directory for detailed setup and usage instructions.
 - Premium tracking
 - Protection value analysis
 
+### ✨ Magic UI Components (NEW)
+- **Animated Number Counting**: Smooth transitions for financial values
+- **Interactive Cards**: Hover effects and magnetic interactions
+- **Sparkle Effects**: Celebration animations for achievements
+- **Beautiful Loading States**: Orbit animations and meteors
+- **Smooth Page Transitions**: Blur fade and stagger effects
+- **Shimmer CTAs**: Eye-catching call-to-action buttons
+- **150+ Components**: Full Magic UI library integrated
+
+## 📚 Documentation
+
+### Magic UI Implementation
+- **[Implementation Guide](MAGIC_UI_IMPLEMENTATION_GUIDE.md)** - Comprehensive guide with component usage, best practices, and performance tips (23KB)
+- **[Quick Reference](MAGIC_UI_QUICK_REFERENCE.md)** - Fast lookup for component props, import patterns, and use cases (6KB)
+- **[Refactoring Prompts](MAGIC_UI_REFACTORING_PROMPTS.md)** - Ready-to-use AI prompts for refactoring each page (17KB)
+- **[Implementation Summary](MAGIC_UI_IMPLEMENTATION_SUMMARY.md)** - Complete overview of what was created
+- **[Progress Tracker](MAGIC_UI_PROGRESS_TRACKER.md)** - Track implementation progress across all pages
+
+### Core Documentation
+- **[Setup Guide](SETUP_GUIDE.md)** - Complete setup instructions
+- **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Production deployment steps
+- **[API Documentation](API_DOCUMENTATION.md)** - Backend API reference
+- **[Database Schema](DATABASE_SCHEMA.md)** - Database structure and relationships
+- **[User Guide](USER_GUIDE.md)** - End-user documentation
+- **[Theme System](THEME_SYSTEM_IMPLEMENTATION.md)** - Theme architecture and usage
+
+### Feature Documentation
+- **[File Upload Feature](FILE_UPLOAD_FEATURE.md)** - Document upload implementation
+- **[PDF Export Feature](PDF_EXPORT_FEATURE.md)** - PDF generation system
+- **[MCP Setup](MCP_SETUP_COMPLETE.md)** - Model Context Protocol configuration
+
 ## 🚀 Live Application
 
 Visit [Aura Asset Manager](https://aura-asset-manager.vercel.app/) to experience the application live.
