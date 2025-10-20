@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.218.13',
+  version: 'v0.218.14',
   buildDate: '2025-10-20',
-  deploymentId: 'loan-calculator-launch',
-  description: 'Add loan calculator tool, unify mapping controls, and refresh export styling'
+  deploymentId: 'buy-rent-and-down-payment-tools',
+  description: 'Introduce buy vs rent and down-payment trackers, color-code maps, and improve centering'
 }
 
 export const getVersionDisplay = () => {

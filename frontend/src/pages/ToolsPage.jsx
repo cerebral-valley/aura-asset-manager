@@ -3,6 +3,8 @@ import { useAuth } from '../hooks/useAuth'
 import AssetMapTab from '../components/tools/AssetMapTab'
 import InsuranceMappingTab from '../components/tools/InsuranceMappingTab'
 import LoanCalculatorTab from '../components/tools/LoanCalculatorTab'
+import BuyRentAnalyzerTab from '../components/tools/BuyRentAnalyzerTab'
+import DownPaymentTrackerTab from '../components/tools/DownPaymentTrackerTab'
 import Loading from '../components/ui/Loading'
 
 const ToolsPage = () => {
@@ -17,6 +19,8 @@ const ToolsPage = () => {
     { id: 'asset-mapping', label: 'Asset Mapping', component: AssetMapTab },
     { id: 'insurance-mapping', label: 'Insurance Mapping', component: InsuranceMappingTab },
     { id: 'loan-calculator', label: 'Loan Calculator', component: LoanCalculatorTab },
+    { id: 'buy-vs-rent', label: 'Buy vs Rent', component: BuyRentAnalyzerTab },
+    { id: 'down-payment-tracker', label: 'Down-Payment Tracker', component: DownPaymentTrackerTab },
   ]
 
   const ActiveComponent = tabs.find(t => t.id === activeTab)?.component

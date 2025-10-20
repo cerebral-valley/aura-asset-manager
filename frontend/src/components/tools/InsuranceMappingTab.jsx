@@ -239,40 +239,65 @@ const getLayoutedElements = (nodes, edges) => {
       },
     }
   })
+  const minX = Math.min(...layoutedNodes.map((node) => node.position.x))
+  const minY = Math.min(...layoutedNodes.map((node) => node.position.y))
 
-  return { nodes: layoutedNodes, edges }
+  const adjustedNodes = layoutedNodes.map((node) => ({
+    ...node,
+    position: {
+      x: node.position.x - minX + 60,
+      y: node.position.y - minY + 60,
+    },
+  }))
+
+  return { nodes: adjustedNodes, edges }
+}
+
+const levelPalettes = {
+  light: [
+    { background: '#eff6ff', border: '#93c5fd', text: '#1e3a8a', subtle: '#1d4ed8', muted: '#1e40af' },
+    { background: '#eef2ff', border: '#c4b5fd', text: '#312e81', subtle: '#4338ca', muted: '#4338ca' },
+    { background: '#fdf2f8', border: '#f9a8d4', text: '#831843', subtle: '#be185d', muted: '#be185d' },
+  ],
+  dark: [
+    { background: '#1e3a8a', border: '#60a5fa', text: '#dbeafe', subtle: '#93c5fd', muted: '#60a5fa' },
+    { background: '#312e81', border: '#a78bfa', text: '#ede9fe', subtle: '#c4b5fd', muted: '#8b5cf6' },
+    { background: '#500724', border: '#f472b6', text: '#ffe4e6', subtle: '#f9a8d4', muted: '#f472b6' },
+  ],
 }
 
 // Custom Root Node - Shows total insurance coverage and premium
 const RootNode = ({ data }) => {
   const isDark = document.documentElement.classList.contains('dark')
-  const baseClasses = isDark
-    ? 'bg-gray-800 border-blue-500 text-slate-100 shadow-xl'
-    : 'bg-white border-blue-400 text-slate-900 shadow-lg'
+  const palette = (isDark ? levelPalettes.dark : levelPalettes.light)[0]
 
   return (
     <div
-      className={`px-6 py-4 rounded-xl border-2 ${baseClasses}`}
-      style={{ width: 280, minHeight: 120 }}
+      className="px-6 py-4 rounded-xl border-2 shadow-xl"
+      style={{
+        width: 280,
+        minHeight: 120,
+        backgroundColor: palette.background,
+        borderColor: palette.border,
+        color: palette.text,
+      }}
     >
       <Handle
         type="source"
         position={Position.Right}
-        style={{ background: '#2563eb', width: 12, height: 12 }}
+        style={{ background: palette.border, width: 12, height: 12 }}
       />
 
       <div className="flex items-center gap-2 mb-2">
-        <Shield className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+        <Shield className="w-6 h-6" style={{ color: palette.border }} />
         <div className="text-lg font-semibold">{data.label}</div>
       </div>
       <div className="space-y-1">
-        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-          {data.formattedCoverage}
-        </div>
-        <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <div className="text-2xl font-bold">{data.formattedCoverage}</div>
+        <div className="text-sm font-medium" style={{ color: palette.subtle }}>
           Annual Premium: {data.formattedPremium}
         </div>
-        <div className="text-xs text-gray-600 dark:text-gray-400">
+        <div className="text-xs" style={{ color: palette.muted }}>
           {data.policyCount} {data.policyCount === 1 ? 'policy' : 'policies'}
         </div>
       </div>
@@ -283,37 +308,29 @@ const RootNode = ({ data }) => {
 // Custom Policy Type Node - Shows aggregated data per insurance type
 const PolicyTypeNode = ({ data }) => {
   const isDark = document.documentElement.classList.contains('dark')
-  const baseClasses = isDark
-    ? 'bg-gray-800 border-gray-600 text-slate-100 shadow-md'
-    : 'bg-white border-gray-300 text-slate-900 shadow-md'
+  const palette = (isDark ? levelPalettes.dark : levelPalettes.light)[1]
 
   return (
     <div
-      className={`px-5 py-3 rounded-lg border-2 ${baseClasses}`}
-      style={{ width: 240, minHeight: 100 }}
+      className="px-5 py-3 rounded-lg border-2 shadow-md"
+      style={{
+        width: 240,
+        minHeight: 100,
+        backgroundColor: palette.background,
+        borderColor: palette.border,
+        color: palette.text,
+      }}
     >
-      <Handle
-        type="target"
-        position={Position.Left}
-        style={{ background: '#2563eb' }}
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        style={{ background: '#2563eb' }}
-      />
+      <Handle type="target" position={Position.Left} style={{ background: palette.border }} />
+      <Handle type="source" position={Position.Right} style={{ background: palette.border }} />
 
-      <div className="text-base font-semibold mb-2 text-blue-600 dark:text-blue-400">
-        {data.label}
-      </div>
+      <div className="text-base font-semibold mb-2">{data.label}</div>
       <div className="space-y-1">
-        <div className="text-lg font-semibold">
-          {data.formattedCoverage}
-        </div>
-        <div className="text-xs text-gray-600 dark:text-gray-400">
+        <div className="text-lg font-semibold">{data.formattedCoverage}</div>
+        <div className="text-xs" style={{ color: palette.subtle }}>
           Premium: {data.formattedPremium}
         </div>
-        <div className="text-xs text-gray-500 dark:text-gray-400">
+        <div className="text-xs" style={{ color: palette.muted }}>
           {data.policyCount} {data.policyCount === 1 ? 'policy' : 'policies'}
         </div>
       </div>
@@ -325,39 +342,42 @@ const PolicyTypeNode = ({ data }) => {
 const PolicyNode = ({ data }) => {
   const isDark = document.documentElement.classList.contains('dark')
 
+  const palette = (isDark ? levelPalettes.dark : levelPalettes.light)[2]
   const statusColors = {
     active: isDark ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-800',
     expired: isDark ? 'bg-red-900 text-red-300' : 'bg-red-100 text-red-800',
     cancelled: isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800',
   }
 
-  const baseClasses = isDark
-    ? 'bg-gray-800 border-gray-600 text-slate-100 shadow'
-    : 'bg-white border-gray-300 text-slate-900 shadow'
-
   return (
     <div
-      className={`px-4 py-3 rounded-lg border-2 ${baseClasses}`}
-      style={{ width: 220, minHeight: 90 }}
+      className="px-4 py-3 rounded-lg border-2 shadow"
+      style={{
+        width: 220,
+        minHeight: 90,
+        backgroundColor: palette.background,
+        borderColor: palette.border,
+        color: palette.text,
+      }}
     >
       <Handle
         type="target"
         position={Position.Left}
-        style={{ background: '#2563eb' }}
+        style={{ background: palette.border }}
       />
 
       <div className="space-y-1">
         <div className="text-sm font-semibold truncate" title={data.label}>
           {data.label}
         </div>
-        <div className="text-base font-semibold text-blue-600 dark:text-blue-400">
+        <div className="text-base font-semibold" style={{ color: palette.subtle }}>
           {data.formattedCoverage}
         </div>
-        <div className="text-xs text-gray-600 dark:text-gray-400">
+        <div className="text-xs" style={{ color: palette.muted }}>
           Premium: {data.formattedPremium}
         </div>
         {data.provider && (
-          <div className="text-xs text-gray-500 truncate" title={data.provider}>
+          <div className="text-xs truncate" title={data.provider} style={{ color: palette.muted }}>
             {data.provider}
           </div>
         )}
@@ -419,8 +439,9 @@ const InsuranceMappingTab = () => {
     }
 
     const isDarkMode = typeof window !== 'undefined' && document.documentElement.classList.contains('dark')
-    const primaryEdgeColor = isDarkMode ? '#60a5fa' : '#3b82f6'
-    const secondaryEdgeColor = isDarkMode ? '#4b5563' : '#6b7280'
+    const paletteSet = isDarkMode ? levelPalettes.dark : levelPalettes.light
+    const primaryEdgeColor = paletteSet[0].border
+    const secondaryEdgeColor = paletteSet[1].border
 
     const coerceNumber = (value) => {
       if (value == null) return 0
@@ -497,6 +518,7 @@ const InsuranceMappingTab = () => {
           formattedCoverage: String(formatCurrency(totals.totalCoverage)),
           formattedPremium: String(formatCurrency(totals.totalAnnualPremium)),
           policyCount: totals.policyCount,
+          level: 0,
         },
       },
     ]
@@ -517,6 +539,7 @@ const InsuranceMappingTab = () => {
           formattedCoverage: String(formatCurrency(typeSummary.coverage)),
           formattedPremium: String(formatCurrency(typeSummary.premium)),
           policyCount: typeSummary.policyCount,
+          level: 1,
         },
       })
 
@@ -549,6 +572,7 @@ const InsuranceMappingTab = () => {
             formattedPremium: String(formatCurrency(policy.annualPremium)),
             provider: String(policy.provider || ''),
             status: String(policy.status || 'active'),
+            level: 2,
           },
         })
 

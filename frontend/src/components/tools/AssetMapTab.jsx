@@ -243,21 +243,40 @@ const getLayoutedElements = (nodes, edges) => {
     }
   })
 
-  return { nodes: layoutedNodes, edges }
+  const minX = Math.min(...layoutedNodes.map((node) => node.position.x))
+  const minY = Math.min(...layoutedNodes.map((node) => node.position.y))
+
+  const adjustedNodes = layoutedNodes.map((node) => ({
+    ...node,
+    position: {
+      x: node.position.x - minX + 60,
+      y: node.position.y - minY + 60,
+    },
+  }))
+
+  return { nodes: adjustedNodes, edges }
 }
 
 // Custom node component with value and percentage
-const CustomNode = ({ data }) => {
+const CustomNode = ({ data, palettes }) => {
   const isDark = document.documentElement.classList.contains('dark')
-  
+
+  const paletteSet = isDark ? palettes.dark : palettes.light
+  const paletteIndex = Math.min(data.level || 0, paletteSet.length - 1)
+  const palette = paletteSet[paletteIndex]
+
+  const subtleColor = isDark ? '#cbd5f5' : '#475569'
+  const mutedColor = isDark ? '#94a3b8' : '#64748b'
+
   return (
-    <div 
-      className={`px-4 py-3 rounded-lg border-2 shadow-md ${
-        isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'
-      }`}
+    <div
+      className="px-4 py-3 rounded-lg border-2 shadow-md"
       style={{
         width: nodeWidth,
         minHeight: nodeHeight,
+        backgroundColor: palette.background,
+        borderColor: palette.border,
+        color: palette.text,
       }}
     >
       {/* Target handle (input - left side) */}
@@ -273,7 +292,7 @@ const CustomNode = ({ data }) => {
       <div className="text-lg font-bold mt-1">
         {data.formattedValue}
       </div>
-      <div className="text-xs text-gray-500 mt-1">
+      <div className="text-xs mt-1" style={{ color: subtleColor }}>
         {data.percentage}% • {data.assetCount} {data.assetCount === 1 ? 'asset' : 'assets'}
       </div>
       
@@ -281,14 +300,31 @@ const CustomNode = ({ data }) => {
       <Handle
         type="source"
         position={Position.Right}
-        style={{ background: '#555' }}
+        style={{ background: palette.border }}
       />
     </div>
   )
 }
 
+const levelPalettes = {
+  light: [
+    { background: '#eff6ff', border: '#93c5fd', text: '#1e3a8a' },
+    { background: '#eef2ff', border: '#c4b5fd', text: '#312e81' },
+    { background: '#f5f3ff', border: '#c084fc', text: '#4c1d95' },
+    { background: '#fdf2f8', border: '#f9a8d4', text: '#831843' },
+    { background: '#f0fdfa', border: '#5eead4', text: '#065f46' },
+  ],
+  dark: [
+    { background: '#1e3a8a', border: '#60a5fa', text: '#e0f2fe' },
+    { background: '#312e81', border: '#c4b5fd', text: '#e0e7ff' },
+    { background: '#4c1d95', border: '#d8b4fe', text: '#ede9fe' },
+    { background: '#831843', border: '#f472b6', text: '#ffe4e6' },
+    { background: '#064e3b', border: '#34d399', text: '#d1fae5' },
+  ],
+}
+
 const nodeTypes = {
-  custom: CustomNode,
+  custom: (props) => <CustomNode palettes={levelPalettes} {...props} />,
 }
 
 const AssetMapTab = () => {
@@ -340,6 +376,11 @@ const AssetMapTab = () => {
     }))
 
     const isDark = document.documentElement.classList.contains('dark')
+    const paletteSet = isDark ? levelPalettes.dark : levelPalettes.light
+    const levelLookup = rawNodes.reduce((acc, node) => {
+      acc[node.id] = node.data.level || 0
+      return acc
+    }, {})
     
     const rawEdges = hierarchyData.edges.map((edge, index) => ({
       id: `${edge.source}-${edge.target}`,
@@ -348,14 +389,14 @@ const AssetMapTab = () => {
       type: 'smoothstep',
       animated: false,
       style: { 
-        stroke: isDark ? '#60a5fa' : '#3b82f6',
+        stroke: paletteSet[Math.min(levelLookup[edge.source] || 0, paletteSet.length - 1)].border,
         strokeWidth: 2
       },
       markerEnd: {
         type: 'arrowclosed',
         width: 20,
         height: 20,
-        color: isDark ? '#60a5fa' : '#3b82f6',
+        color: paletteSet[Math.min(levelLookup[edge.source] || 0, paletteSet.length - 1)].border,
       },
     }))
 
@@ -376,7 +417,7 @@ const AssetMapTab = () => {
     requestAnimationFrame(() => {
       fitView({ padding: 0.2, duration: 400 })
     })
-  }, [nodes.length, fitView])
+  }, [nodes, fitView])
 
   React.useEffect(() => {
     if (!isFullscreen || reactFlowNodes.length === 0) return
