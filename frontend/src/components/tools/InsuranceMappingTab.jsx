@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useCurrency } from '../../hooks/useCurrency'
 import { toolsService } from '../../services/tools'
 import { queryKeys } from '../../lib/queryKeys'
-import { ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState, useReactFlow, Handle, Position, ReactFlowProvider } from '@xyflow/react'
+import { ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState, useReactFlow, Handle, Position, ReactFlowProvider, getNodesBounds, getViewportForBounds } from '@xyflow/react'
 import dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
 import { Button } from '../ui/button'
@@ -589,17 +589,28 @@ const InsuranceMappingTab = () => {
         return
       }
 
-      const viewportElement = reactFlowElement.querySelector('.react-flow__viewport')
-      const edgesElement = reactFlowElement.querySelector('.react-flow__edges')
-      const viewportTransform = viewportElement?.style?.transform || ''
-      const edgesTransform = edgesElement?.style?.transform || ''
-      const { width, height } = reactFlowElement.getBoundingClientRect()
-      const exportWidth = Math.max(Math.ceil(width), 1)
-      const exportHeight = Math.max(Math.ceil(height), 1)
+      const bounds = getNodesBounds(currentNodes)
+      const padding = 80
+      const exportWidth = Math.max(Math.ceil(bounds.width + padding * 2), 640)
+      const exportHeight = Math.max(Math.ceil(bounds.height + padding * 2), 480)
       const exportScale = 2
+      const viewport = getViewportForBounds(
+        bounds,
+        exportWidth,
+        exportHeight,
+        0.2, // min zoom
+        1.5, // max zoom
+        0.05 // padding
+      )
+
+      const isDarkMode = document.documentElement.classList.contains('dark')
+      const computedBg = window.getComputedStyle(reactFlowWrapper.current).backgroundColor
+      const backgroundColor = computedBg && computedBg !== 'rgba(0, 0, 0, 0)'
+        ? computedBg
+        : (isDarkMode ? '#0f172a' : '#ffffff')
 
       const canvas = await html2canvas(reactFlowElement, {
-        backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#ffffff',
+        backgroundColor,
         scale: exportScale,
         useCORS: true,
         allowTaint: false,
@@ -608,6 +619,8 @@ const InsuranceMappingTab = () => {
         height: exportHeight,
         windowWidth: exportWidth,
         windowHeight: exportHeight,
+        scrollX: 0,
+        scrollY: 0,
         onclone: (clonedDoc) => {
           // Apply OKLCH sanitization
           scrubOklchFromStylesheets(clonedDoc)
@@ -618,21 +631,60 @@ const InsuranceMappingTab = () => {
           // Find the cloned React Flow element
           const clonedReactFlow = clonedDoc.querySelector('.react-flow')
           if (clonedReactFlow) {
+            clonedReactFlow.style.width = `${exportWidth}px`
+            clonedReactFlow.style.height = `${exportHeight}px`
+            clonedReactFlow.style.backgroundColor = backgroundColor
+
+            clonedReactFlow.querySelectorAll('.react-flow__controls, .react-flow__minimap, .react-flow__attribution').forEach((panel) => {
+              panel.style.display = 'none'
+            })
+
             const clonedViewport = clonedReactFlow.querySelector('.react-flow__viewport')
-            if (clonedViewport && viewportTransform) {
-              clonedViewport.style.transform = viewportTransform
+            if (clonedViewport) {
+              clonedViewport.style.transformOrigin = '0 0'
+              clonedViewport.style.transform = `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`
             }
             
             // Ensure edges layer is visible and properly styled
             const edgesLayer = clonedReactFlow.querySelector('.react-flow__edges')
             if (edgesLayer) {
-              if (edgesTransform) {
-                edgesLayer.style.transform = edgesTransform
-              }
+              edgesLayer.style.transformOrigin = '0 0'
+              edgesLayer.style.transform = `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`
               edgesLayer.style.width = '100%'
               edgesLayer.style.height = '100%'
+              edgesLayer.querySelectorAll('path').forEach((path) => {
+                path.setAttribute('stroke', isDarkMode ? '#60a5fa' : '#3b82f6')
+                path.setAttribute('stroke-width', '2')
+                path.setAttribute('stroke-linecap', 'round')
+              })
             }
+
+            // Tweak node appearance for better contrast in export
+            const nodeElements = clonedReactFlow.querySelectorAll('[data-id]')
+            nodeElements.forEach((nodeEl) => {
+              const panel = nodeEl.querySelector('div')
+              if (panel) {
+                panel.style.borderColor = isDarkMode ? '#3b82f6' : '#3b82f6'
+                panel.style.boxShadow = isDarkMode
+                  ? '0 18px 36px rgba(15, 23, 42, 0.45)'
+                  : '0 16px 32px rgba(15, 23, 42, 0.18)'
+                if (panel.classList.contains('bg-gray-800')) {
+                  panel.style.backgroundColor = '#111a2b'
+                }
+                if (panel.classList.contains('bg-gray-900')) {
+                  panel.style.backgroundColor = '#0b1220'
+                }
+              }
+            })
           }
+
+          const truncatedElements = clonedDoc.querySelectorAll('.truncate')
+          truncatedElements.forEach((el) => {
+            el.classList.remove('truncate')
+            el.style.whiteSpace = 'normal'
+            el.style.overflow = 'visible'
+            el.style.textOverflow = 'clip'
+          })
         }
       })
 

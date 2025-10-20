@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.218.9',
+  version: 'v0.218.10',
   buildDate: '2025-10-20',
-  deploymentId: 'insurance-active-pdf-alignment',
-  description: 'Filter to active insurance policies and align PDF export with on-screen layout'
+  deploymentId: 'insurance-export-theme-tune',
+  description: 'Polish insurance mapping export to match on-screen styling and remove inactive visuals'
 }
 
 export const getVersionDisplay = () => {
