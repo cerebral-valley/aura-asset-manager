@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { userSettingsService } from '../services/user-settings.js'
 
 // Currency configurations
@@ -56,7 +56,7 @@ export const useCurrency = () => {
     }
   }, [])
 
-  const formatCurrency = (amount, currencyCode = null) => {
+  const formatCurrency = useCallback((amount, currencyCode = null) => {
     const activeCurrency = currencyCode || currency
     const config = CURRENCIES[activeCurrency]
     
@@ -70,19 +70,21 @@ export const useCurrency = () => {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount)
-  }
+  }, [currency])
 
-  const getCurrencySymbol = (currencyCode = null) => {
+  const getCurrencySymbol = useCallback((currencyCode = null) => {
     const activeCurrency = currencyCode || currency
     return CURRENCIES[activeCurrency]?.symbol || '$'
-  }
+  }, [currency])
+
+  const currencyConfig = useMemo(() => CURRENCIES[currency], [currency])
 
   return {
     currency,
     formatCurrency,
     getCurrencySymbol,
     loading,
-    currencyConfig: CURRENCIES[currency]
+    currencyConfig
   }
 }
 

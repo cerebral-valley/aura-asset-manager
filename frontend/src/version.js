@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.218.7',
+  version: 'v0.218.8',
   buildDate: '2025-10-20',
-  deploymentId: 'debug-insurance-data-structure',
-  description: 'DEBUG: Add console logging to inspect insurance hierarchy data structure'
+  deploymentId: 'fix-insurance-mapping-loop',
+  description: 'Memoize currency helpers to stop Insurance Mapping tab from hitting React render loop'
 }
 
 export const getVersionDisplay = () => {
