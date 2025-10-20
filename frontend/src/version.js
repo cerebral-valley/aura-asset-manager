@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.218.3',
+  version: 'v0.218.4',
   buildDate: '2025-10-20',
-  deploymentId: 'insurance-route-ordering-fix',
-  description: 'FIX: Insurance hierarchy 422 error - fixed FastAPI route ordering (moved /hierarchy before /{policy_id} to prevent UUID validation error)'
+  deploymentId: 'insurance-route-ordering-redeploy',
+  description: 'REDEPLOY: Force Railway deployment of route ordering fix - /hierarchy before /{policy_id}'
 }
 
 export const getVersionDisplay = () => {
