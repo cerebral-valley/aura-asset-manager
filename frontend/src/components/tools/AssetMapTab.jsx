@@ -266,7 +266,6 @@ const CustomNode = ({ data, palettes }) => {
   const palette = paletteSet[paletteIndex]
 
   const subtleColor = isDark ? '#cbd5f5' : '#475569'
-  const mutedColor = isDark ? '#94a3b8' : '#64748b'
 
   return (
     <div
@@ -283,7 +282,7 @@ const CustomNode = ({ data, palettes }) => {
       <Handle
         type="target"
         position={Position.Left}
-        style={{ background: '#555' }}
+        style={{ background: palette.border }}
       />
       
       <div className="text-sm font-semibold truncate" title={data.label}>

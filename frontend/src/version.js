@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.218.14',
+  version: 'v0.218.15',
   buildDate: '2025-10-20',
-  deploymentId: 'buy-rent-and-down-payment-tools',
-  description: 'Introduce buy vs rent and down-payment trackers, color-code maps, and improve centering'
+  deploymentId: 'map-color-depth-enhancements',
+  description: 'Polish depth-based theming and centering across planning visualisations'
 }
 
 export const getVersionDisplay = () => {
