@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.218.11',
+  version: 'v0.218.12',
   buildDate: '2025-10-20',
-  deploymentId: 'insurance-export-fullscreen-fixes',
-  description: 'Restore fullscreen fitView and rebuild PDF export to capture dark-mode styling reliably'
+  deploymentId: 'flow-theme-alignment',
+  description: 'Align asset and insurance map theming, stabilize fullscreen, and clean OKLCH export errors'
 }
 
 export const getVersionDisplay = () => {

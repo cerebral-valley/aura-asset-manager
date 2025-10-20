@@ -32,7 +32,7 @@ const oklchTokenToRGBA = (token) => {
     .match(/^oklch\(\s*([0-9.]+)\s+([0-9.]+)\s+([0-9.+-]+)(?:\s*\/\s*([0-9.]+%?))?\s*\)$/i)
 
   if (!match) {
-    return null
+    return token
   }
 
   const [, lRaw, cRaw, hRaw, alphaRaw] = match
@@ -84,6 +84,15 @@ const replaceOklchInValue = (value) => {
   }
 
   return value.replace(/oklch\([^)]+\)/gi, (token) => oklchTokenToRGBA(token))
+}
+
+const sanitizeColor = (value, fallback) => {
+  if (!value) return fallback
+  const sanitized = replaceOklchInValue(value)
+  if (!sanitized || sanitized.toLowerCase().includes('oklch')) {
+    return fallback
+  }
+  return sanitized
 }
 
 const scrubCssRule = (rule) => {
@@ -237,32 +246,30 @@ const getLayoutedElements = (nodes, edges) => {
 // Custom Root Node - Shows total insurance coverage and premium
 const RootNode = ({ data }) => {
   const isDark = document.documentElement.classList.contains('dark')
-  
+  const baseClasses = isDark
+    ? 'bg-gray-800 border-blue-500 text-slate-100 shadow-xl'
+    : 'bg-white border-blue-400 text-slate-900 shadow-lg'
+
   return (
-    <div 
-      className={`px-6 py-4 rounded-xl border-4 shadow-2xl ${
-        isDark ? 'bg-gradient-to-br from-blue-900 to-blue-800 border-blue-600' : 'bg-gradient-to-br from-blue-100 to-blue-50 border-blue-400'
-      }`}
-      style={{
-        width: 280,
-        minHeight: 120,
-      }}
+    <div
+      className={`px-6 py-4 rounded-xl border-2 ${baseClasses}`}
+      style={{ width: 280, minHeight: 120 }}
     >
       <Handle
         type="source"
         position={Position.Right}
         style={{ background: '#2563eb', width: 12, height: 12 }}
       />
-      
+
       <div className="flex items-center gap-2 mb-2">
         <Shield className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-        <div className="text-lg font-bold">{data.label}</div>
+        <div className="text-lg font-semibold">{data.label}</div>
       </div>
       <div className="space-y-1">
         <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
           {data.formattedCoverage}
         </div>
-        <div className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+        <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
           Annual Premium: {data.formattedPremium}
         </div>
         <div className="text-xs text-gray-600 dark:text-gray-400">
@@ -276,39 +283,37 @@ const RootNode = ({ data }) => {
 // Custom Policy Type Node - Shows aggregated data per insurance type
 const PolicyTypeNode = ({ data }) => {
   const isDark = document.documentElement.classList.contains('dark')
-  
+  const baseClasses = isDark
+    ? 'bg-gray-800 border-gray-600 text-slate-100 shadow-md'
+    : 'bg-white border-gray-300 text-slate-900 shadow-md'
+
   return (
-    <div 
-      className={`px-5 py-3 rounded-lg border-3 shadow-lg ${
-        isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-400'
-      }`}
-      style={{
-        width: 240,
-        minHeight: 100,
-      }}
+    <div
+      className={`px-5 py-3 rounded-lg border-2 ${baseClasses}`}
+      style={{ width: 240, minHeight: 100 }}
     >
       <Handle
         type="target"
         position={Position.Left}
-        style={{ background: '#6b7280' }}
+        style={{ background: '#2563eb' }}
       />
       <Handle
         type="source"
         position={Position.Right}
-        style={{ background: '#6b7280' }}
+        style={{ background: '#2563eb' }}
       />
-      
-      <div className="text-base font-bold mb-2 text-blue-600 dark:text-blue-400">
+
+      <div className="text-base font-semibold mb-2 text-blue-600 dark:text-blue-400">
         {data.label}
       </div>
       <div className="space-y-1">
-        <div className="text-lg font-bold">
+        <div className="text-lg font-semibold">
           {data.formattedCoverage}
         </div>
         <div className="text-xs text-gray-600 dark:text-gray-400">
           Premium: {data.formattedPremium}
         </div>
-        <div className="text-xs text-gray-500 dark:text-gray-500">
+        <div className="text-xs text-gray-500 dark:text-gray-400">
           {data.policyCount} {data.policyCount === 1 ? 'policy' : 'policies'}
         </div>
       </div>
@@ -319,35 +324,33 @@ const PolicyTypeNode = ({ data }) => {
 // Custom Individual Policy Node - Shows specific policy details
 const PolicyNode = ({ data }) => {
   const isDark = document.documentElement.classList.contains('dark')
-  
-  // Status color mapping
+
   const statusColors = {
     active: isDark ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-800',
     expired: isDark ? 'bg-red-900 text-red-300' : 'bg-red-100 text-red-800',
     cancelled: isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800',
   }
-  
+
+  const baseClasses = isDark
+    ? 'bg-gray-800 border-gray-600 text-slate-100 shadow'
+    : 'bg-white border-gray-300 text-slate-900 shadow'
+
   return (
-    <div 
-      className={`px-4 py-3 rounded-lg border-2 shadow-md ${
-        isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'
-      }`}
-      style={{
-        width: 220,
-        minHeight: 90,
-      }}
+    <div
+      className={`px-4 py-3 rounded-lg border-2 ${baseClasses}`}
+      style={{ width: 220, minHeight: 90 }}
     >
       <Handle
         type="target"
         position={Position.Left}
-        style={{ background: '#555' }}
+        style={{ background: '#2563eb' }}
       />
-      
+
       <div className="space-y-1">
         <div className="text-sm font-semibold truncate" title={data.label}>
           {data.label}
         </div>
-        <div className="text-base font-bold text-blue-600 dark:text-blue-400">
+        <div className="text-base font-semibold text-blue-600 dark:text-blue-400">
           {data.formattedCoverage}
         </div>
         <div className="text-xs text-gray-600 dark:text-gray-400">
@@ -380,6 +383,13 @@ const InsuranceMappingTab = () => {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const reactFlowWrapper = useRef(null)
   const { fitView, getNodes } = useReactFlow()
+  const isDarkMode = typeof window !== 'undefined' && document.documentElement.classList.contains('dark')
+
+  const canvasStyle = React.useMemo(() => ({
+    backgroundColor: isDarkMode ? '#0f172a' : '#f8fafc',
+    height: isFullscreen ? 'calc(100vh - 96px)' : 'calc(100vh - 280px)',
+    minHeight: isFullscreen ? '100%' : '600px'
+  }), [isFullscreen, isDarkMode])
 
   // Fetch insurance hierarchy data
   const {
@@ -407,6 +417,10 @@ const InsuranceMappingTab = () => {
         },
       }
     }
+
+    const isDarkMode = typeof window !== 'undefined' && document.documentElement.classList.contains('dark')
+    const primaryEdgeColor = isDarkMode ? '#60a5fa' : '#3b82f6'
+    const secondaryEdgeColor = isDarkMode ? '#4b5563' : '#6b7280'
 
     const coerceNumber = (value) => {
       if (value == null) return 0
@@ -477,6 +491,7 @@ const InsuranceMappingTab = () => {
         id: rootId,
         type: 'root',
         position: { x: 0, y: 0 },
+        sourcePosition: Position.Right,
         data: {
           label: 'Total Insurance Coverage',
           formattedCoverage: String(formatCurrency(totals.totalCoverage)),
@@ -495,6 +510,8 @@ const InsuranceMappingTab = () => {
         id: typeId,
         type: 'policyType',
         position: { x: 0, y: 0 },
+        targetPosition: Position.Left,
+        sourcePosition: Position.Right,
         data: {
           label: typeSummary.label,
           formattedCoverage: String(formatCurrency(typeSummary.coverage)),
@@ -509,7 +526,13 @@ const InsuranceMappingTab = () => {
         target: typeId,
         type: 'smoothstep',
         animated: false,
-        style: { stroke: '#3b82f6', strokeWidth: 2 },
+        style: { stroke: primaryEdgeColor, strokeWidth: 2 },
+        markerEnd: {
+          type: 'arrowclosed',
+          width: 18,
+          height: 18,
+          color: primaryEdgeColor,
+        },
       })
 
       typeSummary.policies.forEach((policy) => {
@@ -519,6 +542,7 @@ const InsuranceMappingTab = () => {
           id: policyId,
           type: 'policy',
           position: { x: 0, y: 0 },
+          targetPosition: Position.Left,
           data: {
             label: String(policy.name || 'Unnamed Policy'),
             formattedCoverage: String(formatCurrency(policy.coverage)),
@@ -534,7 +558,13 @@ const InsuranceMappingTab = () => {
           target: policyId,
           type: 'smoothstep',
           animated: false,
-          style: { stroke: '#6b7280', strokeWidth: 1.5 },
+          style: { stroke: secondaryEdgeColor, strokeWidth: 1.5 },
+          markerEnd: {
+            type: 'arrowclosed',
+            width: 16,
+            height: 16,
+            color: secondaryEdgeColor,
+          },
         })
       })
     })
@@ -614,15 +644,18 @@ const InsuranceMappingTab = () => {
         0.08  // padding
       )
 
-      const isDarkMode = document.documentElement.classList.contains('dark')
+      const modeIsDark = document.documentElement.classList.contains('dark')
       const wrapperBg = window.getComputedStyle(reactFlowWrapper.current).backgroundColor
       const backgroundColor =
         wrapperBg && wrapperBg !== 'rgba(0, 0, 0, 0)'
           ? wrapperBg
-          : (isDarkMode ? '#0b1220' : '#ffffff')
+          : (modeIsDark ? '#0f172a' : '#ffffff')
+      const sanitizedBackground = sanitizeColor(backgroundColor, modeIsDark ? '#0f172a' : '#ffffff')
+      const primaryStroke = modeIsDark ? '#60a5fa' : '#3b82f6'
+      const secondaryStroke = modeIsDark ? '#94a3b8' : '#64748b'
 
       const canvas = await html2canvas(reactFlowElement, {
-        backgroundColor,
+        backgroundColor: sanitizedBackground,
         scale: exportScale,
         useCORS: true,
         allowTaint: false,
@@ -645,7 +678,7 @@ const InsuranceMappingTab = () => {
           if (clonedReactFlow) {
             clonedReactFlow.style.width = `${exportWidth}px`
             clonedReactFlow.style.height = `${exportHeight}px`
-            clonedReactFlow.style.backgroundColor = backgroundColor
+            clonedReactFlow.style.backgroundColor = sanitizedBackground
 
             clonedReactFlow
               .querySelectorAll(
@@ -669,11 +702,11 @@ const InsuranceMappingTab = () => {
               edgesLayer.style.width = '100%'
               edgesLayer.style.height = '100%'
               edgesLayer.querySelectorAll('path, marker path').forEach((path) => {
-                path.setAttribute('stroke', isDarkMode ? '#60a5fa' : '#3b82f6')
+                path.setAttribute('stroke', primaryStroke)
                 path.setAttribute('stroke-width', '2.2')
                 path.setAttribute('stroke-linecap', 'round')
                 if (path.hasAttribute('fill') && path.getAttribute('fill') !== 'none') {
-                  path.setAttribute('fill', isDarkMode ? '#60a5fa' : '#3b82f6')
+                  path.setAttribute('fill', primaryStroke)
                 }
               })
             }
@@ -684,12 +717,22 @@ const InsuranceMappingTab = () => {
               const panel = nodeEl.querySelector('div')
               if (!panel) return
 
-              panel.style.borderColor = '#2563eb'
-              panel.style.boxShadow = isDarkMode
+              panel.style.borderColor = primaryStroke
+              panel.style.boxShadow = modeIsDark
                 ? '0 24px 48px rgba(15, 23, 42, 0.55)'
                 : '0 18px 40px rgba(15, 23, 42, 0.18)'
-              panel.style.backgroundColor = isDarkMode ? '#13203b' : '#ffffff'
-              panel.style.color = isDarkMode ? '#e2e8f0' : '#1f2937'
+              panel.style.backgroundColor = modeIsDark ? '#1f2937' : '#ffffff'
+              panel.style.color = modeIsDark ? '#e2e8f0' : '#1f2937'
+
+              const textEls = panel.querySelectorAll('.text-gray-600, .text-gray-500, .dark\\:text-gray-400, .dark\\:text-gray-300, .text-xs, .text-sm')
+              textEls.forEach((el) => {
+                el.style.color = modeIsDark ? secondaryStroke : '#4b5563'
+              })
+
+              const highlightEls = panel.querySelectorAll('.text-blue-600, .dark\\:text-blue-400')
+              highlightEls.forEach((el) => {
+                el.style.color = primaryStroke
+              })
             })
           }
 
@@ -754,13 +797,13 @@ const InsuranceMappingTab = () => {
 
   // Fullscreen wrapper class
   const wrapperClass = isFullscreen
-    ? 'fixed inset-0 z-50 bg-white dark:bg-gray-900'
+    ? 'fixed inset-0 z-50 flex flex-col bg-white dark:bg-gray-900'
     : 'flex flex-col h-full'
 
   return (
     <div className={wrapperClass}>
       {/* Controls Bar */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         <div className="flex items-center gap-4">
           <h2 className="text-xl font-bold">Insurance Coverage Map</h2>
           <div className="text-sm text-gray-600 dark:text-gray-400">
@@ -795,7 +838,7 @@ const InsuranceMappingTab = () => {
       </div>
 
       {/* React Flow Visualization */}
-      <div ref={reactFlowWrapper} className="flex-1 bg-gray-50 dark:bg-gray-900">
+      <div ref={reactFlowWrapper} className="flex-1" style={canvasStyle}>
         <ReactFlow
           nodes={reactFlowNodes}
           edges={reactFlowEdges}
@@ -808,16 +851,64 @@ const InsuranceMappingTab = () => {
           defaultEdgeOptions={{
             type: 'smoothstep',
             animated: false,
+            markerEnd: {
+              type: 'arrowclosed',
+              width: 18,
+              height: 18,
+              color: isDarkMode ? '#60a5fa' : '#3b82f6',
+            },
           }}
+          className="react-flow-theme"
         >
-          <Background color="#aaa" gap={16} />
-          <Controls />
-          <MiniMap 
+          <Background color={isDarkMode ? '#1f2937' : '#d1d5db'} gap={18} />
+          <Controls className="react-flow__controls-themed" />
+          <MiniMap
             nodeStrokeWidth={3}
             zoomable
             pannable
+            className="react-flow__minimap-themed"
           />
         </ReactFlow>
+
+        <style jsx>{`
+          :global(.react-flow__controls-themed button) {
+            background-color: #ffffff !important;
+            border: 1px solid #d1d5db !important;
+            color: #1f2937 !important;
+          }
+
+          :global(.dark .react-flow__controls-themed button) {
+            background-color: #1f2937 !important;
+            border: 1px solid #4b5563 !important;
+            color: #e5e7eb !important;
+          }
+
+          :global(.react-flow__controls-themed button:hover) {
+            background-color: #f3f4f6 !important;
+          }
+
+          :global(.dark .react-flow__controls-themed button:hover) {
+            background-color: #374151 !important;
+          }
+
+          :global(.react-flow__controls-themed button svg) {
+            fill: currentColor !important;
+          }
+
+          :global(.react-flow__minimap-themed) {
+            background-color: #ffffff !important;
+            border: 1px solid #d1d5db !important;
+          }
+
+          :global(.dark .react-flow__minimap-themed) {
+            background-color: #1f2937 !important;
+            border: 1px solid #4b5563 !important;
+          }
+
+          :global(.react-flow__edge-path) {
+            stroke-width: 2 !important;
+          }
+        `}</style>
       </div>
     </div>
   )

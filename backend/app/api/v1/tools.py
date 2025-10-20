@@ -4,7 +4,6 @@ Tools API endpoints for advanced asset visualization and analysis.
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
 from typing import List, Dict, Any, Optional
 from uuid import UUID
 import logging
@@ -278,11 +277,11 @@ async def get_asset_hierarchy(
         
         # Fetch all active assets for user
         assets = db.query(Asset).filter(
-            and_(
-                Asset.user_id == current_user.id,
-                Asset.current_value.isnot(None),
-                Asset.current_value > 0
-            )
+            Asset.user_id == current_user.id,
+            Asset.current_value.isnot(None),
+            Asset.current_value > 0,
+            Asset.quantity.isnot(None),
+            Asset.quantity > 0
         ).all()
         
         if not assets:

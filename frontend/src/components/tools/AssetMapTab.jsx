@@ -86,6 +86,15 @@ const replaceOklchInValue = (value) => {
   return value.replace(/oklch\([^)]+\)/gi, (token) => oklchTokenToRGBA(token))
 }
 
+const sanitizeColor = (value, fallback) => {
+  if (!value) return fallback
+  const sanitized = replaceOklchInValue(value)
+  if (!sanitized || sanitized.toLowerCase().includes('oklch')) {
+    return fallback
+  }
+  return sanitized
+}
+
 const scrubCssRule = (rule) => {
   if (!rule) return
 
@@ -290,6 +299,13 @@ const AssetMapTab = () => {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const reactFlowWrapper = useRef(null)
   const { fitView, getNodes } = useReactFlow()
+  const isDarkMode = typeof window !== 'undefined' && document.documentElement.classList.contains('dark')
+
+  const canvasStyle = React.useMemo(() => ({
+    backgroundColor: isDarkMode ? '#0f172a' : '#f8fafc',
+    height: isFullscreen ? 'calc(100vh - 140px)' : 'calc(100vh - 320px)',
+    minHeight: isFullscreen ? '100%' : '600px'
+  }), [isFullscreen, isDarkMode])
 
   // Fetch asset hierarchy data
   const {
@@ -351,15 +367,23 @@ const AssetMapTab = () => {
 
   // Update nodes/edges when hierarchy data changes
   React.useEffect(() => {
-    console.log('🔄 AssetMapTab: useEffect triggered', { 
-      nodesCount: nodes.length, 
-      edgesCount: edges.length,
-      hierarchyData: !!hierarchyData,
-      hierarchyHasEdges: hierarchyData?.edges?.length 
-    })
     setNodes(nodes)
     setEdges(edges)
-  }, [hierarchyData]) // Only depend on source data to avoid infinite loop
+  }, [nodes, edges, setNodes, setEdges])
+
+  React.useEffect(() => {
+    if (nodes.length === 0) return
+    requestAnimationFrame(() => {
+      fitView({ padding: 0.2, duration: 400 })
+    })
+  }, [nodes.length, fitView])
+
+  React.useEffect(() => {
+    if (!isFullscreen || reactFlowNodes.length === 0) return
+    requestAnimationFrame(() => {
+      fitView({ padding: 0.2, duration: 300 })
+    })
+  }, [isFullscreen, fitView, reactFlowNodes.length])
 
   // Handle hierarchy reordering
   const handleHierarchyChange = useCallback((newHierarchy) => {
@@ -390,19 +414,18 @@ const AssetMapTab = () => {
         return
       }
 
-      // Calculate dimensions using React Flow utilities
-      const nodesBounds = getNodesBounds(nodes)
-      const imageWidth = nodesBounds.width
-      const imageHeight = nodesBounds.height
-      
-      // getViewportForBounds returns { x, y, zoom } in React Flow v12
+      const bounds = getNodesBounds(nodes)
+      const padding = 120
+      const exportWidth = Math.max(Math.ceil(bounds.width + padding * 2), 720)
+      const exportHeight = Math.max(Math.ceil(bounds.height + padding * 2), 540)
+      const exportScale = 2
       const viewport = getViewportForBounds(
-        nodesBounds,
-        imageWidth,
-        imageHeight,
-        0.5, // min zoom
-        2,   // max zoom
-        0.1  // padding
+        bounds,
+        exportWidth,
+        exportHeight,
+        0.15, // min zoom
+        2,    // max zoom
+        0.08  // padding
       )
 
       // Find the React Flow container (parent of both viewport and edges)
@@ -414,19 +437,28 @@ const AssetMapTab = () => {
 
       // Capture using html2canvas with the entire React Flow container
       // This includes BOTH .react-flow__viewport (nodes) AND .react-flow__edges (SVG sibling)
+      const modeIsDark = document.documentElement.classList.contains('dark')
+      const wrapperBg = window.getComputedStyle(reactFlowWrapper.current).backgroundColor
+      const backgroundColor =
+        wrapperBg && wrapperBg !== 'rgba(0, 0, 0, 0)'
+          ? wrapperBg
+          : (modeIsDark ? '#0f172a' : '#ffffff')
+      const sanitizedBackground = sanitizeColor(backgroundColor, modeIsDark ? '#0f172a' : '#ffffff')
+      const primaryStroke = modeIsDark ? '#60a5fa' : '#3b82f6'
+      const secondaryStroke = modeIsDark ? '#94a3b8' : '#64748b'
+
       const canvas = await html2canvas(reactFlowElement, {
-        backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
-        scale: 2,
+        backgroundColor: sanitizedBackground,
+        scale: exportScale,
         useCORS: true,
         allowTaint: false,
         logging: false,
-        // Capture specific region
-        width: imageWidth,
-        height: imageHeight,
-        windowWidth: imageWidth,
-        windowHeight: imageHeight,
-        x: 0,
-        y: 0,
+        width: exportWidth,
+        height: exportHeight,
+        windowWidth: exportWidth,
+        windowHeight: exportHeight,
+        scrollX: 0,
+        scrollY: 0,
         onclone: (clonedDoc) => {
           // Apply OKLCH sanitization
           scrubOklchFromStylesheets(clonedDoc)
@@ -437,47 +469,79 @@ const AssetMapTab = () => {
           // Find the cloned React Flow element
           const clonedReactFlow = clonedDoc.querySelector('.react-flow')
           if (clonedReactFlow) {
-            // Apply transform to show all content (viewport object has { x, y, zoom })
+            clonedReactFlow.style.width = `${exportWidth}px`
+            clonedReactFlow.style.height = `${exportHeight}px`
+            clonedReactFlow.style.backgroundColor = sanitizedBackground
+
+            clonedReactFlow
+              .querySelectorAll(
+                '.react-flow__controls, .react-flow__minimap, .react-flow__panel, .react-flow__attribution'
+              )
+              .forEach((panel) => {
+                panel.style.display = 'none'
+              })
+
             const clonedViewport = clonedReactFlow.querySelector('.react-flow__viewport')
             if (clonedViewport) {
+              clonedViewport.style.transformOrigin = '0 0'
               clonedViewport.style.transform = `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`
             }
             
             // Ensure edges layer is visible and properly styled
             const edgesLayer = clonedReactFlow.querySelector('.react-flow__edges')
             if (edgesLayer) {
+              edgesLayer.style.transformOrigin = '0 0'
               edgesLayer.style.transform = `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`
               edgesLayer.style.width = '100%'
               edgesLayer.style.height = '100%'
+              edgesLayer.querySelectorAll('path, marker path').forEach((path) => {
+                path.setAttribute('stroke', primaryStroke)
+                path.setAttribute('stroke-width', '2.2')
+                path.setAttribute('stroke-linecap', 'round')
+                if (path.hasAttribute('fill') && path.getAttribute('fill') !== 'none') {
+                  path.setAttribute('fill', primaryStroke)
+                }
+              })
             }
           }
           
-          // Remove text truncation
+          const nodeElements = clonedDoc.querySelectorAll('[data-id]')
+          nodeElements.forEach((node) => {
+            const innerDiv = node.querySelector('div')
+            if (!innerDiv) return
+
+            innerDiv.style.borderColor = primaryStroke
+            innerDiv.style.boxShadow = modeIsDark
+              ? '0 24px 48px rgba(15, 23, 42, 0.55)'
+              : '0 18px 40px rgba(15, 23, 42, 0.18)'
+            innerDiv.style.backgroundColor = modeIsDark ? '#1f2937' : '#ffffff'
+            innerDiv.style.color = modeIsDark ? '#e2e8f0' : '#1f2937'
+
+            const textEls = innerDiv.querySelectorAll('.text-gray-600, .text-gray-500, .dark\\:text-gray-400, .text-xs, .text-sm')
+            textEls.forEach((el) => {
+              el.style.color = modeIsDark ? secondaryStroke : '#4b5563'
+            })
+
+            const highlightEls = innerDiv.querySelectorAll('.text-blue-600, .dark\\:text-blue-400')
+            highlightEls.forEach((el) => {
+              el.style.color = primaryStroke
+            })
+          })
+
           const truncatedElements = clonedDoc.querySelectorAll('.truncate')
-          truncatedElements.forEach(el => {
+          truncatedElements.forEach((el) => {
             el.classList.remove('truncate')
             el.style.whiteSpace = 'normal'
             el.style.overflow = 'visible'
             el.style.textOverflow = 'clip'
-          })
-          
-          // Allow nodes to expand for full text
-          const nodeElements = clonedDoc.querySelectorAll('[data-id]')
-          nodeElements.forEach(node => {
-            const innerDiv = node.querySelector('div')
-            if (innerDiv) {
-              innerDiv.style.width = 'auto'
-              innerDiv.style.minWidth = '200px'
-              innerDiv.style.maxWidth = '300px'
-            }
           })
         }
       })
 
       // Create PDF
       const imgData = canvas.toDataURL('image/png')
-      const pdfWidth = canvas.width
-      const pdfHeight = canvas.height
+      const pdfWidth = canvas.width / exportScale
+      const pdfHeight = canvas.height / exportScale
       
       const pdf = new jsPDF({
         orientation: pdfWidth > pdfHeight ? 'landscape' : 'portrait',
@@ -525,7 +589,7 @@ const AssetMapTab = () => {
 
   // Fullscreen wrapper class
   const wrapperClass = isFullscreen
-    ? 'fixed inset-0 z-50 bg-white dark:bg-gray-900'
+    ? 'fixed inset-0 z-50 flex flex-col bg-white dark:bg-gray-900'
     : 'flex flex-col h-full'
 
   return (
@@ -586,13 +650,10 @@ const AssetMapTab = () => {
       </div>
 
       {/* React Flow Canvas */}
-      <div 
+      <div
         ref={reactFlowWrapper}
-        className="flex-1" 
-        style={{ 
-          height: isFullscreen ? 'calc(100vh - 120px)' : 'calc(100vh - 300px)', 
-          minHeight: isFullscreen ? '100%' : '600px'
-        }}
+        className="flex-1"
+        style={canvasStyle}
       >
         <ReactFlow
           nodes={reactFlowNodes}
@@ -602,67 +663,55 @@ const AssetMapTab = () => {
           nodeTypes={nodeTypes}
           fitView
           attributionPosition="bottom-right"
+          className="react-flow-theme"
         >
-          <Background />
-          <Controls 
-            className="react-flow__controls-custom"
-            style={{
-              button: {
-                backgroundColor: 'var(--controls-bg)',
-                borderColor: 'var(--controls-border)',
-                color: 'var(--controls-color)',
-              }
-            }}
-          />
+          <Background color={isDarkMode ? '#1f2937' : '#d1d5db'} gap={18} />
+          <Controls className="react-flow__controls-themed" />
           <MiniMap
             nodeStrokeWidth={3}
             zoomable
             pannable
-            className="react-flow__minimap-custom"
-            style={{
-              backgroundColor: 'var(--minimap-bg)',
-              border: '1px solid var(--minimap-border)',
-            }}
+            className="react-flow__minimap-themed"
           />
         </ReactFlow>
       </div>
 
       {/* Custom CSS for dark mode controls */}
       <style jsx>{`
-        :global(.react-flow__controls-custom button) {
-          background-color: white !important;
+        :global(.react-flow__controls-themed button) {
+          background-color: #ffffff !important;
           border: 1px solid #d1d5db !important;
           color: #1f2937 !important;
         }
-        
-        :global(.dark .react-flow__controls-custom button) {
-          background-color: #374151 !important;
+
+        :global(.dark .react-flow__controls-themed button) {
+          background-color: #1f2937 !important;
           border: 1px solid #4b5563 !important;
-          color: #f3f4f6 !important;
+          color: #e5e7eb !important;
         }
-        
-        :global(.react-flow__controls-custom button:hover) {
+
+        :global(.react-flow__controls-themed button:hover) {
           background-color: #f3f4f6 !important;
         }
-        
-        :global(.dark .react-flow__controls-custom button:hover) {
-          background-color: #4b5563 !important;
+
+        :global(.dark .react-flow__controls-themed button:hover) {
+          background-color: #374151 !important;
         }
-        
-        :global(.react-flow__controls-custom button svg) {
+
+        :global(.react-flow__controls-themed button svg) {
           fill: currentColor !important;
         }
-        
-        :global(.react-flow__minimap-custom) {
-          background-color: white !important;
+
+        :global(.react-flow__minimap-themed) {
+          background-color: #ffffff !important;
           border: 1px solid #d1d5db !important;
         }
-        
-        :global(.dark .react-flow__minimap-custom) {
+
+        :global(.dark .react-flow__minimap-themed) {
           background-color: #1f2937 !important;
           border: 1px solid #4b5563 !important;
         }
-        
+
         :global(.react-flow__edge-path) {
           stroke-width: 2 !important;
         }
