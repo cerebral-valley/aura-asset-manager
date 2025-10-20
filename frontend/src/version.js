@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.218.8',
+  version: 'v0.218.9',
   buildDate: '2025-10-20',
-  deploymentId: 'fix-insurance-mapping-loop',
-  description: 'Memoize currency helpers to stop Insurance Mapping tab from hitting React render loop'
+  deploymentId: 'insurance-active-pdf-alignment',
+  description: 'Filter to active insurance policies and align PDF export with on-screen layout'
 }
 
 export const getVersionDisplay = () => {

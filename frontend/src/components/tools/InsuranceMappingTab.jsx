@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useCurrency } from '../../hooks/useCurrency'
 import { toolsService } from '../../services/tools'
 import { queryKeys } from '../../lib/queryKeys'
-import { ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState, useReactFlow, Handle, Position, ReactFlowProvider, getNodesBounds, getViewportForBounds } from '@xyflow/react'
+import { ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState, useReactFlow, Handle, Position, ReactFlowProvider } from '@xyflow/react'
 import dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
 import { Button } from '../ui/button'
@@ -395,54 +395,115 @@ const InsuranceMappingTab = () => {
   })
 
   // Transform hierarchy data into React Flow nodes and edges
-  const { nodes, edges } = useMemo(() => {
-    if (!hierarchyData || !hierarchyData.root) {
-      return { nodes: [], edges: [] }
+  const { nodes, edges, stats } = useMemo(() => {
+    if (!hierarchyData || !Array.isArray(hierarchyData.types)) {
+      return {
+        nodes: [],
+        edges: [],
+        stats: {
+          policyCount: 0,
+          totalCoverage: 0,
+          totalAnnualPremium: 0,
+        },
+      }
     }
 
-    // Debug: Log the raw hierarchy data to inspect structure
-    console.log('🔍 Insurance Hierarchy Data:', JSON.stringify(hierarchyData, null, 2))
-
-    const nodes = []
-    const edges = []
-    let nodeIdCounter = 0
-
-    // Root node
-    const rootId = `root-${nodeIdCounter++}`
-    const rootNodeData = {
-      label: 'Total Insurance Coverage',
-      formattedCoverage: String(formatCurrency(hierarchyData.root.total_coverage || 0)),
-      formattedPremium: String(formatCurrency(hierarchyData.root.total_annual_premium || 0)),
-      policyCount: Number(hierarchyData.root.policy_count || 0),
+    const coerceNumber = (value) => {
+      if (value == null) return 0
+      const num = typeof value === 'string' ? Number(value.replace(/[^0-9.-]/g, '')) : Number(value)
+      return Number.isFinite(num) ? num : 0
     }
-    console.log('🔍 Root Node Data:', rootNodeData)
-    
-    nodes.push({
-      id: rootId,
-      type: 'root',
-      position: { x: 0, y: 0 },
-      data: rootNodeData,
-    })
 
-    // Policy type nodes and individual policy nodes
-    hierarchyData.types.forEach((typeData) => {
+    const activeTypeSummaries = hierarchyData.types.reduce((acc, typeData, index) => {
+      const policies = Array.isArray(typeData?.policies) ? typeData.policies : []
+      const activePolicies = policies.filter((policy) => {
+        const status = typeof policy?.status === 'string' ? policy.status.toLowerCase() : ''
+        return status === 'active' || status === ''
+      })
+
+      if (activePolicies.length === 0) {
+        return acc
+      }
+
+      const typeCoverage = activePolicies.reduce(
+        (sum, policy) => sum + coerceNumber(policy.coverage ?? policy.coverage_amount),
+        0
+      )
+      const typePremium = activePolicies.reduce(
+        (sum, policy) => sum + coerceNumber(policy.annual_premium ?? policy.premium_amount ?? policy.premium),
+        0
+      )
+
+      acc.push({
+        typeKey: typeData.type || typeData.type_label || `type-${index + 1}`,
+        label: typeData.type_label || typeData.type || 'Insurance',
+        coverage: typeCoverage,
+        premium: typePremium,
+        policyCount: activePolicies.length,
+        policies: activePolicies.map((policy) => ({
+          id: String(policy.id ?? policy.policy_id ?? `policy-${Math.random().toString(36).slice(2)}`),
+          name: policy.name || policy.policy_name || 'Unnamed Policy',
+          coverage: coerceNumber(policy.coverage ?? policy.coverage_amount),
+          annualPremium: coerceNumber(policy.annual_premium ?? policy.premium_amount ?? policy.premium),
+          provider: policy.provider || '',
+          status: typeof policy.status === 'string' ? policy.status : 'active',
+        })),
+      })
+
+      return acc
+    }, [])
+
+    const totals = activeTypeSummaries.reduce(
+      (summary, type) => {
+        summary.policyCount += type.policyCount
+        summary.totalCoverage += type.coverage
+        summary.totalAnnualPremium += type.premium
+        return summary
+      },
+      { policyCount: 0, totalCoverage: 0, totalAnnualPremium: 0 }
+    )
+
+    if (totals.policyCount === 0) {
+      return {
+        nodes: [],
+        edges: [],
+        stats: totals,
+      }
+    }
+
+    const rootId = 'root-0'
+    const graphNodes = [
+      {
+        id: rootId,
+        type: 'root',
+        position: { x: 0, y: 0 },
+        data: {
+          label: 'Total Insurance Coverage',
+          formattedCoverage: String(formatCurrency(totals.totalCoverage)),
+          formattedPremium: String(formatCurrency(totals.totalAnnualPremium)),
+          policyCount: totals.policyCount,
+        },
+      },
+    ]
+    const graphEdges = []
+    let nodeIdCounter = 1
+
+    activeTypeSummaries.forEach((typeSummary) => {
       const typeId = `type-${nodeIdCounter++}`
-      
-      // Add policy type node
-      nodes.push({
+
+      graphNodes.push({
         id: typeId,
         type: 'policyType',
         position: { x: 0, y: 0 },
         data: {
-          label: typeData.type_label,
-          formattedCoverage: String(formatCurrency(typeData.total_coverage || 0)),
-          formattedPremium: String(formatCurrency(typeData.total_annual_premium || 0)),
-          policyCount: Number(typeData.policy_count || 0),
+          label: typeSummary.label,
+          formattedCoverage: String(formatCurrency(typeSummary.coverage)),
+          formattedPremium: String(formatCurrency(typeSummary.premium)),
+          policyCount: typeSummary.policyCount,
         },
       })
 
-      // Edge from root to policy type
-      edges.push({
+      graphEdges.push({
         id: `${rootId}-${typeId}`,
         source: rootId,
         target: typeId,
@@ -451,25 +512,23 @@ const InsuranceMappingTab = () => {
         style: { stroke: '#3b82f6', strokeWidth: 2 },
       })
 
-      // Add individual policy nodes
-      typeData.policies.forEach((policy) => {
+      typeSummary.policies.forEach((policy) => {
         const policyId = `policy-${nodeIdCounter++}`
-        
-        nodes.push({
+
+        graphNodes.push({
           id: policyId,
           type: 'policy',
           position: { x: 0, y: 0 },
           data: {
             label: String(policy.name || 'Unnamed Policy'),
-            formattedCoverage: String(formatCurrency(policy.coverage || 0)),
-            formattedPremium: String(formatCurrency(policy.annual_premium || 0)),
+            formattedCoverage: String(formatCurrency(policy.coverage)),
+            formattedPremium: String(formatCurrency(policy.annualPremium)),
             provider: String(policy.provider || ''),
             status: String(policy.status || 'active'),
           },
         })
 
-        // Edge from policy type to individual policy
-        edges.push({
+        graphEdges.push({
           id: `${typeId}-${policyId}`,
           source: typeId,
           target: policyId,
@@ -480,7 +539,12 @@ const InsuranceMappingTab = () => {
       })
     })
 
-    return getLayoutedElements(nodes, edges)
+    const layouted = getLayoutedElements(graphNodes, graphEdges)
+
+    return {
+      ...layouted,
+      stats: totals,
+    }
   }, [hierarchyData, formatCurrency])
 
   const [reactFlowNodes, setNodes, onNodesChange] = useNodesState([])
@@ -488,14 +552,13 @@ const InsuranceMappingTab = () => {
 
   // Update nodes/edges when hierarchy data changes
   React.useEffect(() => {
+    setNodes(nodes)
+    setEdges(edges)
+
     if (nodes.length > 0) {
-      setNodes(nodes)
-      setEdges(edges)
-      
-      // Fit view after layout
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         fitView({ padding: 0.2, duration: 400 })
-      }, 100)
+      })
     }
   }, [nodes, edges, setNodes, setEdges, fitView])
 
@@ -504,7 +567,7 @@ const InsuranceMappingTab = () => {
     setIsFullscreen(prev => !prev)
   }, [])
 
-  // Export as PDF with OKLCH conversion
+  // Export as PDF recreating the on-screen layout
   const handleExportPDF = useCallback(async () => {
     if (!reactFlowWrapper.current) {
       toast.error('Visualization not ready for export')
@@ -514,47 +577,37 @@ const InsuranceMappingTab = () => {
     try {
       toast.info('Generating PDF export...')
 
-      const nodes = getNodes()
-      if (!nodes || nodes.length === 0) {
+      const currentNodes = getNodes()
+      if (!currentNodes || currentNodes.length === 0) {
         toast.error('No data to export')
         return
       }
 
-      // Calculate dimensions using React Flow utilities
-      const nodesBounds = getNodesBounds(nodes)
-      const imageWidth = nodesBounds.width
-      const imageHeight = nodesBounds.height
-      
-      // getViewportForBounds returns { x, y, zoom } in React Flow v12
-      const viewport = getViewportForBounds(
-        nodesBounds,
-        imageWidth,
-        imageHeight,
-        0.5, // min zoom
-        2,   // max zoom
-        0.1  // padding
-      )
-
-      // Find the React Flow container (parent of both viewport and edges)
       const reactFlowElement = reactFlowWrapper.current.querySelector('.react-flow')
       if (!reactFlowElement) {
         toast.error('Could not find visualization to export')
         return
       }
 
-      // Capture using html2canvas with the entire React Flow container
+      const viewportElement = reactFlowElement.querySelector('.react-flow__viewport')
+      const edgesElement = reactFlowElement.querySelector('.react-flow__edges')
+      const viewportTransform = viewportElement?.style?.transform || ''
+      const edgesTransform = edgesElement?.style?.transform || ''
+      const { width, height } = reactFlowElement.getBoundingClientRect()
+      const exportWidth = Math.max(Math.ceil(width), 1)
+      const exportHeight = Math.max(Math.ceil(height), 1)
+      const exportScale = 2
+
       const canvas = await html2canvas(reactFlowElement, {
-        backgroundColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
-        scale: 2,
+        backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#ffffff',
+        scale: exportScale,
         useCORS: true,
         allowTaint: false,
         logging: false,
-        width: imageWidth,
-        height: imageHeight,
-        windowWidth: imageWidth,
-        windowHeight: imageHeight,
-        x: 0,
-        y: 0,
+        width: exportWidth,
+        height: exportHeight,
+        windowWidth: exportWidth,
+        windowHeight: exportHeight,
         onclone: (clonedDoc) => {
           // Apply OKLCH sanitization
           scrubOklchFromStylesheets(clonedDoc)
@@ -565,47 +618,28 @@ const InsuranceMappingTab = () => {
           // Find the cloned React Flow element
           const clonedReactFlow = clonedDoc.querySelector('.react-flow')
           if (clonedReactFlow) {
-            // Apply transform to show all content (viewport object has { x, y, zoom })
             const clonedViewport = clonedReactFlow.querySelector('.react-flow__viewport')
-            if (clonedViewport) {
-              clonedViewport.style.transform = `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`
+            if (clonedViewport && viewportTransform) {
+              clonedViewport.style.transform = viewportTransform
             }
             
             // Ensure edges layer is visible and properly styled
             const edgesLayer = clonedReactFlow.querySelector('.react-flow__edges')
             if (edgesLayer) {
-              edgesLayer.style.transform = `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`
+              if (edgesTransform) {
+                edgesLayer.style.transform = edgesTransform
+              }
               edgesLayer.style.width = '100%'
               edgesLayer.style.height = '100%'
             }
           }
-          
-          // Remove text truncation
-          const truncatedElements = clonedDoc.querySelectorAll('.truncate')
-          truncatedElements.forEach(el => {
-            el.classList.remove('truncate')
-            el.style.whiteSpace = 'normal'
-            el.style.overflow = 'visible'
-            el.style.textOverflow = 'clip'
-          })
-          
-          // Allow nodes to expand for full text
-          const nodeElements = clonedDoc.querySelectorAll('[data-id]')
-          nodeElements.forEach(node => {
-            const innerDiv = node.querySelector('div')
-            if (innerDiv) {
-              innerDiv.style.width = 'auto'
-              innerDiv.style.minWidth = '200px'
-              innerDiv.style.maxWidth = '300px'
-            }
-          })
         }
       })
 
       // Create PDF with appropriate dimensions
       const imgData = canvas.toDataURL('image/png')
-      const pdfWidth = canvas.width / 2  // Divide by scale factor
-      const pdfHeight = canvas.height / 2
+      const pdfWidth = canvas.width / exportScale
+      const pdfHeight = canvas.height / exportScale
       
       const pdf = new jsPDF({
         orientation: pdfWidth > pdfHeight ? 'landscape' : 'portrait',
@@ -637,14 +671,14 @@ const InsuranceMappingTab = () => {
     )
   }
 
-  if (!hierarchyData || !hierarchyData.root || hierarchyData.root.policy_count === 0) {
+  if (stats.policyCount === 0) {
     return (
       <div className="p-8 text-center">
         <div className="max-w-2xl mx-auto">
           <Shield className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-          <h2 className="text-2xl font-bold mb-4">No Insurance Policies</h2>
+          <h2 className="text-2xl font-bold mb-4">No Active Insurance Policies</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Add insurance policies to visualize your coverage mapping.
+            Activate at least one insurance policy to visualize your coverage mapping.
           </p>
         </div>
       </div>
@@ -663,7 +697,7 @@ const InsuranceMappingTab = () => {
         <div className="flex items-center gap-4">
           <h2 className="text-xl font-bold">Insurance Coverage Map</h2>
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            {hierarchyData.root.policy_count} policies • {formatCurrency(hierarchyData.root.total_coverage)} coverage
+            {stats.policyCount} active {stats.policyCount === 1 ? 'policy' : 'policies'} • {formatCurrency(stats.totalCoverage)} coverage
           </div>
         </div>
         
