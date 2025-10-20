@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.218.15',
+  version: 'v0.218.16',
   buildDate: '2025-10-20',
-  deploymentId: 'map-color-depth-enhancements',
-  description: 'Polish depth-based theming and centering across planning visualisations'
+  deploymentId: 'var-lite-stress-test',
+  description: 'Add VaR stress testing, property planners, and move asset matrix into tools'
 }
 
 export const getVersionDisplay = () => {
