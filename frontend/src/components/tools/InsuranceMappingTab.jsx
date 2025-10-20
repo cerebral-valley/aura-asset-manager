@@ -400,22 +400,28 @@ const InsuranceMappingTab = () => {
       return { nodes: [], edges: [] }
     }
 
+    // Debug: Log the raw hierarchy data to inspect structure
+    console.log('🔍 Insurance Hierarchy Data:', JSON.stringify(hierarchyData, null, 2))
+
     const nodes = []
     const edges = []
     let nodeIdCounter = 0
 
     // Root node
     const rootId = `root-${nodeIdCounter++}`
+    const rootNodeData = {
+      label: 'Total Insurance Coverage',
+      formattedCoverage: String(formatCurrency(hierarchyData.root.total_coverage || 0)),
+      formattedPremium: String(formatCurrency(hierarchyData.root.total_annual_premium || 0)),
+      policyCount: Number(hierarchyData.root.policy_count || 0),
+    }
+    console.log('🔍 Root Node Data:', rootNodeData)
+    
     nodes.push({
       id: rootId,
       type: 'root',
       position: { x: 0, y: 0 },
-      data: {
-        label: 'Total Insurance Coverage',
-        formattedCoverage: String(formatCurrency(hierarchyData.root.total_coverage || 0)),
-        formattedPremium: String(formatCurrency(hierarchyData.root.total_annual_premium || 0)),
-        policyCount: Number(hierarchyData.root.policy_count || 0),
-      },
+      data: rootNodeData,
     })
 
     // Policy type nodes and individual policy nodes
