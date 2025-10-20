@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import AssetMapTab from '../components/tools/AssetMapTab'
 import InsuranceMappingTab from '../components/tools/InsuranceMappingTab'
-import BreakevenMatrixTab from '../components/tools/BreakevenMatrixTab'
+import LoanCalculatorTab from '../components/tools/LoanCalculatorTab'
 import Loading from '../components/ui/Loading'
 
 const ToolsPage = () => {
@@ -16,7 +16,7 @@ const ToolsPage = () => {
   const tabs = [
     { id: 'asset-mapping', label: 'Asset Mapping', component: AssetMapTab },
     { id: 'insurance-mapping', label: 'Insurance Mapping', component: InsuranceMappingTab },
-    { id: 'breakeven-matrix', label: 'Breakeven Matrix', component: BreakevenMatrixTab },
+    { id: 'loan-calculator', label: 'Loan Calculator', component: LoanCalculatorTab },
   ]
 
   const ActiveComponent = tabs.find(t => t.id === activeTab)?.component

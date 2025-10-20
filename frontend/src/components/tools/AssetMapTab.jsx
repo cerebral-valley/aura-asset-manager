@@ -615,7 +615,7 @@ const AssetMapTab = () => {
           <div className="flex gap-2 ml-auto">
             <Button
               onClick={toggleFullscreen}
-              variant="outline"
+              variant="secondary"
               size="sm"
               className="gap-2"
               title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
@@ -634,9 +634,10 @@ const AssetMapTab = () => {
             </Button>
             <Button
               onClick={handleExportPDF}
-              variant="outline"
+              variant="secondary"
               size="sm"
               className="gap-2"
+              title="Download as PDF"
             >
               <Download className="w-4 h-4" />
               Export PDF

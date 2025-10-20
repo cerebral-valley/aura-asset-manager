@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.218.12',
+  version: 'v0.218.13',
   buildDate: '2025-10-20',
-  deploymentId: 'flow-theme-alignment',
-  description: 'Align asset and insurance map theming, stabilize fullscreen, and clean OKLCH export errors'
+  deploymentId: 'loan-calculator-launch',
+  description: 'Add loan calculator tool, unify mapping controls, and refresh export styling'
 }
 
 export const getVersionDisplay = () => {

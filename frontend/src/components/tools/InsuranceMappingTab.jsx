@@ -815,24 +815,31 @@ const InsuranceMappingTab = () => {
           <Button
             variant="secondary"
             size="sm"
-            onClick={handleExportPDF}
-            title="Download as PDF"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Export PDF
-          </Button>
-          
-          <Button
-            variant="secondary"
-            size="sm"
             onClick={toggleFullscreen}
+            className="gap-2"
             title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
           >
             {isFullscreen ? (
-              <Minimize2 className="w-4 h-4" />
+              <>
+                <Minimize2 className="w-4 h-4" />
+                Exit Fullscreen
+              </>
             ) : (
-              <Maximize2 className="w-4 h-4" />
+              <>
+                <Maximize2 className="w-4 h-4" />
+                Fullscreen
+              </>
             )}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="gap-2"
+            onClick={handleExportPDF}
+            title="Download as PDF"
+          >
+            <Download className="w-4 h-4" />
+            Export PDF
           </Button>
         </div>
       </div>
