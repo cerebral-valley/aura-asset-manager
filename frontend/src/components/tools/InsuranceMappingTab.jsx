@@ -562,6 +562,17 @@ const InsuranceMappingTab = () => {
     }
   }, [nodes, edges, setNodes, setEdges, fitView])
 
+  // Re-fit view when toggling fullscreen so layout stays centered
+  React.useEffect(() => {
+    if (!isFullscreen || reactFlowNodes.length === 0) {
+      return
+    }
+
+    requestAnimationFrame(() => {
+      fitView({ padding: 0.2, duration: 300 })
+    })
+  }, [isFullscreen, fitView, reactFlowNodes.length])
+
   // Toggle fullscreen mode
   const toggleFullscreen = useCallback(() => {
     setIsFullscreen(prev => !prev)
@@ -590,24 +601,25 @@ const InsuranceMappingTab = () => {
       }
 
       const bounds = getNodesBounds(currentNodes)
-      const padding = 80
-      const exportWidth = Math.max(Math.ceil(bounds.width + padding * 2), 640)
-      const exportHeight = Math.max(Math.ceil(bounds.height + padding * 2), 480)
+      const padding = 120
+      const exportWidth = Math.max(Math.ceil(bounds.width + padding * 2), 720)
+      const exportHeight = Math.max(Math.ceil(bounds.height + padding * 2), 540)
       const exportScale = 2
       const viewport = getViewportForBounds(
         bounds,
         exportWidth,
         exportHeight,
-        0.2, // min zoom
-        1.5, // max zoom
-        0.05 // padding
+        0.15, // min zoom
+        2,    // max zoom
+        0.08  // padding
       )
 
       const isDarkMode = document.documentElement.classList.contains('dark')
-      const computedBg = window.getComputedStyle(reactFlowWrapper.current).backgroundColor
-      const backgroundColor = computedBg && computedBg !== 'rgba(0, 0, 0, 0)'
-        ? computedBg
-        : (isDarkMode ? '#0f172a' : '#ffffff')
+      const wrapperBg = window.getComputedStyle(reactFlowWrapper.current).backgroundColor
+      const backgroundColor =
+        wrapperBg && wrapperBg !== 'rgba(0, 0, 0, 0)'
+          ? wrapperBg
+          : (isDarkMode ? '#0b1220' : '#ffffff')
 
       const canvas = await html2canvas(reactFlowElement, {
         backgroundColor,
@@ -635,7 +647,11 @@ const InsuranceMappingTab = () => {
             clonedReactFlow.style.height = `${exportHeight}px`
             clonedReactFlow.style.backgroundColor = backgroundColor
 
-            clonedReactFlow.querySelectorAll('.react-flow__controls, .react-flow__minimap, .react-flow__attribution').forEach((panel) => {
+            clonedReactFlow
+              .querySelectorAll(
+                '.react-flow__controls, .react-flow__minimap, .react-flow__panel, .react-flow__attribution'
+              )
+              .forEach((panel) => {
               panel.style.display = 'none'
             })
 
@@ -652,10 +668,13 @@ const InsuranceMappingTab = () => {
               edgesLayer.style.transform = `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`
               edgesLayer.style.width = '100%'
               edgesLayer.style.height = '100%'
-              edgesLayer.querySelectorAll('path').forEach((path) => {
+              edgesLayer.querySelectorAll('path, marker path').forEach((path) => {
                 path.setAttribute('stroke', isDarkMode ? '#60a5fa' : '#3b82f6')
-                path.setAttribute('stroke-width', '2')
+                path.setAttribute('stroke-width', '2.2')
                 path.setAttribute('stroke-linecap', 'round')
+                if (path.hasAttribute('fill') && path.getAttribute('fill') !== 'none') {
+                  path.setAttribute('fill', isDarkMode ? '#60a5fa' : '#3b82f6')
+                }
               })
             }
 
@@ -663,18 +682,14 @@ const InsuranceMappingTab = () => {
             const nodeElements = clonedReactFlow.querySelectorAll('[data-id]')
             nodeElements.forEach((nodeEl) => {
               const panel = nodeEl.querySelector('div')
-              if (panel) {
-                panel.style.borderColor = isDarkMode ? '#3b82f6' : '#3b82f6'
-                panel.style.boxShadow = isDarkMode
-                  ? '0 18px 36px rgba(15, 23, 42, 0.45)'
-                  : '0 16px 32px rgba(15, 23, 42, 0.18)'
-                if (panel.classList.contains('bg-gray-800')) {
-                  panel.style.backgroundColor = '#111a2b'
-                }
-                if (panel.classList.contains('bg-gray-900')) {
-                  panel.style.backgroundColor = '#0b1220'
-                }
-              }
+              if (!panel) return
+
+              panel.style.borderColor = '#2563eb'
+              panel.style.boxShadow = isDarkMode
+                ? '0 24px 48px rgba(15, 23, 42, 0.55)'
+                : '0 18px 40px rgba(15, 23, 42, 0.18)'
+              panel.style.backgroundColor = isDarkMode ? '#13203b' : '#ffffff'
+              panel.style.color = isDarkMode ? '#e2e8f0' : '#1f2937'
             })
           }
 

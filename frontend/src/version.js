@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.218.10',
+  version: 'v0.218.11',
   buildDate: '2025-10-20',
-  deploymentId: 'insurance-export-theme-tune',
-  description: 'Polish insurance mapping export to match on-screen styling and remove inactive visuals'
+  deploymentId: 'insurance-export-fullscreen-fixes',
+  description: 'Restore fullscreen fitView and rebuild PDF export to capture dark-mode styling reliably'
 }
 
 export const getVersionDisplay = () => {
