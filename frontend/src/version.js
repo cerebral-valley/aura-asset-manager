@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.217',
-  buildDate: '2025-10-19',
-  deploymentId: 'insurance-mapping-visualization',
-  description: 'NEW: Insurance Coverage Map with React Flow visualization - shows policy hierarchy by type with coverage and premium totals, includes PDF export'
+  version: 'v0.218.2',
+  buildDate: '2025-10-20',
+  deploymentId: 'insurance-hierarchy-422-fix',
+  description: 'FIX: Insurance hierarchy 422 error - fixed SQLAlchemy Decimal type conversions and None handling in annualize_premium function'
 }
 
 export const getVersionDisplay = () => {

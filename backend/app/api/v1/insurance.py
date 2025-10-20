@@ -658,7 +658,7 @@ async def get_insurance_hierarchy(
         # Helper function to annualize premiums
         def annualize_premium(premium_amount, premium_frequency):
             if not premium_amount:
-                return 0
+                return 0.0
             
             freq_map = {
                 'monthly': 12,
@@ -667,7 +667,9 @@ async def get_insurance_hierarchy(
                 'annual': 1
             }
             
-            multiplier = freq_map.get(premium_frequency.lower() if premium_frequency else 'annually', 1)
+            # Handle None premium_frequency safely
+            freq_lower = premium_frequency.lower() if premium_frequency else 'annually'
+            multiplier = freq_map.get(freq_lower, 1)
             return float(premium_amount) * multiplier
         
         # Type labels mapping
@@ -692,8 +694,11 @@ async def get_insurance_hierarchy(
             policy_type = policy.policy_type or 'other'
             
             # Calculate annualized premium for this policy
-            annual_premium = annualize_premium(policy.premium_amount, policy.premium_frequency)
-            coverage = float(policy.coverage_amount) if policy.coverage_amount else 0
+            # Ensure we have actual Python values, not SQLAlchemy Column objects
+            # Note: type: ignore comments are for Pylance - at runtime these are Decimal/None, not Column objects
+            premium_amt = float(policy.premium_amount) if policy.premium_amount is not None else 0.0  # type: ignore
+            annual_premium = annualize_premium(premium_amt, policy.premium_frequency)
+            coverage = float(policy.coverage_amount) if policy.coverage_amount is not None else 0.0  # type: ignore
             
             # Add to totals
             total_coverage += coverage
@@ -701,11 +706,13 @@ async def get_insurance_hierarchy(
             
             # Initialize type group if not exists
             if policy_type not in types_data:
+                # Ensure policy_type is a string, not a Column
+                policy_type_str = str(policy_type) if policy_type else 'other'  # type: ignore
                 types_data[policy_type] = {
-                    'type': policy_type,
-                    'type_label': type_labels.get(policy_type, policy_type.capitalize() + ' Insurance'),
-                    'total_coverage': 0,
-                    'total_annual_premium': 0,
+                    'type': policy_type_str,
+                    'type_label': type_labels.get(policy_type_str, policy_type_str.capitalize() + ' Insurance'),
+                    'total_coverage': 0.0,
+                    'total_annual_premium': 0.0,
                     'policy_count': 0,
                     'policies': []
                 }
@@ -715,15 +722,15 @@ async def get_insurance_hierarchy(
             types_data[policy_type]['total_annual_premium'] += annual_premium
             types_data[policy_type]['policy_count'] += 1
             
-            # Add individual policy data
+            # Add individual policy data - ensure all values are Python primitives
             types_data[policy_type]['policies'].append({
                 'id': str(policy.id),
-                'name': policy.policy_name or 'Unnamed Policy',
+                'name': str(policy.policy_name) if policy.policy_name else 'Unnamed Policy',  # type: ignore
                 'coverage': coverage,
                 'annual_premium': annual_premium,
-                'provider': policy.provider or 'Unknown Provider',
-                'status': policy.status or 'active',
-                'policy_number': policy.policy_number
+                'provider': str(policy.provider) if policy.provider else 'Unknown Provider',  # type: ignore
+                'status': str(policy.status) if policy.status else 'active',  # type: ignore
+                'policy_number': str(policy.policy_number) if policy.policy_number else None  # type: ignore
             })
         
         # Convert dict to sorted list
