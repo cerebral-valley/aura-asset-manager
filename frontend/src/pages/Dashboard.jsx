@@ -4,7 +4,13 @@ import { useAuth } from '../hooks/useAuth'
 import EnhancedValueDisplayCard from '../components/dashboard/EnhancedValueDisplayCard.jsx'
 import EnhancedAssetAllocationChart from '../components/dashboard/EnhancedAssetAllocationChart.jsx'
 import EnhancedInsurancePolicyBreakdown from '../components/dashboard/EnhancedInsurancePolicyBreakdown.jsx'
+import NetWorthGoalCard from '../components/dashboard/NetWorthGoalCard.jsx'
+import ProfileSnapshotCard from '../components/dashboard/ProfileSnapshotCard.jsx'
+import RecentTransactionsCard from '../components/dashboard/RecentTransactionsCard.jsx'
 import { dashboardService } from '../services/dashboard.js'
+import { goalsService } from '../services/goals.js'
+import { profileService } from '../services/profile.js'
+import { transactionsService } from '../services/transactions.js'
 import { queryKeys } from '../lib/queryKeys'
 import { getVersionDisplay } from '../version.js'
 import { Wallet, Shield, TrendingUp } from 'lucide-react'
@@ -42,6 +48,35 @@ const Dashboard = () => {
       error('Dashboard', 'fetch:error', err)
     },
   })
+
+  // Fetch goals data
+  const { data: goalsData } = useQuery({
+    queryKey: queryKeys.goals.list(),
+    queryFn: ({ signal }) => goalsService.getGoals({ signal }),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  // Fetch profile data
+  const { data: profileData } = useQuery({
+    queryKey: queryKeys.profile.detail(),
+    queryFn: () => profileService.getProfile(),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  // Fetch transactions data
+  const { data: transactionsData } = useQuery({
+    queryKey: queryKeys.transactions.list(),
+    queryFn: ({ signal }) => transactionsService.getTransactions({ signal }),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  // Find primary net worth goal
+  const netWorthGoal = goalsData?.find(goal => 
+    goal.goal_type === 'net_worth' && !goal.goal_completed
+  )
 
   // Convert TanStack Query error to string for display
   const errorMessage = isError && queryError ? (() => {
@@ -176,6 +211,28 @@ const Dashboard = () => {
             <EnhancedInsurancePolicyBreakdown 
               title="Insurance Policy Breakdown"
             />
+          </SafeSection>
+        </BlurFade>
+      </div>
+
+      {/* Additional Insights */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <BlurFade delay={0.35}>
+          <SafeSection debugId="Dashboard:NetWorthGoal">
+            <NetWorthGoalCard 
+              goal={netWorthGoal}
+              currentNetWorth={dashboardData?.net_worth || 0}
+            />
+          </SafeSection>
+        </BlurFade>
+        <BlurFade delay={0.4}>
+          <SafeSection debugId="Dashboard:ProfileSnapshot">
+            <ProfileSnapshotCard profile={profileData} />
+          </SafeSection>
+        </BlurFade>
+        <BlurFade delay={0.45}>
+          <SafeSection debugId="Dashboard:RecentTransactions">
+            <RecentTransactionsCard transactions={transactionsData} />
           </SafeSection>
         </BlurFade>
       </div>

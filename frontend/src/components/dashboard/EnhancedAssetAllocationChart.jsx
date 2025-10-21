@@ -97,8 +97,9 @@ const EnhancedAssetAllocationChart = ({ data, title = "Asset Allocation" }) => {
               <Tooltip 
                 formatter={formatTooltip}
                 contentStyle={{
-                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  backgroundColor: 'hsl(var(--popover))',
+                  color: 'hsl(var(--popover-foreground))',
+                  border: '1px solid hsl(var(--border))',
                   borderRadius: '8px',
                   backdropFilter: 'blur(10px)',
                 }}
