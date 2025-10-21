@@ -1,0 +1,200 @@
+import React, { useState, useEffect } from 'react'
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
+import { CardContent, CardHeader, CardTitle } from '../ui/card.jsx'
+import { useCurrency } from '../../hooks/useCurrency.jsx'
+import { useChartColors } from '../../hooks/useChartColors'
+import MagicCard from '../magicui/MagicCard.jsx'
+import NumberTicker from '../magicui/NumberTicker.jsx'
+import Orbit from '../magicui/Orbit.jsx'
+import { motion } from 'framer-motion'
+import apiClient from '@/lib/api'
+
+const EnhancedInsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown" }) => {
+  const { formatCurrency } = useCurrency()
+  const { getColor } = useChartColors()
+  const [policies, setPolicies] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  // Fetch insurance policies
+  useEffect(() => {
+    const fetchPolicies = async () => {
+      try {
+        const response = await apiClient.get('/insurance/')
+        setPolicies(response.data || [])
+      } catch (error) {
+        console.error('Failed to fetch insurance policies:', error)
+        setPolicies([]) // Set empty array on error
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPolicies()
+  }, [])
+
+  // Create pie chart data from policies
+  const pieData = React.useMemo(() => {
+    if (!policies.length) return []
+
+    const typeCounts = policies.reduce((acc, policy) => {
+      const type = policy.policy_type || 'Other'
+      acc[type] = (acc[type] || 0) + 1
+      return acc
+    }, {})
+
+    return Object.entries(typeCounts).map(([name, value]) => ({
+      name: name.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      value
+    }))
+  }, [policies])
+
+  // Calculate total coverage
+  const totalCoverage = policies.reduce((sum, p) => {
+    const coverage = parseFloat(p.coverage_amount) || 0
+    return sum + coverage
+  }, 0)
+
+  const formatTooltip = (value, name) => {
+    return [`${value} policies`, name]
+  }
+
+  if (loading) {
+    return (
+      <MagicCard 
+        gradientColor="#ec4899" 
+        gradientSize={300}
+        gradientOpacity={0.6}
+      >
+        <CardHeader>
+          <CardTitle className="text-foreground">{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-64">
+            <Orbit size={60} />
+          </div>
+        </CardContent>
+      </MagicCard>
+    )
+  }
+
+  if (!policies.length || !pieData.length) {
+    return (
+      <MagicCard 
+        gradientColor="#ec4899" 
+        gradientSize={300}
+        gradientOpacity={0.6}
+      >
+        <CardHeader>
+          <CardTitle className="text-foreground">{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-64 text-muted-foreground">
+            No insurance policies found
+          </div>
+        </CardContent>
+      </MagicCard>
+    )
+  }
+
+  return (
+    <MagicCard 
+      gradientColor="#ec4899" 
+      gradientSize={300}
+      gradientOpacity={0.6}
+      className="backdrop-blur-sm"
+    >
+      <CardHeader>
+        <CardTitle className="text-foreground flex items-center gap-2">
+          <motion.span
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            {title}
+          </motion.span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <ResponsiveContainer width="100%" height={350}>
+            <PieChart margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+              <Pie
+                data={pieData}
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                fill={getColor(0)}
+                dataKey="value"
+                label={({ name, value, percent }) => 
+                  percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
+                }
+                animationBegin={0}
+                animationDuration={800}
+                animationEasing="ease-out"
+              >
+                {pieData.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={getColor(index)}
+                    style={{
+                      filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))',
+                      transition: 'all 0.3s ease',
+                    }}
+                  />
+                ))}
+              </Pie>
+              <Tooltip 
+                formatter={formatTooltip}
+                contentStyle={{
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '8px',
+                  backdropFilter: 'blur(10px)',
+                }}
+              />
+              <Legend 
+                wrapperStyle={{ paddingTop: '20px' }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </motion.div>
+        
+        {/* Enhanced Summary stats with animations */}
+        <motion.div 
+          className="mt-4 pt-4 border-t border-white/10"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400 }}
+            >
+              <span className="text-muted-foreground">Total Policies:</span>
+              <span className="ml-2 font-semibold text-foreground">
+                <NumberTicker value={policies.length} decimalPlaces={0} />
+              </span>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400 }}
+            >
+              <span className="text-muted-foreground">Total Coverage:</span>
+              <span className="ml-2 font-semibold text-foreground font-mono">
+                {formatCurrency(0).replace(/[\d.,]+/, '')}
+                <NumberTicker value={totalCoverage} decimalPlaces={2} />
+              </span>
+            </motion.div>
+          </div>
+        </motion.div>
+      </CardContent>
+    </MagicCard>
+  )
+}
+
+export default EnhancedInsurancePolicyBreakdown

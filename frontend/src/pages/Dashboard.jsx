@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../hooks/useAuth'
 import EnhancedValueDisplayCard from '../components/dashboard/EnhancedValueDisplayCard.jsx'
-import AssetAllocationChart from '../components/dashboard/AssetAllocationChart.jsx'
-import InsurancePolicyBreakdown from '../components/dashboard/InsurancePolicyBreakdown.jsx'
+import EnhancedAssetAllocationChart from '../components/dashboard/EnhancedAssetAllocationChart.jsx'
+import EnhancedInsurancePolicyBreakdown from '../components/dashboard/EnhancedInsurancePolicyBreakdown.jsx'
 import { dashboardService } from '../services/dashboard.js'
 import { queryKeys } from '../lib/queryKeys'
 import { getVersionDisplay } from '../version.js'
@@ -165,7 +165,7 @@ const Dashboard = () => {
       <div className="grid gap-6 lg:grid-cols-2">
         <BlurFade delay={0.25}>
           <SafeSection debugId="Dashboard:AssetAllocationChart">
-            <AssetAllocationChart 
+            <EnhancedAssetAllocationChart 
               data={dashboardData?.asset_allocation || []}
               title="Your Portfolio Composition"
             />
@@ -173,7 +173,7 @@ const Dashboard = () => {
         </BlurFade>
         <BlurFade delay={0.3}>
           <SafeSection debugId="Dashboard:InsurancePolicyBreakdown">
-            <InsurancePolicyBreakdown 
+            <EnhancedInsurancePolicyBreakdown 
               title="Insurance Policy Breakdown"
             />
           </SafeSection>
