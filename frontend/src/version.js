@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.218.17',
+  version: 'v0.219.0',
   buildDate: '2025-10-21',
-  deploymentId: 'user-guide-comprehensive-sections',
-  description: 'Add comprehensive Asset Types, Insurance Types, and Tools guide sections with Magic UI components'
+  deploymentId: 'dashboard-magic-ui-refactor',
+  description: 'Refactor Dashboard with Magic UI components - animated gradient, enhanced value cards with number tickers, sparkle effects, and staggered blur fade animations'
 }
 
 export const getVersionDisplay = () => {
