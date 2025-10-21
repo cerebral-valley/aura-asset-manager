@@ -9,6 +9,8 @@ const UserGuide = () => {
   const { isDark } = useTheme();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('getting-started');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
 
   const sections = [
     { id: 'getting-started', title: 'Getting Started', icon: '🚀' },
@@ -22,7 +24,7 @@ const UserGuide = () => {
     { id: 'tools', title: 'Tools & Features', icon: '🛠️' },
     { id: 'ai-analysis', title: 'AI Analysis', icon: '🤖' },
     { id: 'tips', title: 'Tips & Best Practices', icon: '💡' },
-    { id: 'release-notes', title: 'Release Notes', icon: '📋' }
+    { id: 'index', title: 'Index', icon: '�' }
   ];
 
   const scrollToSection = (sectionId) => {
@@ -33,11 +35,69 @@ const UserGuide = () => {
     }
   };
 
+  // Search functionality
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    // Search through all headings and section content
+    const results = [];
+    const searchTerm = query.toLowerCase();
+
+    sections.forEach(section => {
+      const element = document.getElementById(section.id);
+      if (element) {
+        // Check section title
+        if (section.title.toLowerCase().includes(searchTerm)) {
+          results.push({
+            sectionId: section.id,
+            sectionTitle: section.title,
+            matchType: 'section',
+            text: section.title
+          });
+        }
+
+        // Check all headings within section
+        const headings = element.querySelectorAll('h3, h4');
+        headings.forEach(heading => {
+          if (heading.textContent.toLowerCase().includes(searchTerm)) {
+            results.push({
+              sectionId: section.id,
+              sectionTitle: section.title,
+              matchType: 'heading',
+              text: heading.textContent
+            });
+          }
+        });
+
+        // Check paragraphs for content matches
+        const paragraphs = element.querySelectorAll('p');
+        paragraphs.forEach((paragraph, index) => {
+          if (paragraph.textContent.toLowerCase().includes(searchTerm) && index < 3) {
+            const text = paragraph.textContent.substring(0, 100) + '...';
+            results.push({
+              sectionId: section.id,
+              sectionTitle: section.title,
+              matchType: 'content',
+              text: text
+            });
+          }
+        });
+      }
+    });
+
+    setSearchResults(results.slice(0, 10)); // Limit to top 10 results
+  };
+
   return (
     <div className={`min-h-screen ${isDark ? 'bg-black text-neutral-100' : 'bg-gray-50 text-gray-900'}`}>
       <div className="flex">
-        {/* Sidebar Navigation */}
-        <div className={`fixed left-0 top-0 h-full w-64 ${isDark ? 'bg-neutral-900 border-neutral-700' : 'bg-white border-gray-200'} border-r overflow-y-auto z-50`}>
+        {/* Sidebar Navigation - Reduced width for better content centering */}
+        <div className={`fixed left-0 top-0 h-full w-56 ${isDark ? 'bg-neutral-900 border-neutral-700' : 'bg-white border-gray-200'} border-r overflow-y-auto z-50`}>
           <div className="p-6">
             <div className="flex items-center gap-3 mb-8">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
@@ -85,18 +145,95 @@ const UserGuide = () => {
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="ml-64 flex-1">
+        {/* Main Content - Adjusted margin to match reduced sidebar width */}
+        <div className="ml-56 flex-1">
           {/* Wider container for two-column layout */}
           <div className="max-w-7xl mx-auto p-8">
             {/* Header - spans full width, not in columns */}
-            <div className="mb-12">
+            <div className="mb-8">
               <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Aura Asset Manager
               </h1>
               <p className={`text-xl ${isDark ? 'text-neutral-300' : 'text-gray-600'}`}>
                 Complete User Guide & Documentation
               </p>
+            </div>
+
+            {/* Search Bar */}
+            <div className="mb-8">
+              <div className="relative max-w-2xl">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  placeholder="Search topics, sections, or content..."
+                  className={`w-full px-4 py-3 pl-12 rounded-lg border ${
+                    isDark
+                      ? 'bg-neutral-900 border-neutral-700 text-neutral-100 placeholder-neutral-500'
+                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                  } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                />
+                <svg
+                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-neutral-500' : 'text-gray-400'}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+
+              {/* Search Results Dropdown */}
+              {searchResults.length > 0 && (
+                <div className={`mt-2 max-w-2xl rounded-lg border shadow-lg ${
+                  isDark
+                    ? 'bg-neutral-900 border-neutral-700'
+                    : 'bg-white border-gray-200'
+                }`}>
+                  <div className="p-2 max-h-96 overflow-y-auto">
+                    {searchResults.map((result, index) => (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          scrollToSection(result.sectionId);
+                          setSearchQuery('');
+                          setSearchResults([]);
+                        }}
+                        className={`w-full text-left p-3 rounded-lg transition-colors ${
+                          isDark
+                            ? 'hover:bg-neutral-800'
+                            : 'hover:bg-gray-100'
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <span className="text-xs px-2 py-1 rounded-full shrink-0 ${
+                            result.matchType === 'section'
+                              ? 'bg-blue-500/20 text-blue-400'
+                              : result.matchType === 'heading'
+                              ? 'bg-purple-500/20 text-purple-400'
+                              : 'bg-gray-500/20 text-gray-400'
+                          }">
+                            {result.matchType === 'section' ? 'Section' : result.matchType === 'heading' ? 'Heading' : 'Content'}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm font-medium mb-1 ${isDark ? 'text-neutral-200' : 'text-gray-900'}`}>
+                              {result.sectionTitle}
+                            </p>
+                            <p className={`text-xs truncate ${isDark ? 'text-neutral-400' : 'text-gray-600'}`}>
+                              {result.text}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Multi-column content container */}
@@ -2115,322 +2252,311 @@ const UserGuide = () => {
               </div>
             </section>
 
-            {/* Release Notes Section */}
-            <section id="release-notes" className="mb-16">
-              <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
-                <span className="text-2xl">📋</span>
-                Release Notes
-              </h2>
-              
-              <div className="space-y-6">
-                {/* v0.126 */}
-                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm border-2 ${isDark ? 'border-blue-600' : 'border-blue-300'}`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold text-blue-600 flex items-center gap-2">
-                      <span className="text-2xl">🌟</span>
-                      Version v0.126
-                    </h3>
-                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-800'} font-medium`}>
-                      Latest • 2024-12-19
-                    </span>
-                  </div>
-                  <h4 className="font-semibold mb-3">Strategic Asset Classification System & Comprehensive User Guide Enhancement</h4>
-                  <ul className="space-y-2 text-sm mb-4">
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🎯</span>
-                      <span><strong>Strategic Asset Classification:</strong> Advanced Asset Purpose system with 7 strategic categories including Hyper Growth, Financial Security, Emergency Fund, Children's Education, Retirement Fund, and Speculation</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">⏰</span>
-                      <span><strong>Time Horizon Planning:</strong> Comprehensive temporal classification system with Short Term (&lt;1 year), Medium Term (1-3 years), and Long Term (&gt;3 years) strategic framework</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">💧</span>
-                      <span><strong>Liquidity Management:</strong> Enhanced liquidity status classification for better cash flow planning and emergency preparedness</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">📚</span>
-                      <span><strong>Comprehensive User Guide:</strong> Complete overhaul of Managing Assets section with detailed explanations of all strategic parameters, transaction types, and portfolio construction best practices</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🔄</span>
-                      <span><strong>Enhanced Transaction System:</strong> 8 advanced transaction types including Create Asset, Update Market Value, Strategic Reclassification, and comprehensive lifecycle management</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🎨</span>
-                      <span><strong>Theme Consistency:</strong> Unified button styling across all pages with proper theme-aware color schemes and consistent user experience</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🗄️</span>
-                      <span><strong>Database Schema Updates:</strong> Complete alignment of asset classification data with frontend options, ensuring consistent strategic planning capabilities</span>
-                    </li>
-                  </ul>
-                  <div className={`text-sm p-4 rounded-lg ${isDark ? 'bg-gradient-to-r from-blue-900/40 to-purple-900/40 text-blue-200' : 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-800'} border ${isDark ? 'border-blue-800' : 'border-blue-200'}`}>
-                    <strong>Strategic Innovation:</strong> This release transforms Aura from a simple asset tracker into a comprehensive financial planning platform. The new strategic classification system enables users to understand not just what they own, but how each asset contributes to their overall financial goals and timeline. Enhanced documentation empowers users to make informed decisions about portfolio construction and asset allocation strategies.
-                  </div>
-                </div>
-                
-                {/* v0.125 */}
-                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold text-blue-600">Version v0.125</h3>
-                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-800'}`}>
-                      2024-12-19
-                    </span>
-                  </div>
-                  <h4 className="font-semibold mb-3">Complete transaction system overhaul with enhanced Assets table</h4>
-                  <ul className="space-y-2 text-sm mb-4">
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🔄</span>
-                      <span>Transaction system enhancement with Asset Purpose strategic classification</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">📊</span>
-                      <span>New transaction types for comprehensive asset lifecycle management</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">💰</span>
-                      <span>Values column fix for accurate financial reporting</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🗂️</span>
-                      <span>Enhanced Assets table with improved data presentation</span>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* v0.107 */}
-                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold text-blue-600">Version v0.107</h3>
-                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-800'}`}>
-                      2025-09-16
-                    </span>
-                  </div>
-                  <h4 className="font-semibold mb-3">Complete TanStack Query mutations with cross-tab broadcasting</h4>
-                  <ul className="space-y-2 text-sm mb-4">
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">✅</span>
-                      <span>Insurance.jsx: Implement useMutation with optimistic updates and mutationHelpers broadcasting</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">✅</span>
-                      <span>Assets.jsx: Add deleteAssetMutation with optimistic updates and proper broadcasting</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🚀</span>
-                      <span>Fix Annuities 12s loading issue with guarded retry logic for 4xx responses</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">⚡</span>
-                      <span>Align persistence (30min) with staleness (30min) for consistent cache behavior</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🔧</span>
-                      <span>Standardize retry strategies: don't retry 4xx client errors, only 5xx/network</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🔗</span>
-                      <span>Normalize annuity service URLs with consistent trailing slashes</span>
-                    </li>
-                  </ul>
-                  <div className={`text-sm p-3 rounded-lg ${isDark ? 'bg-green-900/30 text-green-300' : 'bg-green-50 text-green-800'}`}>
-                    <strong>Performance improvements:</strong> Eliminates 12s delays on empty data responses, enables instant cross-tab synchronization, optimistic updates for immediate UI feedback, smart retry prevents unnecessary API calls
-                  </div>
-                </div>
-
-                {/* v0.106 */}
-                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold text-blue-600">Version v0.106</h3>
-                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-800'}`}>
-                      2025-09-16
-                    </span>
-                  </div>
-                  <h4 className="font-semibold mb-3">Complete TanStack Query performance optimization</h4>
-                  <ul className="space-y-2 text-sm mb-4">
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">⚡</span>
-                      <span>Optimized axios interceptor with token caching system</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🕒</span>
-                      <span>Increased staleTime to 30min for better cache efficiency</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🔧</span>
-                      <span>Fixed dashboard service call in prefetch (getSummary method)</span>
-                    </li>
-                  </ul>
-                  <div className={`text-sm p-3 rounded-lg ${isDark ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-50 text-blue-800'}`}>
-                    <strong>Target achieved:</strong> 70% database load reduction through comprehensive caching strategy
-                  </div>
-                </div>
-
-                {/* v0.105 */}
-                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold text-blue-600">Version v0.105</h3>
-                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-800'}`}>
-                      2025-09-16
-                    </span>
-                  </div>
-                  <h4 className="font-semibold mb-3">TanStack Query foundation implementation</h4>
-                  <ul className="space-y-2 text-sm mb-4">
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🏗️</span>
-                      <span>Complete TanStack Query v5 setup with persistence</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🔄</span>
-                      <span>Cross-tab synchronization with BroadcastChannel API</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🚀</span>
-                      <span>Prefetch system on authentication for instant data hydration</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">⚙️</span>
-                      <span>Query keys architecture for hierarchical caching</span>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* v0.104 */}
-                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold text-blue-600">Version v0.104</h3>
-                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-800'}`}>
-                      2025-09-15
-                    </span>
-                  </div>
-                  <h4 className="font-semibold mb-3">Enhanced theme system and UI improvements</h4>
-                  <ul className="space-y-2 text-sm mb-4">
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🎨</span>
-                      <span>Dynamic theme system with OKLCH color support</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">📊</span>
-                      <span>Enhanced chart visualizations with theme-aware colors</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🔧</span>
-                      <span>Unified loading spinner across all pages</span>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* v0.103 */}
-                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold text-blue-600">Version v0.103</h3>
-                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-800'}`}>
-                      2025-09-15
-                    </span>
-                  </div>
-                  <h4 className="font-semibold mb-3">PDF export enhancements and transaction optimizations</h4>
-                  <ul className="space-y-2 text-sm mb-4">
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">📄</span>
-                      <span>Enhanced PDF export with detailed asset breakdowns</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">💰</span>
-                      <span>Improved transaction processing and validation</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🔍</span>
-                      <span>Advanced filtering and search capabilities</span>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* v0.102 */}
-                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold text-blue-600">Version v0.102</h3>
-                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-800'}`}>
-                      2025-09-14
-                    </span>
-                  </div>
-                  <h4 className="font-semibold mb-3">Insurance management system and analytics</h4>
-                  <ul className="space-y-2 text-sm mb-4">
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🛡️</span>
-                      <span>Complete insurance policy management system</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">📈</span>
-                      <span>Advanced analytics and protection metrics</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">📊</span>
-                      <span>Interactive charts and visualizations</span>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* v0.101 */}
-                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold text-blue-600">Version v0.101</h3>
-                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-800'}`}>
-                      2025-09-13
-                    </span>
-                  </div>
-                  <h4 className="font-semibold mb-3">Annuity management and portfolio tracking</h4>
-                  <ul className="space-y-2 text-sm mb-4">
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">💰</span>
-                      <span>Complete annuity portfolio management system</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">📅</span>
-                      <span>Payment schedule tracking and projections</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">📊</span>
-                      <span>Performance analytics and growth tracking</span>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* v0.100 */}
-                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold text-blue-600">Version v0.100</h3>
-                    <span className={`text-sm px-3 py-1 rounded-full ${isDark ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-800'}`}>
-                      Foundation Release
-                    </span>
-                  </div>
-                  <h4 className="font-semibold mb-3">Core platform foundation</h4>
-                  <ul className="space-y-2 text-sm mb-4">
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🏗️</span>
-                      <span>Core asset management system</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🔐</span>
-                      <span>Supabase authentication integration</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">💳</span>
-                      <span>Transaction management and tracking</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-1">🎨</span>
-                      <span>Modern UI with theme support</span>
-                    </li>
-                  </ul>
-                  <div className={`text-sm p-3 rounded-lg ${isDark ? 'bg-green-900/30 text-green-300' : 'bg-green-50 text-green-800'}`}>
-                    <strong>Foundation established:</strong> Personal financial sanctuary platform for visualizing and managing financial assets with peace of mind
-                  </div>
-                </div>
-              </div>
-            </section>
             </div>
             {/* End of multi-column content */}
+
+            {/* Index Section - Full width, not in columns */}
+            <section id="index" className="mb-16 pt-8 border-t-2 border-blue-500/20">
+              <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
+                <span className="text-2xl">📑</span>
+                Quick Reference Index
+              </h2>
+              
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {/* Getting Started */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <h3 className="text-lg font-semibold mb-4 text-blue-600 flex items-center gap-2">
+                    <span>🚀</span> Getting Started
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <button onClick={() => scrollToSection('getting-started')} className="hover:text-blue-500 transition-colors text-left">
+                        • Introduction & Overview
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('getting-started')} className="hover:text-blue-500 transition-colors text-left">
+                        • First-Time Setup
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('getting-started')} className="hover:text-blue-500 transition-colors text-left">
+                        • Navigation Basics
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('getting-started')} className="hover:text-blue-500 transition-colors text-left">
+                        • Dashboard Overview
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Asset Management */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <h3 className="text-lg font-semibold mb-4 text-purple-600 flex items-center gap-2">
+                    <span>💎</span> Asset Management
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <button onClick={() => scrollToSection('assets')} className="hover:text-purple-500 transition-colors text-left">
+                        • Adding Assets
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('assets')} className="hover:text-purple-500 transition-colors text-left">
+                        • Asset Types (Real Estate, Stocks, Crypto, etc.)
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('assets')} className="hover:text-purple-500 transition-colors text-left">
+                        • Asset Purpose (Growth, Security, Emergency, etc.)
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('assets')} className="hover:text-purple-500 transition-colors text-left">
+                        • Time Horizon Planning
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('assets')} className="hover:text-purple-500 transition-colors text-left">
+                        • Liquidity Management
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('assets')} className="hover:text-purple-500 transition-colors text-left">
+                        • Editing & Deleting Assets
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Insurance */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <h3 className="text-lg font-semibold mb-4 text-green-600 flex items-center gap-2">
+                    <span>🛡️</span> Insurance Protection
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <button onClick={() => scrollToSection('insurance')} className="hover:text-green-500 transition-colors text-left">
+                        • Adding Policies
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('insurance')} className="hover:text-green-500 transition-colors text-left">
+                        • Life Insurance
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('insurance')} className="hover:text-green-500 transition-colors text-left">
+                        • Health Insurance
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('insurance')} className="hover:text-green-500 transition-colors text-left">
+                        • Property & Auto Insurance
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('insurance')} className="hover:text-green-500 transition-colors text-left">
+                        • Coverage Analysis
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Goals & Targets */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <h3 className="text-lg font-semibold mb-4 text-orange-600 flex items-center gap-2">
+                    <span>🎯</span> Goals & Targets
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <button onClick={() => scrollToSection('goals')} className="hover:text-orange-500 transition-colors text-left">
+                        • Creating Financial Goals
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('goals')} className="hover:text-orange-500 transition-colors text-left">
+                        • Net Worth Targets
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('goals')} className="hover:text-orange-500 transition-colors text-left">
+                        • Custom Goals
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('goals')} className="hover:text-orange-500 transition-colors text-left">
+                        • Asset Selection for Goals
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('goals')} className="hover:text-orange-500 transition-colors text-left">
+                        • Progress Tracking
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Transactions */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <h3 className="text-lg font-semibold mb-4 text-cyan-600 flex items-center gap-2">
+                    <span>💳</span> Transactions
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <button onClick={() => scrollToSection('transactions')} className="hover:text-cyan-500 transition-colors text-left">
+                        • Transaction Types
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('transactions')} className="hover:text-cyan-500 transition-colors text-left">
+                        • Recording Transactions
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('transactions')} className="hover:text-cyan-500 transition-colors text-left">
+                        • Transaction History
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('transactions')} className="hover:text-cyan-500 transition-colors text-left">
+                        • Filtering & Search
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Analysis & Reports */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <h3 className="text-lg font-semibold mb-4 text-pink-600 flex items-center gap-2">
+                    <span>📊</span> Analysis & Reports
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <button onClick={() => scrollToSection('reports')} className="hover:text-pink-500 transition-colors text-left">
+                        • Portfolio Reports
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('reports')} className="hover:text-pink-500 transition-colors text-left">
+                        • PDF Export
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('reports')} className="hover:text-pink-500 transition-colors text-left">
+                        • Excel Export
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('ai-analysis')} className="hover:text-pink-500 transition-colors text-left">
+                        • AI-Powered Analysis
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('ai-analysis')} className="hover:text-pink-500 transition-colors text-left">
+                        • AI Analysis Prompts
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Personalization */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <h3 className="text-lg font-semibold mb-4 text-indigo-600 flex items-center gap-2">
+                    <span>🎨</span> Personalization
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <button onClick={() => scrollToSection('personalization')} className="hover:text-indigo-500 transition-colors text-left">
+                        • Theme Selection
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('personalization')} className="hover:text-indigo-500 transition-colors text-left">
+                        • Light & Dark Modes
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('personalization')} className="hover:text-indigo-500 transition-colors text-left">
+                        • Emoji & Icon Customization
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('personalization')} className="hover:text-indigo-500 transition-colors text-left">
+                        • User Preferences
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Advanced Features */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <h3 className="text-lg font-semibold mb-4 text-red-600 flex items-center gap-2">
+                    <span>🚀</span> Advanced Features
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <button onClick={() => scrollToSection('advanced')} className="hover:text-red-500 transition-colors text-left">
+                        • Bulk Operations
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('advanced')} className="hover:text-red-500 transition-colors text-left">
+                        • Import/Export Data
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('advanced')} className="hover:text-red-500 transition-colors text-left">
+                        • Advanced Filtering
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('advanced')} className="hover:text-red-500 transition-colors text-left">
+                        • Custom Categories
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Tips & Best Practices */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <h3 className="text-lg font-semibold mb-4 text-yellow-600 flex items-center gap-2">
+                    <span>💡</span> Tips & Best Practices
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <button onClick={() => scrollToSection('tips')} className="hover:text-yellow-500 transition-colors text-left">
+                        • Regular Updates
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('tips')} className="hover:text-yellow-500 transition-colors text-left">
+                        • Detailed Record Keeping
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('tips')} className="hover:text-yellow-500 transition-colors text-left">
+                        • Portfolio Analysis Tips
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('tips')} className="hover:text-yellow-500 transition-colors text-left">
+                        • Asset Naming Conventions
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Quick Navigation Reminder */}
+              <div className={`mt-8 p-6 rounded-xl ${isDark ? 'bg-gradient-to-r from-blue-900/40 to-purple-900/40 border border-blue-800' : 'bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200'}`}>
+                <p className="text-center text-sm">
+                  <strong>💡 Quick Tip:</strong> Use the sidebar navigation or search bar above to quickly jump to any section. All topics are organized for easy access.
+                </p>
+              </div>
+            </section>
 
             {/* Footer - full width, not in columns */}
             <footer className={`text-center py-8 ${isDark ? 'text-neutral-400' : 'text-gray-600'}`}>

@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.221.5',
+  version: 'v0.221.6',
   buildDate: '2025-10-21',
-  deploymentId: 'userguide-two-column-layout',
-  description: 'UserGuide two-column magazine-style layout for better horizontal space utilization (desktop 2 cols, mobile 1 col)'
+  deploymentId: 'userguide-enhancements-search-index',
+  description: 'UserGuide enhancements: reduced sidebar width, added search functionality, comprehensive index, removed release notes'
 }
 
 export const getVersionDisplay = () => {
