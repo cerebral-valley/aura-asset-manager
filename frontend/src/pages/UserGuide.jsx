@@ -87,8 +87,9 @@ const UserGuide = () => {
 
         {/* Main Content */}
         <div className="ml-64 flex-1">
-          <div className="max-w-4xl mx-auto p-8">
-            {/* Header */}
+          {/* Wider container for two-column layout */}
+          <div className="max-w-7xl mx-auto p-8">
+            {/* Header - spans full width, not in columns */}
             <div className="mb-12">
               <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Aura Asset Manager
@@ -98,7 +99,18 @@ const UserGuide = () => {
               </p>
             </div>
 
-            {/* Getting Started Section */}
+            {/* Multi-column content container */}
+            <div className="
+              lg:columns-2 
+              lg:gap-12
+              xl:gap-16
+              [&>section]:break-inside-avoid
+              [&_h2]:break-after-avoid
+              [&_h3]:break-after-avoid
+              [&_.bg-white]:break-inside-avoid
+              [&_.bg-neutral-900]:break-inside-avoid
+            ">
+              {/* Getting Started Section */}
             <section id="getting-started" className="mb-16">
               <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
                 <span className="text-2xl">🚀</span>
@@ -2417,8 +2429,10 @@ const UserGuide = () => {
                 </div>
               </div>
             </section>
+            </div>
+            {/* End of multi-column content */}
 
-            {/* Footer */}
+            {/* Footer - full width, not in columns */}
             <footer className={`text-center py-8 ${isDark ? 'text-neutral-400' : 'text-gray-600'}`}>
               <div className="mb-4">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
