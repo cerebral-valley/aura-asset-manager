@@ -59,7 +59,7 @@ const Dashboard = () => {
 
   // Fetch profile data
   const { data: profileData } = useQuery({
-    queryKey: queryKeys.profile.detail(),
+    queryKey: queryKeys.user.profile(),
     queryFn: () => profileService.getProfile(),
     enabled: !!user,
     staleTime: 5 * 60 * 1000,

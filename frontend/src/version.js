@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.221.0',
+  version: 'v0.221.1',
   buildDate: '2025-10-21',
-  deploymentId: 'dashboard-comprehensive-insights',
-  description: 'Fix chart tooltip contrast + Add comprehensive dashboard sections: Net Worth Goal, Profile Snapshot, Recent Transactions with Magic UI components'
+  deploymentId: 'dashboard-querykeys-fix',
+  description: 'Fix Dashboard crash - use queryKeys.user.profile() instead of queryKeys.profile.detail()'
 }
 
 export const getVersionDisplay = () => {
