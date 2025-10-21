@@ -126,7 +126,11 @@ const ProfileSnapshotCard = ({ profile }) => {
             {profile.occupation && (
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">Occupation</span>
-                <span className="text-sm font-medium text-foreground">{profile.occupation}</span>
+                <span className="text-sm font-medium text-foreground">
+                  {profile.occupation.split('_').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                  ).join(' ')}
+                </span>
               </div>
             )}
           </motion.div>

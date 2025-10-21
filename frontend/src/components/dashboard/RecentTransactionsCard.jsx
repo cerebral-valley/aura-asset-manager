@@ -100,7 +100,11 @@ const RecentTransactionsCard = ({ transactions }) => {
                       )}
                     </p>
                     <p className="text-xs text-muted-foreground capitalize">
-                      {transaction.transaction_type || 'Other'}
+                      {transaction.transaction_type 
+                        ? transaction.transaction_type.split('_').map(word => 
+                            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                          ).join(' ')
+                        : 'Other'}
                     </p>
                   </div>
                 </motion.div>

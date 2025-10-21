@@ -150,11 +150,15 @@ const EnhancedInsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown"
               <Tooltip 
                 formatter={formatTooltip}
                 contentStyle={{
-                  backgroundColor: 'hsl(var(--popover))',
-                  color: 'hsl(var(--popover-foreground))',
-                  border: '1px solid hsl(var(--border))',
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  color: '#000000',
+                  border: '1px solid rgba(0, 0, 0, 0.1)',
                   borderRadius: '8px',
                   backdropFilter: 'blur(10px)',
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                }}
+                itemStyle={{
+                  color: '#000000',
                 }}
               />
               <Legend 
