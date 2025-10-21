@@ -1,6 +1,6 @@
 import { CardContent, CardHeader, CardTitle } from '../ui/card.jsx'
 import { useCurrency } from '../../hooks/useCurrency.jsx'
-import MagicCard from '../magicui/MagicCard.jsx'
+import DashboardCard from './DashboardCard.jsx'
 import NumberTicker from '../magicui/NumberTicker.jsx'
 import BlurFade from '../magicui/BlurFade.jsx'
 import { motion } from 'framer-motion'
@@ -44,11 +44,8 @@ const RecentTransactionsCard = ({ transactions }) => {
   }
 
   return (
-    <MagicCard 
-      gradientColor="#6366f1" 
-      gradientSize={300}
-      gradientOpacity={0.6}
-      className="backdrop-blur-sm"
+    <DashboardCard 
+      gradientColor="#6366f1"
     >
       <CardHeader>
         <CardTitle className="text-foreground flex items-center gap-2">
@@ -113,7 +110,7 @@ const RecentTransactionsCard = ({ transactions }) => {
           </div>
         )}
       </CardContent>
-    </MagicCard>
+    </DashboardCard>
   )
 }
 

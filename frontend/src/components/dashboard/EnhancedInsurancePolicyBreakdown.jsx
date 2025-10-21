@@ -3,7 +3,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recha
 import { CardContent, CardHeader, CardTitle } from '../ui/card.jsx'
 import { useCurrency } from '../../hooks/useCurrency.jsx'
 import { useChartColors } from '../../hooks/useChartColors'
-import MagicCard from '../magicui/MagicCard.jsx'
+import DashboardCard from './DashboardCard.jsx'
 import NumberTicker from '../magicui/NumberTicker.jsx'
 import Orbit from '../magicui/Orbit.jsx'
 import { motion } from 'framer-motion'
@@ -60,10 +60,8 @@ const EnhancedInsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown"
 
   if (loading) {
     return (
-      <MagicCard 
-        gradientColor="#ec4899" 
-        gradientSize={300}
-        gradientOpacity={0.6}
+      <DashboardCard 
+        gradientColor="#ec4899"
       >
         <CardHeader>
           <CardTitle className="text-foreground">{title}</CardTitle>
@@ -73,16 +71,14 @@ const EnhancedInsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown"
             <Orbit size={60} />
           </div>
         </CardContent>
-      </MagicCard>
+      </DashboardCard>
     )
   }
 
   if (!policies.length || !pieData.length) {
     return (
-      <MagicCard 
-        gradientColor="#ec4899" 
-        gradientSize={300}
-        gradientOpacity={0.6}
+      <DashboardCard 
+        gradientColor="#ec4899"
       >
         <CardHeader>
           <CardTitle className="text-foreground">{title}</CardTitle>
@@ -92,16 +88,13 @@ const EnhancedInsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown"
             No insurance policies found
           </div>
         </CardContent>
-      </MagicCard>
+      </DashboardCard>
     )
   }
 
   return (
-    <MagicCard 
-      gradientColor="#ec4899" 
-      gradientSize={300}
-      gradientOpacity={0.6}
-      className="backdrop-blur-sm"
+    <DashboardCard 
+      gradientColor="#ec4899"
     >
       <CardHeader className="pb-2">
         <CardTitle className="text-foreground flex items-center gap-2">
@@ -198,7 +191,7 @@ const EnhancedInsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown"
           </div>
         </motion.div>
       </CardContent>
-    </MagicCard>
+    </DashboardCard>
   )
 }
 

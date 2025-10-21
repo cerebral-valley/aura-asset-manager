@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.221.3',
+  version: 'v0.221.4',
   buildDate: '2025-10-21',
-  deploymentId: 'dashboard-nav-personalization',
-  description: 'Personalize dashboard greeting with first name, reorder nav (Goals between Analytics/Tools), align pie chart boundaries'
+  deploymentId: 'dashboard-light-mode-fix',
+  description: 'Fix light mode readability: DashboardCard wrapper with theme-aware styling (white bg, subtle gradients, proper contrast)'
 }
 
 export const getVersionDisplay = () => {

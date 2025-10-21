@@ -2,7 +2,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recha
 import { CardContent, CardHeader, CardTitle } from '../ui/card.jsx'
 import { useCurrency } from '../../hooks/useCurrency.jsx'
 import { useChartColors } from '../../hooks/useChartColors'
-import MagicCard from '../magicui/MagicCard.jsx'
+import DashboardCard from './DashboardCard.jsx'
 import NumberTicker from '../magicui/NumberTicker.jsx'
 import { motion } from 'framer-motion'
 
@@ -27,10 +27,8 @@ const EnhancedAssetAllocationChart = ({ data, title = "Asset Allocation" }) => {
 
   if (!data || data.length === 0) {
     return (
-      <MagicCard 
-        gradientColor="#8b5cf6" 
-        gradientSize={300}
-        gradientOpacity={0.6}
+      <DashboardCard 
+        gradientColor="#8b5cf6"
       >
         <CardHeader>
           <CardTitle className="text-foreground">{title}</CardTitle>
@@ -40,16 +38,13 @@ const EnhancedAssetAllocationChart = ({ data, title = "Asset Allocation" }) => {
             No asset data available
           </div>
         </CardContent>
-      </MagicCard>
+      </DashboardCard>
     )
   }
 
   return (
-    <MagicCard 
-      gradientColor="#8b5cf6" 
-      gradientSize={300}
-      gradientOpacity={0.6}
-      className="backdrop-blur-sm"
+    <DashboardCard 
+      gradientColor="#8b5cf6"
     >
       <CardHeader className="pb-2">
         <CardTitle className="text-foreground flex items-center gap-2">
@@ -145,7 +140,7 @@ const EnhancedAssetAllocationChart = ({ data, title = "Asset Allocation" }) => {
           </div>
         </motion.div>
       </CardContent>
-    </MagicCard>
+    </DashboardCard>
   )
 }
 

@@ -1,6 +1,6 @@
 import { CardContent, CardHeader, CardTitle } from '../ui/card.jsx'
 import { useCurrency } from '../../hooks/useCurrency.jsx'
-import MagicCard from '../magicui/MagicCard.jsx'
+import DashboardCard from './DashboardCard.jsx'
 import NumberTicker from '../magicui/NumberTicker.jsx'
 import { motion } from 'framer-motion'
 import { User, DollarSign, Activity } from 'lucide-react'
@@ -36,11 +36,8 @@ const ProfileSnapshotCard = ({ profile }) => {
 
   if (!profile) {
     return (
-      <MagicCard 
-        gradientColor="#f59e0b" 
-        gradientSize={300}
-        gradientOpacity={0.6}
-        className="backdrop-blur-sm"
+      <DashboardCard 
+        gradientColor="#f59e0b"
       >
         <CardHeader>
           <CardTitle className="text-foreground flex items-center gap-2">
@@ -53,16 +50,13 @@ const ProfileSnapshotCard = ({ profile }) => {
             No profile data available
           </div>
         </CardContent>
-      </MagicCard>
+      </DashboardCard>
     )
   }
 
   return (
-    <MagicCard 
-      gradientColor="#f59e0b" 
-      gradientSize={300}
-      gradientOpacity={0.6}
-      className="backdrop-blur-sm"
+    <DashboardCard 
+      gradientColor="#f59e0b"
     >
       <CardHeader>
         <CardTitle className="text-foreground flex items-center gap-2">
@@ -143,7 +137,7 @@ const ProfileSnapshotCard = ({ profile }) => {
           </div>
         )}
       </CardContent>
-    </MagicCard>
+    </DashboardCard>
   )
 }
 

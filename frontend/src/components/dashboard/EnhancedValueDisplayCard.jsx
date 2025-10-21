@@ -4,7 +4,7 @@ import { useCurrency } from '../../hooks/useCurrency.jsx'
 import { Tooltip, TooltipTrigger, TooltipContent } from '../ui/tooltip.jsx'
 import NumberTicker from '../magicui/NumberTicker.jsx'
 import Sparkles from '../magicui/Sparkles.jsx'
-import MagicCard from '../magicui/MagicCard.jsx'
+import DashboardCard from './DashboardCard.jsx'
 import { motion } from 'framer-motion'
 
 const EnhancedValueDisplayCard = ({ 
@@ -26,7 +26,7 @@ const EnhancedValueDisplayCard = ({
   const numericValue = typeof value === 'number' ? value : 0
   const isNumeric = typeof value === 'number'
 
-  const CardWrapper = magicHover ? MagicCard : Card
+  const CardWrapper = magicHover ? DashboardCard : Card
 
   return (
     <CardWrapper className={className}>

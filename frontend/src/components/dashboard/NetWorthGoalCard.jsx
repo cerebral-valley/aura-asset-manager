@@ -1,6 +1,6 @@
 import { CardContent, CardHeader, CardTitle } from '../ui/card.jsx'
 import { useCurrency } from '../../hooks/useCurrency.jsx'
-import MagicCard from '../magicui/MagicCard.jsx'
+import DashboardCard from './DashboardCard.jsx'
 import NumberTicker from '../magicui/NumberTicker.jsx'
 import Sparkles from '../magicui/Sparkles.jsx'
 import { motion } from 'framer-motion'
@@ -12,11 +12,8 @@ const NetWorthGoalCard = ({ goal, currentNetWorth }) => {
 
   if (!goal) {
     return (
-      <MagicCard 
-        gradientColor="#10b981" 
-        gradientSize={300}
-        gradientOpacity={0.6}
-        className="backdrop-blur-sm"
+      <DashboardCard 
+        gradientColor="#10b981"
       >
         <CardHeader>
           <CardTitle className="text-foreground flex items-center gap-2">
@@ -29,7 +26,7 @@ const NetWorthGoalCard = ({ goal, currentNetWorth }) => {
             No active net worth goal set
           </div>
         </CardContent>
-      </MagicCard>
+      </DashboardCard>
     )
   }
 
@@ -38,11 +35,8 @@ const NetWorthGoalCard = ({ goal, currentNetWorth }) => {
   const remaining = Math.max(0, (goal.target_amount || 0) - (currentNetWorth || 0))
 
   return (
-    <MagicCard 
-      gradientColor="#10b981" 
-      gradientSize={300}
-      gradientOpacity={0.6}
-      className="backdrop-blur-sm"
+    <DashboardCard 
+      gradientColor="#10b981"
     >
       <CardHeader>
         <CardTitle className="text-foreground flex items-center gap-2">
@@ -132,7 +126,7 @@ const NetWorthGoalCard = ({ goal, currentNetWorth }) => {
           </motion.div>
         )}
       </CardContent>
-    </MagicCard>
+    </DashboardCard>
   )
 }
 
