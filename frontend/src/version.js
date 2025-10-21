@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.221.2',
+  version: 'v0.221.3',
   buildDate: '2025-10-21',
-  deploymentId: 'dashboard-ui-polish',
-  description: 'Polish dashboard UI: format occupation/transaction types (Self Employed), fix tooltip contrast (solid white background)'
+  deploymentId: 'dashboard-nav-personalization',
+  description: 'Personalize dashboard greeting with first name, reorder nav (Goals between Analytics/Tools), align pie chart boundaries'
 }
 
 export const getVersionDisplay = () => {

@@ -103,7 +103,7 @@ const EnhancedInsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown"
       gradientOpacity={0.6}
       className="backdrop-blur-sm"
     >
-      <CardHeader>
+      <CardHeader className="pb-2">
         <CardTitle className="text-foreground flex items-center gap-2">
           <motion.span
             initial={{ opacity: 0, x: -10 }}
@@ -114,7 +114,7 @@ const EnhancedInsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown"
           </motion.span>
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-4 pb-6">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}

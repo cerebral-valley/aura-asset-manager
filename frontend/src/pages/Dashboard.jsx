@@ -144,7 +144,7 @@ const Dashboard = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">
-              Welcome to Your {dashboardData?.user_theme === 'empire_builder' ? 'Empire' : 'Sanctuary'}
+              Hi {profileData?.first_name || 'there'}, Welcome to Your {dashboardData?.user_theme === 'empire_builder' ? 'Empire' : 'Sanctuary'}
             </h1>
             <p className="text-muted-foreground mt-1">
               {themeLabels.subtitle}
