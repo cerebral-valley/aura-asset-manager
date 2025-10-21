@@ -737,3 +737,482 @@ Some users prefer to emphasize their insurance coverage prominently, while other
 
 This user guide provides a comprehensive overview of Aura's features and philosophy. Remember that Aura is designed to be your financial sanctuary—a place where you can feel proud of your achievements and confident about your future. Take time to explore the features, personalize your experience, and most importantly, take a moment to appreciate the financial foundation you're building for yourself and your loved ones.
 
+
+---
+
+## Asset Types Guide
+
+### Understanding Asset Classification
+
+Aura provides a comprehensive asset classification system to help you properly categorize and understand all your holdings. This guide provides detailed information about each asset type, including risk profiles, ideal investment horizons, and liquidity characteristics.
+
+### Real Estate Assets
+
+**Primary Residence**
+- **Risk Level**: Low to Moderate
+- **Time Horizon**: Long-term (10+ years)
+- **Liquidity**: Illiquid
+- **Description**: Your main home where you live. Primary residences typically appreciate over time and provide both shelter and equity building. They're considered relatively low-risk but illiquid assets, as selling requires significant time and transaction costs.
+
+**Rental Property**
+- **Risk Level**: Moderate
+- **Time Horizon**: Long-term (10+ years)
+- **Liquidity**: Illiquid
+- **Description**: Income-generating properties rented to tenants. Rental properties offer both appreciation potential and regular income streams. They require active management and carry risks related to tenant quality, maintenance, and local market conditions.
+
+**Commercial Property**
+- **Risk Level**: Moderate to High
+- **Time Horizon**: Long-term (10+ years)
+- **Liquidity**: Illiquid
+- **Description**: Properties used for business purposes including office buildings, retail spaces, and warehouses. Commercial real estate can offer higher returns than residential but carries increased risk and complexity. Lease terms and business cycles significantly impact value.
+
+**Land/Development**
+- **Risk Level**: High
+- **Time Horizon**: Variable (5-20+ years)
+- **Liquidity**: Very Illiquid
+- **Description**: Undeveloped land or properties held for future development. These assets carry high risk due to uncertain appreciation timelines, zoning restrictions, and development costs. They generate no income until developed but can offer substantial long-term returns.
+
+### Financial Instruments
+
+**Individual Stocks**
+- **Risk Level**: High (company-specific risk)
+- **Time Horizon**: Variable (1-10+ years)
+- **Liquidity**: Highly Liquid
+- **Description**: Ownership shares in publicly traded companies. Individual stocks offer high growth potential but carry significant volatility and company-specific risks. Best suited for investors who can research companies and tolerate price fluctuations.
+
+**Bonds**
+- **Risk Level**: Low to Moderate (varies by issuer)
+- **Time Horizon**: Short to Long-term (1-30 years)
+- **Liquidity**: Generally Liquid
+- **Description**: Debt securities issued by governments or corporations. Bonds provide regular interest income and return of principal at maturity. Government bonds are low-risk, while corporate bonds offer higher yields with increased risk. Interest rate changes affect bond prices inversely.
+
+**Mutual Funds**
+- **Risk Level**: Moderate (diversified exposure)
+- **Time Horizon**: Medium to Long-term (3-10+ years)
+- **Liquidity**: Liquid (daily pricing)
+- **Description**: Professionally managed portfolios investing in diversified holdings. Mutual funds provide instant diversification and professional management. They charge management fees and trade once daily at net asset value. Suitable for hands-off investors seeking diversification.
+
+**ETFs (Exchange-Traded Funds)**
+- **Risk Level**: Moderate (varies by holdings)
+- **Time Horizon**: Variable (1-10+ years)
+- **Liquidity**: Highly Liquid
+- **Description**: Index-tracking funds traded on stock exchanges like individual stocks. ETFs combine mutual fund diversification with stock-like trading flexibility. They typically have lower fees than mutual funds and offer tax efficiency. Ideal for cost-conscious investors seeking diversified exposure.
+
+**Cryptocurrency**
+- **Risk Level**: Very High
+- **Time Horizon**: Variable (speculative)
+- **Liquidity**: Generally Liquid (24/7 markets)
+- **Description**: Digital currencies using blockchain technology. Cryptocurrencies offer potential for high returns but experience extreme volatility and regulatory uncertainty. They're speculative assets best limited to a small portfolio percentage for risk-tolerant investors.
+
+**REITs (Real Estate Investment Trusts)**
+- **Risk Level**: Moderate
+- **Time Horizon**: Medium to Long-term (5-10+ years)
+- **Liquidity**: Liquid (if publicly traded)
+- **Description**: Companies owning income-producing real estate. REITs provide real estate exposure without property management responsibilities. They must distribute 90% of taxable income as dividends, offering regular income. They combine real estate benefits with stock-like liquidity.
+
+**Options/Derivatives**
+- **Risk Level**: Very High
+- **Time Horizon**: Very Short-term (days to months)
+- **Liquidity**: Moderate (varies by contract)
+- **Description**: Financial contracts deriving value from underlying assets. Options and derivatives offer leverage and hedging capabilities but can result in total capital loss. They require sophisticated understanding and active management. Suitable only for experienced investors.
+
+**Commodities**
+- **Risk Level**: High
+- **Time Horizon**: Variable (1-10 years)
+- **Liquidity**: Varies by commodity
+- **Description**: Raw materials and primary agricultural products including oil, natural gas, grains, and livestock. Commodities provide inflation protection and portfolio diversification but experience significant price volatility based on supply/demand dynamics and global events.
+
+**Private Equity**
+- **Risk Level**: Very High
+- **Time Horizon**: Very Long-term (7-15 years)
+- **Liquidity**: Very Illiquid
+- **Description**: Ownership stakes in private companies not traded on public exchanges. Private equity investments are illiquid with capital locked up for extended periods. They offer potential for exceptional returns but carry total loss risk and typically require substantial minimum investments.
+
+### Physical Assets & Collectibles
+
+**Gold**
+- **Risk Level**: Moderate (volatility)
+- **Time Horizon**: Long-term (5-10+ years)
+- **Liquidity**: Moderately Liquid
+- **Description**: Precious metal held as coins, bars, or jewelry. Gold serves as inflation hedge and safe-haven asset during economic uncertainty. Physical gold requires secure storage and doesn't generate income, but maintains value across centuries. Storage and insurance costs affect total returns.
+
+**Silver**
+- **Risk Level**: Moderate to High
+- **Time Horizon**: Medium to Long-term (3-10 years)
+- **Liquidity**: Moderately Liquid
+- **Description**: Precious metal with both investment and industrial applications. Silver prices are more volatile than gold due to industrial demand fluctuations. It's more affordable than gold for small investors but requires more storage space per dollar value.
+
+**Other Collectibles**
+- **Risk Level**: Very High (market dependent)
+- **Time Horizon**: Very Long-term (10-20+ years)
+- **Liquidity**: Very Illiquid
+- **Description**: Art, antiques, rare coins, vintage cars, and other collectible items. These assets require expertise to value and authenticate. They offer no income and carry high transaction costs. Value is subjective and dependent on collector markets and trends.
+
+### Asset Classification Quick Reference
+
+| Asset Type | Risk Level | Time Horizon | Liquidity | Income Generating |
+|------------|------------|--------------|-----------|-------------------|
+| Primary Residence | Low-Moderate | Long | Illiquid | No |
+| Rental Property | Moderate | Long | Illiquid | Yes |
+| Commercial Property | Moderate-High | Long | Illiquid | Yes |
+| Land/Development | High | Variable | Very Illiquid | No |
+| Individual Stocks | High | Variable | Highly Liquid | Sometimes |
+| Bonds | Low-Moderate | Variable | Liquid | Yes |
+| Mutual Funds | Moderate | Medium-Long | Liquid | Sometimes |
+| ETFs | Moderate | Variable | Highly Liquid | Sometimes |
+| Cryptocurrency | Very High | Variable | Liquid | No |
+| REITs | Moderate | Medium-Long | Liquid | Yes |
+| Options/Derivatives | Very High | Very Short | Moderate | No |
+| Commodities | High | Variable | Varies | No |
+| Private Equity | Very High | Very Long | Very Illiquid | Sometimes |
+| Gold | Moderate | Long | Moderately Liquid | No |
+| Silver | Moderate-High | Medium-Long | Moderately Liquid | No |
+| Collectibles | Very High | Very Long | Very Illiquid | No |
+
+---
+
+## Insurance Types Guide
+
+### Understanding Insurance Protection
+
+Insurance forms a critical component of comprehensive financial planning. This guide details the various insurance types supported by Aura, helping you understand their coverage purposes and how they protect your financial foundation.
+
+### Life Insurance
+
+**Term Life Insurance**
+- **Coverage Type**: Pure death benefit protection
+- **Typical Coverage**: £100,000 - £1,000,000+
+- **Best For**: Families with dependents, mortgage holders
+- **Description**: Provides coverage for a specific period (10, 20, or 30 years). Term life is the most affordable life insurance option, offering pure death benefit protection without cash value accumulation. It's ideal for covering temporary needs like mortgage protection or income replacement during working years.
+
+**Whole Life Insurance**
+- **Coverage Type**: Permanent coverage with cash value
+- **Typical Coverage**: £50,000 - £500,000
+- **Best For**: Estate planning, long-term wealth transfer
+- **Description**: Permanent life insurance that builds cash value you can borrow against. Premiums remain level throughout life, and the policy has guaranteed death benefit and cash value growth. More expensive than term life but provides lifelong protection and a savings component.
+
+**Universal Life Insurance**
+- **Coverage Type**: Flexible permanent coverage
+- **Typical Coverage**: £100,000 - £1,000,000+
+- **Best For**: Those wanting flexibility in premiums and coverage
+- **Description**: Adjustable permanent life insurance allowing flexible premium payments and death benefit adjustments. The cash value grows based on current interest rates or market performance (in indexed universal life). Offers more flexibility than whole life but requires active management.
+
+**Variable Life Insurance**
+- **Coverage Type**: Investment-linked permanent coverage
+- **Typical Coverage**: £100,000 - £1,000,000+
+- **Best For**: Sophisticated investors comfortable with market risk
+- **Description**: Permanent life insurance where cash value is invested in sub-accounts similar to mutual funds. Offers potential for higher returns but carries investment risk. Death benefit and cash value fluctuate with investment performance.
+
+### Health & Medical Insurance
+
+**Health Insurance**
+- **Coverage Type**: Medical expenses and hospitalization
+- **Typical Coverage**: £50,000 - Unlimited annual/lifetime maximum
+- **Best For**: Everyone (essential coverage)
+- **Description**: Covers medical, surgical, and hospital expenses. Plans vary in deductibles, co-pays, and coverage networks. Essential for protecting against catastrophic medical costs. Coverage includes preventive care, emergency services, hospitalization, prescription drugs, and specialist care.
+
+**Critical Illness Insurance**
+- **Coverage Type**: Lump sum payment upon diagnosis of serious illness
+- **Typical Coverage**: £25,000 - £500,000
+- **Best For**: Supplementing health insurance, income protection during recovery
+- **Description**: Pays lump sum if diagnosed with covered critical illnesses (cancer, heart attack, stroke, etc.). Payment can cover treatment costs, living expenses during recovery, or experimental treatments not covered by health insurance. Helps maintain financial stability during serious illness.
+
+### Property & Casualty Insurance
+
+**Homeowners/Renters Insurance**
+- **Coverage Type**: Property damage and liability protection
+- **Typical Coverage**: £100,000 - £1,000,000+ (dwelling coverage)
+- **Best For**: Homeowners and renters protecting property and liability
+- **Description**: Protects your home and possessions against damage, theft, and liability claims. Homeowners insurance covers structure and contents, while renters insurance covers personal belongings and liability. Both include loss of use coverage if home becomes uninhabitable.
+
+**Auto Insurance**
+- **Coverage Type**: Vehicle damage and liability protection
+- **Typical Coverage**: Varies by requirement (£10,000 - £500,000+ liability)
+- **Best For**: All vehicle owners (legally required in most places)
+- **Description**: Covers vehicle damage, medical expenses, and liability from accidents. Includes liability coverage (injury/damage to others), collision (your vehicle damage), comprehensive (theft/weather damage), and uninsured motorist protection. Coverage limits significantly impact premiums.
+
+### Specialty Insurance
+
+**Umbrella Insurance**
+- **Coverage Type**: Excess liability protection
+- **Typical Coverage**: £1,000,000 - £5,000,000
+- **Best For**: High net worth individuals, those with liability exposure
+- **Description**: Provides additional liability coverage beyond home and auto policy limits. Protects against major claims and lawsuits. Relatively inexpensive for substantial coverage. Essential for protecting assets from liability judgments exceeding standard policy limits.
+
+**Disability Insurance**
+- **Coverage Type**: Income replacement during disability
+- **Typical Coverage**: 50-70% of income (£2,000 - £10,000/month)
+- **Best For**: Primary income earners, self-employed professionals
+- **Description**: Replaces portion of income if unable to work due to illness or injury. Short-term disability covers 3-6 months; long-term disability covers years or until retirement. Critical for protecting earning capacity, especially for those without significant savings or passive income.
+
+**Business Insurance**
+- **Coverage Type**: Business property, liability, and continuity
+- **Typical Coverage**: Varies widely by business type and size
+- **Best For**: Business owners, entrepreneurs, partners
+- **Description**: Encompasses various policies protecting business operations: general liability, professional liability (errors & omissions), commercial property, business interruption, workers' compensation, and key person insurance. Essential for protecting business assets and ensuring operational continuity.
+
+### Understanding Coverage Amounts
+
+**Recommended Life Insurance Coverage**
+- **Income Replacement Method**: 7-10x annual income
+- **DIME Method (Debt, Income, Mortgage, Education)**: Calculate specific needs
+- **Minimum Recommendation**: Enough to cover 5-10 years of expenses
+
+**Recommended Liability Coverage**
+- **Homeowners/Auto**: At least £500,000 per occurrence
+- **Umbrella Policy**: £1,000,000 minimum for net worth over £500,000
+- **High Net Worth**: £3,000,000 - £5,000,000 umbrella coverage
+
+**Health Insurance**
+- **Annual Out-of-Pocket Maximum**: Review carefully to understand maximum exposure
+- **Lifetime Maximum**: Ensure unlimited or very high lifetime limit
+- **Network Coverage**: Verify coverage for preferred doctors and hospitals
+
+---
+
+## Tools & Features Guide
+
+### Understanding Aura's Analysis Tools
+
+Aura provides powerful visualization and analysis tools to help you understand your financial position comprehensively. This guide explains each tool, how to use it effectively, and what insights you can gain.
+
+### Asset Hierarchy Mind Map
+
+**What It Does**
+The Asset Hierarchy Mind Map creates an interactive visual representation of your complete asset structure, showing relationships between asset categories, types, and individual holdings.
+
+**How to Use**
+1. Navigate to Tools section in the sidebar
+2. Select "Asset Hierarchy Mind Map"
+3. The visualization automatically organizes your assets into hierarchical categories
+4. Click and drag to explore different sections
+5. Zoom in/out for detailed or overview perspectives
+6. Click on nodes to see asset details and values
+
+**Key Features**
+- **Interactive Navigation**: Pan, zoom, and explore your complete asset structure
+- **Value-Weighted Display**: Node sizes reflect relative asset values
+- **Category Organization**: Assets grouped by type (Real Estate, Investments, etc.)
+- **Real-Time Updates**: Reflects current asset values and holdings
+- **Color-Coded Categories**: Easy visual distinction between asset types
+
+**Insights Gained**
+- Understand your portfolio structure at a glance
+- Identify concentration risks in specific categories
+- Visualize relationships between different asset types
+- See proportional value distribution across holdings
+- Discover opportunities for diversification
+
+**Best Practices**
+- Review quarterly to understand portfolio evolution
+- Use for portfolio rebalancing decisions
+- Share with financial advisors for professional guidance
+- Export screenshots for record-keeping
+- Compare historical views to track structural changes
+
+### Insurance Protection Map
+
+**What It Does**
+The Insurance Protection Map visualizes your complete insurance coverage portfolio, showing how different policies work together to create comprehensive financial protection.
+
+**How to Use**
+1. Navigate to Tools section
+2. Select "Insurance Protection Map"
+3. View hierarchical organization of all insurance policies
+4. Explore coverage by category (Life, Health, Property, etc.)
+5. Click nodes to see policy details and coverage amounts
+6. Assess coverage adequacy relative to asset values
+
+**Key Features**
+- **Coverage Visualization**: See total protection value across all policies
+- **Category Breakdown**: Policies organized by insurance type
+- **Coverage Gap Identification**: Spot areas needing additional protection
+- **Beneficiary Relationships**: Understand who's protected by each policy
+- **Policy Expiration Tracking**: Visual indicators for renewal dates
+
+**Insights Gained**
+- Total insurance coverage value
+- Coverage distribution across protection types
+- Relationship between asset values and insurance protection
+- Potential coverage gaps or redundancies
+- Policy renewal timeline and priorities
+
+**Best Practices**
+- Review annually or after major life changes
+- Compare coverage to current asset values
+- Identify overlapping or redundant policies
+- Plan coverage increases as assets grow
+- Use for insurance portfolio optimization
+
+### Portfolio Volatility Analysis
+
+**What It Does**
+The Volatility Analysis tool calculates portfolio risk using historical volatility data (sigma values) for different asset classes, helping you understand your portfolio's risk profile.
+
+**Default Volatility Values (Annual Sigma)**
+Aura uses research-based standard deviation values for major asset classes:
+
+| Asset Class | Annual Volatility (σ) | Risk Level |
+|-------------|----------------------|------------|
+| Cryptocurrency | 54.0% | Very High |
+| Individual Stocks | 25.0% | High |
+| Emerging Market Stocks | 25.0% | High |
+| Small Cap Stocks | 20.0% | High |
+| Large Cap Stocks | 15.0% | Moderate-High |
+| Gold | 15.1% | Moderate |
+| Corporate Bonds | 10.5% | Moderate |
+| Silver | 20.0% | High |
+| REITs | 20.0% | High |
+| Commodities | 20.0% | High |
+| Government Bonds | 5.0% | Low |
+| Cash/Money Market | 0.1% | Very Low |
+| Real Estate | 10.0% | Moderate |
+
+**How to Use**
+1. Navigate to Tools section
+2. Select "Portfolio Volatility Analysis"
+3. System automatically calculates based on your holdings
+4. Review portfolio-level volatility score
+5. See contribution of each asset class to overall risk
+6. Compare against risk tolerance benchmarks
+
+**Key Features**
+- **Automatic Calculation**: No manual input required
+- **Asset Class Weighting**: Risk weighted by portfolio allocation
+- **Risk Contribution Analysis**: See which assets contribute most to risk
+- **Historical Context**: Compare current vs. typical volatility ranges
+- **Scenario Analysis**: Model impact of portfolio changes
+
+**Insights Gained**
+- Overall portfolio risk level (low, moderate, high)
+- Which assets contribute most to portfolio volatility
+- Whether risk level aligns with investment goals
+- Impact of adding/removing specific assets
+- Diversification effectiveness
+
+**Best Practices**
+- Review volatility quarterly
+- Ensure risk level matches your risk tolerance
+- Consider rebalancing if risk exceeds comfort level
+- Use before making major portfolio changes
+- Compare volatility across different time periods
+
+### Export & Download Tools
+
+**PDF Export**
+- **Terminal-Style Formatting**: Professional ASCII art tables optimized for AI analysis
+- **Comprehensive Sections**: Executive summary, distribution charts, performance analysis, risk assessment
+- **AI Analysis Prompts**: Ready-to-use prompts for LLM analysis
+- **Professional Appearance**: Clean formatting suitable for advisors or record-keeping
+
+**Excel Export**
+- **Multi-Sheet Workbook**: Separate sheets for summary, distribution, assets, performance, risk
+- **Pre-Formatted Tables**: Proper column widths and formatting
+- **Calculated Fields**: Built-in formulas for returns and percentages
+- **Analysis Ready**: Import directly into financial software
+
+**How to Use Exports with AI**
+1. Export portfolio data (PDF or Excel)
+2. Upload to AI assistant (ChatGPT, Claude, etc.)
+3. Use included prompts for specific analysis:
+   - "Analyze my portfolio diversification..."
+   - "Review my asset allocation for my age and risk tolerance..."
+   - "Suggest rebalancing strategies..."
+   - "Identify potential risks in my portfolio..."
+
+**Best Use Cases**
+- **Annual Reviews**: Export yearly for comprehensive record-keeping
+- **Tax Preparation**: Provide to CPA for tax planning
+- **Financial Advisor Meetings**: Share complete portfolio snapshot
+- **Estate Planning**: Document holdings for legal purposes
+- **Loan Applications**: Provide net worth documentation
+- **AI Analysis**: Get professional-grade portfolio insights
+
+### Best Practices for Using Aura's Tools
+
+**Regular Review Schedule**
+- **Weekly**: Check dashboard for major value changes
+- **Monthly**: Review new transactions and value updates
+- **Quarterly**: Analyze asset hierarchy and portfolio volatility
+- **Annually**: Comprehensive review with all tools, export portfolio, assess insurance coverage
+
+**Effective Tool Usage**
+- **Start Broad**: Use Asset Hierarchy for big picture, then drill into specifics
+- **Cross-Reference**: Compare insights across multiple tools
+- **Track Trends**: Use tools consistently to identify patterns
+- **Document Insights**: Take screenshots and notes from analysis sessions
+- **Share Wisely**: Export data for professional advice but protect privacy
+
+**Integration with Financial Planning**
+- **Set Review Reminders**: Calendar quarterly tool reviews
+- **Before Major Decisions**: Use tools before large purchases or investments
+- **After Life Changes**: Re-analyze after marriage, children, career changes
+- **Goal Alignment**: Ensure portfolio structure supports financial goals
+- **Risk Management**: Regular volatility checks prevent excessive risk exposure
+
+**Privacy & Security Considerations**
+- **Sensitive Data**: Tools process data locally when possible
+- **Export Security**: Password-protect exported files
+- **Sharing**: Be selective about who receives exported data
+- **AI Analysis**: Consider privacy implications when uploading to cloud AI services
+- **Record Retention**: Maintain exported files securely for historical reference
+
+---
+
+### Version 0.218.17 Release Notes - User Guide Enhancements
+
+**Enhancement Summary**
+This release significantly expands the User Guide with three major new sections providing comprehensive reference material for all Aura users.
+
+**New Sections Added**
+
+1. **Asset Types Guide** (Complete Reference)
+   - Detailed descriptions of 16+ major asset types
+   - Risk profiles for each asset category
+   - Recommended investment time horizons
+   - Liquidity classifications
+   - Income generation potential
+   - Quick reference comparison table
+   - Categories covered:
+     * Real Estate (4 types): Primary Residence, Rental Property, Commercial Property, Land/Development
+     * Financial Instruments (9 types): Stocks, Bonds, Mutual Funds, ETFs, Cryptocurrency, REITs, Options/Derivatives, Commodities, Private Equity
+     * Physical Assets (3 types): Gold, Silver, Other Collectibles
+
+2. **Insurance Types Guide** (Complete Reference)
+   - Comprehensive coverage of 12+ insurance types
+   - Typical coverage amounts and recommendations
+   - Best use cases for each insurance type
+   - Detailed descriptions of coverage purposes
+   - Coverage adequacy guidelines
+   - Categories covered:
+     * Life Insurance (4 types): Term, Whole, Universal, Variable
+     * Health & Medical (2 types): Health Insurance, Critical Illness
+     * Property & Casualty (2 types): Homeowners/Renters, Auto
+     * Specialty Insurance (3 types): Umbrella, Disability, Business
+
+3. **Tools & Features Guide** (Complete Reference)
+   - Detailed explanations of all major Aura tools
+   - Step-by-step usage instructions
+   - Key features and capabilities
+   - Insights each tool provides
+   - Best practices for effective tool usage
+   - Tools documented:
+     * Asset Hierarchy Mind Map
+     * Insurance Protection Map
+     * Portfolio Volatility Analysis (with default sigma values)
+     * Export & Download Tools (PDF and Excel)
+     * AI-Powered Analysis Integration
+
+**User Experience Improvements**
+- All sections use Magic UI components (MagicCard, BlurFade) for enhanced interactivity
+- Responsive grid layouts for optimal viewing on all devices
+- Color-coded risk indicators for quick visual assessment
+- Smooth scroll animations and transitions
+- Dark/light theme support throughout
+- Easy navigation between guide sections
+
+**Documentation Updates**
+- USER_GUIDE.md enhanced with complete reference materials
+- Comprehensive cross-referencing between related topics
+- Best practices sections for each tool and asset type
+- Real-world usage scenarios and examples

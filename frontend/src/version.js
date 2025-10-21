@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.218.16',
-  buildDate: '2025-10-20',
-  deploymentId: 'var-lite-stress-test',
-  description: 'Add VaR stress testing, property planners, and move asset matrix into tools'
+  version: 'v0.218.17',
+  buildDate: '2025-10-21',
+  deploymentId: 'user-guide-comprehensive-sections',
+  description: 'Add comprehensive Asset Types, Insurance Types, and Tools guide sections with Magic UI components'
 }
 
 export const getVersionDisplay = () => {
