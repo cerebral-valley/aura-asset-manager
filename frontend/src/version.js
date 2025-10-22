@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.222.0',
-  buildDate: '2025-01-22',
-  deploymentId: 'user-guide-enhancements',
-  description: 'User Guide PDF download, Index moved to top, 8 tools comprehensive documentation added'
+  version: 'v0.221.11',
+  buildDate: '2025-10-21',
+  deploymentId: 'fire-number-tool',
+  description: 'Add FIRE number planner, highlight hourly worth, and extend tools navigation'
 }
 
 export const getVersionDisplay = () => {
