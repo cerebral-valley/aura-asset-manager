@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.221.6',
+  version: 'v0.221.7',
   buildDate: '2025-10-21',
-  deploymentId: 'userguide-enhancements-search-index',
-  description: 'UserGuide enhancements: reduced sidebar width, added search functionality, comprehensive index, removed release notes'
+  deploymentId: 'var-lite-stress-test',
+  description: 'Add VaR stress testing with portfolio loader, property planners, and move asset matrix into tools'
 }
 
 export const getVersionDisplay = () => {

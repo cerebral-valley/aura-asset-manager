@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import {
@@ -25,6 +26,44 @@ import calcVar from '@/utils/varLite'
 import { useCurrency } from '@/hooks/useCurrency'
 import { toast } from 'sonner'
 import * as XLSX from 'xlsx'
+import { queryKeys } from '@/lib/queryKeys'
+import { assetsService } from '@/services/assets'
+import { transactionsService } from '@/services/transactions'
+import { getAssetTypeLabel } from '@/constants/assetTypes'
+import { useAuth } from '@/hooks/useAuth'
+
+const sigmaLookup = DEFAULT_VOL.reduce((acc, row) => {
+  acc[row.label.toLowerCase()] = row.sigma
+  return acc
+}, {})
+
+const sigmaAliases = [
+  { test: /residential/, target: 're residential' },
+  { test: /commercial/, target: 're commercial (core)' },
+  { test: /industrial/, target: 're industrial' },
+  { test: /agricultural/, target: 're agriculture' },
+  { test: /real\s?estate/, target: 're commercial (core)' },
+  { test: /bond/, target: 'ig corp bonds' },
+  { test: /govt/, target: 'govt bonds' },
+  { test: /cash|fd/, target: 'bank fd / cash' },
+  { test: /mutual|fund/, target: 'mf balanced' },
+  { test: /equities|stock/, target: 'global equities' },
+  { test: /crypto|bitcoin/, target: 'crypto' },
+  { test: /gold/, target: 'gold' },
+]
+
+const resolveSigma = (label) => {
+  if (!label) return 0.1
+  const direct = sigmaLookup[label.toLowerCase()]
+  if (typeof direct === 'number') return direct
+
+  const alias = sigmaAliases.find(({ test }) => test.test(label.toLowerCase()))
+  if (alias) {
+    const aliasSigma = sigmaLookup[alias.target]
+    if (aliasSigma) return aliasSigma
+  }
+  return 0.1
+}
 
 const gaussian = () => {
   let u = 0
@@ -32,6 +71,66 @@ const gaussian = () => {
   while (u === 0) u = Math.random()
   while (v === 0) v = Math.random()
   return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v)
+}
+
+const getLatestTransactionValue = (asset, transactions, key = 'current_value') => {
+  const relatedTx = transactions.filter((tx) => tx.asset_id === asset.id)
+  if (relatedTx.length === 0) {
+    return key === 'current_value'
+      ? Number(asset.current_value) || Number(asset.initial_value) || 0
+      : Number(asset.initial_value) || 0
+  }
+
+  const sorted = relatedTx.sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date))
+
+  if (key === 'current_value') {
+    const marketUpdate = sorted.find((tx) => tx.transaction_type === 'update_market_value' && tx.amount != null)
+    if (marketUpdate) return Number(marketUpdate.amount) || 0
+
+    const currentValueTx = sorted.find((tx) => tx.current_value != null && tx.current_value > 0)
+    if (currentValueTx) return Number(currentValueTx.current_value) || 0
+  }
+
+  return key === 'current_value'
+    ? Number(asset.current_value) || Number(asset.initial_value) || 0
+    : Number(asset.initial_value) || 0
+}
+
+const buildPortfolioRows = (assets, transactions) => {
+  const buckets = {}
+
+  assets.forEach((asset) => {
+    const presentValue = getLatestTransactionValue(asset, transactions, 'current_value')
+    if (!presentValue || presentValue <= 0) return
+
+    const typeLabel = getAssetTypeLabel(asset.asset_type) || asset.asset_type || 'Custom'
+
+    if (!buckets[typeLabel]) {
+      buckets[typeLabel] = { total: 0, type: typeLabel }
+    }
+    buckets[typeLabel].total += presentValue
+  })
+
+  const entries = Object.values(buckets)
+  const total = entries.reduce((sum, row) => sum + row.total, 0)
+
+  if (total === 0) return { rows: [], total: 0 }
+
+  const rows = entries.map((row) => ({
+    name: row.type,
+    type: row.type,
+    weight: Number(((row.total / total) * 100).toFixed(2)),
+    sigma: resolveSigma(row.type),
+  }))
+
+  const weightSum = rows.reduce((sum, row) => sum + row.weight, 0)
+  if (Math.abs(weightSum - 100) > 0.5) {
+    rows.forEach((row) => {
+      row.weight = Number(((row.weight / weightSum) * 100).toFixed(2))
+    })
+  }
+
+  return { rows, total }
 }
 
 const DEFAULT_PORT_VALUE = 1_000_000
@@ -205,6 +304,25 @@ const exportToWorkbook = (state) => {
 
 const VarLiteStressTestTab = () => {
   const fileInputRef = useRef(null)
+  const { user } = useAuth()
+  const {
+    data: portfolioAssets = [],
+    isLoading: assetsLoading,
+  } = useQuery({
+    queryKey: queryKeys.assets.list(),
+    queryFn: ({ signal }) => assetsService.getAssets({ signal }),
+    enabled: !!user,
+    staleTime: 30 * 60 * 1000,
+  })
+  const {
+    data: portfolioTransactions = [],
+    isLoading: transactionsLoading,
+  } = useQuery({
+    queryKey: queryKeys.transactions.list(),
+    queryFn: ({ signal }) => transactionsService.getTransactions({ signal }),
+    enabled: !!user,
+    staleTime: 30 * 60 * 1000,
+  })
   const {
     assets,
     horizon,
@@ -221,6 +339,7 @@ const VarLiteStressTestTab = () => {
   } = useVarLiteStore()
   const [editingAssets, setEditingAssets] = useState(assets)
   const { formatCurrency } = useCurrency()
+  const loadingPortfolio = assetsLoading || transactionsLoading
 
   useEffect(() => {
     setEditingAssets(assets)
@@ -287,6 +406,18 @@ const VarLiteStressTestTab = () => {
 
   const handleRemoveRow = (index) => {
     setEditingAssets((prev) => prev.filter((_, idx) => idx !== index))
+  }
+
+  const handleLoadPortfolio = () => {
+    const { rows, total } = buildPortfolioRows(portfolioAssets, portfolioTransactions)
+    if (!rows.length || total === 0) {
+      toast.info('No portfolio data available to load yet.')
+      return
+    }
+
+    setEditingAssets(rows)
+    setPortValue(Math.round(total))
+    toast.success('Loaded current portfolio allocation')
   }
 
   return (
@@ -367,9 +498,13 @@ const VarLiteStressTestTab = () => {
             className="w-24 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           />
         </div>
+        <p className="mt-4 text-sm text-slate-600 dark:text-slate-400">
+          σ (annual volatility) captures the typical percentage fluctuation for an asset class over a year. Higher values imply
+          more uncertainty in short-term returns, while lower values point to steadier behaviour.
+        </p>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Asset Mix &amp; Volatility</h3>
           <div className="flex gap-2">
@@ -399,6 +534,15 @@ const VarLiteStressTestTab = () => {
               <Download className="h-4 w-4" />
               Export .xlsx
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={handleLoadPortfolio}
+              disabled={loadingPortfolio}
+            >
+              Load Portfolio
+            </Button>
             <Button variant="secondary" size="sm" className="gap-2" onClick={handleAddRow}>
               <Plus className="h-4 w-4" />
               Add Row
@@ -419,7 +563,7 @@ const VarLiteStressTestTab = () => {
                 <th className="px-3 py-2">Name</th>
                 <th className="px-3 py-2">Type</th>
                 <th className="px-3 py-2">Weight %</th>
-                <th className="px-3 py-2">σ (annual)</th>
+                <th className="px-3 py-2">σ (annual volatility)</th>
                 <th />
               </tr>
             </thead>
@@ -564,6 +708,44 @@ const VarLiteStressTestTab = () => {
             </li>
           </ul>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Interpreting the Stress Test</h3>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+          This template summarises the current scenario so you can explain it to stakeholders or capture notes:
+        </p>
+        <ul className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+          <li>
+            <span className="font-semibold text-slate-800 dark:text-slate-100">Portfolio snapshot:</span>{' '}
+            Portfolio value of {formatCurrency(portValue)} with {editingAssets.length} asset buckets. The largest weight is{' '}
+            {editingAssets.reduce((max, row) => (row.weight > max.weight ? row : max), editingAssets[0] || { name: 'N/A', weight: 0 }).name}{' '}
+            at {editingAssets.length ? editingAssets.reduce((max, row) => (row.weight > max.weight ? row : max), editingAssets[0]).weight.toFixed(1) : '0.0'}%.
+          </li>
+          <li>
+            <span className="font-semibold text-slate-800 dark:text-slate-100">Risk settings:</span>{' '}
+            Using a {confOptions.find((opt) => opt.value === confLvl)?.label || ''} confidence level over a {horizonLabel} horizon. Risk
+            appetite is set at {riskApp}%.
+          </li>
+          <li>
+            <span className="font-semibold text-slate-800 dark:text-slate-100">Volatility assumptions:</span>{' '}
+            Portfolio daily volatility is {(sigmaDaily * 100).toFixed(2)}%, scaling to {(sigmaH * 100).toFixed(2)}% over the horizon. Adjust σ
+            values above to reflect your own estimates.
+          </li>
+          <li>
+            <span className="font-semibold text-slate-800 dark:text-slate-100">Simulated outcomes:</span>{' '}
+            {horizonDays <= 5
+              ? `Heatmap displays ${heatmapData.length} rolling windows to highlight the range of short-term outcomes.`
+              : `Histogram aggregates 500 Monte-Carlo paths of horizon returns; the red line marks the VaR cut-off.`}
+          </li>
+          <li>
+            <span className="font-semibold text-slate-800 dark:text-slate-100">VaR conclusion:</span>{' '}
+            One-{horizonLabel} VaR equals {formatCurrency(varResult.varValue)} ({varResult.varPercent.toFixed(2)}%).{' '}
+            {breach
+              ? 'This exceeds your declared risk appetite, signalling a potential breach that may warrant rebalancing.'
+              : 'This sits within the risk appetite, indicating the current mix is aligned to your tolerance.'}
+          </li>
+        </ul>
       </div>
     </div>
   )
