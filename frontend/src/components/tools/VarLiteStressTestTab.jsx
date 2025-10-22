@@ -29,8 +29,8 @@ import * as XLSX from 'xlsx'
 import { queryKeys } from '@/lib/queryKeys'
 import { assetsService } from '@/services/assets'
 import { transactionsService } from '@/services/transactions'
-import { getAssetTypeLabel } from '@/constants/assetTypes'
 import { useAuth } from '@/hooks/useAuth'
+import { buildPortfolioBuckets } from '@/utils/portfolioAllocation'
 
 const sigmaLookup = DEFAULT_VOL.reduce((acc, row) => {
   acc[row.label.toLowerCase()] = row.sigma
@@ -73,64 +73,22 @@ const gaussian = () => {
   return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v)
 }
 
-const getLatestTransactionValue = (asset, transactions, key = 'current_value') => {
-  const relatedTx = transactions.filter((tx) => tx.asset_id === asset.id)
-  if (relatedTx.length === 0) {
-    return key === 'current_value'
-      ? Number(asset.current_value) || Number(asset.initial_value) || 0
-      : Number(asset.initial_value) || 0
-  }
-
-  const sorted = relatedTx.sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date))
-
-  if (key === 'current_value') {
-    const marketUpdate = sorted.find((tx) => tx.transaction_type === 'update_market_value' && tx.amount != null)
-    if (marketUpdate) return Number(marketUpdate.amount) || 0
-
-    const currentValueTx = sorted.find((tx) => tx.current_value != null && tx.current_value > 0)
-    if (currentValueTx) return Number(currentValueTx.current_value) || 0
-  }
-
-  return key === 'current_value'
-    ? Number(asset.current_value) || Number(asset.initial_value) || 0
-    : Number(asset.initial_value) || 0
-}
-
 const buildPortfolioRows = (assets, transactions) => {
-  const buckets = {}
-
-  assets.forEach((asset) => {
-    const presentValue = getLatestTransactionValue(asset, transactions, 'current_value')
-    if (!presentValue || presentValue <= 0) return
-
-    const typeLabel = getAssetTypeLabel(asset.asset_type) || asset.asset_type || 'Custom'
-
-    if (!buckets[typeLabel]) {
-      buckets[typeLabel] = { total: 0, type: typeLabel }
-    }
-    buckets[typeLabel].total += presentValue
-  })
-
-  const entries = Object.values(buckets)
-  const total = entries.reduce((sum, row) => sum + row.total, 0)
-
-  if (total === 0) return { rows: [], total: 0 }
-
-  const rows = entries.map((row) => ({
-    name: row.type,
-    type: row.type,
-    weight: Number(((row.total / total) * 100).toFixed(2)),
-    sigma: resolveSigma(row.type),
-  }))
-
-  const weightSum = rows.reduce((sum, row) => sum + row.weight, 0)
-  if (Math.abs(weightSum - 100) > 0.5) {
-    rows.forEach((row) => {
-      row.weight = Number(((row.weight / weightSum) * 100).toFixed(2))
-    })
+  const { rows, total } = buildPortfolioBuckets(assets, transactions)
+  if (total === 0) {
+    return { rows: [], total: 0 }
   }
 
-  return { rows, total }
+  return {
+    rows: rows.map((row, index) => ({
+      name: row.type,
+      type: row.type,
+      weight: row.weight,
+      sigma: resolveSigma(row.type),
+      __index: index,
+    })),
+    total,
+  }
 }
 
 const DEFAULT_PORT_VALUE = 1_000_000
@@ -435,7 +393,7 @@ const VarLiteStressTestTab = () => {
   }, [editingAssets])
   const simulationLabel = horizonDays <= 5 ? 'Rolling windows analysed' : 'Monte Carlo simulations'
   const simulationCount = distributionStats.simulations
-  const tailProbability = ((1 - confLvl) * 100).toFixed(1)
+  const tailProbability = Number(((1 - confLvl) * 100).toFixed(1))
   const worstReturn = distributionStats.min
   const bestReturn = distributionStats.max
   const averageReturn = distributionStats.mean
@@ -484,6 +442,12 @@ const VarLiteStressTestTab = () => {
     setEditingAssets(rows)
     setPortValue(Math.round(total))
     toast.success('Loaded current portfolio allocation')
+  }
+
+  const handleResetDefault = () => {
+    setEditingAssets(initialAssets)
+    setPortValue(DEFAULT_PORT_VALUE)
+    toast.success('Restored default sample portfolio')
   }
 
   return (
@@ -611,6 +575,9 @@ const VarLiteStressTestTab = () => {
             >
               Load Portfolio
             </Button>
+            <Button variant="outline" size="sm" className="gap-2" onClick={handleResetDefault}>
+              Default Portfolio
+            </Button>
             <Button variant="secondary" size="sm" className="gap-2" onClick={handleAddRow}>
               <Plus className="h-4 w-4" />
               Add Row
@@ -703,7 +670,7 @@ const VarLiteStressTestTab = () => {
             In everyday terms, there is roughly a {tailProbability}% chance that losses over this {horizonLabel?.toLowerCase()} horizon exceed
             {` ${formatCurrency(varResult.varValue)} (${varResult.varPercent.toFixed(2)}% of the portfolio).`}
           </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-300">
             Because your comfort line is {riskApp}% this scenario {breach ? 'sits above that limit—consider trimming risk or adding hedges.' : 'remains below that limit, so you are operating inside your stated tolerance.'}
           </p>
         </div>

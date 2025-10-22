@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.221.8',
+  version: 'v0.221.9',
   buildDate: '2025-10-21',
-  deploymentId: 'portfolio-modelling-polish',
-  description: 'Polish portfolio modelling UX with portfolio loader, plain-language guidance, and heat-map allocation view'
+  deploymentId: 'time-value-and-portfolio-enhancements',
+  description: 'Add Time Value tool, default mix restore, and clearer VaR storytelling with allocation heat tiles'
 }
 
 export const getVersionDisplay = () => {

@@ -7,6 +7,7 @@ import BuyRentAnalyzerTab from '../components/tools/BuyRentAnalyzerTab'
 import DownPaymentTrackerTab from '../components/tools/DownPaymentTrackerTab'
 import VarLiteStressTestTab from '../components/tools/VarLiteStressTestTab'
 import AssetMatrixTab from '../components/tools/AssetMatrixTab'
+import TimeValueTab from '../components/tools/TimeValueTab'
 import Loading from '../components/ui/Loading'
 
 const ToolsPage = () => {
@@ -25,6 +26,7 @@ const ToolsPage = () => {
     { id: 'down-payment-tracker', label: 'Down-Payment Tracker', component: DownPaymentTrackerTab },
     { id: 'var-lite', label: 'Portfolio Modelling', component: VarLiteStressTestTab },
     { id: 'asset-matrix', label: 'Asset Matrix', component: AssetMatrixTab },
+    { id: 'time-value', label: 'Time Value', component: TimeValueTab },
   ]
 
   const ActiveComponent = tabs.find(t => t.id === activeTab)?.component
