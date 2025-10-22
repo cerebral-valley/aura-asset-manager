@@ -26,6 +26,7 @@ const calculateTimeValue = ({ portfolioValue, growthRate, annualIncome }) => {
   const perWeek = totalAnnual / 52
   const perDay = totalAnnual / 365
   const perHour = perDay / 24
+  const perMinute = perHour / 60
 
   return {
     annualGain,
@@ -34,6 +35,7 @@ const calculateTimeValue = ({ portfolioValue, growthRate, annualIncome }) => {
     perWeek,
     perDay,
     perHour,
+    perMinute,
   }
 }
 
@@ -152,9 +154,13 @@ const TimeValueTab = () => {
             <p className="text-xs text-slate-500 dark:text-slate-400">Roughly {formatCurrency(results.perWeek)} per week.</p>
           </MagicCard>
           <MagicCard className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100">
-            <p className="text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500">Daily & hourly</p>
+            <p className="text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500">Daily baseline</p>
             <p className="mt-2 text-2xl font-semibold">{formatCurrency(results.perDay)}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">≈ {formatCurrency(results.perHour)} per hour of the year.</p>
+            <div className="mt-4 rounded-lg border border-emerald-400/30 bg-emerald-500/10 p-3 text-center dark:border-emerald-300/40 dark:bg-emerald-400/10">
+              <p className="text-xs font-medium uppercase tracking-wide text-emerald-600 dark:text-emerald-300">Your hour is worth</p>
+              <p className="mt-1 text-2xl font-bold text-emerald-600 dark:text-emerald-200">{formatCurrency(results.perHour)}!</p>
+            </div>
+            <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Every minute roughly equals {formatCurrency(results.perMinute)} of output.</p>
           </MagicCard>
         </div>
       )}
