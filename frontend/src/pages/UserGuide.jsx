@@ -4,15 +4,19 @@ import { useTheme } from '../contexts/ThemeContext';
 import MagicCard from '../components/magicui/MagicCard';
 import NumberTicker from '../components/magicui/NumberTicker';
 import BlurFade from '../components/magicui/BlurFade';
+import { jsPDF } from 'jspdf';
+import { Download } from 'lucide-react';
 
 const UserGuide = () => {
   const { isDark } = useTheme();
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState('getting-started');
+  const [activeSection, setActiveSection] = useState('index');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [isExporting, setIsExporting] = useState(false);
 
   const sections = [
+    { id: 'index', title: 'Index', icon: '📑' },
     { id: 'getting-started', title: 'Getting Started', icon: '🚀' },
     { id: 'dashboard', title: 'Dashboard', icon: '📊' },
     { id: 'assets', title: 'Managing Assets', icon: '💎' },
@@ -23,15 +27,335 @@ const UserGuide = () => {
     { id: 'insurance-types', title: 'Insurance Types Guide', icon: '🔍' },
     { id: 'tools', title: 'Tools & Features', icon: '🛠️' },
     { id: 'ai-analysis', title: 'AI Analysis', icon: '🤖' },
-    { id: 'tips', title: 'Tips & Best Practices', icon: '💡' },
-    { id: 'index', title: 'Index', icon: '�' }
+    { id: 'tips', title: 'Tips & Best Practices', icon: '💡' }
   ];
+
 
   const scrollToSection = (sectionId) => {
     setActiveSection(sectionId);
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // PDF Export Function
+  const downloadUserGuideAsPDF = async () => {
+    setIsExporting(true);
+    try {
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 15;
+      const maxWidth = pageWidth - 2 * margin;
+      let yPos = margin;
+
+      // Helper to add page break when needed
+      const checkPageBreak = (neededSpace = 20) => {
+        if (yPos + neededSpace > pageHeight - margin) {
+          pdf.addPage();
+          yPos = margin;
+          return true;
+        }
+        return false;
+      };
+
+      // Helper to add wrapped text
+      const addText = (text, fontSize = 11, fontStyle = 'normal', align = 'left') => {
+        pdf.setFontSize(fontSize);
+        pdf.setFont('helvetica', fontStyle);
+        const lines = pdf.splitTextToSize(text, maxWidth);
+        lines.forEach((line) => {
+          checkPageBreak();
+          if (align === 'center') {
+            pdf.text(line, pageWidth / 2, yPos, { align: 'center' });
+          } else {
+            pdf.text(line, margin, yPos);
+          }
+          yPos += fontSize * 0.5;
+        });
+      };
+
+      // Title Page
+      pdf.setFontSize(28);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Aura Asset Manager', pageWidth / 2, 50, { align: 'center' });
+      
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Complete User Guide', pageWidth / 2, 65, { align: 'center' });
+      
+      pdf.setFontSize(12);
+      pdf.text('Your Personal Financial Sanctuary', pageWidth / 2, 75, { align: 'center' });
+      
+      pdf.setFontSize(10);
+      pdf.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth / 2, 90, { align: 'center' });
+
+      // Add decorative element
+      pdf.setFillColor(59, 130, 246);
+      pdf.circle(pageWidth / 2, 110, 15, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(24);
+      pdf.text('A', pageWidth / 2, 115, { align: 'center' });
+      pdf.setTextColor(0, 0, 0);
+
+      // Table of Contents
+      pdf.addPage();
+      yPos = margin;
+      pdf.setFontSize(20);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Table of Contents', margin, yPos);
+      yPos += 15;
+
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'normal');
+      sections.forEach((section, index) => {
+        checkPageBreak();
+        pdf.text(`${index + 1}. ${section.icon} ${section.title}`, margin + 5, yPos);
+        yPos += 7;
+      });
+
+      // Content sections with detailed descriptions
+      const contentData = {
+        'index': {
+          title: 'Quick Reference Index',
+          description: 'Navigate quickly to any section using this comprehensive index of all topics covered in this guide.',
+          keyPoints: [
+            'Complete overview of all User Guide sections',
+            'Quick navigation links to specific topics',
+            'Organized by functional areas',
+            'Easy access to frequently needed information'
+          ]
+        },
+        'getting-started': {
+          title: 'Getting Started with Aura',
+          description: 'Learn about Aura\'s philosophy and how to begin your financial journey. Aura is designed to help you visualize your financial standing and feel secure about your assets.',
+          keyPoints: [
+            'Understanding Aura\'s core mission as your financial sanctuary',
+            'Creating your account and initial setup',
+            'Overview of main features and navigation',
+            'Recommended first steps for new users'
+          ]
+        },
+        'dashboard': {
+          title: 'Dashboard Overview',
+          description: 'The dashboard serves as your command center, providing an immediate overview of your net worth, insurance coverage, and growth potential.',
+          keyPoints: [
+            'Real-time net worth display and calculations',
+            'Asset distribution visualizations',
+            'Insurance coverage summary',
+            'Monthly growth rate projections',
+            'Quick access to recent transactions'
+          ]
+        },
+        'assets': {
+          title: 'Managing Your Assets',
+          description: 'Track and organize all your holdings from real estate and investments to precious metals and cash reserves. Each asset tells the story of your journey.',
+          keyPoints: [
+            'Adding new assets with detailed information',
+            'Editing and updating asset values',
+            'Organizing assets into meaningful categories',
+            'Tracking appreciation and depreciation',
+            'Document attachments and notes'
+          ]
+        },
+        'asset-types': {
+          title: 'Asset Types Guide',
+          description: 'Comprehensive guide to different asset categories and how to track them effectively in Aura.',
+          keyPoints: [
+            'Real Estate: Properties, land, commercial holdings',
+            'Stocks & Securities: Individual stocks, ETFs, mutual funds',
+            'Bonds: Government bonds, corporate bonds, treasury notes',
+            'Precious Metals: Gold, silver, platinum holdings',
+            'Cash & Savings: Bank accounts, money market funds',
+            'Cryptocurrency: Bitcoin, Ethereum, altcoins',
+            'Collectibles: Art, wine, rare items'
+          ]
+        },
+        'goals': {
+          title: 'Financial Goals',
+          description: 'Set and track your financial goals, from net worth targets to custom savings objectives. Monitor progress and stay motivated.',
+          keyPoints: [
+            'Creating net worth targets with custom calculations',
+            'Setting up custom savings goals',
+            'Tracking progress with visual indicators',
+            'Goal achievement timeline projections',
+            'Allocation overview and optimization'
+          ]
+        },
+        'exports': {
+          title: 'Export & Analysis',
+          description: 'Generate professional PDF and Excel reports optimized for AI analysis. Export comprehensive portfolio data with ready-to-use analysis prompts.',
+          keyPoints: [
+            'PDF exports with formatted asset tables',
+            'Excel exports with detailed breakdowns',
+            'AI-ready prompts for ChatGPT, Claude',
+            'Privacy-safe redacted versions',
+            'Customizable export templates'
+          ]
+        },
+        'insurance': {
+          title: 'Insurance Management',
+          description: 'Track your insurance portfolio as a protective shield. Visualize total coverage value alongside your assets for complete financial security.',
+          keyPoints: [
+            'Adding life, health, auto, home policies',
+            'Coverage amount tracking',
+            'Premium and payment schedule monitoring',
+            'Document storage for policy information',
+            'Coverage gap analysis'
+          ]
+        },
+        'insurance-types': {
+          title: 'Insurance Types Guide',
+          description: 'Detailed information about different insurance types and what to track for each.',
+          keyPoints: [
+            'Life Insurance: Term, whole, universal policies',
+            'Health Insurance: Individual, family, employer plans',
+            'Auto Insurance: Liability, collision, comprehensive',
+            'Home/Renters: Property, liability coverage',
+            'Specialty: Disability, umbrella, professional liability'
+          ]
+        },
+        'tools': {
+          title: 'Tools & Features',
+          description: 'Access 8 powerful analysis tools to gain deeper insights into your financial situation.',
+          tools: [
+            { name: 'Asset Mapping', desc: 'Interactive visualization of your asset organization and relationships' },
+            { name: 'Insurance Mapping', desc: 'Visualize your complete protection portfolio with coverage overview' },
+            { name: 'Loan Calculator', desc: 'Comprehensive loan payment and amortization analysis with charts' },
+            { name: 'Buy vs Rent Analyzer', desc: 'Make informed housing decisions with detailed cost comparisons' },
+            { name: 'Down-Payment Tracker', desc: 'Track progress toward home down payment goals' },
+            { name: 'Portfolio Modelling (VaR Lite)', desc: 'Understand portfolio risk profile with stress test scenarios' },
+            { name: 'Asset Matrix', desc: 'Comprehensive asset analysis and comparison grid' },
+            { name: 'Time Value Calculator', desc: 'Calculate present and future values with compound interest' }
+          ]
+        },
+        'ai-analysis': {
+          title: 'AI Analysis',
+          description: 'Leverage AI-powered portfolio analysis with included prompts for ChatGPT, Claude, and other AI assistants. Get professional-grade insights.',
+          keyPoints: [
+            'Pre-built prompts for asset allocation analysis',
+            'Risk assessment queries',
+            'Diversification recommendations',
+            'Tax optimization strategies',
+            'Estate planning considerations'
+          ]
+        },
+        'tips': {
+          title: 'Tips & Best Practices',
+          description: 'Learn best practices for asset naming, regular updates, detailed record keeping, and personalization strategies.',
+          keyPoints: [
+            'Descriptive naming conventions for easy recognition',
+            'Regular value updates for accuracy',
+            'Document everything with photos and receipts',
+            'Use metadata fields for detailed tracking',
+            'Regular backups and exports',
+            'Privacy considerations and security'
+          ]
+        }
+      };
+
+      // Generate content for each section
+      sections.forEach((section) => {
+        pdf.addPage();
+        yPos = margin;
+        
+        // Section Header
+        pdf.setFontSize(18);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`${section.icon} ${section.title}`, margin, yPos);
+        yPos += 12;
+        
+        // Draw separator line
+        pdf.setDrawColor(200, 200, 200);
+        pdf.line(margin, yPos, pageWidth - margin, yPos);
+        yPos += 8;
+        
+        const content = contentData[section.id];
+        if (content) {
+          // Description
+          addText(content.description, 11, 'normal');
+          yPos += 5;
+          
+          // Key Points or Tools
+          if (content.keyPoints) {
+            checkPageBreak(20);
+            yPos += 5;
+            pdf.setFontSize(13);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Key Features:', margin, yPos);
+            yPos += 8;
+            
+            content.keyPoints.forEach((point) => {
+              checkPageBreak(10);
+              pdf.setFontSize(10);
+              pdf.setFont('helvetica', 'normal');
+              const bullet = '• ';
+              const pointLines = pdf.splitTextToSize(point, maxWidth - 5);
+              pointLines.forEach((line, idx) => {
+                pdf.text((idx === 0 ? bullet : '  ') + line, margin + 3, yPos);
+                yPos += 5;
+              });
+              yPos += 2;
+            });
+          }
+          
+          if (content.tools) {
+            checkPageBreak(20);
+            yPos += 5;
+            pdf.setFontSize(13);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Available Tools:', margin, yPos);
+            yPos += 8;
+            
+            content.tools.forEach((tool) => {
+              checkPageBreak(15);
+              pdf.setFontSize(11);
+              pdf.setFont('helvetica', 'bold');
+              pdf.text(`• ${tool.name}`, margin + 3, yPos);
+              yPos += 6;
+              
+              pdf.setFontSize(10);
+              pdf.setFont('helvetica', 'normal');
+              const descLines = pdf.splitTextToSize(tool.desc, maxWidth - 8);
+              descLines.forEach((line) => {
+                pdf.text(line, margin + 6, yPos);
+                yPos += 5;
+              });
+              yPos += 3;
+            });
+          }
+        }
+      });
+
+      // Footer Page
+      pdf.addPage();
+      yPos = pageHeight / 2 - 30;
+      pdf.setFillColor(245, 247, 250);
+      pdf.rect(margin, yPos - 10, maxWidth, 60, 'F');
+      
+      yPos += 5;
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Remember', pageWidth / 2, yPos, { align: 'center' });
+      yPos += 15;
+      
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'normal');
+      const footerText = 'Aura is designed to be your financial sanctuary—a place where you can feel proud of your achievements and confident about your future. Take time to explore the features, personalize your experience, and most importantly, take a moment to appreciate the financial foundation you\'re building for yourself and your loved ones.';
+      const footerLines = pdf.splitTextToSize(footerText, maxWidth - 20);
+      footerLines.forEach((line) => {
+        pdf.text(line, pageWidth / 2, yPos, { align: 'center' });
+        yPos += 6;
+      });
+
+      // Save PDF
+      pdf.save('Aura_User_Guide.pdf');
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      alert('Error generating PDF. Please try again.');
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -159,33 +483,53 @@ const UserGuide = () => {
               </p>
             </div>
 
-            {/* Search Bar */}
+            {/* Search Bar and Actions */}
             <div className="mb-8">
-              <div className="relative max-w-2xl">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  placeholder="Search topics, sections, or content..."
-                  className={`w-full px-4 py-3 pl-12 rounded-lg border ${
-                    isDark
-                      ? 'bg-neutral-900 border-neutral-700 text-neutral-100 placeholder-neutral-500'
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                  } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                />
-                <svg
-                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-neutral-500' : 'text-gray-400'}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              <div className="flex gap-4 items-start">
+                <div className="relative flex-1 max-w-2xl">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    placeholder="Search topics, sections, or content..."
+                    className={`w-full px-4 py-3 pl-12 rounded-lg border ${
+                      isDark
+                        ? 'bg-neutral-900 border-neutral-700 text-neutral-100 placeholder-neutral-500'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                    } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                   />
-                </svg>
+                  <svg
+                    className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-neutral-500' : 'text-gray-400'}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </div>
+                
+                {/* PDF Download Button */}
+                <button
+                  onClick={downloadUserGuideAsPDF}
+                  disabled={isExporting}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
+                    isExporting
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:shadow-lg'
+                  } ${
+                    isDark
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-500 hover:to-purple-500'
+                      : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600'
+                  }`}
+                >
+                  <Download className="w-5 h-5" />
+                  {isExporting ? 'Generating...' : 'Download PDF'}
+                </button>
               </div>
 
               {/* Search Results Dropdown */}
@@ -248,6 +592,307 @@ const UserGuide = () => {
               [&_.bg-neutral-900]:break-inside-avoid
             ">
               {/* Getting Started Section */}
+            <section id="index" className="mb-16 pt-8 border-t-2 border-blue-500/20">
+              <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
+                <span className="text-2xl">📑</span>
+                Quick Reference Index
+              </h2>
+              
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {/* Getting Started */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <h3 className="text-lg font-semibold mb-4 text-blue-600 flex items-center gap-2">
+                    <span>🚀</span> Getting Started
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <button onClick={() => scrollToSection('getting-started')} className="hover:text-blue-500 transition-colors text-left">
+                        • Introduction & Overview
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('getting-started')} className="hover:text-blue-500 transition-colors text-left">
+                        • First-Time Setup
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('getting-started')} className="hover:text-blue-500 transition-colors text-left">
+                        • Navigation Basics
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('getting-started')} className="hover:text-blue-500 transition-colors text-left">
+                        • Dashboard Overview
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Asset Management */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <h3 className="text-lg font-semibold mb-4 text-purple-600 flex items-center gap-2">
+                    <span>💎</span> Asset Management
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <button onClick={() => scrollToSection('assets')} className="hover:text-purple-500 transition-colors text-left">
+                        • Adding Assets
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('assets')} className="hover:text-purple-500 transition-colors text-left">
+                        • Asset Types (Real Estate, Stocks, Crypto, etc.)
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('assets')} className="hover:text-purple-500 transition-colors text-left">
+                        • Asset Purpose (Growth, Security, Emergency, etc.)
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('assets')} className="hover:text-purple-500 transition-colors text-left">
+                        • Time Horizon Planning
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('assets')} className="hover:text-purple-500 transition-colors text-left">
+                        • Liquidity Management
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('assets')} className="hover:text-purple-500 transition-colors text-left">
+                        • Editing & Deleting Assets
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Insurance */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <h3 className="text-lg font-semibold mb-4 text-green-600 flex items-center gap-2">
+                    <span>🛡️</span> Insurance Protection
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <button onClick={() => scrollToSection('insurance')} className="hover:text-green-500 transition-colors text-left">
+                        • Adding Policies
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('insurance')} className="hover:text-green-500 transition-colors text-left">
+                        • Life Insurance
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('insurance')} className="hover:text-green-500 transition-colors text-left">
+                        • Health Insurance
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('insurance')} className="hover:text-green-500 transition-colors text-left">
+                        • Property & Auto Insurance
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('insurance')} className="hover:text-green-500 transition-colors text-left">
+                        • Coverage Analysis
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Goals & Targets */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <h3 className="text-lg font-semibold mb-4 text-orange-600 flex items-center gap-2">
+                    <span>🎯</span> Goals & Targets
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <button onClick={() => scrollToSection('goals')} className="hover:text-orange-500 transition-colors text-left">
+                        • Creating Financial Goals
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('goals')} className="hover:text-orange-500 transition-colors text-left">
+                        • Net Worth Targets
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('goals')} className="hover:text-orange-500 transition-colors text-left">
+                        • Custom Goals
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('goals')} className="hover:text-orange-500 transition-colors text-left">
+                        • Asset Selection for Goals
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('goals')} className="hover:text-orange-500 transition-colors text-left">
+                        • Progress Tracking
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Transactions */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <h3 className="text-lg font-semibold mb-4 text-cyan-600 flex items-center gap-2">
+                    <span>💳</span> Transactions
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <button onClick={() => scrollToSection('transactions')} className="hover:text-cyan-500 transition-colors text-left">
+                        • Transaction Types
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('transactions')} className="hover:text-cyan-500 transition-colors text-left">
+                        • Recording Transactions
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('transactions')} className="hover:text-cyan-500 transition-colors text-left">
+                        • Transaction History
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('transactions')} className="hover:text-cyan-500 transition-colors text-left">
+                        • Filtering & Search
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Analysis & Reports */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <h3 className="text-lg font-semibold mb-4 text-pink-600 flex items-center gap-2">
+                    <span>📊</span> Analysis & Reports
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <button onClick={() => scrollToSection('reports')} className="hover:text-pink-500 transition-colors text-left">
+                        • Portfolio Reports
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('reports')} className="hover:text-pink-500 transition-colors text-left">
+                        • PDF Export
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('reports')} className="hover:text-pink-500 transition-colors text-left">
+                        • Excel Export
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('ai-analysis')} className="hover:text-pink-500 transition-colors text-left">
+                        • AI-Powered Analysis
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('ai-analysis')} className="hover:text-pink-500 transition-colors text-left">
+                        • AI Analysis Prompts
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Personalization */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <h3 className="text-lg font-semibold mb-4 text-indigo-600 flex items-center gap-2">
+                    <span>🎨</span> Personalization
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <button onClick={() => scrollToSection('personalization')} className="hover:text-indigo-500 transition-colors text-left">
+                        • Theme Selection
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('personalization')} className="hover:text-indigo-500 transition-colors text-left">
+                        • Light & Dark Modes
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('personalization')} className="hover:text-indigo-500 transition-colors text-left">
+                        • Emoji & Icon Customization
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('personalization')} className="hover:text-indigo-500 transition-colors text-left">
+                        • User Preferences
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Advanced Features */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <h3 className="text-lg font-semibold mb-4 text-red-600 flex items-center gap-2">
+                    <span>🚀</span> Advanced Features
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <button onClick={() => scrollToSection('advanced')} className="hover:text-red-500 transition-colors text-left">
+                        • Bulk Operations
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('advanced')} className="hover:text-red-500 transition-colors text-left">
+                        • Import/Export Data
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('advanced')} className="hover:text-red-500 transition-colors text-left">
+                        • Advanced Filtering
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('advanced')} className="hover:text-red-500 transition-colors text-left">
+                        • Custom Categories
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Tips & Best Practices */}
+                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
+                  <h3 className="text-lg font-semibold mb-4 text-yellow-600 flex items-center gap-2">
+                    <span>💡</span> Tips & Best Practices
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    <li>
+                      <button onClick={() => scrollToSection('tips')} className="hover:text-yellow-500 transition-colors text-left">
+                        • Regular Updates
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('tips')} className="hover:text-yellow-500 transition-colors text-left">
+                        • Detailed Record Keeping
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('tips')} className="hover:text-yellow-500 transition-colors text-left">
+                        • Portfolio Analysis Tips
+                      </button>
+                    </li>
+                    <li>
+                      <button onClick={() => scrollToSection('tips')} className="hover:text-yellow-500 transition-colors text-left">
+                        • Asset Naming Conventions
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Quick Navigation Reminder */}
+              <div className={`mt-8 p-6 rounded-xl ${isDark ? 'bg-gradient-to-r from-blue-900/40 to-purple-900/40 border border-blue-800' : 'bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200'}`}>
+                <p className="text-center text-sm">
+                  <strong>💡 Quick Tip:</strong> Use the sidebar navigation or search bar above to quickly jump to any section. All topics are organized for easy access.
+                </p>
+              </div>
+            </section>
             <section id="getting-started" className="mb-16">
               <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
                 <span className="text-2xl">🚀</span>
@@ -1842,7 +2487,7 @@ const UserGuide = () => {
                 </p>
               </div>
 
-              {/* Asset Hierarchy Mind Map */}
+              {/* Asset Mapping Tool */}
               <BlurFade delay={0.1}>
                 <div className="mb-8">
                   <MagicCard className={`p-8 ${isDark ? 'bg-neutral-900' : 'bg-white'}`}>
@@ -1851,7 +2496,7 @@ const UserGuide = () => {
                         <span className="text-3xl">🗺️</span>
                       </div>
                       <div>
-                        <h3 className="text-2xl font-bold">Asset Hierarchy Mind Map</h3>
+                        <h3 className="text-2xl font-bold">Asset Mapping</h3>
                         <p className={`${isDark ? 'text-neutral-400' : 'text-gray-600'}`}>
                           Interactive visualization of your asset organization
                         </p>
@@ -1878,7 +2523,7 @@ const UserGuide = () => {
                       <div>
                         <h4 className="font-semibold mb-3 text-purple-600">How to Use:</h4>
                         <ol className="space-y-2 text-sm list-decimal list-inside">
-                          <li>Navigate to Dashboard → Tools → Asset Mind Map</li>
+                          <li>Navigate to Tools → Asset Mapping</li>
                           <li>Choose your hierarchy levels (up to 5 deep)</li>
                           <li>Select order: Liquidity, Time Horizon, Purpose, Type</li>
                           <li>Interact with the map: click, drag, zoom</li>
@@ -1894,8 +2539,8 @@ const UserGuide = () => {
                 </div>
               </BlurFade>
 
-              {/* Insurance Hierarchy */}
-              <BlurFade delay={0.2}>
+              {/* Insurance Mapping */}
+              <BlurFade delay={0.15}>
                 <div className="mb-8">
                   <MagicCard className={`p-8 ${isDark ? 'bg-neutral-900' : 'bg-white'}`}>
                     <div className="flex items-center gap-4 mb-6">
@@ -1903,7 +2548,7 @@ const UserGuide = () => {
                         <span className="text-3xl">🛡️</span>
                       </div>
                       <div>
-                        <h3 className="text-2xl font-bold">Insurance Protection Map</h3>
+                        <h3 className="text-2xl font-bold">Insurance Mapping</h3>
                         <p className={`${isDark ? 'text-neutral-400' : 'text-gray-600'}`}>
                           Visualize your complete protection portfolio
                         </p>
@@ -1953,75 +2598,348 @@ const UserGuide = () => {
                 </div>
               </BlurFade>
 
-              {/* Volatility Analysis Tool */}
-              <BlurFade delay={0.3}>
+              {/* Loan Calculator */}
+              <BlurFade delay={0.2}>
                 <div className="mb-8">
                   <MagicCard className={`p-8 ${isDark ? 'bg-neutral-900' : 'bg-white'}`}>
                     <div className="flex items-center gap-4 mb-6">
-                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
-                        <span className="text-3xl">📊</span>
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                        <span className="text-3xl">🏦</span>
                       </div>
                       <div>
-                        <h3 className="text-2xl font-bold">Portfolio Volatility Analysis</h3>
+                        <h3 className="text-2xl font-bold">Loan Calculator</h3>
                         <p className={`${isDark ? 'text-neutral-400' : 'text-gray-600'}`}>
-                          Understand your portfolio's risk profile
+                          Comprehensive loan payment and amortization analysis
                         </p>
                       </div>
                     </div>
                     
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
-                        <h4 className="font-semibold mb-3 text-orange-600">Default Volatility Metrics:</h4>
+                        <h4 className="font-semibold mb-3 text-cyan-600">What It Calculates:</h4>
+                        <ul className="space-y-2 text-sm">
+                          <li className="flex items-start gap-2">
+                            <span className="text-cyan-500 mt-1">💰</span>
+                            <span>Monthly payment based on principal, rate, and term</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-cyan-500 mt-1">📊</span>
+                            <span>Total interest paid over loan lifetime</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-cyan-500 mt-1">📅</span>
+                            <span>Amortization schedule with principal/interest breakdown</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-cyan-500 mt-1">⚡</span>
+                            <span>Early payoff scenarios and savings calculations</span>
+                          </li>
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-3 text-blue-600">Use Cases:</h4>
                         <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'} mb-3`}>
-                          Aura includes industry-standard volatility measures (σ - sigma) for different asset classes:
+                          Perfect for mortgages, auto loans, student loans, and personal loans. Compare different loan scenarios and understand the true cost of borrowing.
                         </p>
-                        <div className="space-y-1 text-sm">
-                          <div className="flex justify-between items-center p-2 rounded ${isDark ? 'bg-neutral-800' : 'bg-gray-50'}">
-                            <span>Cryptocurrency</span>
-                            <span className="font-mono text-red-600">σ = 0.540 (54%)</span>
+                        <div className={`p-3 rounded ${isDark ? 'bg-cyan-800/30' : 'bg-cyan-50'}`}>
+                          <p className="font-semibold mb-1">📈 Interactive Features:</p>
+                          <p className="text-sm">Adjust loan terms, see instant recalculations, visualize interest vs principal over time</p>
+                        </div>
+                      </div>
+                    </div>
+                  </MagicCard>
+                </div>
+              </BlurFade>
+
+              {/* Buy vs Rent Analyzer */}
+              <BlurFade delay={0.25}>
+                <div className="mb-8">
+                  <MagicCard className={`p-8 ${isDark ? 'bg-neutral-900' : 'bg-white'}`}>
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-pink-600 flex items-center justify-center">
+                        <span className="text-3xl">🏠</span>
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold">Buy vs Rent Analyzer</h3>
+                        <p className={`${isDark ? 'text-neutral-400' : 'text-gray-600'}`}>
+                          Make informed housing decisions with comprehensive analysis
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="font-semibold mb-3 text-orange-600">What It Compares:</h4>
+                        <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'} mb-3`}>
+                          Analyzes the complete financial picture of buying vs renting a home over your intended timeline.
+                        </p>
+                        <div className="space-y-2 text-sm">
+                          <div className={`p-3 rounded ${isDark ? 'bg-orange-800/30' : 'bg-orange-50'}`}>
+                            <p className="font-semibold mb-1">🏡 Buying Costs:</p>
+                            <p>Down payment, mortgage, property taxes, insurance, maintenance, HOA fees</p>
                           </div>
-                          <div className="flex justify-between items-center p-2 rounded ${isDark ? 'bg-neutral-800' : 'bg-gray-50'}">
-                            <span>Gold</span>
-                            <span className="font-mono text-yellow-600">σ = 0.151 (15.1%)</span>
-                          </div>
-                          <div className="flex justify-between items-center p-2 rounded ${isDark ? 'bg-neutral-800' : 'bg-gray-50'}">
-                            <span>Global Equities</span>
-                            <span className="font-mono text-orange-600">σ = 0.105 (10.5%)</span>
-                          </div>
-                          <div className="flex justify-between items-center p-2 rounded ${isDark ? 'bg-neutral-800' : 'bg-gray-50'}">
-                            <span>Real Estate (Residential)</span>
-                            <span className="font-mono text-blue-600">σ = 0.120 (12%)</span>
-                          </div>
-                          <div className="flex justify-between items-center p-2 rounded ${isDark ? 'bg-neutral-800' : 'bg-gray-50'}">
-                            <span>Bank FD / Cash</span>
-                            <span className="font-mono text-green-600">σ = 0.005 (0.5%)</span>
+                          <div className={`p-3 rounded ${isDark ? 'bg-pink-800/30' : 'bg-pink-50'}`}>
+                            <p className="font-semibold mb-1">🏘️ Renting Costs:</p>
+                            <p>Monthly rent, renter's insurance, utilities, moving costs</p>
                           </div>
                         </div>
                       </div>
                       <div>
-                        <h4 className="font-semibold mb-3 text-red-600">What It Calculates:</h4>
+                        <h4 className="font-semibold mb-3 text-pink-600">Key Insights:</h4>
                         <ul className="space-y-2 text-sm">
                           <li className="flex items-start gap-2">
-                            <span className="text-orange-500 mt-1">📈</span>
-                            <span><strong>Portfolio-Weighted Volatility:</strong> Overall risk based on your asset allocation</span>
+                            <span className="text-pink-500 mt-1">📊</span>
+                            <span>Break-even point: when buying becomes cheaper</span>
                           </li>
                           <li className="flex items-start gap-2">
-                            <span className="text-orange-500 mt-1">⚖️</span>
-                            <span><strong>Risk Distribution:</strong> Which assets contribute most to portfolio volatility</span>
+                            <span className="text-pink-500 mt-1">💰</span>
+                            <span>Total cost comparison over 5, 10, 15, 20+ years</span>
                           </li>
                           <li className="flex items-start gap-2">
-                            <span className="text-orange-500 mt-1">💎</span>
-                            <span><strong>Diversification Score:</strong> How well your portfolio reduces risk through diversification</span>
+                            <span className="text-pink-500 mt-1">📈</span>
+                            <span>Home appreciation vs investment opportunity cost</span>
                           </li>
                           <li className="flex items-start gap-2">
-                            <span className="text-orange-500 mt-1">🎯</span>
-                            <span><strong>Risk Recommendations:</strong> Suggestions for rebalancing to target risk levels</span>
+                            <span className="text-pink-500 mt-1">🎯</span>
+                            <span>Customizable assumptions for property appreciation, rent increases</span>
                           </li>
                         </ul>
-                        <div className={`mt-4 p-3 rounded ${isDark ? 'bg-orange-800/30' : 'bg-orange-50'}`}>
-                          <p className="font-semibold mb-1">⚠️ Important:</p>
-                          <p className="text-sm">These are historical volatility estimates. Past volatility doesn't predict future performance.</p>
+                      </div>
+                    </div>
+                  </MagicCard>
+                </div>
+              </BlurFade>
+
+              {/* Down-Payment Tracker */}
+              <BlurFade delay={0.3}>
+                <div className="mb-8">
+                  <MagicCard className={`p-8 ${isDark ? 'bg-neutral-900' : 'bg-white'}`}>
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
+                        <span className="text-3xl">🎯</span>
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold">Down-Payment Tracker</h3>
+                        <p className={`${isDark ? 'text-neutral-400' : 'text-gray-600'}`}>
+                          Track progress toward your home down payment goal
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="font-semibold mb-3 text-purple-600">What It Tracks:</h4>
+                        <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'} mb-3`}>
+                          Monitors your progress toward saving enough for a down payment on your future home purchase.
+                        </p>
+                        <div className="space-y-2 text-sm">
+                          <div className={`p-3 rounded ${isDark ? 'bg-purple-800/30' : 'bg-purple-50'}`}>
+                            <p className="font-semibold mb-1">💵 Savings Progress:</p>
+                            <p>Current savings, target amount, percentage complete</p>
+                          </div>
+                          <div className={`p-3 rounded ${isDark ? 'bg-indigo-800/30' : 'bg-indigo-50'}`}>
+                            <p className="font-semibold mb-1">📅 Timeline Projections:</p>
+                            <p>Estimated time to goal based on current savings rate</p>
+                          </div>
                         </div>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-3 text-indigo-600">Features:</h4>
+                        <ul className="space-y-2 text-sm">
+                          <li className="flex items-start gap-2">
+                            <span className="text-indigo-500 mt-1">🎯</span>
+                            <span>Set target home price and desired down payment %</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-indigo-500 mt-1">📊</span>
+                            <span>Visual progress bar and milestone tracking</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-indigo-500 mt-1">💰</span>
+                            <span>Monthly savings goal calculations</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-indigo-500 mt-1">⏱️</span>
+                            <span>Adjustable timeline scenarios and what-if analysis</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </MagicCard>
+                </div>
+              </BlurFade>
+
+              {/* Portfolio Modelling (VaR Lite Stress Test) */}
+              <BlurFade delay={0.35}>
+                <div className="mb-8">
+                  <MagicCard className={`p-8 ${isDark ? 'bg-neutral-900' : 'bg-white'}`}>
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center">
+                        <span className="text-3xl">📊</span>
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold">Portfolio Modelling (VaR Lite)</h3>
+                        <p className={`${isDark ? 'text-neutral-400' : 'text-gray-600'}`}>
+                          Understand your portfolio's risk profile and stress test scenarios
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="font-semibold mb-3 text-red-600">What It Calculates:</h4>
+                        <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'} mb-3`}>
+                          Uses industry-standard volatility measures to estimate portfolio risk and potential losses under different market scenarios.
+                        </p>
+                        <div className="space-y-1 text-sm">
+                          <div className={`p-2 rounded ${isDark ? 'bg-neutral-800' : 'bg-gray-50'}`}>
+                            <span className="font-semibold">Cryptocurrency:</span> <span className="font-mono text-red-600">σ = 54%</span>
+                          </div>
+                          <div className={`p-2 rounded ${isDark ? 'bg-neutral-800' : 'bg-gray-50'}`}>
+                            <span className="font-semibold">Stocks:</span> <span className="font-mono text-orange-600">σ = 10.5%</span>
+                          </div>
+                          <div className={`p-2 rounded ${isDark ? 'bg-neutral-800' : 'bg-gray-50'}`}>
+                            <span className="font-semibold">Real Estate:</span> <span className="font-mono text-blue-600">σ = 12%</span>
+                          </div>
+                          <div className={`p-2 rounded ${isDark ? 'bg-neutral-800' : 'bg-gray-50'}`}>
+                            <span className="font-semibold">Cash:</span> <span className="font-mono text-green-600">σ = 0.5%</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-3 text-orange-600">Risk Insights:</h4>
+                        <ul className="space-y-2 text-sm">
+                          <li className="flex items-start gap-2">
+                            <span className="text-red-500 mt-1">⚠️</span>
+                            <span><strong>Portfolio-Weighted Volatility:</strong> Overall risk based on asset allocation</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-orange-500 mt-1">📉</span>
+                            <span><strong>Stress Test Scenarios:</strong> Potential losses during market downturns</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-yellow-500 mt-1">🎯</span>
+                            <span><strong>Risk Recommendations:</strong> Suggestions for rebalancing to target risk</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </MagicCard>
+                </div>
+              </BlurFade>
+
+              {/* Asset Matrix */}
+              <BlurFade delay={0.4}>
+                <div className="mb-8">
+                  <MagicCard className={`p-8 ${isDark ? 'bg-neutral-900' : 'bg-white'}`}>
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center">
+                        <span className="text-3xl">📋</span>
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold">Asset Matrix</h3>
+                        <p className={`${isDark ? 'text-neutral-400' : 'text-gray-600'}`}>
+                          Comprehensive asset analysis and comparison grid
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="font-semibold mb-3 text-teal-600">What It Shows:</h4>
+                        <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'} mb-3`}>
+                          Presents all your assets in a sortable, filterable table with key metrics side-by-side for easy comparison.
+                        </p>
+                        <div className="space-y-2 text-sm">
+                          <div className={`p-3 rounded ${isDark ? 'bg-teal-800/30' : 'bg-teal-50'}`}>
+                            <p className="font-semibold mb-1">📊 Key Metrics:</p>
+                            <p>Value, ROI, liquidity, time horizon, purpose, type</p>
+                          </div>
+                          <div className={`p-3 rounded ${isDark ? 'bg-cyan-800/30' : 'bg-cyan-50'}`}>
+                            <p className="font-semibold mb-1">🔍 Advanced Filtering:</p>
+                            <p>Filter by multiple criteria simultaneously</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-3 text-cyan-600">Use Cases:</h4>
+                        <ul className="space-y-2 text-sm">
+                          <li className="flex items-start gap-2">
+                            <span className="text-teal-500 mt-1">✓</span>
+                            <span>Compare performance across asset types</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-teal-500 mt-1">✓</span>
+                            <span>Identify underperforming assets</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-teal-500 mt-1">✓</span>
+                            <span>Sort by various criteria for insights</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-teal-500 mt-1">✓</span>
+                            <span>Export data for further analysis</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </MagicCard>
+                </div>
+              </BlurFade>
+
+              {/* Time Value Calculator */}
+              <BlurFade delay={0.45}>
+                <div className="mb-8">
+                  <MagicCard className={`p-8 ${isDark ? 'bg-neutral-900' : 'bg-white'}`}>
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center">
+                        <span className="text-3xl">⏰</span>
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold">Time Value of Money</h3>
+                        <p className={`${isDark ? 'text-neutral-400' : 'text-gray-600'}`}>
+                          Calculate present and future values with compound interest
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="font-semibold mb-3 text-yellow-600">What It Calculates:</h4>
+                        <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-gray-700'} mb-3`}>
+                          Fundamental financial calculations showing how money grows or shrinks over time based on interest rates.
+                        </p>
+                        <div className="space-y-2 text-sm">
+                          <div className={`p-3 rounded ${isDark ? 'bg-yellow-800/30' : 'bg-yellow-50'}`}>
+                            <p className="font-semibold mb-1">💰 Future Value:</p>
+                            <p>What today's money will be worth in the future</p>
+                          </div>
+                          <div className={`p-3 rounded ${isDark ? 'bg-amber-800/30' : 'bg-amber-50'}`}>
+                            <p className="font-semibold mb-1">📅 Present Value:</p>
+                            <p>What future money is worth in today's dollars</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-3 text-amber-600">Applications:</h4>
+                        <ul className="space-y-2 text-sm">
+                          <li className="flex items-start gap-2">
+                            <span className="text-yellow-500 mt-1">🎯</span>
+                            <span>Retirement planning and savings goals</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-yellow-500 mt-1">📈</span>
+                            <span>Investment return projections</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-yellow-500 mt-1">💡</span>
+                            <span>Inflation impact analysis</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-yellow-500 mt-1">🔢</span>
+                            <span>Annuity and lump sum comparisons</span>
+                          </li>
+                        </ul>
                       </div>
                     </div>
                   </MagicCard>
@@ -2256,307 +3174,6 @@ const UserGuide = () => {
             {/* End of multi-column content */}
 
             {/* Index Section - Full width, not in columns */}
-            <section id="index" className="mb-16 pt-8 border-t-2 border-blue-500/20">
-              <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
-                <span className="text-2xl">📑</span>
-                Quick Reference Index
-              </h2>
-              
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {/* Getting Started */}
-                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
-                  <h3 className="text-lg font-semibold mb-4 text-blue-600 flex items-center gap-2">
-                    <span>🚀</span> Getting Started
-                  </h3>
-                  <ul className="space-y-2 text-sm">
-                    <li>
-                      <button onClick={() => scrollToSection('getting-started')} className="hover:text-blue-500 transition-colors text-left">
-                        • Introduction & Overview
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('getting-started')} className="hover:text-blue-500 transition-colors text-left">
-                        • First-Time Setup
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('getting-started')} className="hover:text-blue-500 transition-colors text-left">
-                        • Navigation Basics
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('getting-started')} className="hover:text-blue-500 transition-colors text-left">
-                        • Dashboard Overview
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Asset Management */}
-                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
-                  <h3 className="text-lg font-semibold mb-4 text-purple-600 flex items-center gap-2">
-                    <span>💎</span> Asset Management
-                  </h3>
-                  <ul className="space-y-2 text-sm">
-                    <li>
-                      <button onClick={() => scrollToSection('assets')} className="hover:text-purple-500 transition-colors text-left">
-                        • Adding Assets
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('assets')} className="hover:text-purple-500 transition-colors text-left">
-                        • Asset Types (Real Estate, Stocks, Crypto, etc.)
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('assets')} className="hover:text-purple-500 transition-colors text-left">
-                        • Asset Purpose (Growth, Security, Emergency, etc.)
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('assets')} className="hover:text-purple-500 transition-colors text-left">
-                        • Time Horizon Planning
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('assets')} className="hover:text-purple-500 transition-colors text-left">
-                        • Liquidity Management
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('assets')} className="hover:text-purple-500 transition-colors text-left">
-                        • Editing & Deleting Assets
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Insurance */}
-                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
-                  <h3 className="text-lg font-semibold mb-4 text-green-600 flex items-center gap-2">
-                    <span>🛡️</span> Insurance Protection
-                  </h3>
-                  <ul className="space-y-2 text-sm">
-                    <li>
-                      <button onClick={() => scrollToSection('insurance')} className="hover:text-green-500 transition-colors text-left">
-                        • Adding Policies
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('insurance')} className="hover:text-green-500 transition-colors text-left">
-                        • Life Insurance
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('insurance')} className="hover:text-green-500 transition-colors text-left">
-                        • Health Insurance
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('insurance')} className="hover:text-green-500 transition-colors text-left">
-                        • Property & Auto Insurance
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('insurance')} className="hover:text-green-500 transition-colors text-left">
-                        • Coverage Analysis
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Goals & Targets */}
-                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
-                  <h3 className="text-lg font-semibold mb-4 text-orange-600 flex items-center gap-2">
-                    <span>🎯</span> Goals & Targets
-                  </h3>
-                  <ul className="space-y-2 text-sm">
-                    <li>
-                      <button onClick={() => scrollToSection('goals')} className="hover:text-orange-500 transition-colors text-left">
-                        • Creating Financial Goals
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('goals')} className="hover:text-orange-500 transition-colors text-left">
-                        • Net Worth Targets
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('goals')} className="hover:text-orange-500 transition-colors text-left">
-                        • Custom Goals
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('goals')} className="hover:text-orange-500 transition-colors text-left">
-                        • Asset Selection for Goals
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('goals')} className="hover:text-orange-500 transition-colors text-left">
-                        • Progress Tracking
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Transactions */}
-                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
-                  <h3 className="text-lg font-semibold mb-4 text-cyan-600 flex items-center gap-2">
-                    <span>💳</span> Transactions
-                  </h3>
-                  <ul className="space-y-2 text-sm">
-                    <li>
-                      <button onClick={() => scrollToSection('transactions')} className="hover:text-cyan-500 transition-colors text-left">
-                        • Transaction Types
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('transactions')} className="hover:text-cyan-500 transition-colors text-left">
-                        • Recording Transactions
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('transactions')} className="hover:text-cyan-500 transition-colors text-left">
-                        • Transaction History
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('transactions')} className="hover:text-cyan-500 transition-colors text-left">
-                        • Filtering & Search
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Analysis & Reports */}
-                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
-                  <h3 className="text-lg font-semibold mb-4 text-pink-600 flex items-center gap-2">
-                    <span>📊</span> Analysis & Reports
-                  </h3>
-                  <ul className="space-y-2 text-sm">
-                    <li>
-                      <button onClick={() => scrollToSection('reports')} className="hover:text-pink-500 transition-colors text-left">
-                        • Portfolio Reports
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('reports')} className="hover:text-pink-500 transition-colors text-left">
-                        • PDF Export
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('reports')} className="hover:text-pink-500 transition-colors text-left">
-                        • Excel Export
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('ai-analysis')} className="hover:text-pink-500 transition-colors text-left">
-                        • AI-Powered Analysis
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('ai-analysis')} className="hover:text-pink-500 transition-colors text-left">
-                        • AI Analysis Prompts
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Personalization */}
-                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
-                  <h3 className="text-lg font-semibold mb-4 text-indigo-600 flex items-center gap-2">
-                    <span>🎨</span> Personalization
-                  </h3>
-                  <ul className="space-y-2 text-sm">
-                    <li>
-                      <button onClick={() => scrollToSection('personalization')} className="hover:text-indigo-500 transition-colors text-left">
-                        • Theme Selection
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('personalization')} className="hover:text-indigo-500 transition-colors text-left">
-                        • Light & Dark Modes
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('personalization')} className="hover:text-indigo-500 transition-colors text-left">
-                        • Emoji & Icon Customization
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('personalization')} className="hover:text-indigo-500 transition-colors text-left">
-                        • User Preferences
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Advanced Features */}
-                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
-                  <h3 className="text-lg font-semibold mb-4 text-red-600 flex items-center gap-2">
-                    <span>🚀</span> Advanced Features
-                  </h3>
-                  <ul className="space-y-2 text-sm">
-                    <li>
-                      <button onClick={() => scrollToSection('advanced')} className="hover:text-red-500 transition-colors text-left">
-                        • Bulk Operations
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('advanced')} className="hover:text-red-500 transition-colors text-left">
-                        • Import/Export Data
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('advanced')} className="hover:text-red-500 transition-colors text-left">
-                        • Advanced Filtering
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('advanced')} className="hover:text-red-500 transition-colors text-left">
-                        • Custom Categories
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Tips & Best Practices */}
-                <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
-                  <h3 className="text-lg font-semibold mb-4 text-yellow-600 flex items-center gap-2">
-                    <span>💡</span> Tips & Best Practices
-                  </h3>
-                  <ul className="space-y-2 text-sm">
-                    <li>
-                      <button onClick={() => scrollToSection('tips')} className="hover:text-yellow-500 transition-colors text-left">
-                        • Regular Updates
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('tips')} className="hover:text-yellow-500 transition-colors text-left">
-                        • Detailed Record Keeping
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('tips')} className="hover:text-yellow-500 transition-colors text-left">
-                        • Portfolio Analysis Tips
-                      </button>
-                    </li>
-                    <li>
-                      <button onClick={() => scrollToSection('tips')} className="hover:text-yellow-500 transition-colors text-left">
-                        • Asset Naming Conventions
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              {/* Quick Navigation Reminder */}
-              <div className={`mt-8 p-6 rounded-xl ${isDark ? 'bg-gradient-to-r from-blue-900/40 to-purple-900/40 border border-blue-800' : 'bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200'}`}>
-                <p className="text-center text-sm">
-                  <strong>💡 Quick Tip:</strong> Use the sidebar navigation or search bar above to quickly jump to any section. All topics are organized for easy access.
-                </p>
-              </div>
-            </section>
 
             {/* Footer - full width, not in columns */}
             <footer className={`text-center py-8 ${isDark ? 'text-neutral-400' : 'text-gray-600'}`}>

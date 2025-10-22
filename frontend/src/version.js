@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.221.10',
-  buildDate: '2025-10-21',
-  deploymentId: 'time-value-and-portfolio-enhancements',
-  description: 'Add Time Value tool, default mix restore, and clearer VaR storytelling with allocation heat tiles'
+  version: 'v0.222.0',
+  buildDate: '2025-01-22',
+  deploymentId: 'user-guide-enhancements',
+  description: 'User Guide PDF download, Index moved to top, 8 tools comprehensive documentation added'
 }
 
 export const getVersionDisplay = () => {

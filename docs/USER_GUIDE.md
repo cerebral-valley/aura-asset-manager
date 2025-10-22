@@ -974,27 +974,32 @@ Insurance forms a critical component of comprehensive financial planning. This g
 
 ### Understanding Aura's Analysis Tools
 
-Aura provides powerful visualization and analysis tools to help you understand your financial position comprehensively. This guide explains each tool, how to use it effectively, and what insights you can gain.
+Aura provides 8 powerful analysis tools to help you understand your financial position comprehensively, make informed decisions, and optimize your portfolio. This guide explains each tool, how to use it effectively, and what insights you can gain.
 
-### Asset Hierarchy Mind Map
+---
+
+### 1. Asset Mapping (Asset Hierarchy Mind Map)
 
 **What It Does**
-The Asset Hierarchy Mind Map creates an interactive visual representation of your complete asset structure, showing relationships between asset categories, types, and individual holdings.
+The Asset Mapping tool creates an interactive visual representation of your complete asset structure, showing relationships between asset categories, types, and individual holdings in an intuitive tree/network diagram.
 
 **How to Use**
 1. Navigate to Tools section in the sidebar
-2. Select "Asset Hierarchy Mind Map"
+2. Select "Asset Mapping"
 3. The visualization automatically organizes your assets into hierarchical categories
 4. Click and drag to explore different sections
 5. Zoom in/out for detailed or overview perspectives
-6. Click on nodes to see asset details and values
+6. Click on nodes to see asset details and current values
+7. Use filters to focus on specific asset types or categories
 
 **Key Features**
-- **Interactive Navigation**: Pan, zoom, and explore your complete asset structure
+- **Interactive Network Visualization**: Pan, zoom, and explore your complete asset structure
 - **Value-Weighted Display**: Node sizes reflect relative asset values
-- **Category Organization**: Assets grouped by type (Real Estate, Investments, etc.)
+- **Category Organization**: Assets grouped by type (Real Estate, Stocks, Crypto, etc.)
 - **Real-Time Updates**: Reflects current asset values and holdings
 - **Color-Coded Categories**: Easy visual distinction between asset types
+- **Relationship Mapping**: See connections between related assets
+- **Export Options**: Save visualization as image for presentations
 
 **Insights Gained**
 - Understand your portfolio structure at a glance
@@ -1002,6 +1007,7 @@ The Asset Hierarchy Mind Map creates an interactive visual representation of you
 - Visualize relationships between different asset types
 - See proportional value distribution across holdings
 - Discover opportunities for diversification
+- Spot assets that dominate your portfolio
 
 **Best Practices**
 - Review quarterly to understand portfolio evolution
@@ -1009,45 +1015,220 @@ The Asset Hierarchy Mind Map creates an interactive visual representation of you
 - Share with financial advisors for professional guidance
 - Export screenshots for record-keeping
 - Compare historical views to track structural changes
+- Use to explain portfolio to family members
 
-### Insurance Protection Map
+**Use Cases**
+- Pre-retirement portfolio assessment
+- Inheritance planning and visualization
+- Portfolio rebalancing before major life events
+- Educational tool for understanding diversification
+- Preparing for financial advisor meetings
+
+---
+
+### 2. Insurance Mapping (Insurance Protection Map)
 
 **What It Does**
-The Insurance Protection Map visualizes your complete insurance coverage portfolio, showing how different policies work together to create comprehensive financial protection.
+The Insurance Mapping tool visualizes your complete insurance coverage portfolio, showing how different policies work together to create comprehensive financial protection. It displays total coverage value and organizes policies by type and beneficiaries.
 
 **How to Use**
 1. Navigate to Tools section
-2. Select "Insurance Protection Map"
+2. Select "Insurance Mapping"
 3. View hierarchical organization of all insurance policies
-4. Explore coverage by category (Life, Health, Property, etc.)
+4. Explore coverage by category (Life, Health, Property, Auto, etc.)
 5. Click nodes to see policy details and coverage amounts
 6. Assess coverage adequacy relative to asset values
+7. Identify coverage gaps or overlapping policies
 
 **Key Features**
-- **Coverage Visualization**: See total protection value across all policies
+- **Coverage Visualization**: See total protection value across all policies (displayed as purple nodes)
 - **Category Breakdown**: Policies organized by insurance type
 - **Coverage Gap Identification**: Spot areas needing additional protection
 - **Beneficiary Relationships**: Understand who's protected by each policy
 - **Policy Expiration Tracking**: Visual indicators for renewal dates
+- **Asset-to-Coverage Ratio**: Compare total insurance to total asset value
+- **Premium Tracking**: See annual/monthly premium costs per policy
 
 **Insights Gained**
-- Total insurance coverage value
-- Coverage distribution across protection types
+- Total insurance coverage value across all policies
+- Coverage distribution across protection types (life, health, property)
 - Relationship between asset values and insurance protection
 - Potential coverage gaps or redundancies
 - Policy renewal timeline and priorities
+- Whether you're over-insured or under-insured
 
 **Best Practices**
-- Review annually or after major life changes
-- Compare coverage to current asset values
-- Identify overlapping or redundant policies
+- Review annually or after major life changes (marriage, children, home purchase)
+- Compare coverage to current asset values (should be 1:1 or higher)
+- Identify overlapping or redundant policies to reduce premiums
 - Plan coverage increases as assets grow
 - Use for insurance portfolio optimization
+- Check beneficiary designations match current intentions
 
-### Portfolio Volatility Analysis
+**Use Cases**
+- Annual insurance portfolio review
+- Estate planning and beneficiary verification
+- Preparing for major life changes (marriage, children)
+- Reducing insurance costs by eliminating overlaps
+- Ensuring adequate protection as wealth grows
+
+---
+
+### 3. Loan Calculator
 
 **What It Does**
-The Volatility Analysis tool calculates portfolio risk using historical volatility data (sigma values) for different asset classes, helping you understand your portfolio's risk profile.
+The Loan Calculator provides comprehensive loan payment analysis with amortization schedules, interest vs principal breakdowns, and payoff date calculations. It helps you understand the true cost of borrowing and plan repayment strategies.
+
+**How to Use**
+1. Navigate to Tools section
+2. Select "Loan Calculator"
+3. Enter loan amount (principal)
+4. Input annual interest rate (e.g., 6.5% for mortgage)
+5. Specify loan term in years (e.g., 30 for typical mortgage)
+6. Choose payment frequency (monthly, bi-weekly, etc.)
+7. View detailed amortization schedule and charts
+
+**Key Features**
+- **Monthly Payment Calculation**: Precise payment amounts based on loan terms
+- **Amortization Schedule**: See principal vs interest for every payment
+- **Total Interest Paid**: Understand lifetime cost of the loan
+- **Payoff Date Calculator**: Know exactly when you'll be debt-free
+- **Extra Payment Scenarios**: Model impact of additional payments
+- **Interactive Charts**: Visualize loan paydown over time
+- **Comparison Mode**: Compare different loan terms side-by-side
+
+**Insights Gained**
+- True cost of borrowing (total interest paid)
+- How much of early payments go to interest vs principal
+- Impact of interest rate on total loan cost
+- Benefits of shorter loan terms or extra payments
+- Optimal payoff strategies for your situation
+- Comparison between 15-year vs 30-year mortgages
+
+**Best Practices**
+- Compare multiple loan scenarios before committing
+- Calculate impact of extra payments on payoff timeline
+- Use to negotiate better terms with lenders
+- Model refinancing scenarios
+- Understand total cost, not just monthly payment
+- Factor in opportunity cost of extra payments vs investing
+
+**Use Cases**
+- Mortgage shopping and comparison
+- Auto loan decision-making
+- Student loan payoff planning
+- Business loan analysis
+- Personal loan evaluation
+- Refinancing decision support
+
+---
+
+### 4. Buy vs Rent Analyzer
+
+**What It Does**
+The Buy vs Rent Analyzer helps you make informed housing decisions by comparing the long-term financial outcomes of buying vs renting in your specific situation. It factors in home appreciation, tax benefits, maintenance costs, investment returns, and more.
+
+**How to Use**
+1. Navigate to Tools section
+2. Select "Buy vs Rent Analyzer"
+3. Enter home purchase price
+4. Input down payment amount (typically 10-20%)
+5. Enter mortgage rate and term
+6. Input monthly rent for comparable property
+7. Specify expected home appreciation rate (local market average)
+8. Enter property tax rate and HOA fees if applicable
+9. Set investment return rate for alternative investments
+10. Choose time horizon for analysis (5, 10, 15, 30 years)
+
+**Key Features**
+- **Net Worth Comparison**: See which option builds more wealth over time
+- **Break-Even Analysis**: Identify when buying becomes financially advantageous
+- **Tax Benefit Calculation**: Factor in mortgage interest and property tax deductions
+- **Maintenance Cost Modeling**: Include realistic homeownership expenses
+- **Opportunity Cost Analysis**: Consider returns from investing down payment
+- **Rent Escalation**: Model annual rent increases
+- **Home Equity Buildup**: Visualize equity accumulation over time
+
+**Insights Gained**
+- Whether buying or renting is financially better for your situation
+- How long you need to stay for buying to make sense
+- Impact of down payment size on overall outcome
+- Sensitivity to home appreciation assumptions
+- True cost of homeownership vs renting
+- Break-even point where buying surpasses renting
+
+**Best Practices**
+- Use local data for home appreciation and rent escalation rates
+- Be realistic about maintenance costs (1-2% of home value annually)
+- Consider your mobility plans (job changes, family changes)
+- Factor in closing costs and selling costs
+- Run sensitivity analysis with optimistic, realistic, and pessimistic scenarios
+- Compare multiple properties and rent options
+
+**Use Cases**
+- First-time home buying decision
+- Relocation housing decisions
+- Investment property analysis
+- Post-divorce housing choices
+- Retirement housing planning
+- Young professional career flexibility planning
+
+---
+
+### 5. Down-Payment Tracker
+
+**What It Does**
+The Down-Payment Tracker helps you save for a home down payment by tracking progress toward your goal, projecting timeline based on savings rate, and suggesting optimal savings strategies.
+
+**How to Use**
+1. Navigate to Tools section
+2. Select "Down-Payment Tracker"
+3. Enter target home price
+4. Set desired down payment percentage (typically 10-20%)
+5. Input current savings dedicated to down payment
+6. Enter monthly savings amount
+7. Specify expected savings account interest rate
+8. View progress chart and projected completion date
+
+**Key Features**
+- **Goal Progress Tracking**: Visual progress bar showing current vs target
+- **Timeline Projection**: Calculates months/years until goal reached
+- **Compound Interest Modeling**: Factors in savings growth over time
+- **Savings Rate Optimizer**: Suggests monthly amounts for different timelines
+- **PMI Calculation**: Shows savings from 20% vs 10% down payment
+- **Milestone Celebrations**: Marks 25%, 50%, 75% progress points
+- **What-If Scenarios**: Model impact of windfalls or increased savings
+
+**Insights Gained**
+- Realistic timeline for home purchase
+- Required monthly savings to reach goal by target date
+- Impact of interest rates on savings growth
+- Benefits of different down payment amounts (10% vs 20%)
+- Cost of private mortgage insurance (PMI) if under 20%
+- Progress motivation through visualization
+
+**Best Practices**
+- Separate down payment savings from emergency fund
+- Use high-yield savings account for down payment funds
+- Update tracker monthly as savings grow
+- Celebrate milestones to stay motivated
+- Consider gifts or bonuses toward goal
+- Re-evaluate home price target if timeline is too long
+
+**Use Cases**
+- First-time home buyer savings planning
+- Trading up to larger home
+- Second home or vacation property purchase
+- Investment property down payment
+- Post-rental transition to ownership
+- Young couple joint savings goal
+
+---
+
+### 6. Portfolio Modelling (VaR Lite)
+
+**What It Does**
+Portfolio Modelling (VaR Lite) calculates portfolio risk using Value at Risk (VaR) methodology and historical volatility data for different asset classes. It helps you understand your portfolio's risk profile and potential losses during market stress.
 
 **Default Volatility Values (Annual Sigma)**
 Aura uses research-based standard deviation values for major asset classes:
@@ -1058,44 +1239,159 @@ Aura uses research-based standard deviation values for major asset classes:
 | Individual Stocks | 25.0% | High |
 | Emerging Market Stocks | 25.0% | High |
 | Small Cap Stocks | 20.0% | High |
-| Large Cap Stocks | 15.0% | Moderate-High |
-| Gold | 15.1% | Moderate |
-| Corporate Bonds | 10.5% | Moderate |
 | Silver | 20.0% | High |
 | REITs | 20.0% | High |
 | Commodities | 20.0% | High |
+| Large Cap Stocks | 15.0% | Moderate-High |
+| Gold | 15.1% | Moderate |
+| Corporate Bonds | 10.5% | Moderate |
+| Real Estate | 10.0% | Moderate |
 | Government Bonds | 5.0% | Low |
 | Cash/Money Market | 0.1% | Very Low |
-| Real Estate | 10.0% | Moderate |
 
 **How to Use**
 1. Navigate to Tools section
-2. Select "Portfolio Volatility Analysis"
+2. Select "Portfolio Modelling (VaR Lite)"
 3. System automatically calculates based on your holdings
-4. Review portfolio-level volatility score
+4. Review portfolio-level volatility score (low, moderate, high, very high)
 5. See contribution of each asset class to overall risk
 6. Compare against risk tolerance benchmarks
+7. Run stress test scenarios (market crash, recession, etc.)
+8. Model impact of portfolio changes
 
 **Key Features**
 - **Automatic Calculation**: No manual input required
 - **Asset Class Weighting**: Risk weighted by portfolio allocation
 - **Risk Contribution Analysis**: See which assets contribute most to risk
-- **Historical Context**: Compare current vs. typical volatility ranges
-- **Scenario Analysis**: Model impact of portfolio changes
+- **Historical Context**: Compare current vs typical volatility ranges
+- **Stress Testing**: Model 2008-level crash, COVID crash scenarios
+- **Portfolio Optimization**: Suggests rebalancing for desired risk level
+- **Confidence Intervals**: 95% and 99% VaR calculations
 
 **Insights Gained**
-- Overall portfolio risk level (low, moderate, high)
+- Overall portfolio risk level (low, moderate, high, very high)
 - Which assets contribute most to portfolio volatility
-- Whether risk level aligns with investment goals
-- Impact of adding/removing specific assets
+- Whether risk level aligns with investment goals and time horizon
+- Expected portfolio drawdown in market crash (95% confidence)
+- Impact of adding/removing specific assets on risk
 - Diversification effectiveness
 
 **Best Practices**
 - Review volatility quarterly
-- Ensure risk level matches your risk tolerance
+- Ensure risk level matches your risk tolerance and time horizon
 - Consider rebalancing if risk exceeds comfort level
 - Use before making major portfolio changes
 - Compare volatility across different time periods
+- Reduce volatility as you approach retirement
+- Match risk to specific goals (emergency fund = low risk, retirement = moderate)
+
+**Use Cases**
+- Pre-retirement portfolio de-risking
+- Risk assessment before major life events
+- Investment policy statement creation
+- Portfolio stress testing
+- Asset allocation optimization
+- Risk tolerance verification
+
+---
+
+### 7. Asset Matrix
+
+**What It Does**
+The Asset Matrix provides a comprehensive asset analysis and comparison grid, displaying all your assets in a sortable, filterable table with key metrics like value, returns, risk level, liquidity, and purpose. It's like a spreadsheet view of your entire portfolio.
+
+**How to Use**
+1. Navigate to Tools section
+2. Select "Asset Matrix"
+3. View all assets in a grid/table format
+4. Sort by any column (value, type, risk, liquidity, etc.)
+5. Filter by asset type, purpose, or time horizon
+6. Compare metrics across multiple assets
+7. Export matrix to Excel for further analysis
+
+**Key Features**
+- **Sortable Columns**: Click any header to sort
+- **Multi-Filter**: Combine filters for precise views
+- **Summary Statistics**: Total value, average risk, liquidity percentage
+- **Color Coding**: Risk levels and purposes color-coded
+- **Quick Edit**: Click cells to edit values inline
+- **Bulk Actions**: Select multiple assets for batch operations
+- **Export to Excel**: Full matrix export for offline analysis
+
+**Insights Gained**
+- Complete portfolio overview in table format
+- Comparison of returns across all assets
+- Risk distribution across portfolio
+- Liquidity analysis (what can be sold quickly)
+- Purpose allocation (growth vs security vs emergency)
+- Time horizon breakdown
+- Underperforming assets identification
+
+**Best Practices**
+- Use to identify underperforming assets
+- Sort by risk to see concentration in high-risk assets
+- Filter by purpose to check goal-specific allocations
+- Export monthly for record-keeping
+- Compare returns to benchmark indices
+- Use for tax-loss harvesting identification
+
+**Use Cases**
+- Quarterly portfolio review
+- Tax planning and tax-loss harvesting
+- Rebalancing decision-making
+- Asset performance comparison
+- Liquidation planning (what to sell first)
+- Financial advisor meetings
+
+---
+
+### 8. Time Value of Money Calculator
+
+**What It Does**
+The Time Value Calculator computes present value (PV) and future value (FV) of money using compound interest formulas. It helps you understand how much money will grow over time or what a future sum is worth in today's dollars.
+
+**How to Use**
+1. Navigate to Tools section
+2. Select "Time Value Calculator"
+3. Choose calculation type (Future Value or Present Value)
+4. Enter principal amount
+5. Input annual interest/growth rate
+6. Specify time period in years
+7. Select compounding frequency (annual, semi-annual, quarterly, monthly, daily)
+8. View calculated results and growth chart
+
+**Key Features**
+- **Future Value Calculation**: How much will money grow to?
+- **Present Value Calculation**: What is future money worth today?
+- **Compound Interest**: Factors in compounding frequency
+- **Visual Growth Chart**: See exponential growth over time
+- **Inflation Adjustment**: Real vs nominal returns
+- **Comparison Mode**: Compare different rates or time periods
+- **Reverse Calculator**: Find required rate for desired outcome
+
+**Insights Gained**
+- Power of compound interest over time
+- Impact of interest rate on wealth accumulation
+- Required return rate for financial goals
+- Value of starting early (time in market)
+- Impact of compounding frequency
+- Real returns after inflation
+
+**Best Practices**
+- Use for retirement planning calculations
+- Model college savings growth
+- Understand loan costs (reverse of growth)
+- Factor in realistic rates (7-10% for stocks historically)
+- Account for inflation in long-term projections
+- Compare investment options objectively
+
+**Use Cases**
+- Retirement savings projections
+- College fund planning
+- Investment opportunity evaluation
+- Loan vs investment decisions
+- Early retirement calculations
+- Wealth accumulation goal setting
 
 ### Export & Download Tools
 
