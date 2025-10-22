@@ -23,7 +23,7 @@ const ToolsPage = () => {
     { id: 'loan-calculator', label: 'Loan Calculator', component: LoanCalculatorTab },
     { id: 'buy-vs-rent', label: 'Buy vs Rent', component: BuyRentAnalyzerTab },
     { id: 'down-payment-tracker', label: 'Down-Payment Tracker', component: DownPaymentTrackerTab },
-    { id: 'var-lite', label: 'VaR Lite', component: VarLiteStressTestTab },
+    { id: 'var-lite', label: 'Portfolio Modelling', component: VarLiteStressTestTab },
     { id: 'asset-matrix', label: 'Asset Matrix', component: AssetMatrixTab },
   ]
 

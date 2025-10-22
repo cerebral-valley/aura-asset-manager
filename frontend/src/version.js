@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.221.7',
+  version: 'v0.221.8',
   buildDate: '2025-10-21',
-  deploymentId: 'var-lite-stress-test',
-  description: 'Add VaR stress testing with portfolio loader, property planners, and move asset matrix into tools'
+  deploymentId: 'portfolio-modelling-polish',
+  description: 'Polish portfolio modelling UX with portfolio loader, plain-language guidance, and heat-map allocation view'
 }
 
 export const getVersionDisplay = () => {

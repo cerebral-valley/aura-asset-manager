@@ -184,6 +184,12 @@ const sanitizeNumber = (value, fallback = 0) => {
 
 const ensureWeightsSum = (assets) => assets.reduce((sum, row) => sum + (Number(row.weight) || 0), 0)
 
+const formatSignedPercent = (value) => {
+  if (!Number.isFinite(value)) return '0.00%'
+  const sign = value >= 0 ? '+' : ''
+  return `${sign}${value.toFixed(2)}%`
+}
+
 const generateHeatmapData = (assets, horizonDays) => {
   const dailySigmas = assets.map((asset) => ({
     weight: (Number(asset.weight) || 0) / 100,
@@ -191,7 +197,7 @@ const generateHeatmapData = (assets, horizonDays) => {
   }))
 
   const windows = Math.max(1, Math.floor(252 / Math.max(1, horizonDays)))
-  const data = []
+  const samples = []
 
   for (let w = 1; w <= windows; w += 1) {
     let cumulative = 0
@@ -204,10 +210,23 @@ const generateHeatmapData = (assets, horizonDays) => {
       cumulative += dayReturn
     }
 
-    data.push({ window: w, return: cumulative * 100 })
+    samples.push({ window: w, return: cumulative * 100 })
   }
 
-  return data
+  const returns = samples.map((sample) => sample.return)
+  const min = returns.length ? Math.min(...returns) : 0
+  const max = returns.length ? Math.max(...returns) : 0
+  const mean = returns.length ? returns.reduce((sum, value) => sum + value, 0) / returns.length : 0
+
+  return {
+    samples,
+    stats: {
+      min,
+      max,
+      mean,
+      simulations: samples.length,
+    },
+  }
 }
 
 const generateHistogramData = (sigmaH, buckets = 20, simulations = 500) => {
@@ -226,7 +245,17 @@ const generateHistogramData = (sigmaH, buckets = 20, simulations = 500) => {
     data[idx].count += 1
   })
 
-  return data.map((row) => ({ bucket: Number(row.bucket.toFixed(2)), count: row.count }))
+  const mean = returns.reduce((sum, value) => sum + value, 0) / returns.length || 0
+
+  return {
+    bins: data.map((row) => ({ bucket: Number(row.bucket.toFixed(2)), count: row.count })),
+    stats: {
+      min,
+      max,
+      mean,
+      simulations,
+    },
+  }
 }
 
 const generatePieData = (assets) =>
@@ -376,19 +405,56 @@ const VarLiteStressTestTab = () => {
   )
 
   const sigmaH = sigmaDaily * Math.sqrt(horizonDays)
-  const heatmapData = useMemo(() => (horizonDays <= 5 ? generateHeatmapData(editingAssets, horizonDays) : []), [
+  const heatmapResult = useMemo(() => (horizonDays <= 5 ? generateHeatmapData(editingAssets, horizonDays) : null), [
     editingAssets,
     horizonDays,
   ])
-  const histogramData = useMemo(() => (horizonDays > 5 ? generateHistogramData(sigmaH) : []), [sigmaH, horizonDays])
+  const histogramResult = useMemo(() => (horizonDays > 5 ? generateHistogramData(sigmaH) : null), [sigmaH, horizonDays])
+  const heatmapData = heatmapResult?.samples ?? []
+  const histogramData = histogramResult?.bins ?? []
+  const distributionStats = heatmapResult?.stats ?? histogramResult?.stats ?? {
+    min: 0,
+    max: 0,
+    mean: 0,
+    simulations: 0,
+  }
   const pieData = useMemo(() => generatePieData(editingAssets), [editingAssets])
+  const weightTiles = useMemo(() => {
+    const maxWeight = Math.max(...editingAssets.map((row) => Number(row.weight) || 0), 0)
+    return editingAssets
+      .map((row, index) => {
+        const weight = Number(row.weight) || 0
+        return {
+          key: `${row.name || row.type || index}-${index}`,
+          name: row.name || row.type || `Asset ${index + 1}`,
+          weight,
+          intensity: maxWeight > 0 ? weight / maxWeight : 0,
+        }
+      })
+      .sort((a, b) => b.weight - a.weight)
+  }, [editingAssets])
+  const simulationLabel = horizonDays <= 5 ? 'Rolling windows analysed' : 'Monte Carlo simulations'
+  const simulationCount = distributionStats.simulations
+  const tailProbability = ((1 - confLvl) * 100).toFixed(1)
+  const worstReturn = distributionStats.min
+  const bestReturn = distributionStats.max
+  const averageReturn = distributionStats.mean
 
   const breach = varResult.varPercent > riskApp
   const horizonLabel = horizon === 'custom' ? `${horizonDays}-day` : horizonOptions.find((opt) => opt.value === horizon)?.label
 
   const handleRowChange = (index, key, value) => {
     setEditingAssets((prev) =>
-      prev.map((row, rowIndex) => (rowIndex === index ? { ...row, [key]: value } : row)),
+      prev.map((row, rowIndex) => {
+        if (rowIndex !== index) return row
+        if (key === 'sigma') {
+          return { ...row, sigma: Math.max(0, Number(value) / 100) }
+        }
+        if (key === 'weight') {
+          return { ...row, weight: Math.max(0, Number(value) || 0) }
+        }
+        return { ...row, [key]: value }
+      }),
     )
   }
 
@@ -423,7 +489,7 @@ const VarLiteStressTestTab = () => {
   return (
     <div className="flex flex-col gap-6 p-6">
       <div>
-        <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Var-Lite Stress Test</h2>
+        <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Portfolio Modelling (VaR Lite)</h2>
         <p className="text-sm text-slate-600 dark:text-slate-400">
           Quickly approximate Value-at-Risk across configurable horizons using a diagonal covariance shortcut.
         </p>
@@ -499,8 +565,10 @@ const VarLiteStressTestTab = () => {
           />
         </div>
         <p className="mt-4 text-sm text-slate-600 dark:text-slate-400">
-          σ (annual volatility) captures the typical percentage fluctuation for an asset class over a year. Higher values imply
-          more uncertainty in short-term returns, while lower values point to steadier behaviour.
+          Σ (annual volatility) captures the typical percentage swing for an asset class over a year. Higher values imply more
+          uncertainty in short-term returns, while lower values point to steadier behaviour. A {confOptions.find((opt) => opt.value === confLvl)?.label || `${confLvl * 100}%`} confidence
+          level means that in roughly {confLvl * 100}% of occasions you expect losses to stay within the VaR number, leaving only
+          about {tailProbability}% of cases where losses might be larger.
         </p>
       </div>
 
@@ -563,7 +631,7 @@ const VarLiteStressTestTab = () => {
                 <th className="px-3 py-2">Name</th>
                 <th className="px-3 py-2">Type</th>
                 <th className="px-3 py-2">Weight %</th>
-                <th className="px-3 py-2">σ (annual volatility)</th>
+                <th className="px-3 py-2">Σ (annual volatility)</th>
                 <th />
               </tr>
             </thead>
@@ -592,7 +660,7 @@ const VarLiteStressTestTab = () => {
                       min={0}
                       step="0.01"
                       value={row.weight}
-                      onChange={(event) => handleRowChange(index, 'weight', Number(event.target.value) || 0)}
+                      onChange={(event) => handleRowChange(index, 'weight', event.target.value)}
                       className="w-28 rounded border border-slate-300 px-2 py-1 text-right dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                     />
                   </td>
@@ -600,9 +668,9 @@ const VarLiteStressTestTab = () => {
                     <input
                       type="number"
                       min={0}
-                      step="0.001"
-                      value={row.sigma}
-                      onChange={(event) => handleRowChange(index, 'sigma', Number(event.target.value) || 0)}
+                      step="0.1"
+                      value={Number((row.sigma * 100).toFixed(2))}
+                      onChange={(event) => handleRowChange(index, 'sigma', event.target.value)}
                       className="w-28 rounded border border-slate-300 px-2 py-1 text-right dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                     />
                   </td>
@@ -632,25 +700,33 @@ const VarLiteStressTestTab = () => {
             {formatCurrency(varResult.varValue)}
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            {varResult.varPercent.toFixed(2)}% of portfolio value at {confOptions.find((opt) => opt.value === confLvl)?.label} confidence.
+            In everyday terms, there is roughly a {tailProbability}% chance that losses over this {horizonLabel?.toLowerCase()} horizon exceed
+            {` ${formatCurrency(varResult.varValue)} (${varResult.varPercent.toFixed(2)}% of the portfolio).`}
+          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Because your comfort line is {riskApp}% this scenario {breach ? 'sits above that limit—consider trimming risk or adding hedges.' : 'remains below that limit, so you are operating inside your stated tolerance.'}
           </p>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Allocation Snapshot</h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400">{weightSum.toFixed(2)}% allocated across {editingAssets.length} assets</p>
-          <div className="mt-3 h-48">
-            <ResponsiveContainer>
-              <PieChart>
-                <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={80}>
-                  {pieData.map((entry, index) => (
-                    <Cell key={entry.name} fill={['#2563eb', '#7c3aed', '#f97316', '#10b981', '#0ea5e9', '#a855f7'][index % 6]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => `${Number(value).toFixed(2)}%`} />
-                <Legend verticalAlign="bottom" height={36} />
-              </PieChart>
-            </ResponsiveContainer>
+          <p className="text-sm text-slate-600 dark:text-slate-400">{weightSum.toFixed(2)}% allocated across {editingAssets.length} asset buckets</p>
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {weightTiles.map((tile) => {
+              const intensity = 0.15 + tile.intensity * 0.55
+              return (
+                <div
+                  key={tile.key}
+                  className="rounded-lg border border-slate-200/40 p-3 text-sm font-medium text-slate-800 dark:border-white/10 dark:text-slate-100"
+                  style={{
+                    background: `linear-gradient(135deg, rgba(37,99,235,${intensity}) 0%, rgba(37,99,235,0.12) 100%)`,
+                  }}
+                >
+                  <div className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-300">{tile.name}</div>
+                  <div className="text-lg font-semibold text-slate-900 dark:text-white">{tile.weight.toFixed(2)}%</div>
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>
@@ -693,17 +769,23 @@ const VarLiteStressTestTab = () => {
           <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Inputs &amp; Diagnostics</h3>
           <ul className="mt-2 space-y-1 text-sm text-slate-600 dark:text-slate-400">
             <li>
-              <span className="font-medium text-slate-700 dark:text-slate-200">Daily σ (portfolio):</span> {(sigmaDaily * 100).toFixed(2)}%
+              <span className="font-medium text-slate-700 dark:text-slate-200">Daily Σ (portfolio):</span>{' '}
+              {(sigmaDaily * 100).toFixed(2)}%
             </li>
             <li>
-              <span className="font-medium text-slate-700 dark:text-slate-200">Horizon σ:</span> {(sigmaH * 100).toFixed(2)}%
+              <span className="font-medium text-slate-700 dark:text-slate-200">Horizon Σ:</span>{' '}
+              {(sigmaH * 100).toFixed(2)}%
             </li>
             <li>
-              <span className="font-medium text-slate-700 dark:text-slate-200">Simulations:</span>{' '}
-              {horizonDays <= 5 ? heatmapData.length : histogramData.length}
+              <span className="font-medium text-slate-700 dark:text-slate-200">{simulationLabel}:</span>{' '}
+              {simulationCount}
             </li>
             <li>
-              <span className="font-medium text-slate-700 dark:text-slate-200">Confidence Level:</span>{' '}
+              <span className="font-medium text-slate-700 dark:text-slate-200">Mean horizon return:</span>{' '}
+              {formatSignedPercent(averageReturn)} (min {formatSignedPercent(worstReturn)}, max {formatSignedPercent(bestReturn)})
+            </li>
+            <li>
+              <span className="font-medium text-slate-700 dark:text-slate-200">Confidence level:</span>{' '}
               {confOptions.find((opt) => opt.value === confLvl)?.label}
             </li>
           </ul>
@@ -718,34 +800,37 @@ const VarLiteStressTestTab = () => {
         <ul className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
           <li>
             <span className="font-semibold text-slate-800 dark:text-slate-100">Portfolio snapshot:</span>{' '}
-            Portfolio value of {formatCurrency(portValue)} with {editingAssets.length} asset buckets. The largest weight is{' '}
-            {editingAssets.reduce((max, row) => (row.weight > max.weight ? row : max), editingAssets[0] || { name: 'N/A', weight: 0 }).name}{' '}
-            at {editingAssets.length ? editingAssets.reduce((max, row) => (row.weight > max.weight ? row : max), editingAssets[0]).weight.toFixed(1) : '0.0'}%.
+            Portfolio value of {formatCurrency(portValue)} spread across {editingAssets.length} buckets. The heaviest slice is{' '}
+            {weightTiles[0]?.name || 'n/a'} at {weightTiles[0]?.weight.toFixed(1) || '0.0'}% of the mix.
           </li>
           <li>
             <span className="font-semibold text-slate-800 dark:text-slate-100">Risk settings:</span>{' '}
-            Using a {confOptions.find((opt) => opt.value === confLvl)?.label || ''} confidence level over a {horizonLabel} horizon. Risk
-            appetite is set at {riskApp}%.
+            Confidence level {confOptions.find((opt) => opt.value === confLvl)?.label || ''} means only about {tailProbability}% of
+            scenarios are expected to breach the loss limit over a {horizonLabel} horizon. Your declared appetite is {riskApp}%.
           </li>
           <li>
             <span className="font-semibold text-slate-800 dark:text-slate-100">Volatility assumptions:</span>{' '}
-            Portfolio daily volatility is {(sigmaDaily * 100).toFixed(2)}%, scaling to {(sigmaH * 100).toFixed(2)}% over the horizon. Adjust σ
-            values above to reflect your own estimates.
+            Daily Σ works out to {(sigmaDaily * 100).toFixed(2)}%, which compounds to {(sigmaH * 100).toFixed(2)}% across the horizon. Adjust
+            the inputs above if you rely on different volatility estimates.
           </li>
           <li>
             <span className="font-semibold text-slate-800 dark:text-slate-100">Simulated outcomes:</span>{' '}
             {horizonDays <= 5
-              ? `Heatmap displays ${heatmapData.length} rolling windows to highlight the range of short-term outcomes.`
-              : `Histogram aggregates 500 Monte-Carlo paths of horizon returns; the red line marks the VaR cut-off.`}
+              ? `Ran ${simulationCount} rolling ${horizonDays}-day windows using random daily shocks; the heat-map shows how those windows behaved.`
+              : `Ran ${simulationCount} Monte Carlo paths for the ${horizonLabel} horizon; the histogram summarises their spread and the red line marks the VaR cut-off.`}
+          </li>
+          <li>
+            <span className="font-semibold text-slate-800 dark:text-slate-100">Distribution insight:</span>{' '}
+            Simulations suggest the largest loss was about {formatSignedPercent(worstReturn)}, the best gain was {formatSignedPercent(bestReturn)},
+            and the average move was {formatSignedPercent(averageReturn)}.
           </li>
           <li>
             <span className="font-semibold text-slate-800 dark:text-slate-100">VaR conclusion:</span>{' '}
-            One-{horizonLabel} VaR equals {formatCurrency(varResult.varValue)} ({varResult.varPercent.toFixed(2)}%).{' '}
-            {breach
-              ? 'This exceeds your declared risk appetite, signalling a potential breach that may warrant rebalancing.'
-              : 'This sits within the risk appetite, indicating the current mix is aligned to your tolerance.'}
+            There is roughly a {tailProbability}% chance of losing more than {formatCurrency(varResult.varValue)} ({varResult.varPercent.toFixed(2)}%) over a
+            {` ${horizonLabel?.toLowerCase()} period.`} That sits {breach ? 'above' : 'below'} your {riskApp}% appetite, so {breach ? 'consider trimming exposure or adding protection.' : 'the mix remains inside your comfort zone.'}
           </li>
         </ul>
+        <p className="mt-4 text-xs italic text-slate-500 dark:text-slate-400">*For indicative purposes only.</p>
       </div>
     </div>
   )
