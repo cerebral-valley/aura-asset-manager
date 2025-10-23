@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.221.11',
+  version: 'v0.221.12',
   buildDate: '2025-10-21',
-  deploymentId: 'fire-number-tool',
-  description: 'Add FIRE number planner, highlight hourly worth, and extend tools navigation'
+  deploymentId: 'railway-redeploy',
+  description: 'Deployment bump for Railway refresh'
 }
 
 export const getVersionDisplay = () => {
