@@ -20,31 +20,29 @@ const DEFAULT_HORIZON = 10
 
 const calculateSip = ({ amount, frequency, growthRate, inflationRate, years }) => {
   const freq = FREQUENCIES[frequency] || FREQUENCIES.monthly
-  const periods = years * freq.periods
   const nominal = growthRate / 100
   const periodicRate = Math.pow(1 + nominal, 1 / freq.periods) - 1
-  const inflation = inflationRate / 100
+  const netNominal = (growthRate - inflationRate) / 100
+  const netFactor = 1 + netNominal
+  const netPeriodicRate = netFactor > 0 ? Math.pow(netFactor, 1 / freq.periods) - 1 : netNominal / freq.periods
 
   let balance = 0
+  let realBalance = 0
   let invested = 0
   const rows = []
 
   for (let year = 1; year <= years; year += 1) {
     for (let p = 0; p < freq.periods; p += 1) {
       balance = balance * (1 + periodicRate) + amount
+      realBalance = realBalance * (1 + netPeriodicRate) + amount
       invested += amount
     }
-
-    const returns = balance - invested
-    const realValue = balance / Math.pow(1 + inflation, year)
 
     rows.push({
       year,
       invested: Number(invested.toFixed(2)),
-      value: Number(balance.toFixed(2)),
-      returns: Number(returns.toFixed(2)),
-      realValue: Number(realValue.toFixed(2)),
-      realReturns: Number((realValue - invested).toFixed(2)),
+      portfolioValue: Number(balance.toFixed(2)),
+      realPortfolioValue: Number(realBalance.toFixed(2)),
     })
   }
 
@@ -52,36 +50,34 @@ const calculateSip = ({ amount, frequency, growthRate, inflationRate, years }) =
     data: rows,
     endingValue: balance,
     totalInvested: invested,
-    endingReal: rows.at(-1)?.realValue ?? 0,
+    endingReal: realBalance,
   }
 }
 
 const calculateLumpSum = ({ amount, growthRate, inflationRate, years }) => {
   const nominal = growthRate / 100
-  const inflation = inflationRate / 100
+  const netNominal = (growthRate - inflationRate) / 100
+  const netFactor = 1 + netNominal
 
   let value = amount
+  let realValue = amount
   const rows = []
 
   for (let year = 1; year <= years; year += 1) {
     value *= 1 + nominal
-    const realValue = value / Math.pow(1 + inflation, year)
-    const returns = value - amount
-
+    realValue *= effectiveNetFactor
     rows.push({
       year,
       invested: amount,
-      value: Number(value.toFixed(2)),
-      returns: Number(returns.toFixed(2)),
-      realValue: Number(realValue.toFixed(2)),
-      realReturns: Number((realValue - amount).toFixed(2)),
+      portfolioValue: Number(value.toFixed(2)),
+      realPortfolioValue: Number(realValue.toFixed(2)),
     })
   }
 
   return {
     data: rows,
     endingValue: value,
-    endingReal: rows.at(-1)?.realValue ?? 0,
+    endingReal: realValue,
   }
 }
 
@@ -215,8 +211,8 @@ const SIPAndLumpSumTab = () => {
                 <Tooltip formatter={(value) => formatCurrency(value)} labelFormatter={(value) => `Year ${value}`} />
                 <Legend />
                 <Line type="monotone" dataKey="invested" name="Invested" stroke="#2563eb" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="value" name="Portfolio value" stroke="#f97316" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="realValue" name="Inflation-adjusted value" stroke="#10b981" strokeDasharray="4 4" dot={false} />
+                <Line type="monotone" dataKey="portfolioValue" name="Portfolio value" stroke="#f97316" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="realPortfolioValue" name="Inflation-adjusted value" stroke="#10b981" strokeDasharray="4 4" dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -236,8 +232,8 @@ const SIPAndLumpSumTab = () => {
                 <Tooltip formatter={(value) => formatCurrency(value)} labelFormatter={(value) => `Year ${value}`} />
                 <Legend />
                 <Line type="monotone" dataKey="invested" name="Invested" stroke="#2563eb" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="value" name="Portfolio value" stroke="#f97316" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="realValue" name="Inflation-adjusted value" stroke="#10b981" strokeDasharray="4 4" dot={false} />
+                <Line type="monotone" dataKey="portfolioValue" name="Portfolio value" stroke="#f97316" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="realPortfolioValue" name="Inflation-adjusted value" stroke="#10b981" strokeDasharray="4 4" dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>

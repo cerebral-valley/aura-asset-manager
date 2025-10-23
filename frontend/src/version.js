@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.221.15',
-  buildDate: '2025-10-21',
-  deploymentId: 'sip-portfolio-value-fix',
-  description: 'Plot cumulative portfolio values for SIP & Lump Sum and extend FIRE documentation'
+  version: 'v0.221.16',
+  buildDate: '2025-10-23',
+  deploymentId: 'sip-inflation-adjustments',
+  description: 'Align SIP & Lump Sum inflation-adjusted growth with growth minus inflation rate'
 }
 
 export const getVersionDisplay = () => {
