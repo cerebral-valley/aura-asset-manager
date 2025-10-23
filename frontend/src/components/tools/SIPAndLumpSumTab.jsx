@@ -58,6 +58,7 @@ const calculateLumpSum = ({ amount, growthRate, inflationRate, years }) => {
   const nominal = growthRate / 100
   const netNominal = (growthRate - inflationRate) / 100
   const netFactor = 1 + netNominal
+  const effectiveNetFactor = Math.max(0, netFactor)
 
   let value = amount
   let realValue = amount
