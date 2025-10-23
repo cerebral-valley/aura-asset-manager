@@ -9,6 +9,7 @@ import VarLiteStressTestTab from '../components/tools/VarLiteStressTestTab'
 import AssetMatrixTab from '../components/tools/AssetMatrixTab'
 import TimeValueTab from '../components/tools/TimeValueTab'
 import FIRENumberTab from '../components/tools/FIRENumberTab'
+import SIPAndLumpSumTab from '../components/tools/SIPAndLumpSumTab'
 import Loading from '../components/ui/Loading'
 
 const ToolsPage = () => {
@@ -29,6 +30,7 @@ const ToolsPage = () => {
     { id: 'asset-matrix', label: 'Asset Matrix', component: AssetMatrixTab },
     { id: 'time-value', label: 'Time Value', component: TimeValueTab },
     { id: 'fire-number', label: 'FIRE Number', component: FIRENumberTab },
+    { id: 'sip-lump-sum', label: 'SIP & Lump Sum', component: SIPAndLumpSumTab },
   ]
 
   const ActiveComponent = tabs.find(t => t.id === activeTab)?.component

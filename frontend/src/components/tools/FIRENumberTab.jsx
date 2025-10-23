@@ -6,7 +6,7 @@ import { queryKeys } from '@/lib/queryKeys'
 import { assetsService } from '@/services/assets'
 import { transactionsService } from '@/services/transactions'
 import { profileService } from '@/services/profile'
-import { buildPortfolioBuckets } from '@/utils/portfolioAllocation'
+import buildPortfolioBuckets from '@/utils/portfolioAllocation'
 import { useCurrency } from '@/hooks/useCurrency'
 import { Button } from '../ui/button'
 import MagicCard from '@/components/magicui/MagicCard'
@@ -14,64 +14,62 @@ import Loading from '../ui/Loading'
 import { ResponsiveContainer, LineChart, Line, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts'
 import { toast } from 'sonner'
 
-const DEFAULT_TERMINAL_AGE = 85
+const DEFAULT_YEARS_TO_RETIRE = 2
 const DEFAULT_INFLATION = 5
-const DEFAULT_RETURN = 4
+const DEFAULT_RETURN = 6
 const DEFAULT_SWR = 4
 const DEFAULT_REINVESTMENT = 10
+const DEFAULT_SAFETY_FACTOR = 1
 
 const computeFire = ({
   annualExpenses,
   inflationRate,
   expectedReturn,
-  terminalAge,
-  currentAge,
+  yearsToRetire,
   swr,
   reinvestment,
+  safetyFactor,
 }) => {
-  const years = Math.max(terminalAge - currentAge, 0)
-  const inflation = inflationRate / 100
-  const nominalReturn = expectedReturn / 100
-  const netWithdrawalRate = (swr / 100) * Math.max(0, 1 - reinvestment / 100)
+  const n = Math.max(yearsToRetire, 0)
+  const i = inflationRate / 100
+  const g = expectedReturn / 100
+  const r = Math.min(Math.max(reinvestment / 100, 0), 0.99)
+  const k = Math.max(safetyFactor, 0.1)
 
-  if (netWithdrawalRate <= 0) {
+  const expensesFuture = annualExpenses * Math.pow(1 + i, n)
+
+  let denominator = k * (g - i) * (1 - r)
+  if (Math.abs(g - i) < 1e-6) {
+    denominator = k * 0.0001 * (1 - r)
+  }
+
+  if (denominator <= 0) {
     return {
       fireNumber: 0,
-      futureExpenses: 0,
+      futureExpenses: expensesFuture,
       effectiveWithdrawalRate: 0,
       series: [],
     }
   }
 
-  const futureExpense = annualExpenses * Math.pow(1 + inflation, years)
-  const perpetualFire = futureExpense / netWithdrawalRate
+  const required = expensesFuture / denominator
 
-  const realReturn = (1 + nominalReturn) / (1 + inflation) - 1
-  let finiteFire = perpetualFire
-  if (Math.abs(nominalReturn - inflation) > 0.0001) {
-    const growthFactor = Math.pow((1 + inflation) / (1 + nominalReturn), years)
-    finiteFire = futureExpense * (1 - growthFactor) / (nominalReturn - inflation)
-  }
-
-  const required = Math.max(perpetualFire, finiteFire)
-
-  let portfolio = required
-  const timeline = []
-  for (let year = 0; year <= years; year += 1) {
-    const expense = annualExpenses * Math.pow(1 + inflation, year)
-    portfolio = Math.max(0, portfolio * (1 + nominalReturn) - expense)
-    timeline.push({
-      age: currentAge + year,
-      portfolio: Number(portfolio.toFixed(2)),
-      expense: Number(expense.toFixed(2)),
+  const series = []
+  for (let year = 0; year <= n; year += 1) {
+    const exp = annualExpenses * Math.pow(1 + i, year)
+    const requirement = exp / (k * Math.max((g - i) || 0.0001, 0.0001) * (1 - r))
+    series.push({
+      year,
+      requirement: Number(requirement.toFixed(2)),
+      expenses: Number(exp.toFixed(2)),
     })
   }
 
   return {
     fireNumber: Number(required.toFixed(2)),
-    futureExpenses: Number(futureExpense.toFixed(2)),
-    effectiveWithdrawalRate: netWithdrawalRate * 100,
-    series: timeline,
+    futureExpenses: Number(expensesFuture.toFixed(2)),
+    effectiveWithdrawalRate: ((swr / 100) * (1 - r)) * 100,
+    series,
   }
 }
 
@@ -107,11 +105,12 @@ const FIRENumberTab = () => {
   const defaultExpenses = Number(profile?.annual_expenses) || annualIncome
 
   const [annualExpenses, setAnnualExpenses] = useState(defaultExpenses)
-  const [terminalAge, setTerminalAge] = useState(DEFAULT_TERMINAL_AGE)
+  const [yearsToRetire, setYearsToRetire] = useState(DEFAULT_YEARS_TO_RETIRE)
   const [inflation, setInflation] = useState(DEFAULT_INFLATION)
   const [expectedReturn, setExpectedReturn] = useState(DEFAULT_RETURN)
   const [swr, setSWR] = useState(DEFAULT_SWR)
   const [reinvestment, setReinvestment] = useState(DEFAULT_REINVESTMENT)
+  const [safetyFactor, setSafetyFactor] = useState(DEFAULT_SAFETY_FACTOR)
 
   useEffect(() => {
     setAnnualExpenses(defaultExpenses)
@@ -125,18 +124,19 @@ const FIRENumberTab = () => {
     return Math.max(0, differenceInYears(new Date(), parsed))
   }, [profile?.date_of_birth])
 
-  const calculations = useMemo(() => {
-    const currentAge = age ?? 35
-    return computeFire({
-      annualExpenses,
-      inflationRate: inflation,
-      expectedReturn,
-      terminalAge,
-      currentAge,
-      swr,
-      reinvestment,
-    })
-  }, [annualExpenses, inflation, expectedReturn, terminalAge, age, swr, reinvestment])
+  const calculations = useMemo(
+    () =>
+      computeFire({
+        annualExpenses,
+        inflationRate: inflation,
+        expectedReturn,
+        yearsToRetire,
+        swr,
+        reinvestment,
+        safetyFactor,
+      }),
+    [annualExpenses, inflation, expectedReturn, yearsToRetire, swr, reinvestment, safetyFactor],
+  )
 
   const diff = portfolioTotal - calculations.fireNumber
   const surplus = diff >= 0
@@ -146,21 +146,21 @@ const FIRENumberTab = () => {
   }
 
   const handleCalculate = () => {
-    if (terminalAge <= (age ?? 0)) {
-      toast.error('Terminal age must be greater than your current age.')
+    if (yearsToRetire < 0) {
+      toast.error('Years to retirement cannot be negative.')
       return
     }
     toast.success('FIRE number recalculated')
   }
 
-  const fireEquation = `FIRE = Annual Expenses ÷ [SWR × (1 − Reinvestment%)]`
+  const fireEquation = 'FIRE = E₀ (1 + i)ⁿ / [ k × (g − i) × (1 − r) ]'
 
   return (
     <div className="flex flex-col gap-6 p-6">
       <div>
         <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">FIRE Number</h2>
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          Estimate the portfolio size required to fund your lifestyle until age {terminalAge}. Inputs auto-fill from your profile when available.
+          Estimate the portfolio size required to fund your lifestyle in {yearsToRetire} years. Inputs auto-fill from your profile when available.
         </p>
       </div>
 
@@ -178,13 +178,13 @@ const FIRENumberTab = () => {
             />
           </label>
           <label className="flex flex-col text-sm font-medium text-slate-700 dark:text-slate-300">
-            Terminal age
+            Years to FIRE retirement
             <input
               type="number"
-              min={50}
-              max={120}
-              value={terminalAge}
-              onChange={(event) => setTerminalAge(Number(event.target.value) || DEFAULT_TERMINAL_AGE)}
+              min={0}
+              step="1"
+              value={yearsToRetire}
+              onChange={(event) => setYearsToRetire(Number(event.target.value) || 0)}
               className="mt-1 rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
           </label>
@@ -233,6 +233,17 @@ const FIRENumberTab = () => {
               className="mt-1 rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
           </label>
+          <label className="flex flex-col text-sm font-medium text-slate-700 dark:text-slate-300">
+            Safety factor (k)
+            <input
+              type="number"
+              min={0.1}
+              step="0.1"
+              value={safetyFactor}
+              onChange={(event) => setSafetyFactor(Number(event.target.value) || DEFAULT_SAFETY_FACTOR)}
+              className="mt-1 rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            />
+          </label>
           <div className="md:col-span-2 lg:col-span-1 flex items-end">
             <Button variant="secondary" onClick={handleCalculate} className="w-full">
               Calculate
@@ -249,7 +260,7 @@ const FIRENumberTab = () => {
           <p className="text-xs text-slate-400">Effective withdrawal rate ≈ {calculations.effectiveWithdrawalRate.toFixed(2)}%</p>
         </MagicCard>
         <MagicCard className="bg-white dark:bg-slate-900">
-          <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Future annual expense (age {terminalAge})</p>
+          <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Future annual expense (Year {yearsToRetire})</p>
           <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{formatCurrency(calculations.futureExpenses)}</p>
           <p className="text-xs text-slate-500 dark:text-slate-400">Includes {inflation.toFixed(1)}% inflation drift.</p>
         </MagicCard>
@@ -263,24 +274,22 @@ const FIRENumberTab = () => {
         <MagicCard className="bg-white dark:bg-slate-900">
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Current age</p>
           <p className="mt-2 text-3xl font-semibold text-slate-900 dark:text-slate-100">{age ?? '—'}</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">Years to plan: {Math.max(terminalAge - (age ?? 0), 0)}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Years to plan: {yearsToRetire}</p>
         </MagicCard>
       </div>
 
       <MagicCard className="bg-white dark:bg-slate-950">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Cash Flow Outlook</h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
-          Projection assumes annual withdrawals track inflation while the portfolio compounds at {expectedReturn}% per year.
-        </p>
+        <p className="text-sm text-slate-600 dark:text-slate-400">Projection assumes expenses grow with inflation and the target portfolio compounds at {expectedReturn}% per annum before withdrawals.</p>
         <div className="mt-4 h-72 w-full">
           <ResponsiveContainer>
             <LineChart data={calculations.series}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e293722" />
-              <XAxis dataKey="age" tickFormatter={(value) => `Age ${value}`} />
+              <XAxis dataKey="year" tickFormatter={(value) => `Year ${value}`} />
               <YAxis tickFormatter={(value) => formatCurrency(value)} width={120} />
-              <Tooltip formatter={(value) => formatCurrency(value)} labelFormatter={(value) => `Age ${value}`} />
-              <Line type="monotone" dataKey="portfolio" name="Projected portfolio" stroke="#2563eb" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="expense" name="Inflation-adjusted spend" stroke="#f97316" strokeDasharray="4 4" dot={false} />
+              <Tooltip formatter={(value) => formatCurrency(value)} labelFormatter={(value) => `Year ${value}`} />
+              <Line type="monotone" dataKey="requirement" name="Required FIRE" stroke="#2563eb" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="expenses" name="Projected expenses" stroke="#f97316" strokeDasharray="4 4" dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>

@@ -30,7 +30,7 @@ import { queryKeys } from '@/lib/queryKeys'
 import { assetsService } from '@/services/assets'
 import { transactionsService } from '@/services/transactions'
 import { useAuth } from '@/hooks/useAuth'
-import { buildPortfolioBuckets } from '@/utils/portfolioAllocation'
+import buildPortfolioBuckets from '@/utils/portfolioAllocation'
 
 const sigmaLookup = DEFAULT_VOL.reduce((acc, row) => {
   acc[row.label.toLowerCase()] = row.sigma
