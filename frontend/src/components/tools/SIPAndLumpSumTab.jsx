@@ -203,7 +203,9 @@ const SIPAndLumpSumTab = () => {
       <div className="grid gap-4 lg:grid-cols-2">
         <MagicCard className="bg-white dark:bg-slate-950">
           <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">SIP Projection</h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400">Final value {formatCurrency(sipResult.endingValue)} ({formatCurrency(sipResult.totalInvested)} invested).</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Future value {formatCurrency(sipResult.endingValue)} ({formatCurrency(sipResult.totalInvested)} invested, real value {formatCurrency(sipResult.endingReal)}).
+          </p>
           <div className="mt-4 h-72 w-full">
             <ResponsiveContainer>
               <LineChart data={sipResult.data}>
@@ -213,8 +215,8 @@ const SIPAndLumpSumTab = () => {
                 <Tooltip formatter={(value) => formatCurrency(value)} labelFormatter={(value) => `Year ${value}`} />
                 <Legend />
                 <Line type="monotone" dataKey="invested" name="Invested" stroke="#2563eb" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="returns" name="Cumulative returns" stroke="#f97316" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="realReturns" name="Inflation-adjusted returns" stroke="#10b981" strokeDasharray="4 4" dot={false} />
+                <Line type="monotone" dataKey="value" name="Portfolio value" stroke="#f97316" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="realValue" name="Inflation-adjusted value" stroke="#10b981" strokeDasharray="4 4" dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -222,7 +224,9 @@ const SIPAndLumpSumTab = () => {
 
         <MagicCard className="bg-white dark:bg-slate-950">
           <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Lump Sum Projection</h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400">Future value {formatCurrency(lumpSumResult.endingValue)} (real value {formatCurrency(lumpSumResult.endingReal)}).</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Future value {formatCurrency(lumpSumResult.endingValue)} (real value {formatCurrency(lumpSumResult.endingReal)}).
+          </p>
           <div className="mt-4 h-72 w-full">
             <ResponsiveContainer>
               <LineChart data={lumpSumResult.data}>
@@ -232,8 +236,8 @@ const SIPAndLumpSumTab = () => {
                 <Tooltip formatter={(value) => formatCurrency(value)} labelFormatter={(value) => `Year ${value}`} />
                 <Legend />
                 <Line type="monotone" dataKey="invested" name="Invested" stroke="#2563eb" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="returns" name="Cumulative returns" stroke="#f97316" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="realReturns" name="Inflation-adjusted returns" stroke="#10b981" strokeDasharray="4 4" dot={false} />
+                <Line type="monotone" dataKey="value" name="Portfolio value" stroke="#f97316" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="realValue" name="Inflation-adjusted value" stroke="#10b981" strokeDasharray="4 4" dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
