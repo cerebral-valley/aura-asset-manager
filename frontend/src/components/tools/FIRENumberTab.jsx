@@ -18,7 +18,6 @@ const DEFAULT_YEARS_TO_RETIRE = 2
 const DEFAULT_INFLATION = 5
 const DEFAULT_RETURN = 6
 const DEFAULT_SWR = 4
-const DEFAULT_REINVESTMENT = 10
 const DEFAULT_SAFETY_FACTOR = 1
 
 const computeFire = ({
@@ -27,14 +26,12 @@ const computeFire = ({
   expectedReturn,
   yearsToRetire,
   swr,
-  reinvestment,
   safetyFactor,
 }) => {
   const n = Math.max(yearsToRetire, 0)
   const i = inflationRate / 100
   const g = expectedReturn / 100
   const swrRate = swr / 100
-  const r = Math.min(Math.max(reinvestment / 100, 0), 0.95)
   const k = Math.max(safetyFactor, 0.1)
 
   const expensesFuture = annualExpenses * Math.pow(1 + i, n)
@@ -45,7 +42,7 @@ const computeFire = ({
   }
 
   const effectiveRate = Math.max(realReturn, swrRate)
-  const denominator = k * effectiveRate * (1 - r)
+  const denominator = k * effectiveRate
 
   if (denominator <= 0) {
     return {
@@ -59,9 +56,17 @@ const computeFire = ({
   const required = expensesFuture / denominator
 
   const series = []
-  for (let year = 0; year <= n; year += 1) {
+  const projectionYears = Math.max(n, 30)
+  let fireBalance = required
+
+  for (let year = 0; year <= projectionYears; year += 1) {
+    if (year > 0) {
+      fireBalance *= 1 + g - i - swrRate
+    }
+
     const exp = annualExpenses * Math.pow(1 + i, year)
-    const req = exp / denominator
+    const req = fireBalance
+
     series.push({
       year,
       requirement: Number(req.toFixed(2)),
@@ -72,7 +77,7 @@ const computeFire = ({
   return {
     fireNumber: Number(required.toFixed(2)),
     futureExpenses: Number(expensesFuture.toFixed(2)),
-    effectiveWithdrawalRate: effectiveRate * (1 - r) * 100,
+    effectiveWithdrawalRate: effectiveRate * 100,
     series,
   }
 }
@@ -113,7 +118,6 @@ const FIRENumberTab = () => {
   const [inflation, setInflation] = useState(DEFAULT_INFLATION)
   const [expectedReturn, setExpectedReturn] = useState(DEFAULT_RETURN)
   const [swr, setSWR] = useState(DEFAULT_SWR)
-  const [reinvestment, setReinvestment] = useState(DEFAULT_REINVESTMENT)
   const [safetyFactor, setSafetyFactor] = useState(DEFAULT_SAFETY_FACTOR)
 
   useEffect(() => {
@@ -136,10 +140,9 @@ const FIRENumberTab = () => {
         expectedReturn,
         yearsToRetire,
         swr,
-        reinvestment,
         safetyFactor,
       }),
-    [annualExpenses, inflation, expectedReturn, yearsToRetire, swr, reinvestment, safetyFactor],
+    [annualExpenses, inflation, expectedReturn, yearsToRetire, swr, safetyFactor],
   )
 
   const diff = portfolioTotal - calculations.fireNumber
@@ -157,7 +160,18 @@ const FIRENumberTab = () => {
     toast.success('FIRE number recalculated')
   }
 
-  const fireEquation = 'FIRE = E₀ (1 + i)ⁿ / [ k × (g − i) × (1 − r) ]'
+  const fireEquation = 'FIRE = E₀ (1 + i)ⁿ ÷ [ k × max(g − i, SWR) ]'
+  const fireVariables = [
+    { symbol: 'E₀', description: 'Current annual spend (today’s rupees)' },
+    { symbol: 'i', description: 'Expected inflation rate (annual %)' },
+    { symbol: 'n', description: 'Years until retirement' },
+    { symbol: 'g', description: 'Expected portfolio CAGR (nominal %)' },
+    { symbol: 'SWR', description: 'Withdrawal rate once retired (e.g., 4%)' },
+    {
+      symbol: 'k',
+      description: 'Safety factor buffer (>1 adds margin for uncertainty such as healthcare, errors, shocks)',
+    },
+  ]
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -226,18 +240,6 @@ const FIRENumberTab = () => {
             />
           </label>
           <label className="flex flex-col text-sm font-medium text-slate-700 dark:text-slate-300">
-            Reinvest % of withdrawal
-            <input
-              type="number"
-              min={0}
-              max={100}
-              step="1"
-              value={reinvestment}
-              onChange={(event) => setReinvestment(Number(event.target.value) || 0)}
-              className="mt-1 rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-            />
-          </label>
-          <label className="flex flex-col text-sm font-medium text-slate-700 dark:text-slate-300">
             Safety factor (k)
             <input
               type="number"
@@ -255,6 +257,13 @@ const FIRENumberTab = () => {
           </div>
         </div>
         <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">Equation: {fireEquation}</p>
+        <ul className="mt-2 space-y-1 text-xs text-slate-500 dark:text-slate-400 sm:flex sm:flex-wrap sm:gap-4">
+          {fireVariables.map((item) => (
+            <li key={item.symbol} className="before:content-['•'] before:mr-1">
+              <span className="font-semibold text-slate-600 dark:text-slate-200">{item.symbol}</span> – {item.description}
+            </li>
+          ))}
+        </ul>
       </MagicCard>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.221.13',
+  version: 'v0.221.14',
   buildDate: '2025-10-21',
-  deploymentId: 'fire-sip-fix',
-  description: 'Correct FIRE and SIP calculators to use realistic formulas and real returns'
+  deploymentId: 'fire-sip-refinement',
+  description: 'Refine FIRE equation variables, extend projection, and align SIP/Lump Sum charts'
 }
 
 export const getVersionDisplay = () => {
