@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.221.12',
+  version: 'v0.221.13',
   buildDate: '2025-10-21',
-  deploymentId: 'railway-redeploy',
-  description: 'Deployment bump for Railway refresh'
+  deploymentId: 'fire-sip-fix',
+  description: 'Correct FIRE and SIP calculators to use realistic formulas and real returns'
 }
 
 export const getVersionDisplay = () => {

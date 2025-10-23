@@ -44,6 +44,7 @@ const calculateSip = ({ amount, frequency, growthRate, inflationRate, years }) =
       value: Number(balance.toFixed(2)),
       returns: Number(returns.toFixed(2)),
       realValue: Number(realValue.toFixed(2)),
+      realReturns: Number((realValue - invested).toFixed(2)),
     })
   }
 
@@ -73,6 +74,7 @@ const calculateLumpSum = ({ amount, growthRate, inflationRate, years }) => {
       value: Number(value.toFixed(2)),
       returns: Number(returns.toFixed(2)),
       realValue: Number(realValue.toFixed(2)),
+      realReturns: Number((realValue - amount).toFixed(2)),
     })
   }
 
@@ -211,8 +213,8 @@ const SIPAndLumpSumTab = () => {
                 <Tooltip formatter={(value) => formatCurrency(value)} labelFormatter={(value) => `Year ${value}`} />
                 <Legend />
                 <Line type="monotone" dataKey="invested" name="Invested" stroke="#2563eb" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="returns" name="Returns" stroke="#f97316" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="realValue" name="Inflation-adjusted value" stroke="#10b981" strokeDasharray="4 4" dot={false} />
+                <Line type="monotone" dataKey="returns" name="Cumulative returns" stroke="#f97316" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="realReturns" name="Inflation-adjusted returns" stroke="#10b981" strokeDasharray="4 4" dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -230,8 +232,8 @@ const SIPAndLumpSumTab = () => {
                 <Tooltip formatter={(value) => formatCurrency(value)} labelFormatter={(value) => `Year ${value}`} />
                 <Legend />
                 <Line type="monotone" dataKey="invested" name="Invested" stroke="#2563eb" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="returns" name="Returns" stroke="#f97316" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="realValue" name="Inflation-adjusted value" stroke="#10b981" strokeDasharray="4 4" dot={false} />
+                <Line type="monotone" dataKey="returns" name="Cumulative returns" stroke="#f97316" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="realReturns" name="Inflation-adjusted returns" stroke="#10b981" strokeDasharray="4 4" dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>

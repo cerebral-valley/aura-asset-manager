@@ -33,15 +33,19 @@ const computeFire = ({
   const n = Math.max(yearsToRetire, 0)
   const i = inflationRate / 100
   const g = expectedReturn / 100
-  const r = Math.min(Math.max(reinvestment / 100, 0), 0.99)
+  const swrRate = swr / 100
+  const r = Math.min(Math.max(reinvestment / 100, 0), 0.95)
   const k = Math.max(safetyFactor, 0.1)
 
   const expensesFuture = annualExpenses * Math.pow(1 + i, n)
 
-  let denominator = k * (g - i) * (1 - r)
-  if (Math.abs(g - i) < 1e-6) {
-    denominator = k * 0.0001 * (1 - r)
+  let realReturn = g - i
+  if (realReturn <= 0 || !Number.isFinite(realReturn)) {
+    realReturn = swrRate
   }
+
+  const effectiveRate = Math.max(realReturn, swrRate)
+  const denominator = k * effectiveRate * (1 - r)
 
   if (denominator <= 0) {
     return {
@@ -57,10 +61,10 @@ const computeFire = ({
   const series = []
   for (let year = 0; year <= n; year += 1) {
     const exp = annualExpenses * Math.pow(1 + i, year)
-    const requirement = exp / (k * Math.max((g - i) || 0.0001, 0.0001) * (1 - r))
+    const req = exp / denominator
     series.push({
       year,
-      requirement: Number(requirement.toFixed(2)),
+      requirement: Number(req.toFixed(2)),
       expenses: Number(exp.toFixed(2)),
     })
   }
@@ -68,7 +72,7 @@ const computeFire = ({
   return {
     fireNumber: Number(required.toFixed(2)),
     futureExpenses: Number(expensesFuture.toFixed(2)),
-    effectiveWithdrawalRate: ((swr / 100) * (1 - r)) * 100,
+    effectiveWithdrawalRate: effectiveRate * (1 - r) * 100,
     series,
   }
 }
