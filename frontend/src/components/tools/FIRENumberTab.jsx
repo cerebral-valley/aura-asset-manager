@@ -56,22 +56,27 @@ const computeFire = ({
   const required = expensesFuture / denominator
 
   const series = []
-  const projectionYears = Math.max(n, 30)
-  let fireBalance = required
+  const projectionYears = 30
+  const baseExpenses = expensesFuture
+  let nominalCapital = required
+  let realCapital = required
+  const nominalFactor = Math.max(0, 1 + g - swrRate)
+  const realFactor = Math.max(0, 1 + g - swrRate - i)
 
   for (let year = 0; year <= projectionYears; year += 1) {
-    if (year > 0) {
-      fireBalance *= 1 + g - i - swrRate
-    }
-
-    const exp = annualExpenses * Math.pow(1 + i, year)
-    const req = fireBalance
+    const exp = baseExpenses * Math.pow(1 + i, year)
 
     series.push({
       year,
-      requirement: Number(req.toFixed(2)),
+      capitalValue: Number(nominalCapital.toFixed(2)),
+      realCapitalValue: Number(realCapital.toFixed(2)),
       expenses: Number(exp.toFixed(2)),
     })
+
+    if (year < projectionYears) {
+      nominalCapital *= nominalFactor
+      realCapital *= realFactor
+    }
   }
 
   return {
@@ -301,8 +306,9 @@ const FIRENumberTab = () => {
               <XAxis dataKey="year" tickFormatter={(value) => `Year ${value}`} />
               <YAxis tickFormatter={(value) => formatCurrency(value)} width={120} />
               <Tooltip formatter={(value) => formatCurrency(value)} labelFormatter={(value) => `Year ${value}`} />
-              <Line type="monotone" dataKey="requirement" name="Required FIRE" stroke="#2563eb" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="expenses" name="Projected expenses" stroke="#f97316" strokeDasharray="4 4" dot={false} />
+              <Line type="monotone" dataKey="capitalValue" name="FIRE capital value" stroke="#2563eb" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="realCapitalValue" name="Real FIRE (inflation-adjusted)" stroke="#22d3ee" strokeDasharray="4 4" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="expenses" name="Projected expenses" stroke="#f97316" strokeDasharray="2 6" dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>

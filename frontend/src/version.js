@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.221.17',
+  version: 'v0.221.18',
   buildDate: '2025-10-23',
-  deploymentId: 'sip-real-rate-guard',
-  description: 'Guard inflation-adjusted SIP/Lump Sum projections with growth minus inflation rate'
+  deploymentId: 'fire-cashflow-outlook',
+  description: 'Project FIRE capital with nominal vs real decays and corrected expense trajectory'
 }
 
 export const getVersionDisplay = () => {
