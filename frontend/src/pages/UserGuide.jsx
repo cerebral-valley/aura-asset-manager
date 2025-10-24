@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import MagicCard from '../components/magicui/MagicCard';
 import NumberTicker from '../components/magicui/NumberTicker';
 import BlurFade from '../components/magicui/BlurFade';
 import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 import { Download } from 'lucide-react';
 
 const UserGuide = () => {
@@ -14,6 +15,7 @@ const UserGuide = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isExporting, setIsExporting] = useState(false);
+  const contentRef = useRef(null);
 
   const sections = [
     { id: 'index', title: 'Index', icon: '📑' },
@@ -39,317 +41,52 @@ const UserGuide = () => {
     }
   };
 
-  // PDF Export Function
   const downloadUserGuideAsPDF = async () => {
+    if (!contentRef.current) {
+      alert('User guide content not available for export.');
+      return;
+    }
+
     setIsExporting(true);
     try {
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 15;
-      const maxWidth = pageWidth - 2 * margin;
-      let yPos = margin;
+      const margin = 10;
+      const pdfPageWidth = pdf.internal.pageSize.getWidth();
+      const pdfPageHeight = pdf.internal.pageSize.getHeight();
+      const contentElement = contentRef.current;
 
-      // Helper to add page break when needed
-      const checkPageBreak = (neededSpace = 20) => {
-        if (yPos + neededSpace > pageHeight - margin) {
-          pdf.addPage();
-          yPos = margin;
-          return true;
-        }
-        return false;
-      };
+      // Ensure the content element is scrolled to top before snapshot
+      contentElement.scrollTop = 0;
 
-      // Helper to add wrapped text
-      const addText = (text, fontSize = 11, fontStyle = 'normal', align = 'left') => {
-        pdf.setFontSize(fontSize);
-        pdf.setFont('helvetica', fontStyle);
-        const lines = pdf.splitTextToSize(text, maxWidth);
-        lines.forEach((line) => {
-          checkPageBreak();
-          if (align === 'center') {
-            pdf.text(line, pageWidth / 2, yPos, { align: 'center' });
-          } else {
-            pdf.text(line, margin, yPos);
-          }
-          yPos += fontSize * 0.5;
-        });
-      };
+      const devicePixelRatio = window.devicePixelRatio || 1;
+      const scale = Math.min(2, Math.max(1.5, devicePixelRatio));
 
-      // Title Page
-      pdf.setFontSize(28);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Aura Asset Manager', pageWidth / 2, 50, { align: 'center' });
-      
-      pdf.setFontSize(16);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text('Complete User Guide', pageWidth / 2, 65, { align: 'center' });
-      
-      pdf.setFontSize(12);
-      pdf.text('Your Personal Financial Sanctuary', pageWidth / 2, 75, { align: 'center' });
-      
-      pdf.setFontSize(10);
-      pdf.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth / 2, 90, { align: 'center' });
-
-      // Add decorative element
-      pdf.setFillColor(59, 130, 246);
-      pdf.circle(pageWidth / 2, 110, 15, 'F');
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(24);
-      pdf.text('A', pageWidth / 2, 115, { align: 'center' });
-      pdf.setTextColor(0, 0, 0);
-
-      // Table of Contents
-      pdf.addPage();
-      yPos = margin;
-      pdf.setFontSize(20);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Table of Contents', margin, yPos);
-      yPos += 15;
-
-      pdf.setFontSize(11);
-      pdf.setFont('helvetica', 'normal');
-      sections.forEach((section, index) => {
-        checkPageBreak();
-        pdf.text(`${index + 1}. ${section.icon} ${section.title}`, margin + 5, yPos);
-        yPos += 7;
+      const canvas = await html2canvas(contentElement, {
+        scale,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        windowWidth: contentElement.scrollWidth,
+        windowHeight: contentElement.scrollHeight
       });
 
-      // Content sections with detailed descriptions
-      const contentData = {
-        'index': {
-          title: 'Quick Reference Index',
-          description: 'Navigate quickly to any section using this comprehensive index of all topics covered in this guide.',
-          keyPoints: [
-            'Complete overview of all User Guide sections',
-            'Quick navigation links to specific topics',
-            'Organized by functional areas',
-            'Easy access to frequently needed information'
-          ]
-        },
-        'getting-started': {
-          title: 'Getting Started with Aura',
-          description: 'Learn about Aura\'s philosophy and how to begin your financial journey. Aura is designed to help you visualize your financial standing and feel secure about your assets.',
-          keyPoints: [
-            'Understanding Aura\'s core mission as your financial sanctuary',
-            'Creating your account and initial setup',
-            'Overview of main features and navigation',
-            'Recommended first steps for new users'
-          ]
-        },
-        'dashboard': {
-          title: 'Dashboard Overview',
-          description: 'The dashboard serves as your command center, providing an immediate overview of your net worth, insurance coverage, and growth potential.',
-          keyPoints: [
-            'Real-time net worth display and calculations',
-            'Asset distribution visualizations',
-            'Insurance coverage summary',
-            'Monthly growth rate projections',
-            'Quick access to recent transactions'
-          ]
-        },
-        'assets': {
-          title: 'Managing Your Assets',
-          description: 'Track and organize all your holdings from real estate and investments to precious metals and cash reserves. Each asset tells the story of your journey.',
-          keyPoints: [
-            'Adding new assets with detailed information',
-            'Editing and updating asset values',
-            'Organizing assets into meaningful categories',
-            'Tracking appreciation and depreciation',
-            'Document attachments and notes'
-          ]
-        },
-        'asset-types': {
-          title: 'Asset Types Guide',
-          description: 'Comprehensive guide to different asset categories and how to track them effectively in Aura.',
-          keyPoints: [
-            'Real Estate: Properties, land, commercial holdings',
-            'Stocks & Securities: Individual stocks, ETFs, mutual funds',
-            'Bonds: Government bonds, corporate bonds, treasury notes',
-            'Precious Metals: Gold, silver, platinum holdings',
-            'Cash & Savings: Bank accounts, money market funds',
-            'Cryptocurrency: Bitcoin, Ethereum, altcoins',
-            'Collectibles: Art, wine, rare items'
-          ]
-        },
-        'goals': {
-          title: 'Financial Goals',
-          description: 'Set and track your financial goals, from net worth targets to custom savings objectives. Monitor progress and stay motivated.',
-          keyPoints: [
-            'Creating net worth targets with custom calculations',
-            'Setting up custom savings goals',
-            'Tracking progress with visual indicators',
-            'Goal achievement timeline projections',
-            'Allocation overview and optimization'
-          ]
-        },
-        'exports': {
-          title: 'Export & Analysis',
-          description: 'Generate professional PDF and Excel reports optimized for AI analysis. Export comprehensive portfolio data with ready-to-use analysis prompts.',
-          keyPoints: [
-            'PDF exports with formatted asset tables',
-            'Excel exports with detailed breakdowns',
-            'AI-ready prompts for ChatGPT, Claude',
-            'Privacy-safe redacted versions',
-            'Customizable export templates'
-          ]
-        },
-        'insurance': {
-          title: 'Insurance Management',
-          description: 'Track your insurance portfolio as a protective shield. Visualize total coverage value alongside your assets for complete financial security.',
-          keyPoints: [
-            'Adding life, health, auto, home policies',
-            'Coverage amount tracking',
-            'Premium and payment schedule monitoring',
-            'Document storage for policy information',
-            'Coverage gap analysis'
-          ]
-        },
-        'insurance-types': {
-          title: 'Insurance Types Guide',
-          description: 'Detailed information about different insurance types and what to track for each.',
-          keyPoints: [
-            'Life Insurance: Term, whole, universal policies',
-            'Health Insurance: Individual, family, employer plans',
-            'Auto Insurance: Liability, collision, comprehensive',
-            'Home/Renters: Property, liability coverage',
-            'Specialty: Disability, umbrella, professional liability'
-          ]
-        },
-        'tools': {
-          title: 'Tools & Features',
-          description: 'Access 8 powerful analysis tools to gain deeper insights into your financial situation.',
-          tools: [
-            { name: 'Asset Mapping', desc: 'Interactive visualization of your asset organization and relationships' },
-            { name: 'Insurance Mapping', desc: 'Visualize your complete protection portfolio with coverage overview' },
-            { name: 'Loan Calculator', desc: 'Comprehensive loan payment and amortization analysis with charts' },
-            { name: 'Buy vs Rent Analyzer', desc: 'Make informed housing decisions with detailed cost comparisons' },
-            { name: 'Down-Payment Tracker', desc: 'Track progress toward home down payment goals' },
-            { name: 'Portfolio Modelling (VaR Lite)', desc: 'Understand portfolio risk profile with stress test scenarios' },
-            { name: 'Asset Matrix', desc: 'Comprehensive asset analysis and comparison grid' },
-            { name: 'Time Value Calculator', desc: 'Calculate present and future values with compound interest' }
-          ]
-        },
-        'ai-analysis': {
-          title: 'AI Analysis',
-          description: 'Leverage AI-powered portfolio analysis with included prompts for ChatGPT, Claude, and other AI assistants. Get professional-grade insights.',
-          keyPoints: [
-            'Pre-built prompts for asset allocation analysis',
-            'Risk assessment queries',
-            'Diversification recommendations',
-            'Tax optimization strategies',
-            'Estate planning considerations'
-          ]
-        },
-        'tips': {
-          title: 'Tips & Best Practices',
-          description: 'Learn best practices for asset naming, regular updates, detailed record keeping, and personalization strategies.',
-          keyPoints: [
-            'Descriptive naming conventions for easy recognition',
-            'Regular value updates for accuracy',
-            'Document everything with photos and receipts',
-            'Use metadata fields for detailed tracking',
-            'Regular backups and exports',
-            'Privacy considerations and security'
-          ]
-        }
-      };
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      const imgWidth = pdfPageWidth - margin * 2;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const pageContentHeight = pdfPageHeight - margin * 2;
 
-      // Generate content for each section
-      sections.forEach((section) => {
+      let heightLeft = imgHeight;
+      let position = margin;
+
+      pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+      heightLeft -= pageContentHeight;
+
+      while (heightLeft > 0) {
+        position = margin - (imgHeight - heightLeft);
         pdf.addPage();
-        yPos = margin;
-        
-        // Section Header
-        pdf.setFontSize(18);
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(`${section.icon} ${section.title}`, margin, yPos);
-        yPos += 12;
-        
-        // Draw separator line
-        pdf.setDrawColor(200, 200, 200);
-        pdf.line(margin, yPos, pageWidth - margin, yPos);
-        yPos += 8;
-        
-        const content = contentData[section.id];
-        if (content) {
-          // Description
-          addText(content.description, 11, 'normal');
-          yPos += 5;
-          
-          // Key Points or Tools
-          if (content.keyPoints) {
-            checkPageBreak(20);
-            yPos += 5;
-            pdf.setFontSize(13);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text('Key Features:', margin, yPos);
-            yPos += 8;
-            
-            content.keyPoints.forEach((point) => {
-              checkPageBreak(10);
-              pdf.setFontSize(10);
-              pdf.setFont('helvetica', 'normal');
-              const bullet = '• ';
-              const pointLines = pdf.splitTextToSize(point, maxWidth - 5);
-              pointLines.forEach((line, idx) => {
-                pdf.text((idx === 0 ? bullet : '  ') + line, margin + 3, yPos);
-                yPos += 5;
-              });
-              yPos += 2;
-            });
-          }
-          
-          if (content.tools) {
-            checkPageBreak(20);
-            yPos += 5;
-            pdf.setFontSize(13);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text('Available Tools:', margin, yPos);
-            yPos += 8;
-            
-            content.tools.forEach((tool) => {
-              checkPageBreak(15);
-              pdf.setFontSize(11);
-              pdf.setFont('helvetica', 'bold');
-              pdf.text(`• ${tool.name}`, margin + 3, yPos);
-              yPos += 6;
-              
-              pdf.setFontSize(10);
-              pdf.setFont('helvetica', 'normal');
-              const descLines = pdf.splitTextToSize(tool.desc, maxWidth - 8);
-              descLines.forEach((line) => {
-                pdf.text(line, margin + 6, yPos);
-                yPos += 5;
-              });
-              yPos += 3;
-            });
-          }
-        }
-      });
+        pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+        heightLeft -= pageContentHeight;
+      }
 
-      // Footer Page
-      pdf.addPage();
-      yPos = pageHeight / 2 - 30;
-      pdf.setFillColor(245, 247, 250);
-      pdf.rect(margin, yPos - 10, maxWidth, 60, 'F');
-      
-      yPos += 5;
-      pdf.setFontSize(16);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Remember', pageWidth / 2, yPos, { align: 'center' });
-      yPos += 15;
-      
-      pdf.setFontSize(11);
-      pdf.setFont('helvetica', 'normal');
-      const footerText = 'Aura is designed to be your financial sanctuary—a place where you can feel proud of your achievements and confident about your future. Take time to explore the features, personalize your experience, and most importantly, take a moment to appreciate the financial foundation you\'re building for yourself and your loved ones.';
-      const footerLines = pdf.splitTextToSize(footerText, maxWidth - 20);
-      footerLines.forEach((line) => {
-        pdf.text(line, pageWidth / 2, yPos, { align: 'center' });
-        yPos += 6;
-      });
-
-      // Save PDF
       pdf.save('Aura_User_Guide.pdf');
     } catch (error) {
       console.error('PDF generation error:', error);
@@ -472,7 +209,7 @@ const UserGuide = () => {
         {/* Main Content - Adjusted margin to match reduced sidebar width */}
         <div className="ml-56 flex-1">
           {/* Wider container for two-column layout */}
-          <div className="max-w-7xl mx-auto p-8">
+          <div ref={contentRef} className="max-w-7xl mx-auto p-8">
             {/* Header - spans full width, not in columns */}
             <div className="mb-8">
               <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">

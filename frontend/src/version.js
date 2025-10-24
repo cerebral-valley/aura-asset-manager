@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.221.18',
-  buildDate: '2025-10-23',
-  deploymentId: 'fire-cashflow-outlook',
-  description: 'Project FIRE capital with nominal vs real decays and corrected expense trajectory'
+  version: 'v0.221.19',
+  buildDate: '2025-10-24',
+  deploymentId: 'user-guide-pdf-fix',
+  description: 'Ensure User Guide PDF download captures the complete in-app documentation'
 }
 
 export const getVersionDisplay = () => {
