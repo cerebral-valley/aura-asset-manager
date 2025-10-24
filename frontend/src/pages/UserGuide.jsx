@@ -54,12 +54,30 @@ const UserGuide = () => {
       const pdfPageHeight = pdf.internal.pageSize.getHeight();
       const contentElement = contentRef.current;
 
+      const sanitizeForPDF = (rawText = '') => {
+        if (!rawText) return '';
+        const text =
+          typeof rawText.normalize === 'function'
+            ? rawText.normalize('NFKD')
+            : rawText;
+
+        return text
+          .replace(/\u00a0/g, ' ')
+          .replace(/[\u2013\u2014]/g, '-')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[\u{1F300}-\u{1FAFF}]/gu, '')
+          .replace(/[\u{1F900}-\u{1F9FF}]/gu, '')
+          .replace(/[\u{2600}-\u{27BF}]/gu, '')
+          .replace(/[^\x20-\x7E•]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+      };
+
+      const cleanText = (text) => sanitizeForPDF(text);
+
       const effectiveWidth = pdfPageWidth - margin * 2;
       const lineHeight = 6;
       let yPosition = margin;
-
-      const cleanText = (text) =>
-        text.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
 
       const ensureSpace = (height = lineHeight) => {
         if (yPosition + height > pdfPageHeight - margin) {
