@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.221.19',
+  version: 'v0.221.20',
   buildDate: '2025-10-24',
-  deploymentId: 'user-guide-pdf-fix',
-  description: 'Ensure User Guide PDF download captures the complete in-app documentation'
+  deploymentId: 'user-guide-pdf-dom-export',
+  description: 'Generate User Guide PDF from live DOM content to avoid styling incompatibilities'
 }
 
 export const getVersionDisplay = () => {

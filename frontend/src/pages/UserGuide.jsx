@@ -5,7 +5,6 @@ import MagicCard from '../components/magicui/MagicCard';
 import NumberTicker from '../components/magicui/NumberTicker';
 import BlurFade from '../components/magicui/BlurFade';
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
 import { Download } from 'lucide-react';
 
 const UserGuide = () => {
@@ -41,7 +40,7 @@ const UserGuide = () => {
     }
   };
 
-  const downloadUserGuideAsPDF = async () => {
+  const downloadUserGuideAsPDF = () => {
     if (!contentRef.current) {
       alert('User guide content not available for export.');
       return;
@@ -50,42 +49,231 @@ const UserGuide = () => {
     setIsExporting(true);
     try {
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const margin = 10;
+      const margin = 15;
       const pdfPageWidth = pdf.internal.pageSize.getWidth();
       const pdfPageHeight = pdf.internal.pageSize.getHeight();
       const contentElement = contentRef.current;
 
-      // Ensure the content element is scrolled to top before snapshot
-      contentElement.scrollTop = 0;
+      const effectiveWidth = pdfPageWidth - margin * 2;
+      const lineHeight = 6;
+      let yPosition = margin;
 
-      const devicePixelRatio = window.devicePixelRatio || 1;
-      const scale = Math.min(2, Math.max(1.5, devicePixelRatio));
+      const cleanText = (text) =>
+        text.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
 
-      const canvas = await html2canvas(contentElement, {
-        scale,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        windowWidth: contentElement.scrollWidth,
-        windowHeight: contentElement.scrollHeight
+      const ensureSpace = (height = lineHeight) => {
+        if (yPosition + height > pdfPageHeight - margin) {
+          pdf.addPage();
+          yPosition = margin;
+        }
+      };
+
+      const addParagraph = (text) => {
+        const content = cleanText(text);
+        if (!content) return;
+
+        const lines = pdf.splitTextToSize(content, effectiveWidth);
+        lines.forEach((line) => {
+          ensureSpace();
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(11);
+          pdf.text(line, margin, yPosition);
+          yPosition += lineHeight;
+        });
+        yPosition += 2;
+      };
+
+      const addListItem = (text, level = 0) => {
+        const content = cleanText(text).replace(/^•\s*/, '');
+        if (!content) return;
+
+        const indent = margin + level * 6;
+        const bulletWidth = 4;
+        const availableWidth = effectiveWidth - level * 6;
+        const lines = pdf.splitTextToSize(content, availableWidth);
+
+        lines.forEach((line, index) => {
+          ensureSpace();
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(11);
+          if (index === 0) {
+            pdf.text('•', indent, yPosition);
+            pdf.text(line, indent + bulletWidth, yPosition);
+          } else {
+            pdf.text(line, indent + bulletWidth, yPosition);
+          }
+          yPosition += lineHeight;
+        });
+        yPosition += 2;
+      };
+
+      const addHeading = (text, size, style = 'bold') => {
+        const content = cleanText(text);
+        if (!content) return;
+
+        ensureSpace(size / 2 + 2);
+        pdf.setFont('helvetica', style);
+        pdf.setFontSize(size);
+        pdf.text(content, margin, yPosition);
+        yPosition += size / 2 + 4;
+      };
+
+      const addTable = (tableItem) => {
+        if (!tableItem || !tableItem.rows.length) return;
+
+        tableItem.rows.forEach((row, rowIndex) => {
+          const rowEntries = row.map((cell, idx) => {
+            const header = tableItem.headers[idx] || `Column ${idx + 1}`;
+            return `${header}: ${cleanText(cell)}`;
+          });
+
+          addParagraph(`${rowIndex + 1}. ${rowEntries.join(' | ')}`);
+        });
+      };
+
+      const getListLevel = (li, sectionEl) => {
+        let depth = 0;
+        let current = li.parentElement;
+        while (current && current !== sectionEl) {
+          if (current.tagName === 'UL' || current.tagName === 'OL') {
+            depth += 1;
+          }
+          current = current.parentElement;
+        }
+        return Math.max(depth - 1, 0);
+      };
+
+      const extractTableData = (tableEl) => {
+        const headers = Array.from(
+          tableEl.querySelectorAll('thead th')
+        ).map((th) => cleanText(th.textContent));
+
+        const bodyRows = Array.from(tableEl.querySelectorAll('tbody tr')).map(
+          (row) =>
+            Array.from(row.querySelectorAll('td')).map((td) =>
+              cleanText(td.textContent)
+            )
+        );
+
+        if (!headers.length) {
+          const firstRow = tableEl.querySelectorAll('tr');
+          if (firstRow.length) {
+            const inferredHeaders = Array.from(
+              firstRow[0].children
+            ).map((cell, index) => `Column ${index + 1}`);
+            const inferredRows = Array.from(firstRow).map((row) =>
+              Array.from(row.children).map((cell) => cleanText(cell.textContent))
+            );
+            return { headers: inferredHeaders, rows: inferredRows };
+          }
+        }
+
+        return { headers, rows: bodyRows };
+      };
+
+      const extractDocumentItems = (root) => {
+        const items = [];
+        const sections = root.querySelectorAll('section');
+
+        sections.forEach((section) => {
+          const sectionTitle = section.querySelector('h2');
+          if (sectionTitle) {
+            items.push({
+              type: 'section',
+              text: sectionTitle.textContent
+            });
+          }
+
+          const elements = section.querySelectorAll('h3, h4, p, li, table');
+          elements.forEach((el) => {
+            if (el.closest('section') !== section) return;
+
+            if (el.tagName === 'H3') {
+              items.push({ type: 'subheading', text: el.textContent });
+            } else if (el.tagName === 'H4') {
+              items.push({ type: 'minorHeading', text: el.textContent });
+            } else if (el.tagName === 'P') {
+              items.push({ type: 'paragraph', text: el.textContent });
+            } else if (el.tagName === 'LI') {
+              items.push({
+                type: 'list',
+                text: el.textContent,
+                level: getListLevel(el, section)
+              });
+            } else if (el.tagName === 'TABLE') {
+              items.push({
+                type: 'table',
+                data: extractTableData(el)
+              });
+            }
+          });
+        });
+
+        return items;
+      };
+
+      // Title Page
+      const title = contentElement.querySelector('h1');
+      const subtitle = contentElement.querySelector('h1 + p');
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(24);
+      pdf.text(
+        title ? cleanText(title.textContent) : 'Aura Asset Manager',
+        pdfPageWidth / 2,
+        yPosition,
+        { align: 'center' }
+      );
+      yPosition += 14;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(14);
+      pdf.text(
+        subtitle
+          ? cleanText(subtitle.textContent)
+          : 'Complete User Guide & Documentation',
+        pdfPageWidth / 2,
+        yPosition,
+        { align: 'center' }
+      );
+      yPosition += 10;
+
+      pdf.setFontSize(11);
+      pdf.text(
+        `Generated: ${new Date().toLocaleDateString()}`,
+        pdfPageWidth / 2,
+        yPosition,
+        { align: 'center' }
+      );
+
+      // Start new page for content
+      pdf.addPage();
+      yPosition = margin;
+
+      const documentItems = extractDocumentItems(contentElement);
+      documentItems.forEach((item) => {
+        switch (item.type) {
+          case 'section':
+            addHeading(item.text, 16);
+            break;
+          case 'subheading':
+            addHeading(item.text, 13);
+            break;
+          case 'minorHeading':
+            addHeading(item.text, 11);
+            break;
+          case 'paragraph':
+            addParagraph(item.text);
+            break;
+          case 'list':
+            addListItem(item.text, item.level);
+            break;
+          case 'table':
+            addTable(item.data);
+            break;
+          default:
+            break;
+        }
       });
-
-      const imgData = canvas.toDataURL('image/png', 1.0);
-      const imgWidth = pdfPageWidth - margin * 2;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      const pageContentHeight = pdfPageHeight - margin * 2;
-
-      let heightLeft = imgHeight;
-      let position = margin;
-
-      pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
-      heightLeft -= pageContentHeight;
-
-      while (heightLeft > 0) {
-        position = margin - (imgHeight - heightLeft);
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
-        heightLeft -= pageContentHeight;
-      }
 
       pdf.save('Aura_User_Guide.pdf');
     } catch (error) {
