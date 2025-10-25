@@ -173,6 +173,9 @@ const Dashboard = () => {
   const remainingPercentage = (100 - achievedPercentage).toFixed(1)
   const growthPotentialPercentage = remainingPercentage
 
+  // Get annual income from profile data
+  const annualIncome = profileData?.annual_income || 0
+
   // Fetch insurance data for coverage ratios
   const { data: insurancePolicies } = useQuery({
     queryKey: queryKeys.insurance.list(),

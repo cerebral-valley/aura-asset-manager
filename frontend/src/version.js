@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.227',
+  version: 'v0.228',
   buildDate: '2025-01-09',
-  deploymentId: 'dashboard-fixes',
-  description: 'Fixed growth potential inversion, combined insurance coverage cards, fixed font consistency, improved insurance coverage detection with TanStack Query integration'
+  deploymentId: 'dashboard-react-error-fix',
+  description: 'Fixed React error #310 by declaring annualIncome variable before usage in useMemo dependencies'
 }
 
 export const getVersionDisplay = () => {
