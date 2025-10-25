@@ -25,6 +25,7 @@ const EnhancedValueDisplayCard = ({
   // Extract numeric value for animation
   const numericValue = typeof value === 'number' ? value : 0
   const isNumeric = typeof value === 'number'
+  const isStringValue = typeof value === 'string'
 
   const CardWrapper = magicHover ? DashboardCard : Card
 
@@ -72,6 +73,8 @@ const EnhancedValueDisplayCard = ({
                     className="font-bold"
                   />
                 </span>
+              ) : isStringValue ? (
+                value
               ) : (
                 formatCurrency(value)
               )}
@@ -88,6 +91,8 @@ const EnhancedValueDisplayCard = ({
                   className="font-bold"
                 />
               </span>
+            ) : isStringValue ? (
+              value
             ) : (
               formatCurrency(value)
             )}

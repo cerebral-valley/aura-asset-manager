@@ -122,9 +122,10 @@ const EnhancedInsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown"
                 outerRadius={100}
                 fill={getColor(0)}
                 dataKey="value"
-                label={({ name, value, percent }) => 
-                  percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
-                }
+                label={({ name, value, percent }) => {
+                  if (percent <= 0.05) return ''
+                  return `${name}: ${value} (${(percent * 100).toFixed(0)}%)`
+                }}
                 animationBegin={0}
                 animationDuration={800}
                 animationEasing="ease-out"

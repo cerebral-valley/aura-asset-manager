@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.224',
+  version: 'v0.225',
   buildDate: '2025-10-25',
-  deploymentId: 'insurance-timeline-tooltip-fix',
-  description: 'Fixed pie chart tooltip styling (white bg, black text) and replaced Coverage Distribution with Insurance Timeline for active policies'
+  deploymentId: 'dashboard-fixes',
+  description: 'Fixed dashboard UI issues: Insurance chart labels now show policy type + count + percentage, Growth Potential shows only percentage without currency symbol'
 }
 
 export const getVersionDisplay = () => {
