@@ -2,11 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.223',
-  // bumped for insurance UI enhancements
+  version: 'v0.224',
   buildDate: '2025-10-25',
-  deploymentId: 'insurance-ui-enhancements',
-  description: 'Enhanced insurance page with improved button styling, pie chart formatting, totals row, coverage distribution chart, and coverage-to-premium ratios'
+  deploymentId: 'insurance-timeline-tooltip-fix',
+  description: 'Fixed pie chart tooltip styling (white bg, black text) and replaced Coverage Distribution with Insurance Timeline for active policies'
 }
 
 export const getVersionDisplay = () => {

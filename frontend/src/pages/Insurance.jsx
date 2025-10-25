@@ -903,9 +903,9 @@ const Insurance = () => {
                     <Tooltip 
                       formatter={(value) => formatCurrency(value)}
                       contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
-                        border: '1px solid hsl(var(--border))',
-                        color: 'hsl(var(--card-foreground))'
+                        backgroundColor: '#ffffff', 
+                        border: '1px solid #ccc',
+                        color: '#000000'
                       }} 
                     />
                     <Legend />
@@ -913,42 +913,45 @@ const Insurance = () => {
                 </ResponsiveContainer>
               </div>
             </SafeSection>
-            <SafeSection debugId="Insurance:CoverageDistributionChart">
+            <SafeSection debugId="Insurance:TimelineChart">
               <div className="bg-card text-card-foreground rounded shadow p-4">
-                <h2 className="font-semibold mb-2">Coverage Distribution</h2>
-                <ResponsiveContainer width="100%" height={250}>
-                  <PieChart>
-                    <Pie 
-                      data={newChartData.map(item => ({ name: item.name, value: item.coverage }))} 
-                      dataKey="value" 
-                      nameKey="name" 
-                      cx="50%" 
-                      cy="50%" 
-                      outerRadius={80} 
-                      label={(entry) => {
-                        const total = newChartData.reduce((sum, item) => sum + item.coverage, 0);
-                        const percentage = total > 0 ? ((entry.value / total) * 100).toFixed(1) : 0;
-                        return `${formatCurrency(entry.value)} (${percentage}%)`;
-                      }}
-                    >
-                      {newChartData.map((entry, index) => (
-                        <Cell 
-                          key={`cell-${index}`} 
-                          fill={getColor(index)} 
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value) => formatCurrency(value)}
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
-                        border: '1px solid hsl(var(--border))',
-                        color: 'hsl(var(--card-foreground))'
-                      }} 
-                    />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+                <h2 className="font-semibold mb-2">Insurance Timeline</h2>
+                <div className="h-64 overflow-y-auto pr-2">
+                  {policies
+                    .filter(p => p.status === 'active' && p.start_date)
+                    .sort((a, b) => new Date(b.start_date) - new Date(a.start_date))
+                    .map((policy, index) => (
+                      <div key={policy.id || index} className="relative flex items-start mb-4 last:mb-0">
+                        {/* Timeline line */}
+                        <div className="flex flex-col items-center mr-4">
+                          <div className={`w-3 h-3 rounded-full ${
+                            index % 4 === 0 ? 'bg-blue-500' :
+                            index % 4 === 1 ? 'bg-green-500' :
+                            index % 4 === 2 ? 'bg-purple-500' : 'bg-orange-500'
+                          }`}></div>
+                          {index < policies.filter(p => p.status === 'active' && p.start_date).length - 1 && (
+                            <div className={`w-0.5 h-8 ${isDark ? 'bg-gray-600' : 'bg-gray-300'} mt-1`}></div>
+                          )}
+                        </div>
+                        
+                        {/* Timeline content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-medium truncate">{policy.policy_name || 'Policy'}</p>
+                            <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                              {formatDate(policy.start_date)}
+                            </span>
+                          </div>
+                          <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} capitalize`}>
+                            {policy.policy_type}
+                          </p>
+                          <p className="text-sm font-semibold text-green-600">
+                            {formatCurrency(policy.coverage_amount)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
               </div>
             </SafeSection>
           </div>
