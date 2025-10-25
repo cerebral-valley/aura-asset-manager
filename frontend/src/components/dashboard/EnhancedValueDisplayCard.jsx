@@ -65,7 +65,7 @@ const EnhancedValueDisplayCard = ({
           <Sparkles>
             <div className="text-2xl font-bold text-foreground">
               {animate && isNumeric ? (
-                <span className="font-mono">
+                <span>
                   {formatCurrency(0).replace(/[\d.,]+/, '')}
                   <NumberTicker
                     value={numericValue}
@@ -83,7 +83,7 @@ const EnhancedValueDisplayCard = ({
         ) : (
           <div className="text-2xl font-bold text-foreground">
             {animate && isNumeric ? (
-              <span className="font-mono">
+              <span>
                 {formatCurrency(0).replace(/[\d.,]+/, '')}
                 <NumberTicker
                   value={numericValue}

@@ -31,7 +31,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.api.v1 import auth, dashboard, assets, transactions, insurance, transaction_create, user_settings, feedback, profile, goals, tools
-# TODO: Re-enable after fixing metadata column name issue
+# Note: payment_schedules feature is disabled - requires frontend implementation before re-enabling
 # from app.api.v1 import payment_schedules
 
 # Create FastAPI application instance
@@ -204,7 +204,7 @@ app.include_router(user_settings.router, prefix="/api/v1/user-settings", tags=["
 app.include_router(profile.router, prefix="/api/v1/profile", tags=["profile"])
 app.include_router(goals.router, prefix="/api/v1/goals", tags=["goals"])
 app.include_router(tools.router, prefix="/api/v1/tools", tags=["tools"])
-# TODO: Re-enable after fixing metadata column name issue
+# Note: payment_schedules feature is disabled - requires frontend implementation before re-enabling
 # app.include_router(payment_schedules.router, prefix="/api/v1/payment-schedules", tags=["payment-schedules"])
 app.include_router(feedback.router, prefix="/api/v1", tags=["feedback"])
 

@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.226',
-  buildDate: '2025-10-25',
-  deploymentId: 'dashboard-enhancements',
-  description: 'Enhanced dashboard with dynamic growth potential, asset ratios, and insurance coverage metrics. Insurance chart now shows coverage amounts like assets.'
+  version: 'v0.227',
+  buildDate: '2025-01-09',
+  deploymentId: 'dashboard-fixes',
+  description: 'Fixed growth potential inversion, combined insurance coverage cards, fixed font consistency, improved insurance coverage detection with TanStack Query integration'
 }
 
 export const getVersionDisplay = () => {

@@ -304,11 +304,13 @@ async def get_asset_hierarchy(
             )
         
         # Build hierarchy tree
+        # Get user's currency preference, defaulting to GBP
+        user_currency: str = getattr(current_user, 'currency', None) or "GBP"  # type: ignore
         hierarchy_data = build_hierarchy_tree(
             assets=assets,
             hierarchy_order=request.hierarchy,
             depth=request.depth,
-            currency="GBP"  # TODO: Get from user settings
+            currency=user_currency
         )
         
         logger.info(f"Successfully generated hierarchy with {len(hierarchy_data['nodes'])} nodes")

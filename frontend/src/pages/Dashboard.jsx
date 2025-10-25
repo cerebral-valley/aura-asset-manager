@@ -11,6 +11,7 @@ import { dashboardService } from '../services/dashboard.js'
 import { goalsService } from '../services/goals.js'
 import { profileService } from '../services/profile.js'
 import { transactionsService } from '../services/transactions.js'
+import { insuranceService } from '../services/insurance.js'
 import { queryKeys } from '../lib/queryKeys'
 import { getVersionDisplay } from '../version.js'
 import { Wallet, Shield, TrendingUp } from 'lucide-react'
@@ -168,53 +169,47 @@ const Dashboard = () => {
   // Calculate growth potential with dynamic threshold
   const netWorth = dashboardData?.net_worth || 0
   const growthPotentialThreshold = getGrowthPotentialThreshold(netWorth)
-  const growthPotentialPercentage = ((netWorth / growthPotentialThreshold) * 100).toFixed(1)
+  const achievedPercentage = ((netWorth / growthPotentialThreshold) * 100)
+  const remainingPercentage = (100 - achievedPercentage).toFixed(1)
+  const growthPotentialPercentage = remainingPercentage
 
-  // Calculate asset to income ratio
-  const annualIncome = profileData?.annual_income || 0
-  const assetToIncomeRatio = annualIncome > 0 ? (netWorth / annualIncome).toFixed(1) : '0.0'
+  // Fetch insurance data for coverage ratios
+  const { data: insurancePolicies } = useQuery({
+    queryKey: queryKeys.insurance.list(),
+    queryFn: ({ signal }) => insuranceService.getPolicies({ signal }),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  })
 
   // Calculate life and disability insurance coverage ratios
-  const [lifeCoverageRatio, setLifeCoverageRatio] = useState('No Coverage')
-  const [disabilityCoverageRatio, setDisabilityCoverageRatio] = useState('No Coverage')
-
-  useEffect(() => {
-    const fetchInsuranceData = async () => {
-      try {
-        const response = await fetch('/api/v1/insurance/', {
-          headers: {
-            'Authorization': `Bearer ${user?.access_token}`
-          }
-        })
-        const policies = await response.json()
-        
-        let lifeCoverage = 0
-        let disabilityCoverage = 0
-        
-        policies.forEach(policy => {
-          if (policy.status === 'active') {
-            const coverage = parseFloat(policy.coverage_amount) || 0
-            if (policy.policy_type === 'life') {
-              lifeCoverage += coverage
-            } else if (policy.policy_type === 'disability') {
-              disabilityCoverage += coverage
-            }
-          }
-        })
-        
-        if (annualIncome > 0) {
-          setLifeCoverageRatio(lifeCoverage > 0 ? `${(lifeCoverage / annualIncome).toFixed(1)}x` : 'No Coverage')
-          setDisabilityCoverageRatio(disabilityCoverage > 0 ? `${(disabilityCoverage / annualIncome).toFixed(1)}x` : 'No Coverage')
-        }
-      } catch (error) {
-        console.error('Failed to fetch insurance data:', error)
-      }
-    }
+  const lifeCoverageRatio = React.useMemo(() => {
+    if (!insurancePolicies || !annualIncome || annualIncome === 0) return 'No Coverage'
     
-    if (user && annualIncome > 0) {
-      fetchInsuranceData()
-    }
-  }, [user, annualIncome])
+    let lifeCoverage = 0
+    insurancePolicies.forEach(policy => {
+      if (policy.status === 'active' && policy.policy_type === 'life') {
+        lifeCoverage += parseFloat(policy.coverage_amount) || 0
+      }
+    })
+    
+    return lifeCoverage > 0 ? `${(lifeCoverage / annualIncome).toFixed(1)}x` : 'No Coverage'
+  }, [insurancePolicies, annualIncome])
+
+  const disabilityCoverageRatio = React.useMemo(() => {
+    if (!insurancePolicies || !annualIncome || annualIncome === 0) return 'No Coverage'
+    
+    let disabilityCoverage = 0
+    insurancePolicies.forEach(policy => {
+      if (policy.status === 'active' && policy.policy_type === 'disability') {
+        disabilityCoverage += parseFloat(policy.coverage_amount) || 0
+      }
+    })
+    
+    return disabilityCoverage > 0 ? `${(disabilityCoverage / annualIncome).toFixed(1)}x` : 'No Coverage'
+  }, [insurancePolicies, annualIncome])
+
+  // Calculate asset to income ratio
+  const assetToIncomeRatio = annualIncome > 0 ? (netWorth / annualIncome).toFixed(1) : '0.0'
 
   return (
     <div className="relative min-h-screen p-6">
@@ -288,32 +283,23 @@ const Dashboard = () => {
           />
         </BlurFade>
         <BlurFade delay={0.3}>
-          <EnhancedValueDisplayCard
-            title="Life Insurance Coverage"
-            value={lifeCoverageRatio}
-            subtitle="Coverage to income ratio"
-            icon={Shield}
-            className="md:col-span-1"
-            tooltip="Life insurance coverage as a multiple of your annual income. Financial advisors often recommend 10-12x coverage."
-            animate={false}
-            magicHover={true}
-          />
-        </BlurFade>
-      </div>
-
-      {/* Additional Insurance Coverage Card */}
-      <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-5">
-        <BlurFade delay={0.35}>
-          <EnhancedValueDisplayCard
-            title="Disability Coverage"
-            value={disabilityCoverageRatio}
-            subtitle="Coverage to income ratio"
-            icon={Shield}
-            className="md:col-span-1"
-            tooltip="Disability insurance coverage as a multiple of your annual income."
-            animate={false}
-            magicHover={true}
-          />
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 md:col-span-1">
+            <div className="flex items-center gap-2 mb-4">
+              <Shield className="h-5 w-5 text-primary" />
+              <h3 className="text-sm font-medium text-muted-foreground">Insurance Coverage</h3>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Life</span>
+                <span className="text-2xl font-bold text-foreground">{lifeCoverageRatio}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Disability</span>
+                <span className="text-2xl font-bold text-foreground">{disabilityCoverageRatio}</span>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-3">Coverage to income ratios</p>
+          </div>
         </BlurFade>
       </div>
 
