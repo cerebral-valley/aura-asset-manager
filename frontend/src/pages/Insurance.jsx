@@ -251,16 +251,19 @@ const Insurance = () => {
 
   // Helper functions for display formatting
   const formatCurrency = (amount) => {
-    if (!amount || amount === 0 || amount === '0' || amount === '') return '-';
+    // Treat null/undefined/empty string as missing value
+    if (amount === null || amount === undefined || amount === '') return '-';
 
     // Convert string to number if needed
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
 
-    if (isNaN(numAmount) || numAmount === 0) return '-';
+    // If not a number, show dash
+    if (isNaN(numAmount)) return '-';
 
     // Get global currency preference
     const globalCurrency = localStorage.getItem('globalCurrency') || 'USD';
 
+    // Always format numeric values (including 0)
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: globalCurrency,
@@ -850,7 +853,7 @@ const Insurance = () => {
       {policies.length > 0 && (
         <>
           {/* KPIs & Charts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <SafeSection debugId="Insurance:AnnualPremiumsChart">
               <div className="bg-card text-card-foreground rounded shadow p-4">
                 <h2 className="font-semibold mb-2">Annual Premiums Overview</h2>
@@ -877,7 +880,19 @@ const Insurance = () => {
                 <h2 className="font-semibold mb-2">Policy Type Breakdown</h2>
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
-                    <Pie data={newPieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                    <Pie 
+                      data={newPieData} 
+                      dataKey="value" 
+                      nameKey="name" 
+                      cx="50%" 
+                      cy="50%" 
+                      outerRadius={80} 
+                      label={(entry) => {
+                        const total = newPieData.reduce((sum, item) => sum + item.value, 0);
+                        const percentage = total > 0 ? ((entry.value / total) * 100).toFixed(1) : 0;
+                        return `${formatCurrency(entry.value)} (${percentage}%)`;
+                      }}
+                    >
                       {newPieData.map((entry, index) => (
                         <Cell 
                           key={`cell-${index}`} 
@@ -886,6 +901,45 @@ const Insurance = () => {
                       ))}
                     </Pie>
                     <Tooltip 
+                      formatter={(value) => formatCurrency(value)}
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        color: 'hsl(var(--card-foreground))'
+                      }} 
+                    />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </SafeSection>
+            <SafeSection debugId="Insurance:CoverageDistributionChart">
+              <div className="bg-card text-card-foreground rounded shadow p-4">
+                <h2 className="font-semibold mb-2">Coverage Distribution</h2>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie 
+                      data={newChartData.map(item => ({ name: item.name, value: item.coverage }))} 
+                      dataKey="value" 
+                      nameKey="name" 
+                      cx="50%" 
+                      cy="50%" 
+                      outerRadius={80} 
+                      label={(entry) => {
+                        const total = newChartData.reduce((sum, item) => sum + item.coverage, 0);
+                        const percentage = total > 0 ? ((entry.value / total) * 100).toFixed(1) : 0;
+                        return `${formatCurrency(entry.value)} (${percentage}%)`;
+                      }}
+                    >
+                      {newChartData.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={getColor(index)} 
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value) => formatCurrency(value)}
                       contentStyle={{ 
                         backgroundColor: 'hsl(var(--card))', 
                         border: '1px solid hsl(var(--border))',
@@ -911,20 +965,26 @@ const Insurance = () => {
                       <th className="text-left py-2 px-4">Policy Type</th>
                       <th className="text-left py-2 px-4">Annualized Premiums</th>
                       <th className="text-left py-2 px-4">Total Coverage</th>
+                      <th className="text-left py-2 px-4">Coverage-To-Premium (x)</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {aggregateByTypeArray.map((row, idx) => (
-                      <tr key={row.type} className="border-t border-border">
-                        <td className="py-2 px-4">{row.type}</td>
-                        <td className="py-2 px-4">{formatCurrency(row.annualPremium)}</td>
-                        <td className="py-2 px-4">{formatCurrency(row.totalCoverage)}</td>
-                      </tr>
-                    ))}
+                    {aggregateByTypeArray.map((row, idx) => {
+                      const ratio = row.annualPremium > 0 ? (row.totalCoverage / row.annualPremium).toFixed(2) : '-';
+                      return (
+                        <tr key={row.type} className="border-t border-border">
+                          <td className="py-2 px-4">{row.type}</td>
+                          <td className="py-2 px-4">{formatCurrency(row.annualPremium)}</td>
+                          <td className="py-2 px-4">{formatCurrency(row.totalCoverage)}</td>
+                          <td className="py-2 px-4">{ratio}x</td>
+                        </tr>
+                      );
+                    })}
                     <tr className="border-t border-border font-bold">
                       <td className="py-2 px-4">Total</td>
                       <td className="py-2 px-4">{formatCurrency(totalAnnualPremium)}</td>
                       <td className="py-2 px-4">{formatCurrency(totalCoverage)}</td>
+                      <td className="py-2 px-4">{totalAnnualPremium > 0 ? (totalCoverage / totalAnnualPremium).toFixed(2) : '-'}x</td>
                     </tr>
                   </tbody>
                 </table>
@@ -1012,12 +1072,12 @@ const Insurance = () => {
                        <td className="py-2 px-4">{p.modified_at ? formatDate(p.modified_at) : '-'}</td>
                       <td className="py-2 px-4">
                         <button
-                          className="text-blue-600 hover:underline mr-2"
+                          className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 mr-2"
                           onClick={() => openModal(p)}
                           aria-label={`Edit policy ${p.policy_name || 'Policy'}`}
                         >Edit</button>
                         <button
-                          className="text-red-600 hover:underline"
+                          className="text-red-600 hover:text-red-800 hover:underline"
                           onClick={() => handleDelete(p.id)}
                           disabled={actionLoading}
                           aria-label={`Delete policy ${p.policy_name || 'Policy'}`}
@@ -1026,6 +1086,34 @@ const Insurance = () => {
                     </tr>
                   );
                 })}
+                {/* Totals Row for Active Policies */}
+                {(() => {
+                  const activePolicies = policies.filter(p => p.status === 'active');
+                  const totalActiveCoverage = activePolicies.reduce((sum, p) => sum + (parseFloat(p.coverage_amount) || 0), 0);
+                  const totalActivePremiums = activePolicies.reduce((sum, p) => {
+                    const premiumAmount = parseFloat(p.premium_amount) || 0;
+                    const frequency = p.premium_frequency?.toLowerCase() || 'annually';
+                    let annualPremium = 0;
+                    switch (frequency) {
+                      case 'monthly': annualPremium = premiumAmount * 12; break;
+                      case 'quarterly': annualPremium = premiumAmount * 4; break;
+                      case 'semi-annually':
+                      case 'semi-annual': annualPremium = premiumAmount * 2; break;
+                      default: annualPremium = premiumAmount; break;
+                    }
+                    return sum + annualPremium;
+                  }, 0);
+                  
+                  return (
+                    <tr className={`border-t-2 font-bold ${isDark ? 'border-gray-600 bg-gray-800 text-neutral-200' : 'border-gray-400 bg-gray-100 text-gray-800'}`}>
+                      <td className="py-2 px-4" colSpan="3">Total (Active Policies: {activePolicies.length})</td>
+                      <td className="py-2 px-4">{formatCurrency(totalActivePremiums)}</td>
+                      <td className="py-2 px-4">Annual</td>
+                      <td className="py-2 px-4">{formatCurrency(totalActiveCoverage)}</td>
+                      <td className="py-2 px-4" colSpan="7">-</td>
+                    </tr>
+                  );
+                })()}
               </tbody>
             </table>
           </div>

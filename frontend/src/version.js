@@ -2,10 +2,11 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.221.21',
-  buildDate: '2025-10-24',
-  deploymentId: 'user-guide-pdf-sanitization',
-  description: 'Strip unsupported emoji and normalize characters in User Guide PDF export'
+  version: 'v0.223',
+  // bumped for insurance UI enhancements
+  buildDate: '2025-10-25',
+  deploymentId: 'insurance-ui-enhancements',
+  description: 'Enhanced insurance page with improved button styling, pie chart formatting, totals row, coverage distribution chart, and coverage-to-premium ratios'
 }
 
 export const getVersionDisplay = () => {
