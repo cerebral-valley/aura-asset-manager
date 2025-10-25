@@ -22,6 +22,36 @@ import SafeSection from '../components/util/SafeSection'
 import { log, warn, error } from '@/lib/debug'
 import * as Sentry from '@sentry/react'
 
+// Utility function to calculate dynamic growth potential threshold
+const getGrowthPotentialThreshold = (netWorth) => {
+  const thresholds = [
+    { max: 100000, target: 100000 },
+    { max: 250000, target: 250000 },
+    { max: 500000, target: 500000 },
+    { max: 1000000, target: 1000000 },
+    { max: 10000000, target: 10000000 },
+    { max: 50000000, target: 50000000 },
+    { max: 100000000, target: 100000000 },
+    { max: 250000000, target: 250000000 },
+    { max: 500000000, target: 500000000 },
+    { max: 1000000000, target: 1000000000 },
+    { max: 10000000000, target: 10000000000 },
+    { max: 50000000000, target: 50000000000 },
+    { max: 100000000000, target: 100000000000 },
+    { max: 500000000000, target: 500000000000 },
+    { max: 1000000000000, target: 1000000000000 },
+  ]
+  
+  for (const threshold of thresholds) {
+    if (netWorth < threshold.max) {
+      return threshold.target
+    }
+  }
+  
+  // For net worth >= 1 trillion, use 1 trillion
+  return 1000000000000
+}
+
 const Dashboard = () => {
   const { user } = useAuth()
   // Import verification
@@ -135,6 +165,57 @@ const Dashboard = () => {
 
   const themeLabels = getThemeLabels(dashboardData?.user_theme || 'sanctuary_builder')
 
+  // Calculate growth potential with dynamic threshold
+  const netWorth = dashboardData?.net_worth || 0
+  const growthPotentialThreshold = getGrowthPotentialThreshold(netWorth)
+  const growthPotentialPercentage = ((netWorth / growthPotentialThreshold) * 100).toFixed(1)
+
+  // Calculate asset to income ratio
+  const annualIncome = profileData?.annual_income || 0
+  const assetToIncomeRatio = annualIncome > 0 ? (netWorth / annualIncome).toFixed(1) : '0.0'
+
+  // Calculate life and disability insurance coverage ratios
+  const [lifeCoverageRatio, setLifeCoverageRatio] = useState('No Coverage')
+  const [disabilityCoverageRatio, setDisabilityCoverageRatio] = useState('No Coverage')
+
+  useEffect(() => {
+    const fetchInsuranceData = async () => {
+      try {
+        const response = await fetch('/api/v1/insurance/', {
+          headers: {
+            'Authorization': `Bearer ${user?.access_token}`
+          }
+        })
+        const policies = await response.json()
+        
+        let lifeCoverage = 0
+        let disabilityCoverage = 0
+        
+        policies.forEach(policy => {
+          if (policy.status === 'active') {
+            const coverage = parseFloat(policy.coverage_amount) || 0
+            if (policy.policy_type === 'life') {
+              lifeCoverage += coverage
+            } else if (policy.policy_type === 'disability') {
+              disabilityCoverage += coverage
+            }
+          }
+        })
+        
+        if (annualIncome > 0) {
+          setLifeCoverageRatio(lifeCoverage > 0 ? `${(lifeCoverage / annualIncome).toFixed(1)}x` : 'No Coverage')
+          setDisabilityCoverageRatio(disabilityCoverage > 0 ? `${(disabilityCoverage / annualIncome).toFixed(1)}x` : 'No Coverage')
+        }
+      } catch (error) {
+        console.error('Failed to fetch insurance data:', error)
+      }
+    }
+    
+    if (user && annualIncome > 0) {
+      fetchInsuranceData()
+    }
+  }, [user, annualIncome])
+
   return (
     <div className="relative min-h-screen p-6">
       <AnimatedGradient className="fixed inset-0 -z-10 opacity-30" />
@@ -158,7 +239,7 @@ const Dashboard = () => {
         </div>
 
       {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <BlurFade delay={0.1}>
           <EnhancedValueDisplayCard
             title={themeLabels.netWorth}
@@ -185,11 +266,51 @@ const Dashboard = () => {
         <BlurFade delay={0.2}>
           <EnhancedValueDisplayCard
             title="Growth Potential"
-            value={`${((dashboardData?.net_worth || 0) / 1000000 * 100).toFixed(1)}%`}
-            subtitle="Progress toward financial freedom"
+            value={`${growthPotentialPercentage}%`}
+            subtitle="Progress toward next milestone"
             icon={TrendingUp}
-            className="md:col-span-1 lg:col-span-1"
-            tooltip="Growth Potential is calculated as a percentage of your net worth towards a $1M financial independence target. Formula: (Net Worth / $1,000,000) × 100%. This helps track your progress towards financial freedom."
+            className="md:col-span-1"
+            tooltip={`Growth Potential tracks your progress toward the next wealth milestone. Your net worth: ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(netWorth)}. Next target: ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(growthPotentialThreshold)}`}
+            animate={false}
+            magicHover={true}
+          />
+        </BlurFade>
+        <BlurFade delay={0.25}>
+          <EnhancedValueDisplayCard
+            title="Asset to Income"
+            value={`${assetToIncomeRatio}x`}
+            subtitle="Assets as multiple of income"
+            icon={Wallet}
+            className="md:col-span-1"
+            tooltip={`This shows how many times your annual income your total assets represent. Higher ratio indicates stronger wealth accumulation.`}
+            animate={false}
+            magicHover={true}
+          />
+        </BlurFade>
+        <BlurFade delay={0.3}>
+          <EnhancedValueDisplayCard
+            title="Life Insurance Coverage"
+            value={lifeCoverageRatio}
+            subtitle="Coverage to income ratio"
+            icon={Shield}
+            className="md:col-span-1"
+            tooltip="Life insurance coverage as a multiple of your annual income. Financial advisors often recommend 10-12x coverage."
+            animate={false}
+            magicHover={true}
+          />
+        </BlurFade>
+      </div>
+
+      {/* Additional Insurance Coverage Card */}
+      <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-5">
+        <BlurFade delay={0.35}>
+          <EnhancedValueDisplayCard
+            title="Disability Coverage"
+            value={disabilityCoverageRatio}
+            subtitle="Coverage to income ratio"
+            icon={Shield}
+            className="md:col-span-1"
+            tooltip="Disability insurance coverage as a multiple of your annual income."
             animate={false}
             magicHover={true}
           />

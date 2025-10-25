@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.225',
+  version: 'v0.226',
   buildDate: '2025-10-25',
-  deploymentId: 'dashboard-fixes',
-  description: 'Fixed dashboard UI issues: Insurance chart labels now show policy type + count + percentage, Growth Potential shows only percentage without currency symbol'
+  deploymentId: 'dashboard-enhancements',
+  description: 'Enhanced dashboard with dynamic growth potential, asset ratios, and insurance coverage metrics. Insurance chart now shows coverage amounts like assets.'
 }
 
 export const getVersionDisplay = () => {

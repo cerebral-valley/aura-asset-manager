@@ -32,17 +32,18 @@ const EnhancedInsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown"
     fetchPolicies()
   }, [])
 
-  // Create pie chart data from policies
+  // Create pie chart data from policies with coverage amounts
   const pieData = React.useMemo(() => {
     if (!policies.length) return []
 
-    const typeCounts = policies.reduce((acc, policy) => {
+    const typeCoverage = policies.reduce((acc, policy) => {
       const type = policy.policy_type || 'Other'
-      acc[type] = (acc[type] || 0) + 1
+      const coverage = parseFloat(policy.coverage_amount) || 0
+      acc[type] = (acc[type] || 0) + coverage
       return acc
     }, {})
 
-    return Object.entries(typeCounts).map(([name, value]) => ({
+    return Object.entries(typeCoverage).map(([name, value]) => ({
       name: name.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
       value
     }))
@@ -55,7 +56,7 @@ const EnhancedInsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown"
   }, 0)
 
   const formatTooltip = (value, name) => {
-    return [`${value} policies`, name]
+    return [formatCurrency(value), name]
   }
 
   if (loading) {
@@ -124,7 +125,7 @@ const EnhancedInsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown"
                 dataKey="value"
                 label={({ name, value, percent }) => {
                   if (percent <= 0.05) return ''
-                  return `${name}: ${value} (${(percent * 100).toFixed(0)}%)`
+                  return `${name}: ${formatCurrency(value)} (${(percent * 100).toFixed(0)}%)`
                 }}
                 animationBegin={0}
                 animationDuration={800}
