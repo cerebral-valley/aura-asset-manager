@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
 import { CardContent, CardHeader, CardTitle } from '../ui/card.jsx'
 import { useCurrency } from '../../hooks/useCurrency.jsx'
@@ -7,30 +7,23 @@ import DashboardCard from './DashboardCard.jsx'
 import NumberTicker from '../magicui/NumberTicker.jsx'
 import Orbit from '../magicui/Orbit.jsx'
 import { motion } from 'framer-motion'
-import apiClient from '@/lib/api'
+import { useQuery } from '@tanstack/react-query'
+import { insuranceService } from '../../services/insurance.js'
+import { queryKeys } from '../../lib/queryKeys.js'
+import { useAuth } from '../../contexts/AuthContext'
 
 const EnhancedInsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown" }) => {
   const { formatCurrency } = useCurrency()
   const { getColor } = useChartColors()
-  const [policies, setPolicies] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { user } = useAuth()
 
-  // Fetch insurance policies
-  useEffect(() => {
-    const fetchPolicies = async () => {
-      try {
-        const response = await apiClient.get('/insurance/')
-        setPolicies(response.data || [])
-      } catch (error) {
-        console.error('Failed to fetch insurance policies:', error)
-        setPolicies([]) // Set empty array on error
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchPolicies()
-  }, [])
+  // Fetch insurance policies using TanStack Query
+  const { data: policies = [], isLoading: loading } = useQuery({
+    queryKey: queryKeys.insurance.list(),
+    queryFn: ({ signal }) => insuranceService.getPolicies({ signal }),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  })
 
   // Create pie chart data from policies with coverage amounts
   const pieData = React.useMemo(() => {
