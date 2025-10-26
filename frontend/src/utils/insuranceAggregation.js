@@ -29,24 +29,27 @@ export const matchesPolicyCategory = (policyType, category) => {
 };
 
 /**
- * Aggregates insurance policies by type similar to Assets aggregateByType
+ * Aggregates insurance policies by type - shows each distinct policy type
  */
 export const aggregateInsuranceByType = (policies = []) => {
   const result = {};
-  
-  // Initialize all categories
-  Object.keys(INSURANCE_CATEGORIES).forEach(category => {
-    result[category] = {
-      count: 0,
-      totalCoverage: 0,
-      totalAnnualPremium: 0,
-      policies: []
-    };
-  });
 
   // Process each policy
   policies.forEach(policy => {
-    if (!policy) return;
+    if (!policy || !policy.policy_type) return;
+
+    // Normalize policy type for consistency
+    const policyType = policy.policy_type.trim();
+    
+    // Initialize category if it doesn't exist
+    if (!result[policyType]) {
+      result[policyType] = {
+        count: 0,
+        totalCoverage: 0,
+        totalAnnualPremium: 0,
+        policies: []
+      };
+    }
 
     // Convert values to numbers
     const coverageAmount = parseFloat(policy.coverage_amount) || 0;
@@ -75,34 +78,15 @@ export const aggregateInsuranceByType = (policies = []) => {
       }
     }
 
-    // Find matching category
-    let categorized = false;
-    for (const [category] of Object.entries(INSURANCE_CATEGORIES)) {
-      if (matchesPolicyCategory(policy.policy_type, category)) {
-        result[category].count += 1;
-        result[category].totalCoverage += coverageAmount;
-        result[category].totalAnnualPremium += annualPremium;
-        result[category].policies.push({
-          ...policy,
-          annualPremium,
-          coverageAmount
-        });
-        categorized = true;
-        break;
-      }
-    }
-
-    // If no category matched, put in 'Other'
-    if (!categorized) {
-      result['Other'].count += 1;
-      result['Other'].totalCoverage += coverageAmount;
-      result['Other'].totalAnnualPremium += annualPremium;
-      result['Other'].policies.push({
-        ...policy,
-        annualPremium,
-        coverageAmount
-      });
-    }
+    // Add to category
+    result[policyType].count += 1;
+    result[policyType].totalCoverage += coverageAmount;
+    result[policyType].totalAnnualPremium += annualPremium;
+    result[policyType].policies.push({
+      ...policy,
+      annualPremium,
+      coverageAmount
+    });
   });
 
   return result;

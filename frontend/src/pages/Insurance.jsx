@@ -1019,6 +1019,14 @@ const Insurance = () => {
                         <td className="py-2 px-4">{row.count}</td>
                       </tr>
                     ))}
+                    {policyTypeCounts.length > 0 && (
+                      <tr className="border-t-2 font-semibold">
+                        <td className="py-2 px-4">Total</td>
+                        <td className="py-2 px-4">
+                          {policyTypeCounts.reduce((sum, row) => sum + row.count, 0)}
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -1078,7 +1086,7 @@ const Insurance = () => {
                               <div 
                                 className="h-full bg-primary rounded-full transition-all duration-300"
                                 style={{ 
-                                  width: `${Math.min((parseFloat(p.coverage_amount) / annualIncome) * 5, 100)}%` 
+                                  width: `${Math.min((parseFloat(p.coverage_amount) / annualIncome) * 10, 100)}%` 
                                 }}
                               />
                             </div>
