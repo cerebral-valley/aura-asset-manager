@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { useChartColors } from '../hooks/useChartColors';
 import { Button } from '../components/ui/button';
 import { insuranceService } from '../services/insurance';
+import { profileService } from '../services/profile';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
 Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { toast } from 'sonner';
@@ -55,6 +56,16 @@ const Insurance = () => {
       return failureCount < 2
     },
   })
+
+  // Fetch profile data for annual income (needed for Coverage to Income ratio)
+  const { data: profileData } = useQuery({
+    queryKey: queryKeys.user.profile(),
+    queryFn: () => profileService.getProfile(),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const annualIncome = profileData?.annual_income || 0
 
   // TanStack Query mutations with broadcasting
   const createPolicyMutation = useMutation({
@@ -1035,6 +1046,7 @@ const Insurance = () => {
                   <th className="text-left py-2 px-4">Premium</th>
                   <th className="text-left py-2 px-4">Frequency</th>
                   <th className="text-left py-2 px-4">Coverage</th>
+                  <th className="text-left py-2 px-4">Coverage To Income (x)</th>
                   <th className="text-left py-2 px-4">Duration</th>
                   <th className="text-left py-2 px-4">Status</th>
                   <th className="text-left py-2 px-4">Start Date</th>
@@ -1059,6 +1071,25 @@ const Insurance = () => {
                       <td className="py-2 px-4">{formatCurrency(p.premium_amount)}</td>
                       <td className="py-2 px-4 capitalize">{p.premium_frequency || '-'}</td>
                       <td className="py-2 px-4">{formatCurrency(p.coverage_amount)}</td>
+                      <td className="py-2 px-4 min-w-[200px]">
+                        {annualIncome > 0 ? (
+                          <div className="flex items-center gap-2 w-full">
+                            <div className="flex-1 relative h-6 bg-muted rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-primary rounded-full transition-all duration-300"
+                                style={{ 
+                                  width: `${Math.min((parseFloat(p.coverage_amount) / annualIncome) * 5, 100)}%` 
+                                }}
+                              />
+                            </div>
+                            <span className="text-sm font-medium text-foreground whitespace-nowrap min-w-[40px]">
+                              {(parseFloat(p.coverage_amount) / annualIncome).toFixed(1)}x
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">N/A</span>
+                        )}
+                      </td>
                       <td className="py-2 px-4">{getCoverageDuration(p.start_date, p.end_date)}</td>
                       <td className="py-2 px-4">
                         <span className={`px-2 py-1 rounded text-xs ${
@@ -1174,7 +1205,9 @@ const Insurance = () => {
                     >
                       <option value="">Select Type</option>
                       <option value="life">Life Insurance</option>
+                      <option value="disability">Disability Insurance</option>
                       <option value="health">Health Insurance</option>
+                      <option value="dental">Dental Insurance</option>
                       <option value="auto">Auto Insurance</option>
                       <option value="home">Home Insurance</option>
                       <option value="loan">Loan Insurance</option>

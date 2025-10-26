@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.231',
+  version: 'v0.232',
   buildDate: '2025-01-09',
-  deploymentId: 'build-error-fix',
-  description: 'Fixed build error - corrected import path for useAuth in EnhancedInsurancePolicyBreakdown'
+  deploymentId: 'insurance-enhancements',
+  description: 'Added Disability and Dental insurance types, Coverage to Income ratio column with horizontal bar chart visualization'
 }
 
 export const getVersionDisplay = () => {
