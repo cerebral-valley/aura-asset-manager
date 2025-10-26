@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../hooks/useAuth'
 import EnhancedValueDisplayCard from '../components/dashboard/EnhancedValueDisplayCard.jsx'
@@ -104,6 +104,44 @@ const Dashboard = () => {
     staleTime: 5 * 60 * 1000,
   })
 
+  // Fetch insurance data for coverage ratios
+  const { data: insurancePolicies } = useQuery({
+    queryKey: queryKeys.insurance.list(),
+    queryFn: ({ signal }) => insuranceService.getPolicies({ signal }),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  // Calculate annual income from profile data
+  const annualIncome = profileData?.annual_income || 0
+
+  // Calculate life and disability insurance coverage ratios
+  const lifeCoverageRatio = useMemo(() => {
+    if (!insurancePolicies || !annualIncome || annualIncome === 0) return 'No Coverage'
+    
+    let lifeCoverage = 0
+    insurancePolicies.forEach(policy => {
+      if (policy.status === 'active' && policy.policy_type === 'life') {
+        lifeCoverage += parseFloat(policy.coverage_amount) || 0
+      }
+    })
+    
+    return lifeCoverage > 0 ? `${(lifeCoverage / annualIncome).toFixed(1)}x` : 'No Coverage'
+  }, [insurancePolicies, annualIncome])
+
+  const disabilityCoverageRatio = useMemo(() => {
+    if (!insurancePolicies || !annualIncome || annualIncome === 0) return 'No Coverage'
+    
+    let disabilityCoverage = 0
+    insurancePolicies.forEach(policy => {
+      if (policy.status === 'active' && policy.policy_type === 'disability') {
+        disabilityCoverage += parseFloat(policy.coverage_amount) || 0
+      }
+    })
+    
+    return disabilityCoverage > 0 ? `${(disabilityCoverage / annualIncome).toFixed(1)}x` : 'No Coverage'
+  }, [insurancePolicies, annualIncome])
+
   // Find primary net worth goal
   const netWorthGoal = goalsData?.find(goal => 
     goal.goal_type === 'net_worth' && !goal.goal_completed
@@ -172,44 +210,6 @@ const Dashboard = () => {
   const achievedPercentage = ((netWorth / growthPotentialThreshold) * 100)
   const remainingPercentage = (100 - achievedPercentage).toFixed(1)
   const growthPotentialPercentage = remainingPercentage
-
-  // Get annual income from profile data
-  const annualIncome = profileData?.annual_income || 0
-
-  // Fetch insurance data for coverage ratios
-  const { data: insurancePolicies } = useQuery({
-    queryKey: queryKeys.insurance.list(),
-    queryFn: ({ signal }) => insuranceService.getPolicies({ signal }),
-    enabled: !!user,
-    staleTime: 5 * 60 * 1000,
-  })
-
-  // Calculate life and disability insurance coverage ratios
-  const lifeCoverageRatio = React.useMemo(() => {
-    if (!insurancePolicies || !annualIncome || annualIncome === 0) return 'No Coverage'
-    
-    let lifeCoverage = 0
-    insurancePolicies.forEach(policy => {
-      if (policy.status === 'active' && policy.policy_type === 'life') {
-        lifeCoverage += parseFloat(policy.coverage_amount) || 0
-      }
-    })
-    
-    return lifeCoverage > 0 ? `${(lifeCoverage / annualIncome).toFixed(1)}x` : 'No Coverage'
-  }, [insurancePolicies, annualIncome])
-
-  const disabilityCoverageRatio = React.useMemo(() => {
-    if (!insurancePolicies || !annualIncome || annualIncome === 0) return 'No Coverage'
-    
-    let disabilityCoverage = 0
-    insurancePolicies.forEach(policy => {
-      if (policy.status === 'active' && policy.policy_type === 'disability') {
-        disabilityCoverage += parseFloat(policy.coverage_amount) || 0
-      }
-    })
-    
-    return disabilityCoverage > 0 ? `${(disabilityCoverage / annualIncome).toFixed(1)}x` : 'No Coverage'
-  }, [insurancePolicies, annualIncome])
 
   // Calculate asset to income ratio
   const assetToIncomeRatio = annualIncome > 0 ? (netWorth / annualIncome).toFixed(1) : '0.0'

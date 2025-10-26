@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.229',
+  version: 'v0.230',
   buildDate: '2025-01-09',
-  deploymentId: 'react-error-root-cause-fix',
-  description: 'Fixed React error #310 root cause - converted EnhancedInsurancePolicyBreakdown to use TanStack Query instead of useState/useEffect'
+  deploymentId: 'react-hook-order-fix',
+  description: 'Fixed React error #310 and undefined React issue - moved all hooks before early returns, added useMemo to imports'
 }
 
 export const getVersionDisplay = () => {
