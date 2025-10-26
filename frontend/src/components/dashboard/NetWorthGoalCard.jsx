@@ -78,9 +78,9 @@ const NetWorthGoalCard = ({ goal, currentNetWorth }) => {
             className="space-y-1"
           >
             <p className="text-xs text-muted-foreground">Current</p>
-            <p className="text-lg font-bold text-foreground font-mono">
+            <p className="text-lg font-bold text-foreground font-mono financial-number">
               {formatCurrency(0).replace(/[\d.,]+/, '')}
-              <NumberTicker value={currentNetWorth || 0} decimalPlaces={0} />
+              <NumberTicker value={currentNetWorth || 0} decimalPlaces={0} className="financial-number" />
             </p>
           </motion.div>
           <motion.div
@@ -89,7 +89,7 @@ const NetWorthGoalCard = ({ goal, currentNetWorth }) => {
             className="space-y-1"
           >
             <p className="text-xs text-muted-foreground">Target</p>
-            <p className="text-lg font-bold text-foreground font-mono">
+            <p className="text-lg font-bold text-foreground font-mono financial-number">
               {formatCurrency(goal.target_amount || 0)}
             </p>
           </motion.div>
@@ -104,7 +104,7 @@ const NetWorthGoalCard = ({ goal, currentNetWorth }) => {
             className="flex items-center gap-2 pt-2 border-t border-white/10"
           >
             <TrendingUp className="h-4 w-4 text-green-500" />
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-muted-foreground financial-number">
               {formatCurrency(remaining)} to go
             </span>
           </motion.div>

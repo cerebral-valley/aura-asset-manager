@@ -237,7 +237,7 @@ const Dashboard = () => {
         </div>
 
       {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <BlurFade delay={0.1}>
           <EnhancedValueDisplayCard
             title={themeLabels.netWorth}
@@ -248,6 +248,7 @@ const Dashboard = () => {
             animate={true}
             sparkle={true}
             magicHover={true}
+            iconThemed={true}
           />
         </BlurFade>
         <BlurFade delay={0.15}>
@@ -259,6 +260,7 @@ const Dashboard = () => {
             className="md:col-span-1"
             animate={true}
             magicHover={true}
+            iconThemed={true}
           />
         </BlurFade>
         <BlurFade delay={0.2}>
@@ -271,6 +273,7 @@ const Dashboard = () => {
             tooltip={`Growth Potential tracks your progress toward the next wealth milestone. Your net worth: ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(netWorth)}. Next target: ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(growthPotentialThreshold)}`}
             animate={false}
             magicHover={true}
+            iconThemed={true}
           />
         </BlurFade>
         <BlurFade delay={0.25}>
@@ -283,26 +286,32 @@ const Dashboard = () => {
             tooltip={`This shows how many times your annual income your total assets represent. Higher ratio indicates stronger wealth accumulation.`}
             animate={false}
             magicHover={true}
+            iconThemed={true}
           />
         </BlurFade>
         <BlurFade delay={0.3}>
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 md:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
-              <Shield className="h-5 w-5 text-primary" />
-              <h3 className="text-sm font-medium text-muted-foreground">Insurance Coverage</h3>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Life</span>
-                <span className="text-2xl font-bold text-foreground">{lifeCoverageRatio}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Disability</span>
-                <span className="text-2xl font-bold text-foreground">{disabilityCoverageRatio}</span>
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground mt-3">Coverage to income ratios</p>
-          </div>
+          <EnhancedValueDisplayCard
+            title="Life Coverage"
+            value={lifeCoverageRatio}
+            subtitle="Coverage to income ratio"
+            icon={Shield}
+            className="md:col-span-1"
+            animate={false}
+            magicHover={true}
+            iconThemed={true}
+          />
+        </BlurFade>
+        <BlurFade delay={0.35}>
+          <EnhancedValueDisplayCard
+            title="Disability Coverage"
+            value={disabilityCoverageRatio}
+            subtitle="Coverage to income ratio"
+            icon={Shield}
+            className="md:col-span-1"
+            animate={false}
+            magicHover={true}
+            iconThemed={true}
+          />
         </BlurFade>
       </div>
 

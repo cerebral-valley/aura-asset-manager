@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.234',
+  version: 'v0.235',
   buildDate: '2025-10-26',
-  deploymentId: 'insurance-ui-enhancements',
-  description: '5 Insurance page improvements: Bar chart scaling 5x, policy type capitalization, sidebar theme consistency, tooltip legibility, renewal date highlighting'
+  deploymentId: 'dashboard-card-improvements',
+  description: 'Dashboard UI overhaul: Split Insurance Coverage into 2 cards, theme-aware icon colors, enhanced hover animations, tabular numbers with slashed zeros'
 }
 
 export const getVersionDisplay = () => {

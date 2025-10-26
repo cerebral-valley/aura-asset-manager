@@ -411,4 +411,21 @@
   .animate-meteor {
     animation: meteor var(--duration) linear infinite;
   }
+  
+  /* Tabular numbers for consistent width in financial displays */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+  
+  /* Slashed zeros for better readability in financial numbers */
+  .slashed-zero {
+    font-feature-settings: 'zero' 1;
+  }
+  
+  /* Combined tabular + slashed zeros for dashboard cards */
+  .financial-number {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1, 'zero' 1;
+  }
 }

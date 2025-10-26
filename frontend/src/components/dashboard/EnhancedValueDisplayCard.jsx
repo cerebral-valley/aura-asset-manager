@@ -19,6 +19,7 @@ const EnhancedValueDisplayCard = ({
   animate = true, // Enable/disable animations
   sparkle = false, // Add sparkle effect to important values
   magicHover = true, // Enable magic card hover effect
+  iconThemed = false, // Apply theme color to icon
 }) => {
   const { formatCurrency } = useCurrency()
   
@@ -53,24 +54,24 @@ const EnhancedValueDisplayCard = ({
         {Icon && (
           <motion.div
             initial={{ rotate: 0 }}
-            whileHover={{ rotate: 360 }}
-            transition={{ duration: 0.5 }}
+            whileHover={{ rotate: 360, scale: 1.1 }}
+            transition={{ duration: 0.5, type: "spring", stiffness: 260, damping: 20 }}
           >
-            <Icon className="h-4 w-4 text-muted-foreground" />
+            <Icon className={`h-4 w-4 ${iconThemed ? 'text-primary' : 'text-muted-foreground'}`} />
           </motion.div>
         )}
       </CardHeader>
       <CardContent>
         {sparkle ? (
           <Sparkles>
-            <div className="text-2xl font-bold text-foreground">
+            <div className="text-2xl font-bold text-foreground financial-number">
               {animate && isNumeric ? (
                 <span>
                   {formatCurrency(0).replace(/[\d.,]+/, '')}
                   <NumberTicker
                     value={numericValue}
                     decimalPlaces={2}
-                    className="font-bold"
+                    className="font-bold financial-number"
                   />
                 </span>
               ) : isStringValue ? (
@@ -81,14 +82,14 @@ const EnhancedValueDisplayCard = ({
             </div>
           </Sparkles>
         ) : (
-          <div className="text-2xl font-bold text-foreground">
+          <div className="text-2xl font-bold text-foreground financial-number">
             {animate && isNumeric ? (
               <span>
                 {formatCurrency(0).replace(/[\d.,]+/, '')}
                 <NumberTicker
                   value={numericValue}
                   decimalPlaces={2}
-                  className="font-bold"
+                  className="font-bold financial-number"
                 />
               </span>
             ) : isStringValue ? (
