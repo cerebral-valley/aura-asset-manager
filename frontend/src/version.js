@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.233.1',
+  version: 'v0.234',
   buildDate: '2025-10-26',
-  deploymentId: 'insurance-aggregation-bugfix',
-  description: 'Fixed calculateProtectionMetrics to work dynamically with all policy types instead of hard-coded categories'
+  deploymentId: 'insurance-ui-enhancements',
+  description: '5 Insurance page improvements: Bar chart scaling 5x, policy type capitalization, sidebar theme consistency, tooltip legibility, renewal date highlighting'
 }
 
 export const getVersionDisplay = () => {

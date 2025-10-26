@@ -261,6 +261,42 @@ const Insurance = () => {
   }, []);
 
   // Helper functions for display formatting
+  // Helper: Capitalize first letter of a string
+  const capitalizeFirstLetter = (str) => {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
+
+  // Helper: Get renewal status styling based on date
+  const getRenewalStatusClasses = (renewalDate) => {
+    if (!renewalDate) return '';
+    
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Normalize to start of day
+      
+      const renewal = new Date(renewalDate);
+      renewal.setHours(0, 0, 0, 0); // Normalize to start of day
+      
+      const daysUntilRenewal = Math.ceil((renewal - today) / (1000 * 60 * 60 * 24));
+      
+      // Expired (past due)
+      if (daysUntilRenewal < 0) {
+        return 'bg-red-500/20 text-red-300 border border-red-500/30 rounded px-2 py-1';
+      }
+      
+      // Due soon (within 60 days)
+      if (daysUntilRenewal <= 60) {
+        return 'bg-orange-500/20 text-orange-300 border border-orange-500/30 rounded px-2 py-1';
+      }
+      
+      return '';
+    } catch (error) {
+      console.warn('Error calculating renewal status:', error);
+      return '';
+    }
+  };
+
   const formatCurrency = (amount) => {
     // Treat null/undefined/empty string as missing value
     if (amount === null || amount === undefined || amount === '') return '-';
@@ -870,17 +906,33 @@ const Insurance = () => {
                 <h2 className="font-semibold mb-2">Annual Premiums Overview</h2>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={newChartData}>
-                    <XAxis dataKey="name" stroke="currentColor" />
+                    <XAxis 
+                      dataKey="name" 
+                      stroke="currentColor"
+                      tickFormatter={(value) => capitalizeFirstLetter(value)}
+                    />
                     <YAxis stroke="currentColor" />
                     <Tooltip 
                       formatter={(value) => formatCurrency(value)}
+                      labelFormatter={(label) => capitalizeFirstLetter(label)}
                       contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
-                        border: '1px solid hsl(var(--border))',
-                        color: 'hsl(var(--card-foreground))'
-                      }} 
+                        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '6px',
+                        padding: '8px 12px',
+                        color: '#ffffff'
+                      }}
+                      labelStyle={{ 
+                        color: '#ffffff',
+                        fontWeight: 'bold',
+                        marginBottom: '4px'
+                      }}
+                      itemStyle={{ 
+                        color: '#ffffff',
+                        padding: '2px 0'
+                      }}
                     />
-                    <Legend />
+                    <Legend formatter={(value) => capitalizeFirstLetter(value)} />
                     <Bar dataKey="premium" fill={getColor(0)} name="Annual Premium" />
                   </BarChart>
                 </ResponsiveContainer>
@@ -901,7 +953,7 @@ const Insurance = () => {
                       label={(entry) => {
                         const total = newPieData.reduce((sum, item) => sum + item.value, 0);
                         const percentage = total > 0 ? ((entry.value / total) * 100).toFixed(1) : 0;
-                        return `${formatCurrency(entry.value)} (${percentage}%)`;
+                        return `${capitalizeFirstLetter(entry.name)} : ${formatCurrency(entry.value)}`;
                       }}
                     >
                       {newPieData.map((entry, index) => (
@@ -912,14 +964,25 @@ const Insurance = () => {
                       ))}
                     </Pie>
                     <Tooltip 
-                      formatter={(value) => formatCurrency(value)}
+                      formatter={(value, name) => [formatCurrency(value), capitalizeFirstLetter(name)]}
                       contentStyle={{ 
-                        backgroundColor: '#ffffff', 
-                        border: '1px solid #ccc',
-                        color: '#000000'
-                      }} 
+                        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '6px',
+                        padding: '8px 12px',
+                        color: '#ffffff'
+                      }}
+                      labelStyle={{ 
+                        color: '#ffffff',
+                        fontWeight: 'bold',
+                        marginBottom: '4px'
+                      }}
+                      itemStyle={{ 
+                        color: '#ffffff',
+                        padding: '2px 0'
+                      }}
                     />
-                    <Legend />
+                    <Legend formatter={(value) => capitalizeFirstLetter(value)} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -987,7 +1050,7 @@ const Insurance = () => {
                       const ratio = row.annualPremium > 0 ? (row.totalCoverage / row.annualPremium).toFixed(2) : '-';
                       return (
                         <tr key={row.type} className="border-t border-border">
-                          <td className="py-2 px-4">{row.type}</td>
+                          <td className="py-2 px-4">{capitalizeFirstLetter(row.type)}</td>
                           <td className="py-2 px-4">{formatCurrency(row.annualPremium)}</td>
                           <td className="py-2 px-4">{formatCurrency(row.totalCoverage)}</td>
                           <td className="py-2 px-4">{ratio}x</td>
@@ -1015,7 +1078,7 @@ const Insurance = () => {
                   <tbody>
                     {policyTypeCounts.map(row => (
                       <tr key={row.type} className="border-t">
-                        <td className="py-2 px-4">{row.type}</td>
+                        <td className="py-2 px-4">{capitalizeFirstLetter(row.type)}</td>
                         <td className="py-2 px-4">{row.count}</td>
                       </tr>
                     ))}
@@ -1086,7 +1149,7 @@ const Insurance = () => {
                               <div 
                                 className="h-full bg-primary rounded-full transition-all duration-300"
                                 style={{ 
-                                  width: `${Math.min((parseFloat(p.coverage_amount) / annualIncome) * 10, 100)}%` 
+                                  width: `${Math.min((parseFloat(p.coverage_amount) / annualIncome) * 5, 100)}%` 
                                 }}
                               />
                             </div>
@@ -1110,7 +1173,11 @@ const Insurance = () => {
                       </td>
                       <td className="py-2 px-4">{formatDate(p.start_date)}</td>
                       <td className="py-2 px-4">{formatDate(p.end_date)}</td>
-                      <td className="py-2 px-4">{getNextRenewalDate(p.renewal_date)}</td>
+                      <td className="py-2 px-4">
+                        <span className={getRenewalStatusClasses(p.renewal_date)}>
+                          {getNextRenewalDate(p.renewal_date)}
+                        </span>
+                      </td>
                        <td className="py-2 px-4">{p.modified_at ? formatDate(p.modified_at) : '-'}</td>
                       <td className="py-2 px-4">
                         <button
