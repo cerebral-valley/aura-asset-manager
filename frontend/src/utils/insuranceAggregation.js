@@ -193,18 +193,21 @@ export const calculateProtectionMetrics = (policies = []) => {
   });
 
   // Risk assessment based on coverage gaps
+  // Check for common policy types
+  const commonTypes = ['health', 'life', 'auto', 'home'];
   const riskFactors = {
-    hasHealthCoverage: aggregated.Health.count > 0,
-    hasLifeCoverage: aggregated.Life.count > 0,
-    hasAutoCoverage: aggregated.Auto.count > 0,
-    hasHomeCoverage: aggregated.Home.count > 0,
+    hasHealthCoverage: Object.keys(aggregated).some(key => key.toLowerCase().includes('health')) && aggregated[Object.keys(aggregated).find(key => key.toLowerCase().includes('health'))]?.count > 0,
+    hasLifeCoverage: Object.keys(aggregated).some(key => key.toLowerCase().includes('life')) && aggregated[Object.keys(aggregated).find(key => key.toLowerCase().includes('life'))]?.count > 0,
+    hasAutoCoverage: Object.keys(aggregated).some(key => key.toLowerCase().includes('auto')) && aggregated[Object.keys(aggregated).find(key => key.toLowerCase().includes('auto'))]?.count > 0,
+    hasHomeCoverage: Object.keys(aggregated).some(key => key.toLowerCase().includes('home')) && aggregated[Object.keys(aggregated).find(key => key.toLowerCase().includes('home'))]?.count > 0,
     lowCoverageTypes: []
   };
 
-  // Identify potential coverage gaps
-  Object.entries(aggregated).forEach(([category, data]) => {
-    if (data.count === 0 && ['Health', 'Life', 'Auto', 'Home'].includes(category)) {
-      riskFactors.lowCoverageTypes.push(category);
+  // Identify potential coverage gaps by checking if common types exist
+  commonTypes.forEach(type => {
+    const hasType = Object.keys(aggregated).some(key => key.toLowerCase().includes(type));
+    if (!hasType) {
+      riskFactors.lowCoverageTypes.push(type.charAt(0).toUpperCase() + type.slice(1));
     }
   });
 
@@ -219,7 +222,7 @@ export const calculateProtectionMetrics = (policies = []) => {
     costEfficiency,
     portfolioHealth: {
       totalPolicies: policies.length,
-      categoriesCovered: Object.values(aggregated).filter(cat => cat.count > 0).length,
+      categoriesCovered: Object.values(aggregated).filter(cat => cat && cat.count > 0).length,
       averagePremiumPerPolicy: policies.length > 0 ? totals.totalAnnualPremium / policies.length : 0,
       averageCoveragePerPolicy: policies.length > 0 ? totals.totalCoverage / policies.length : 0
     }
