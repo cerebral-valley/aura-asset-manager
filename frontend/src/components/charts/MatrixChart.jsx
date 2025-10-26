@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { getAssetPurposeLabel, getUniqueAssetPurposes } from '@/constants/assetPurpose';
 import { useCurrency } from '@/hooks/useCurrency';
+import { detectAllocationAnomalies, generateAnomalyWriteup } from '@/utils/assetAllocationRules';
+import AllocationAnomalyWriteup from './AllocationAnomalyWriteup';
 
 const MatrixChart = ({ 
   assets = [], 
@@ -76,6 +78,16 @@ const MatrixChart = ({
     return assets.filter(asset => asset.liquid_assets === isLiquid);
   }, [assets, isLiquid]);
 
+  // Detect allocation anomalies
+  const anomalies = useMemo(() => {
+    return detectAllocationAnomalies(assets, isLiquid);
+  }, [assets, isLiquid]);
+
+  // Generate anomaly writeup
+  const anomalyWriteup = useMemo(() => {
+    return generateAnomalyWriteup(anomalies, isLiquid);
+  }, [anomalies, isLiquid]);
+
   // Calculate total value for percentage calculations
   const totalValue = useMemo(() => {
     return filteredAssets.reduce((sum, asset) => sum + getPresentValue(asset), 0);
@@ -149,6 +161,24 @@ const MatrixChart = ({
     }
   };
 
+  // Check if a cell has anomalies
+  const getCellAnomalies = (horizon, purpose) => {
+    return anomalies.filter(
+      a => a.asset.time_horizon === horizon && a.asset.asset_purpose === purpose
+    );
+  };
+
+  // Get cell border color based on anomalies
+  const getCellBorderClass = (cellAnomalies) => {
+    if (cellAnomalies.length === 0) return '';
+    const hasCritical = cellAnomalies.some(a => a.severity === 'critical');
+    const hasHigh = cellAnomalies.some(a => a.severity === 'high');
+    
+    if (hasCritical) return 'ring-2 ring-red-500 dark:ring-red-400';
+    if (hasHigh) return 'ring-2 ring-orange-500 dark:ring-orange-400';
+    return 'ring-2 ring-yellow-500 dark:ring-yellow-400';
+  };
+
   return (
     <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-lg shadow-lg p-3 relative`}>
       <div className="mb-3">
@@ -213,19 +243,37 @@ const MatrixChart = ({
               {assetPurposes.map(assetPurpose => {
                 const cellData = matrixData[horizon.value]?.[assetPurpose] || { count: 0, value: 0, percentage: 0 };
                 const hasData = cellData.count > 0;
+                const cellAnomalies = getCellAnomalies(horizon.value, assetPurpose);
+                const hasAnomalies = cellAnomalies.length > 0;
 
                 return (
                   <div
                     key={`${horizon.value}-${assetPurpose}`}
                     className={`
-                      p-1 rounded cursor-pointer transition-all duration-200 min-h-[45px] flex flex-col justify-center
+                      p-1 rounded cursor-pointer transition-all duration-200 min-h-[45px] flex flex-col justify-center relative
                       ${getCellColor(cellData.percentage)}
                       ${hasData ? 'hover:scale-105 hover:shadow-md' : ''}
                       ${hoveredCell?.horizon === horizon.value && hoveredCell?.assetPurpose === assetPurpose ? 'ring-2 ring-blue-500' : ''}
+                      ${hasAnomalies ? getCellBorderClass(cellAnomalies) : ''}
                     `}
                     onMouseEnter={() => hasData && handleCellHover(horizon.value, assetPurpose)}
                     onMouseLeave={() => setHoveredCell(null)}
                   >
+                    {/* Anomaly indicator */}
+                    {hasAnomalies && (
+                      <div className="absolute top-0.5 right-0.5">
+                        <div className={`
+                          w-2 h-2 rounded-full
+                          ${cellAnomalies.some(a => a.severity === 'critical') 
+                            ? 'bg-red-500' 
+                            : cellAnomalies.some(a => a.severity === 'high')
+                            ? 'bg-orange-500'
+                            : 'bg-yellow-500'
+                          }
+                        `} />
+                      </div>
+                    )}
+                    
                     <div className={`text-center ${getTextColor(cellData.percentage)}`}>
                       {hasData ? (
                         <>
@@ -264,6 +312,27 @@ const MatrixChart = ({
             <div>Total Value: {formatCurrency(hoveredCell.data.value)}</div>
             <div>Portfolio Share: {hoveredCell.data.percentage.toFixed(1)}%</div>
           </div>
+
+          {/* Show anomalies in tooltip */}
+          {(() => {
+            const cellAnomalies = getCellAnomalies(hoveredCell.horizon, hoveredCell.assetPurpose);
+            if (cellAnomalies.length > 0) {
+              return (
+                <div className="mt-3 pt-2 border-t border-red-300 dark:border-red-700">
+                  <div className="flex items-center gap-1 text-red-600 dark:text-red-400 font-medium text-xs mb-2">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {cellAnomalies.length} Allocation {cellAnomalies.length === 1 ? 'Issue' : 'Issues'}
+                  </div>
+                  <div className="text-xs text-red-600 dark:text-red-400">
+                    See detailed writeup below the matrix
+                  </div>
+                </div>
+              );
+            }
+            return null;
+          })()}
           
           {hoveredCell.data.assets.length > 0 && (
             <div className="mt-3 pt-2 border-t border-gray-300">
@@ -302,6 +371,13 @@ const MatrixChart = ({
           </div>
         </div>
       </div>
+
+      {/* Allocation Anomaly Writeup */}
+      <AllocationAnomalyWriteup 
+        writeup={anomalyWriteup}
+        isLiquid={isLiquid}
+        isDark={isDark}
+      />
     </div>
   );
 };
