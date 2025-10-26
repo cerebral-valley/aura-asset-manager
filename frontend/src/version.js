@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.230',
+  version: 'v0.231',
   buildDate: '2025-01-09',
-  deploymentId: 'react-hook-order-fix',
-  description: 'Fixed React error #310 and undefined React issue - moved all hooks before early returns, added useMemo to imports'
+  deploymentId: 'build-error-fix',
+  description: 'Fixed build error - corrected import path for useAuth in EnhancedInsurancePolicyBreakdown'
 }
 
 export const getVersionDisplay = () => {

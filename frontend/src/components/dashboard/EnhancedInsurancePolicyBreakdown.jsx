@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
 import { insuranceService } from '../../services/insurance.js'
 import { queryKeys } from '../../lib/queryKeys.js'
-import { useAuth } from '../../contexts/AuthContext'
+import { useAuth } from '../../hooks/useAuth'
 
 const EnhancedInsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown" }) => {
   const { formatCurrency } = useCurrency()
