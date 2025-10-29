@@ -705,11 +705,11 @@ const UserSettings = () => {
               gradientOpacity={0.7}
             >
               {/* Popular Badge */}
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-white text-xs font-bold shadow-lg">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-white text-xs font-bold shadow-lg z-10">
                 MOST POPULAR
               </div>
 
-              <div className="space-y-6 mt-2">
+              <div className="space-y-6 pt-4">
                 {/* Plan Header */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
