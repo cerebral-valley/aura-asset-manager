@@ -15,7 +15,6 @@ import AnimatedGradient from '../components/magicui/AnimatedGradient.jsx'
 import { useAuth } from '../hooks/useAuth.jsx'
 import { useTheme } from '../contexts/ThemeContext.jsx'
 import { userSettingsService } from '../services/user-settings.js'
-import { feedbackService } from '../services/feedback.js'
 import apiClient from '../lib/api.js'
 import Loading from '../components/ui/Loading'
 import SafeSection from '@/components/util/SafeSection'
@@ -50,12 +49,6 @@ const UserSettings = () => {
     theme: 'default'
   })
 
-  // Feedback state and handlers
-  const [feedbackText, setFeedbackText] = useState('')
-  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false)
-  const [feedbackSuccess, setFeedbackSuccess] = useState('')
-  const [feedbackError, setFeedbackError] = useState('')
-
   // Data reset state and handlers
   const [showResetModal, setShowResetModal] = useState(false)
   const [resetConfirmText, setResetConfirmText] = useState('')
@@ -66,28 +59,6 @@ const UserSettings = () => {
   const [userCode, setUserCode] = useState('')
   const [userCodeVisible, setUserCodeVisible] = useState(false)
   const [userCodeLoading, setUserCodeLoading] = useState(false)
-
-  const handleFeedbackChange = (e) => {
-    setFeedbackText(e.target.value)
-  }
-
-    const handleFeedbackSubmit = async () => {
-    setFeedbackSubmitting(true)
-    setFeedbackSuccess('')
-    setFeedbackError('')
-    try {
-      await feedbackService.submitFeedback(user.id, feedbackText)
-      setFeedbackSuccess('Thank you for your feedback!')
-      setFeedbackText('')
-      setTimeout(() => setFeedbackSuccess(''), 3000)
-    } catch (err) {
-      console.error('Error submitting feedback:', err)
-      setFeedbackError('Failed to submit feedback. Please try again.')
-      setTimeout(() => setFeedbackError(''), 3000)
-    } finally {
-      setFeedbackSubmitting(false)
-    }
-  }
 
   // Data reset handlers
   const handleResetDataClick = () => {
@@ -371,7 +342,6 @@ const UserSettings = () => {
   log('UserSettings:render', { 
     loading,
     saving,
-    feedbackSubmitting,
     error: error || null,
     success: success || null,
     userCodeVisible,
@@ -846,35 +816,24 @@ const UserSettings = () => {
         <Card>
           <CardHeader>
             <CardTitle>Send Feedback</CardTitle>
+            <p className="text-sm text-muted-foreground mt-2">
+              We'd love to hear your thoughts, suggestions, and ideas to improve Aura Asset Manager
+            </p>
           </CardHeader>
         <CardContent>
-          <Label htmlFor="feedback">Your feedback (max 500 words)</Label>
-          <textarea
-            id="feedback"
-            className="w-full border rounded p-2 mt-2"
-            rows={6}
-            maxLength={2500}
-            value={feedbackText}
-            onChange={handleFeedbackChange}
-            placeholder="Share your thoughts, suggestions, or issues..."
-          />
-          <div className="flex justify-end mt-2">
-            <Button onClick={handleFeedbackSubmit} disabled={feedbackSubmitting || feedbackText.trim().length === 0}>
-              {feedbackSubmitting ? 'Submitting...' : 'Submit Feedback'}
-            </Button>
+          <div className="w-full" style={{ minHeight: '600px' }}>
+            <iframe 
+              src="https://docs.google.com/forms/d/e/1FAIpQLScGHAJpT9Y_qbO5EIzMQ0aCqxNdN7_VLzXYVZNQ3xQ9ehskW1/viewform?embedded=true"
+              width="100%"
+              height="600"
+              frameBorder="0"
+              marginHeight="0"
+              marginWidth="0"
+              className="rounded-lg"
+            >
+              Loading form...
+            </iframe>
           </div>
-          {feedbackSuccess && (
-            <Alert className="mt-2" variant="success">
-              <CheckCircle className="mr-2 h-4 w-4" />
-              <AlertDescription>{feedbackSuccess}</AlertDescription>
-            </Alert>
-          )}
-          {feedbackError && (
-            <Alert className="mt-2" variant="destructive">
-              <AlertCircle className="mr-2 h-4 w-4" />
-              <AlertDescription>{feedbackError}</AlertDescription>
-            </Alert>
-          )}
         </CardContent>
       </Card>
       </SafeSection>
