@@ -673,12 +673,11 @@ const UserSettings = () => {
                     {[
                       'Unlimited Assets Tracking',
                       'Transaction Management',
-                      'Insurance Policy Storage',
                       'Portfolio Overview',
                       'Real-time Net Worth',
                       'Multi-Currency Support',
-                      'Family Profile Management',
-                      'Target Setting & Tracking'
+                      'Target Setting & Tracking',
+                      '10 Financial Tools Set'
                     ].map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-2 text-sm">
                         <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
@@ -737,13 +736,9 @@ const UserSettings = () => {
                   <ul className="space-y-3">
                     {[
                       'Document Storage (100MB)',
-                      'Upload Insurance PDFs',
-                      'Attach Transaction Receipts',
-                      'Store Property Documents',
-                      'Secure Cloud Backup',
-                      'Advanced Export Options',
-                      'Priority Email Support',
-                      'Custom Report Generation'
+                      'Upload Property documents',
+                      'Upload Insurance documents',
+                      'Priority Email Support'
                     ].map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-2 text-sm">
                         <CheckCircle className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />
@@ -797,15 +792,9 @@ const UserSettings = () => {
                   </p>
                   <ul className="space-y-3">
                     {[
-                      'AI Wealth Advisor',
-                      'Intelligent Portfolio Analysis',
-                      'Risk Assessment & Recommendations',
-                      'Goal-Based Financial Planning',
-                      'Insurance Coverage Optimization',
-                      'Personalized Investment Insights',
-                      'Predictive Market Trends',
-                      'Tax Optimization Strategies',
-                      '24/7 AI Financial Assistant'
+                      'Family Profile Management',
+                      '24/7 AI Wealth Advisor',
+                      'Intelligent Portfolio Analysis'
                     ].map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-2 text-sm">
                         <CheckCircle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
