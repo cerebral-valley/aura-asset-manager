@@ -10,7 +10,6 @@ import { ThemeSelector } from '../components/ui/ThemeSelector.jsx'
 import { CheckCircle, AlertCircle, User, Globe, Palette, Trash2, AlertTriangle, Eye, EyeOff, Copy, Crown, Sparkles as SparklesIcon, Zap, Shield, TrendingUp, Target, FileText, Brain, ChevronRight } from 'lucide-react'
 import MagicCard from '../components/magicui/MagicCard.jsx'
 import ShimmerButton from '../components/magicui/ShimmerButton.jsx'
-import Sparkles from '../components/magicui/Sparkles.jsx'
 import AnimatedGradient from '../components/magicui/AnimatedGradient.jsx'
 import { useAuth } from '../hooks/useAuth.jsx'
 import { useTheme } from '../contexts/ThemeContext.jsx'
@@ -25,7 +24,6 @@ const UserSettings = () => {
   
   // Import verification
   if (!userSettingsService) warn('UserSettings:import', 'userSettingsService not available');
-  if (!feedbackService) warn('UserSettings:import', 'feedbackService not available');
   if (!apiClient) warn('UserSettings:import', 'apiClient not available');
   
   const { user } = useAuth()
@@ -577,11 +575,9 @@ const UserSettings = () => {
         <div className="relative z-10 space-y-6">
           {/* Section Header */}
           <div className="text-center space-y-3">
-            <Sparkles>
-              <h2 className="text-4xl font-bold bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                Choose Your Plan
-              </h2>
-            </Sparkles>
+            <h2 className="text-4xl font-bold bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
+              Choose Your Plan
+            </h2>
             <p className="text-muted-foreground text-lg">
               Unlock powerful features to manage your wealth
             </p>
