@@ -10,7 +10,6 @@ import { ThemeSelector } from '../components/ui/ThemeSelector.jsx'
 import { CheckCircle, AlertCircle, User, Globe, Palette, Trash2, AlertTriangle, Eye, EyeOff, Copy, Crown, Sparkles as SparklesIcon, Zap, Shield, TrendingUp, Target, FileText, Brain, ChevronRight } from 'lucide-react'
 import MagicCard from '../components/magicui/MagicCard.jsx'
 import ShimmerButton from '../components/magicui/ShimmerButton.jsx'
-import AnimatedGradient from '../components/magicui/AnimatedGradient.jsx'
 import { useAuth } from '../hooks/useAuth.jsx'
 import { useTheme } from '../contexts/ThemeContext.jsx'
 import { userSettingsService } from '../services/user-settings.js'
@@ -570,8 +569,6 @@ const UserSettings = () => {
 
       {/* Subscription Plans Section */}
       <div className="mt-10 relative">
-        <AnimatedGradient className="absolute inset-0 rounded-3xl" />
-        
         <div className="relative z-10 space-y-6">
           {/* Section Header */}
           <div className="text-center space-y-3">
@@ -791,19 +788,40 @@ const UserSettings = () => {
             </p>
           </CardHeader>
         <CardContent>
-          <div className="w-full" style={{ minHeight: '600px' }}>
-            <iframe 
-              src="https://docs.google.com/forms/d/e/1FAIpQLScGHAJpT9Y_qbO5EIzMQ0aCqxNdN7_VLzXYVZNQ3xQ9ehskW1/viewform?embedded=true"
-              width="100%"
-              height="600"
-              frameBorder="0"
-              marginHeight="0"
-              marginWidth="0"
-              className="rounded-lg"
-            >
-              Loading form...
-            </iframe>
-          </div>
+          <a 
+            href="https://forms.gle/3xQ9ehskW1XYQVVcA" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="block"
+          >
+            <div className="relative overflow-hidden rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-purple-500/5 to-pink-500/5 p-8 transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:scale-[1.02] group">
+              {/* Decorative gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
+              <div className="relative z-10 flex flex-col items-center justify-center space-y-4 text-center">
+                {/* Icon */}
+                <div className="p-4 rounded-full bg-gradient-to-br from-primary to-purple-500 shadow-lg">
+                  <FileText className="h-8 w-8 text-white" />
+                </div>
+                
+                {/* Title */}
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                  Share Your Feedback
+                </h3>
+                
+                {/* Description */}
+                <p className="text-muted-foreground max-w-md">
+                  Click here to open our feedback form and help us make Aura Asset Manager even better
+                </p>
+                
+                {/* CTA */}
+                <div className="flex items-center gap-2 text-primary font-semibold group-hover:gap-3 transition-all">
+                  <span>Open Feedback Form</span>
+                  <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+          </a>
         </CardContent>
       </Card>
       </SafeSection>
