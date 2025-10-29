@@ -7,7 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Switch } from '../components/ui/switch.jsx'
 import { Alert, AlertDescription } from '../components/ui/alert.jsx'
 import { ThemeSelector } from '../components/ui/ThemeSelector.jsx'
-import { CheckCircle, AlertCircle, User, Globe, Palette, Trash2, AlertTriangle, Eye, EyeOff, Copy } from 'lucide-react'
+import { CheckCircle, AlertCircle, User, Globe, Palette, Trash2, AlertTriangle, Eye, EyeOff, Copy, Crown, Sparkles as SparklesIcon, Zap, Shield, TrendingUp, Target, FileText, Brain, ChevronRight } from 'lucide-react'
+import MagicCard from '../components/magicui/MagicCard.jsx'
+import ShimmerButton from '../components/magicui/ShimmerButton.jsx'
+import Sparkles from '../components/magicui/Sparkles.jsx'
+import AnimatedGradient from '../components/magicui/AnimatedGradient.jsx'
 import { useAuth } from '../hooks/useAuth.jsx'
 import { useTheme } from '../contexts/ThemeContext.jsx'
 import { userSettingsService } from '../services/user-settings.js'
@@ -31,6 +35,9 @@ const UserSettings = () => {
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
+
+  // Subscription billing toggle
+  const [billingPeriod, setBillingPeriod] = useState('monthly') // 'monthly' or 'annual'
 
   const [settings, setSettings] = useState({
     first_name: '',
@@ -591,6 +598,257 @@ const UserSettings = () => {
             'Save Settings'
           )}
         </Button>
+      </div>
+
+      {/* Subscription Plans Section */}
+      <div className="mt-10 relative">
+        <AnimatedGradient className="absolute inset-0 rounded-3xl" />
+        
+        <div className="relative z-10 space-y-6">
+          {/* Section Header */}
+          <div className="text-center space-y-3">
+            <Sparkles>
+              <h2 className="text-4xl font-bold bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                Choose Your Plan
+              </h2>
+            </Sparkles>
+            <p className="text-muted-foreground text-lg">
+              Unlock powerful features to manage your wealth
+            </p>
+          </div>
+
+          {/* Billing Period Toggle */}
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <span className={`text-sm font-medium transition-colors ${billingPeriod === 'monthly' ? 'text-foreground' : 'text-muted-foreground'}`}>
+              Monthly
+            </span>
+            <Switch
+              checked={billingPeriod === 'annual'}
+              onCheckedChange={(checked) => setBillingPeriod(checked ? 'annual' : 'monthly')}
+              className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-green-500 data-[state=checked]:to-emerald-600"
+            />
+            <span className={`text-sm font-medium transition-colors ${billingPeriod === 'annual' ? 'text-foreground' : 'text-muted-foreground'}`}>
+              Annual
+            </span>
+            {billingPeriod === 'annual' && (
+              <span className="ml-2 inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+                Save 15%
+              </span>
+            )}
+          </div>
+
+          {/* Subscription Cards Grid */}
+          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {/* Basic Plan */}
+            <MagicCard
+              className="relative bg-gradient-to-b from-background/80 to-background/60 border-2 border-border/50 backdrop-blur-sm hover:border-primary/50 transition-all duration-300"
+              gradientColor="#3b82f6"
+              gradientOpacity={0.6}
+            >
+              <div className="space-y-6">
+                {/* Plan Header */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-blue-500" />
+                    <h3 className="text-2xl font-bold">Basic</h3>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-5xl font-bold bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
+                      {billingPeriod === 'monthly' ? '$4.99' : '$50.99'}
+                    </span>
+                    <span className="text-muted-foreground">/{billingPeriod === 'monthly' ? 'mo' : 'yr'}</span>
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30">
+                    <Crown className="h-4 w-4 text-green-500" />
+                    <span className="text-sm font-semibold text-green-500">Free for Limited Time</span>
+                  </div>
+                </div>
+
+                {/* Features List */}
+                <div className="space-y-3">
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                    All Core Features
+                  </p>
+                  <ul className="space-y-3">
+                    {[
+                      'Unlimited Assets Tracking',
+                      'Transaction Management',
+                      'Insurance Policy Storage',
+                      'Portfolio Overview',
+                      'Real-time Net Worth',
+                      'Multi-Currency Support',
+                      'Family Profile Management',
+                      'Target Setting & Tracking'
+                    ].map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-sm">
+                        <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* CTA Button */}
+                <ShimmerButton
+                  className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+                  shimmerColor="#ffffff"
+                  shimmerDuration="2s"
+                >
+                  Get Started Free
+                </ShimmerButton>
+              </div>
+            </MagicCard>
+
+            {/* Premium Plan */}
+            <MagicCard
+              className="relative bg-gradient-to-b from-background/80 to-background/60 border-2 border-purple-500/50 backdrop-blur-sm hover:border-purple-500 transition-all duration-300 transform md:scale-105"
+              gradientColor="#a855f7"
+              gradientOpacity={0.7}
+            >
+              {/* Popular Badge */}
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-white text-xs font-bold shadow-lg">
+                MOST POPULAR
+              </div>
+
+              <div className="space-y-6 mt-2">
+                {/* Plan Header */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Crown className="h-5 w-5 text-purple-500" />
+                    <h3 className="text-2xl font-bold">Premium</h3>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-5xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+                      {billingPeriod === 'monthly' ? '$9.99' : '$101.99'}
+                    </span>
+                    <span className="text-muted-foreground">/{billingPeriod === 'monthly' ? 'mo' : 'yr'}</span>
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30">
+                    <SparklesIcon className="h-4 w-4 text-purple-500" />
+                    <span className="text-sm font-semibold text-purple-500">Coming Soon</span>
+                  </div>
+                </div>
+
+                {/* Features List */}
+                <div className="space-y-3">
+                  <p className="text-sm font-semibold text-purple-500 uppercase tracking-wide">
+                    Everything in Basic, Plus
+                  </p>
+                  <ul className="space-y-3">
+                    {[
+                      'Document Storage (100MB)',
+                      'Upload Insurance PDFs',
+                      'Attach Transaction Receipts',
+                      'Store Property Documents',
+                      'Secure Cloud Backup',
+                      'Advanced Export Options',
+                      'Priority Email Support',
+                      'Custom Report Generation'
+                    ].map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-sm">
+                        <CheckCircle className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* CTA Button */}
+                <ShimmerButton
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 opacity-60 cursor-not-allowed"
+                  shimmerColor="#ffffff"
+                  shimmerDuration="2s"
+                  disabled
+                >
+                  Coming Soon
+                </ShimmerButton>
+              </div>
+            </MagicCard>
+
+            {/* Premium AI Plan */}
+            <MagicCard
+              className="relative bg-gradient-to-b from-background/80 to-background/60 border-2 border-border/50 backdrop-blur-sm hover:border-amber-500/50 transition-all duration-300"
+              gradientColor="#f59e0b"
+              gradientOpacity={0.6}
+            >
+              <div className="space-y-6">
+                {/* Plan Header */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Brain className="h-5 w-5 text-amber-500" />
+                    <h3 className="text-2xl font-bold">Premium AI</h3>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-5xl font-bold bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">
+                      {billingPeriod === 'monthly' ? '$14.99' : '$152.99'}
+                    </span>
+                    <span className="text-muted-foreground">/{billingPeriod === 'monthly' ? 'mo' : 'yr'}</span>
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30">
+                    <SparklesIcon className="h-4 w-4 text-amber-500" />
+                    <span className="text-sm font-semibold text-amber-500">Coming Soon</span>
+                  </div>
+                </div>
+
+                {/* Features List */}
+                <div className="space-y-3">
+                  <p className="text-sm font-semibold text-amber-500 uppercase tracking-wide">
+                    Everything in Premium, Plus
+                  </p>
+                  <ul className="space-y-3">
+                    {[
+                      'AI Wealth Advisor',
+                      'Intelligent Portfolio Analysis',
+                      'Risk Assessment & Recommendations',
+                      'Goal-Based Financial Planning',
+                      'Insurance Coverage Optimization',
+                      'Personalized Investment Insights',
+                      'Predictive Market Trends',
+                      'Tax Optimization Strategies',
+                      '24/7 AI Financial Assistant'
+                    ].map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-sm">
+                        <CheckCircle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* CTA Button */}
+                <ShimmerButton
+                  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 opacity-60 cursor-not-allowed"
+                  shimmerColor="#ffffff"
+                  shimmerDuration="2s"
+                  disabled
+                >
+                  Coming Soon
+                </ShimmerButton>
+              </div>
+            </MagicCard>
+          </div>
+
+          {/* Additional Info */}
+          <div className="text-center space-y-2 pt-6">
+            <p className="text-sm text-muted-foreground">
+              All plans include a 30-day money-back guarantee
+            </p>
+            <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Shield className="h-4 w-4 text-green-500" />
+                <span>Bank-level Security</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <CheckCircle className="h-4 w-4 text-blue-500" />
+                <span>Cancel Anytime</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <TrendingUp className="h-4 w-4 text-purple-500" />
+                <span>Regular Updates</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
     {/* Feedback Section */}
