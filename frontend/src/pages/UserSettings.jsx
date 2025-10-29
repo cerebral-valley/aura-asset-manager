@@ -674,12 +674,7 @@ const UserSettings = () => {
               gradientColor="#a855f7"
               gradientOpacity={0.7}
             >
-              {/* Popular Badge */}
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-white text-xs font-bold shadow-lg z-10">
-                MOST POPULAR
-              </div>
-
-              <div className="space-y-6 pt-4">
+              <div className="space-y-6">
                 {/* Plan Header */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
@@ -785,27 +780,6 @@ const UserSettings = () => {
                 </ShimmerButton>
               </div>
             </MagicCard>
-          </div>
-
-          {/* Additional Info */}
-          <div className="text-center space-y-2 pt-6">
-            <p className="text-sm text-muted-foreground">
-              All plans include a 30-day money-back guarantee
-            </p>
-            <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Shield className="h-4 w-4 text-green-500" />
-                <span>Bank-level Security</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <CheckCircle className="h-4 w-4 text-blue-500" />
-                <span>Cancel Anytime</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <TrendingUp className="h-4 w-4 text-purple-500" />
-                <span>Regular Updates</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
