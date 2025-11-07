@@ -851,6 +851,39 @@ const UserGuide = () => {
                   The application serves as your personal financial sanctuary—a place where you can reflect on your achievements and feel proud of the foundation you're building for yourself and your loved ones.
                 </p>
               </div>
+              
+              <div className={`${isDark ? 'bg-gradient-to-br from-cyan-900/30 to-indigo-900/30 border border-cyan-800/60' : 'bg-gradient-to-br from-cyan-50 to-indigo-50 border border-cyan-200'} rounded-2xl p-6 mb-8 shadow-sm`}>
+                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <span className="text-2xl">🆕</span>
+                  New To Aura – Beginner's Guide
+                </h3>
+                <p className={`${isDark ? 'text-neutral-200' : 'text-gray-700'} mb-4`}>
+                  First-time logins (or users who reset their workspace) now see a dedicated welcome checklist instead of an empty dashboard. Aura automatically detects when no assets or insurance policies are present and guides you through the exact steps needed before the analytics unlock.
+                </p>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {[
+                    { title: 'Complete Your Profile', detail: 'Tell Aura who you are so copy, language, and projections feel personal.' },
+                    { title: 'Review User Settings', detail: 'Pick your currency, date format, and sanctuary theme before entering data.' },
+                    { title: 'Add Insurance Protection', detail: 'Logging at least one policy unlocks coverage ratios and safety dashboards.' },
+                    { title: 'Add Your First Asset', detail: 'The dashboard appears once Aura sees at least one asset and one policy.' }
+                  ].map((item, index) => (
+                    <div key={item.title} className={`${isDark ? 'bg-black/30 border border-white/10' : 'bg-white border border-indigo-100'} rounded-xl p-4 flex gap-4`}>
+                      <div className={`h-10 w-10 rounded-full flex items-center justify-center font-semibold ${isDark ? 'bg-cyan-500/20 text-cyan-200' : 'bg-cyan-100 text-cyan-700'}`}>
+                        {index + 1}
+                      </div>
+                      <div>
+                        <p className="font-semibold">{item.title}</p>
+                        <p className={`${isDark ? 'text-neutral-300' : 'text-gray-600'} text-sm`}>{item.detail}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <ul className={`mt-6 space-y-2 text-sm ${isDark ? 'text-neutral-200' : 'text-gray-700'} list-disc pl-6`}>
+                  <li>The welcome screen only appears when your workspace has no assets and no insurance data, so existing users are never interrupted.</li>
+                  <li>Once you add at least one asset <em>and</em> one policy, Aura switches back to the full dashboard view automatically.</li>
+                  <li>The Beginner's Guide link in the welcome screen jumps directly to this section for a narrated walkthrough.</li>
+                </ul>
+              </div>
 
               <div className={`${isDark ? 'bg-neutral-900' : 'bg-white'} rounded-xl p-6 shadow-sm`}>
                 <h3 className="text-xl font-semibold mb-4">Core Principles</h3>

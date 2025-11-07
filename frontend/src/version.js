@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.236',
-  buildDate: '2025-10-26',
-  deploymentId: 'asset-matrix-anomaly-detection',
-  description: 'Asset Matrix with intelligent anomaly detection: Validates allocation rules for liquid/illiquid assets, highlights misallocated assets with severity indicators, provides detailed writeups with recommendations'
+  version: 'v0.237',
+  buildDate: '2025-11-07',
+  deploymentId: 'welcome-onboarding-flow',
+  description: 'Adds a guided first-time experience for users without data, updates the beginner guide, and ensures dashboard insights only appear after assets and insurance exist'
 }
 
 export const getVersionDisplay = () => {

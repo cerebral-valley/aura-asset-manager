@@ -22,6 +22,8 @@ import Orbit from '../components/magicui/Orbit.jsx'
 import SafeSection from '../components/util/SafeSection'
 import { log, warn, error } from '@/lib/debug'
 import * as Sentry from '@sentry/react'
+import { userSettingsService } from '../services/user-settings.js'
+import NewUserWelcome from '../components/dashboard/NewUserWelcome.jsx'
 
 // Utility function to calculate dynamic growth potential threshold
 const getGrowthPotentialThreshold = (netWorth) => {
@@ -105,9 +107,26 @@ const Dashboard = () => {
   })
 
   // Fetch insurance data for coverage ratios
-  const { data: insurancePolicies } = useQuery({
+  const {
+    data: insurancePolicies,
+    isLoading: insuranceLoading,
+    isError: insuranceHasError,
+    error: insuranceError
+  } = useQuery({
     queryKey: queryKeys.insurance.list(),
     queryFn: ({ signal }) => insuranceService.getPolicies({ signal }),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  // Fetch user settings to power onboarding checklist
+  const {
+    data: userSettingsData,
+    isLoading: settingsLoading,
+    error: settingsError
+  } = useQuery({
+    queryKey: queryKeys.user.settings(),
+    queryFn: () => userSettingsService.getSettings(),
     enabled: !!user,
     staleTime: 5 * 60 * 1000,
   })
@@ -141,6 +160,34 @@ const Dashboard = () => {
     
     return disabilityCoverage > 0 ? `${(disabilityCoverage / annualIncome).toFixed(1)}x` : 'No Coverage'
   }, [insurancePolicies, annualIncome])
+
+  const profileComplete = useMemo(() => {
+    if (!profileData) return false
+    return Boolean(
+      profileData.first_name ||
+      profileData.last_name ||
+      profileData.annual_income ||
+      profileData.country ||
+      profileData.phone_number
+    )
+  }, [profileData])
+
+  const settingsComplete = useMemo(() => {
+    if (!userSettingsData) return false
+    return Boolean(
+      userSettingsData.recovery_email ||
+      userSettingsData.country ||
+      (userSettingsData.currency && userSettingsData.currency !== 'USD') ||
+      (userSettingsData.date_format && userSettingsData.date_format !== 'MM/DD/YYYY') ||
+      (userSettingsData.theme && !['default', 'sanctuary_builder'].includes(userSettingsData.theme))
+    )
+  }, [userSettingsData])
+
+  const assetAllocation = dashboardData?.asset_allocation || []
+  const hasAssets = assetAllocation.length > 0
+  const hasInsurance = Array.isArray(insurancePolicies) && insurancePolicies.length > 0
+  const versionLabel = getVersionDisplay()
+  const showWelcomeExperience = (!hasAssets || !hasInsurance) && !insuranceLoading && !insuranceHasError
 
   // Find primary net worth goal
   const netWorthGoal = goalsData?.find(goal => 
@@ -181,8 +228,8 @@ const Dashboard = () => {
     }
   }
 
-  if (loading) {
-    log('Dashboard', 'render:loading')
+  if (loading || insuranceLoading) {
+    log('Dashboard', 'render:loading', { loading, insuranceLoading })
     return (
       <div className="flex items-center justify-center h-screen">
         <Orbit size={60} className="mx-auto" />
@@ -196,6 +243,43 @@ const Dashboard = () => {
       <Alert variant="destructive">
         <AlertDescription>{errorMessage}</AlertDescription>
       </Alert>
+    )
+  }
+
+  if (insuranceHasError) {
+    const insuranceErrorMessage = insuranceError?.response
+      ? `Failed to load insurance data: ${insuranceError.response.status} - ${insuranceError.response.data?.detail || insuranceError.message}`
+      : insuranceError?.request
+        ? 'No response from the insurance API. Please try again.'
+        : `Error preparing insurance request: ${insuranceError?.message || 'Unknown error'}`
+
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>{insuranceErrorMessage}</AlertDescription>
+      </Alert>
+    )
+  }
+
+  const settingsErrorMessage = settingsError ? (settingsError.message || 'Failed to load settings') : ''
+
+  if (showWelcomeExperience) {
+    log('Dashboard', 'render:onboarding', { hasAssets, hasInsurance })
+    return (
+      <div className="relative min-h-screen p-6">
+        <AnimatedGradient className="fixed inset-0 -z-10 opacity-30" />
+        <div className="max-w-6xl mx-auto py-10">
+          <NewUserWelcome
+            profileName={profileData?.first_name}
+            profileComplete={profileComplete}
+            settingsComplete={settingsComplete}
+            hasAssets={hasAssets}
+            hasInsurance={hasInsurance}
+            versionLabel={versionLabel}
+            settingsError={settingsErrorMessage}
+            settingsLoading={settingsLoading}
+          />
+        </div>
+      </div>
     )
   }
 
@@ -231,7 +315,7 @@ const Dashboard = () => {
           </div>
           <div className="text-right">
             <div className="text-xs text-muted-foreground font-mono">
-              {getVersionDisplay()}
+              {versionLabel}
             </div>
           </div>
         </div>
@@ -361,4 +445,3 @@ const Dashboard = () => {
 }
 
 export default Dashboard
-
