@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.242',
+  version: 'v0.243',
   buildDate: '2025-11-15',
-  deploymentId: 'referral-gating-login',
-  description: 'Enforces referral-code gating across assets/insurance, adds profile credit score data storage, and locks email sign-ups to keep Aura invite-only'
+  deploymentId: 'login-hotfix',
+  description: 'Hotfixes the login form after referral changes so the invite-only banner renders without runtime errors'
 }
 
 export const getVersionDisplay = () => {

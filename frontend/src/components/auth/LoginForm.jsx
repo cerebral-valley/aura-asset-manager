@@ -33,7 +33,6 @@ const LoginForm = () => {
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true)
     setError('')
-    setSuccessMessage('')
 
     try {
       const { error } = await signInWithGoogle()
