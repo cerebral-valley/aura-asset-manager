@@ -398,6 +398,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-variant-numeric: slashed-zero;
+    font-feature-settings: 'zero' 1;
   }
 }
 
@@ -420,12 +422,20 @@
   
   /* Slashed zeros for better readability in financial numbers */
   .slashed-zero {
+    font-variant-numeric: slashed-zero;
     font-feature-settings: 'zero' 1;
   }
   
   /* Combined tabular + slashed zeros for dashboard cards */
   .financial-number {
-    font-variant-numeric: tabular-nums;
+    font-variant-numeric: tabular-nums slashed-zero;
+    font-feature-settings: 'tnum' 1, 'zero' 1;
+  }
+
+  /* Apply slashed zeros to any chart container to ensure SVG labels match other figures */
+  .chart-slashed-zero,
+  .chart-slashed-zero :is(text, tspan, .recharts-text) {
+    font-variant-numeric: tabular-nums slashed-zero;
     font-feature-settings: 'tnum' 1, 'zero' 1;
   }
 }

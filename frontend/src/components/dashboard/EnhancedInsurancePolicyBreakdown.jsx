@@ -101,7 +101,7 @@ const EnhancedInsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown"
           </motion.span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-4 pb-6">
+      <CardContent className="pt-4 pb-6 chart-slashed-zero">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -169,8 +169,8 @@ const EnhancedInsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown"
               transition={{ type: "spring", stiffness: 400 }}
             >
               <span className="text-muted-foreground">Total Policies:</span>
-              <span className="ml-2 font-semibold text-foreground">
-                <NumberTicker value={policies.length} decimalPlaces={0} />
+              <span className="ml-2 font-semibold text-foreground financial-number">
+                <NumberTicker value={policies.length} decimalPlaces={0} className="financial-number" />
               </span>
             </motion.div>
             <motion.div
@@ -178,9 +178,9 @@ const EnhancedInsurancePolicyBreakdown = ({ title = "Insurance Policy Breakdown"
               transition={{ type: "spring", stiffness: 400 }}
             >
               <span className="text-muted-foreground">Total Coverage:</span>
-              <span className="ml-2 font-semibold text-foreground font-mono">
+              <span className="ml-2 font-semibold text-foreground font-mono financial-number">
                 {formatCurrency(0).replace(/[\d.,]+/, '')}
-                <NumberTicker value={totalCoverage} decimalPlaces={2} />
+                <NumberTicker value={totalCoverage} decimalPlaces={2} className="financial-number" />
               </span>
             </motion.div>
           </div>

@@ -76,9 +76,9 @@ const ProfileSnapshotCard = ({ profile }) => {
               <DollarSign className="h-4 w-4 text-green-500" />
               <p className="text-xs text-muted-foreground">Annual Income</p>
             </div>
-            <p className="text-xl font-bold text-foreground font-mono">
+            <p className="text-xl font-bold text-foreground font-mono financial-number">
               {formatCurrency(0).replace(/[\d.,]+/, '')}
-              <NumberTicker value={profile.annual_income} decimalPlaces={0} />
+              <NumberTicker value={profile.annual_income} decimalPlaces={0} className="financial-number" />
             </p>
           </motion.div>
         )}

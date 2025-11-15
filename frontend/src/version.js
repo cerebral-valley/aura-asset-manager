@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.237',
-  buildDate: '2025-11-07',
-  deploymentId: 'welcome-onboarding-flow',
-  description: 'Adds a guided first-time experience for users without data, updates the beginner guide, and ensures dashboard insights only appear after assets and insurance exist'
+  version: 'v0.238',
+  buildDate: '2025-11-15',
+  deploymentId: 'dashboard-slashed-zero',
+  description: 'Unifies dashboard typography so every metric, chart label, and ticker uses the slashed-zero variant for consistent numerals'
 }
 
 export const getVersionDisplay = () => {

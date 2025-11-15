@@ -86,11 +86,11 @@ const RecentTransactionsCard = ({ transactions }) => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`text-sm font-bold font-mono ${getTransactionColor(transaction.transaction_type)}`}>
+                    <p className={`text-sm font-bold font-mono financial-number ${getTransactionColor(transaction.transaction_type)}`}>
                       {transaction.amount !== null && transaction.amount !== undefined ? (
                         <>
                           {formatCurrency(0).replace(/[\d.,]+/, '')}
-                          <NumberTicker value={Math.abs(transaction.amount)} decimalPlaces={0} />
+                          <NumberTicker value={Math.abs(transaction.amount)} decimalPlaces={0} className="financial-number" />
                         </>
                       ) : (
                         <span className="text-xs text-muted-foreground">N/A</span>

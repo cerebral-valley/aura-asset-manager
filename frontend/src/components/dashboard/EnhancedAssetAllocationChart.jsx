@@ -57,7 +57,7 @@ const EnhancedAssetAllocationChart = ({ data, title = "Asset Allocation" }) => {
           </motion.span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-4 pb-6">
+      <CardContent className="pt-4 pb-6 chart-slashed-zero">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -123,8 +123,8 @@ const EnhancedAssetAllocationChart = ({ data, title = "Asset Allocation" }) => {
               transition={{ type: "spring", stiffness: 400 }}
             >
               <span className="text-muted-foreground">Total Assets:</span>
-              <span className="ml-2 font-semibold text-foreground">
-                <NumberTicker value={data.length} decimalPlaces={0} />
+              <span className="ml-2 font-semibold text-foreground financial-number">
+                <NumberTicker value={data.length} decimalPlaces={0} className="financial-number" />
               </span>
             </motion.div>
             <motion.div
@@ -132,9 +132,9 @@ const EnhancedAssetAllocationChart = ({ data, title = "Asset Allocation" }) => {
               transition={{ type: "spring", stiffness: 400 }}
             >
               <span className="text-muted-foreground">Total Value:</span>
-              <span className="ml-2 font-semibold text-foreground font-mono">
+              <span className="ml-2 font-semibold text-foreground font-mono financial-number">
                 {formatCurrency(0).replace(/[\d.,]+/, '')}
-                <NumberTicker value={totalValue} decimalPlaces={2} />
+                <NumberTicker value={totalValue} decimalPlaces={2} className="financial-number" />
               </span>
             </motion.div>
           </div>
