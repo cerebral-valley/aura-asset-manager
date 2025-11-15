@@ -44,6 +44,9 @@ class User(Base):
     annual_income = Column(Text)  # Using Text to store Decimal as string
     occupation = Column(String(100))
     risk_appetite = Column(String(20))  # Low, Moderate, High
+    credit_score_provider = Column(String(50))
+    credit_score_value = Column(Integer)
+    credit_score_last_checked = Column(Date)
     
     # Enhanced family information fields
     partner = Column(Boolean, default=False)  # Yes/No for having a partner/spouse

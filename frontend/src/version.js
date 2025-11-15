@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.240',
+  version: 'v0.241',
   buildDate: '2025-11-15',
-  deploymentId: 'font-preference-selector',
-  description: 'Adds multi-font preferences synced with Supabase, provides three slashed-zero friendly families, and keeps dashboards consistent via global font data attributes'
+  deploymentId: 'profile-credit-score',
+  description: 'Expands the profile financial section with full credit score tracking (FICO/CIBIL/etc.) and persists the data alongside other profile fields'
 }
 
 export const getVersionDisplay = () => {

@@ -88,7 +88,8 @@ export const calculateProfileCompletion = (profile) => {
     'state',
     'pin_code',
     'nationality',
-    'annual_income'
+    'annual_income',
+    'credit_score_value'
   ];
   
   const allFields = [...requiredFields, ...optionalFields];

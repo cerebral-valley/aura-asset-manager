@@ -7,7 +7,7 @@ import { Input } from '../components/ui/input.jsx'
 import { Label } from '../components/ui/label.jsx'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select.jsx'
 import { Alert, AlertDescription } from '../components/ui/alert.jsx'
-import { User, MapPin, Users, Briefcase, CheckCircle, AlertCircle, Calendar, Target } from 'lucide-react'
+import { User, MapPin, Users, Briefcase, CheckCircle, AlertCircle, Calendar, Target, Gauge } from 'lucide-react'
 import SensitiveInput from '../components/ui/SensitiveInput.jsx'
 import ProfileProgressIndicator from '../components/profile/ProfileProgressIndicator.jsx'
 import { formatPhoneNumber } from '../utils/profileUtils.js'
@@ -15,6 +15,62 @@ import { profileService } from '../services/profile.js'
 import Loading from '../components/ui/Loading'
 import SafeSection from '@/components/util/SafeSection'
 import { log, warn, error } from '@/lib/debug'
+import { Badge } from '../components/ui/badge.jsx'
+
+const CREDIT_SCORE_OPTIONS = [
+  {
+    value: 'fico',
+    label: 'FICO (US)',
+    description: 'Standard US FICO scoring model (300-850)',
+    range: { min: 300, max: 850 }
+  },
+  {
+    value: 'cibil',
+    label: 'CIBIL (India)',
+    description: 'Indian CIBIL scoring model (300-900)',
+    range: { min: 300, max: 900 }
+  },
+  {
+    value: 'experian',
+    label: 'Experian',
+    description: 'Experian credit score (300-850)',
+    range: { min: 300, max: 850 }
+  },
+  {
+    value: 'transunion',
+    label: 'TransUnion',
+    description: 'TransUnion score (300-850)',
+    range: { min: 300, max: 850 }
+  },
+  {
+    value: 'equifax',
+    label: 'Equifax',
+    description: 'Equifax score (300-850)',
+    range: { min: 300, max: 850 }
+  }
+]
+
+const getCreditScoreMeta = (provider) => {
+  return CREDIT_SCORE_OPTIONS.find(option => option.value === provider) || CREDIT_SCORE_OPTIONS[0]
+}
+
+const getCreditScoreRating = (score, provider) => {
+  if (!score) return null
+  const meta = getCreditScoreMeta(provider)
+  const { min, max } = meta.range
+  const percentile = (score - min) / (max - min)
+
+  if (percentile >= 0.86) {
+    return { label: 'Excellent', color: 'bg-green-100 text-green-700', helper: 'Banks view this score as very safe.' }
+  }
+  if (percentile >= 0.7) {
+    return { label: 'Good', color: 'bg-emerald-100 text-emerald-700', helper: 'Healthy credit profile with room to grow.' }
+  }
+  if (percentile >= 0.5) {
+    return { label: 'Fair', color: 'bg-yellow-100 text-yellow-700', helper: 'Work on repayment history to improve.' }
+  }
+  return { label: 'Needs Attention', color: 'bg-orange-100 text-orange-700', helper: 'Focus on lowering utilization and timely payments.' }
+}
 
 const Profile = () => {
   log('Profile:init', 'Component initializing');
@@ -46,6 +102,9 @@ const Profile = () => {
     annual_income: '',
     occupation: '',
     risk_appetite: '',
+    credit_score_provider: 'fico',
+    credit_score_value: '',
+    credit_score_last_checked: '',
     // Family Information fields
     elderly_dependents: false,
     children_age_groups: []
@@ -110,6 +169,9 @@ const Profile = () => {
         annual_income: profileData.annual_income || '',
         occupation: profileData.occupation || '',
         risk_appetite: profileData.risk_appetite || '',
+        credit_score_provider: profileData.credit_score_provider || 'fico',
+        credit_score_value: profileData.credit_score_value?.toString() || '',
+        credit_score_last_checked: profileData.credit_score_last_checked || '',
         // Family Information fields
         elderly_dependents: profileData.elderly_dependents || false,
         children_age_groups: profileData.children_age_groups || []
@@ -141,7 +203,10 @@ const Profile = () => {
         children: profile.children ? parseInt(profile.children) : null,
         dependents: profile.dependents ? parseInt(profile.dependents) : null,
         annual_income: profile.annual_income ? parseFloat(profile.annual_income) : null,
-        date_of_birth: profile.date_of_birth || null
+        date_of_birth: profile.date_of_birth || null,
+        credit_score_provider: profile.credit_score_value ? (profile.credit_score_provider || 'fico') : null,
+        credit_score_value: profile.credit_score_value ? parseInt(profile.credit_score_value) : null,
+        credit_score_last_checked: profile.credit_score_last_checked || null
       }
 
       await profileService.updateProfile(profileData)
@@ -160,6 +225,10 @@ const Profile = () => {
     // Handle phone number formatting
     if (field === 'phone_number') {
       value = formatPhoneNumber(value)
+    }
+    
+    if (field === 'credit_score_value') {
+      value = value.replace(/\D/g, '')
     }
     
     // Handle children_age_groups toggle
@@ -605,6 +674,98 @@ const Profile = () => {
               <p className="text-xs text-muted-foreground mt-1">
                 Optional: This helps us provide better financial insights
               </p>
+            </div>
+
+            <div className="space-y-4 border-t border-border/60 pt-4">
+              <div className="flex items-center gap-2">
+                <Gauge className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="font-semibold text-sm">Credit Score</p>
+                  <p className="text-xs text-muted-foreground">
+                    Track your FICO / CIBIL credit strength for coverage planning
+                  </p>
+                </div>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="credit_score_provider">Score Type</Label>
+                  <Select
+                    value={profile.credit_score_provider}
+                    onValueChange={(value) => handleInputChange('credit_score_provider', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select score type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CREDIT_SCORE_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          <div className="flex flex-col items-start">
+                            <span className="font-medium">{option.label}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {option.description}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="credit_score_value">Score</Label>
+                  <Input
+                    id="credit_score_value"
+                    type="number"
+                    min={getCreditScoreMeta(profile.credit_score_provider).range.min}
+                    max={getCreditScoreMeta(profile.credit_score_provider).range.max}
+                    value={profile.credit_score_value}
+                    onChange={(e) => handleInputChange('credit_score_value', e.target.value)}
+                    onBlur={(e) => handleInputBlur('credit_score_value', e.target.value)}
+                    placeholder="e.g., 770"
+                    className={hasFieldError('credit_score_value') ? 'border-red-500' : ''}
+                  />
+                  {getFieldError('credit_score_value') ? (
+                    <p className="text-sm text-red-600 mt-1">{getFieldError('credit_score_value')}</p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Allowed range {getCreditScoreMeta(profile.credit_score_provider).range.min}-
+                      {getCreditScoreMeta(profile.credit_score_provider).range.max}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="credit_score_last_checked">Last Checked</Label>
+                  <Input
+                    id="credit_score_last_checked"
+                    type="date"
+                    value={profile.credit_score_last_checked}
+                    onChange={(e) => handleInputChange('credit_score_last_checked', e.target.value)}
+                    onBlur={(e) => handleInputBlur('credit_score_last_checked', e.target.value)}
+                    max={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                {profile.credit_score_value && (
+                  <div className="space-y-2">
+                    <Label>Score Insight</Label>
+                    <div className="p-3 rounded-lg border border-muted flex flex-col gap-2">
+                      {(() => {
+                        const rating = getCreditScoreRating(
+                          parseInt(profile.credit_score_value),
+                          profile.credit_score_provider
+                        )
+                        if (!rating) return null
+                        return (
+                          <>
+                            <Badge className={rating.color}>{rating.label}</Badge>
+                            <p className="text-xs text-muted-foreground">{rating.helper}</p>
+                          </>
+                        )
+                      })()}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
