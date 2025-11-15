@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.244',
+  version: 'v0.245',
   buildDate: '2025-11-15',
-  deploymentId: 'rollback-v0240',
-  description: 'Rolls the platform back to the proven v0.240 baseline to disable the referral code experiment'
+  deploymentId: 'login-hero-refresh',
+  description: 'Reimagines the landing/login experience with a cinematic hero, new copy, and refreshed card UI'
 }
 
 export const getVersionDisplay = () => {
