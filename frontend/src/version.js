@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.238',
+  version: 'v0.239',
   buildDate: '2025-11-15',
-  deploymentId: 'dashboard-slashed-zero',
-  description: 'Unifies dashboard typography so every metric, chart label, and ticker uses the slashed-zero variant for consistent numerals'
+  deploymentId: 'dashboard-font-unification',
+  description: 'Switches the entire dashboard to a mono-based JetBrains font with enforced slashed zeros so every number, chart, and label uses the same typeface'
 }
 
 export const getVersionDisplay = () => {
