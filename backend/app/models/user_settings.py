@@ -29,6 +29,7 @@ class UserSettings(Base):
     date_format = Column(String(20), default="MM/DD/YYYY")
     dark_mode = Column(Boolean, default=False)
     theme = Column(String(20), default="default")
+    font_preference = Column(String(30), default="guardian_mono")
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())

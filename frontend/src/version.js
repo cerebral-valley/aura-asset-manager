@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.239',
+  version: 'v0.240',
   buildDate: '2025-11-15',
-  deploymentId: 'dashboard-font-unification',
-  description: 'Switches the entire dashboard to a mono-based JetBrains font with enforced slashed zeros so every number, chart, and label uses the same typeface'
+  deploymentId: 'font-preference-selector',
+  description: 'Adds multi-font preferences synced with Supabase, provides three slashed-zero friendly families, and keeps dashboards consistent via global font data attributes'
 }
 
 export const getVersionDisplay = () => {

@@ -16,6 +16,7 @@ class UserSettingsBase(BaseModel):
     date_format: str = "MM/DD/YYYY"
     dark_mode: bool = False
     theme: str = "default"
+    font_preference: str = "guardian_mono"
 
 class UserSettingsCreate(UserSettingsBase):
     """Schema for creating user settings."""

@@ -43,6 +43,19 @@ if (typeof window !== 'undefined') {
   console.log('🌐 Sentry attached to window object');
 }
 
+const applyStoredFontPreference = () => {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return
+  try {
+    const storedFont = window.localStorage.getItem('font_preference') || 'guardian_mono'
+    document.body.dataset.font = storedFont
+  } catch (err) {
+    console.warn('Unable to read stored font preference, falling back to guardian_mono', err)
+    document.body.dataset.font = 'guardian_mono'
+  }
+}
+
+applyStoredFontPreference()
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'

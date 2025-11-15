@@ -28,6 +28,7 @@ class User(Base):
     currency = Column(String(10), default="USD")
     date_format = Column(String(20), default="MM/DD/YYYY")
     dark_mode = Column(Boolean, default=False)
+    font_preference = Column(String(30), default="guardian_mono")
     
     # Profile fields
     marital_status = Column(String(50))
@@ -54,4 +55,3 @@ class User(Base):
     
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email})>"
-

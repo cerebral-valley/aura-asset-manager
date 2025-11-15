@@ -35,6 +35,7 @@ async def get_user_settings(
             "date_format": current_user.date_format or "MM/DD/YYYY",
             "dark_mode": current_user.dark_mode or False,
             "theme": current_user.theme or "default",
+            "font_preference": current_user.font_preference or "guardian_mono",
             "created_at": current_user.created_at,
             "updated_at": current_user.updated_at,
         }
@@ -73,6 +74,7 @@ async def create_user_settings(
             "date_format": current_user.date_format or "MM/DD/YYYY",
             "dark_mode": current_user.dark_mode or False,
             "theme": current_user.theme or "default",
+            "font_preference": current_user.font_preference or "guardian_mono",
             "created_at": current_user.created_at,
             "updated_at": current_user.updated_at,
         }
@@ -111,6 +113,7 @@ async def update_user_settings(
             "date_format": current_user.date_format or "MM/DD/YYYY",
             "dark_mode": current_user.dark_mode or False,
             "theme": current_user.theme or "default",
+            "font_preference": current_user.font_preference or "guardian_mono",
             "created_at": current_user.created_at,
             "updated_at": current_user.updated_at,
         }

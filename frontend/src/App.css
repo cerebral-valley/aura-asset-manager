@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -44,7 +44,11 @@
 
 :root {
   --radius: 0.625rem;
-  --financial-font: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans-stack: 'Inter', 'SF Pro Display', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-mono-stack: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-grotesk-stack: 'Space Grotesk', 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-base: var(--font-mono-stack);
+  --financial-font: var(--font-mono-stack);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -400,10 +404,25 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--financial-font);
+    font-family: var(--font-base, var(--financial-font));
     font-variant-numeric: tabular-nums slashed-zero;
     font-feature-settings: 'tnum' 1, 'zero' 1;
   }
+}
+
+body[data-font='guardian_mono'] {
+  --font-base: var(--font-mono-stack);
+  --financial-font: var(--font-mono-stack);
+}
+
+body[data-font='sanctuary_sans'] {
+  --font-base: var(--font-sans-stack);
+  --financial-font: var(--font-sans-stack);
+}
+
+body[data-font='serenity_grotesk'] {
+  --font-base: var(--font-grotesk-stack);
+  --financial-font: var(--font-grotesk-stack);
 }
 
 @layer utilities {

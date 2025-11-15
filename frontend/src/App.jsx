@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
@@ -22,6 +23,7 @@ import AppLayout from './components/layout/AppLayout'
 import { Toaster } from './components/ui/toaster'
 import Loading from './components/ui/Loading'
 import { log, warn } from './lib/debug'
+import { userSettingsService } from './services/user-settings.js'
 import './App.css'
 
 // Page Components
@@ -65,6 +67,32 @@ function DebugLocation() {
 
 function AppContent() {
   const { user, loading } = useAuth()
+  
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    if (!user) {
+      const storedFont = (typeof window !== 'undefined' ? window.localStorage.getItem('font_preference') : null) || 'guardian_mono'
+      document.body.dataset.font = storedFont
+      return
+    }
+    let cancelled = false
+    const syncFontPreference = async () => {
+      try {
+        const data = await userSettingsService.getSettings()
+        const font = data.font_preference || 'guardian_mono'
+        window.localStorage.setItem('font_preference', font)
+        if (!cancelled) {
+          document.body.dataset.font = font
+        }
+      } catch (err) {
+        console.warn('App: Failed to sync font preference', err)
+      }
+    }
+    syncFontPreference()
+    return () => {
+      cancelled = true
+    }
+  }, [user])
   
   log('App', 'AppContent render - loading:', loading, 'user:', !!user)
 

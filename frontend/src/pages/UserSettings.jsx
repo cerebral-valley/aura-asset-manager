@@ -43,7 +43,8 @@ const UserSettings = () => {
     currency: 'USD',
     date_format: 'MM/DD/YYYY',
     dark_mode: false,
-    theme: 'default'
+    theme: 'default',
+    font_preference: 'guardian_mono'
   })
 
   // Data reset state and handlers
@@ -56,6 +57,12 @@ const UserSettings = () => {
   const [userCode, setUserCode] = useState('')
   const [userCodeVisible, setUserCodeVisible] = useState(false)
   const [userCodeLoading, setUserCodeLoading] = useState(false)
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    const fontChoice = settings.font_preference || 'guardian_mono'
+    document.body.dataset.font = fontChoice
+  }, [settings.font_preference])
 
   // Data reset handlers
   const handleResetDataClick = () => {
@@ -221,6 +228,24 @@ const UserSettings = () => {
     'Japan', 'China', 'India', 'Brazil', 'Russia', 'South Korea', 'Italy', 'Spain',
     'Netherlands', 'Sweden', 'Norway', 'Denmark', 'Switzerland', 'Austria', 'Other'
   ]
+  
+  const fontOptions = [
+    {
+      value: 'guardian_mono',
+      label: 'Guardian Mono',
+      description: 'JetBrains Mono with clear slashed zeros for precision'
+    },
+    {
+      value: 'sanctuary_sans',
+      label: 'Sanctuary Sans',
+      description: 'Inter sans-serif with softer headings but still slashed zeros'
+    },
+    {
+      value: 'serenity_grotesk',
+      label: 'Serenity Grotesk',
+      description: 'Space Grotesk for a modern, geometric feel'
+    }
+  ]
 
   useEffect(() => {
     log('UserSettings:useEffect:init', 'Component mounted, fetching settings');
@@ -242,16 +267,25 @@ const UserSettings = () => {
       log('UserSettings:fetchSettings', 'Starting to fetch user settings...');
       const data = await userSettingsService.getSettings()
       log('UserSettings:fetchSettings:success', 'Successfully fetched settings', { hasData: !!data });
-      setSettings(data)
+      const fontPreference = data?.font_preference || 'guardian_mono'
+      setSettings(prev => ({
+        ...prev,
+        ...data,
+        theme: theme,
+        font_preference: fontPreference
+      }))
       // Sync dark mode with theme context
       if (data && typeof data.dark_mode === 'boolean') {
         setDarkMode(data.dark_mode)
       }
-      // Sync theme with theme context - make sure settings state reflects current theme
-      setSettings(prev => ({
-        ...prev,
-        theme: theme
-      }))
+      try {
+        localStorage.setItem('font_preference', fontPreference)
+      } catch (storageError) {
+        console.warn('Unable to persist font preference locally', storageError)
+      }
+      if (typeof document !== 'undefined') {
+        document.body.dataset.font = fontPreference
+      }
     } catch (err) {
       error('UserSettings:fetchSettings:error', 'Error fetching settings', {
         message: err.message,
@@ -293,13 +327,18 @@ const UserSettings = () => {
       localStorage.setItem('globalCurrency', settings.currency)
       localStorage.setItem('globalDateFormat', settings.date_format)
       localStorage.setItem('globalDarkMode', settings.dark_mode.toString())
+      localStorage.setItem('font_preference', settings.font_preference || 'guardian_mono')
+      if (typeof document !== 'undefined') {
+        document.body.dataset.font = settings.font_preference || 'guardian_mono'
+      }
       
       // Broadcast changes to other components
       window.dispatchEvent(new CustomEvent('globalPreferencesChanged', {
         detail: {
           currency: settings.currency,
           dateFormat: settings.date_format,
-          darkMode: settings.dark_mode
+          darkMode: settings.dark_mode,
+          fontPreference: settings.font_preference || 'guardian_mono'
         }
       }))
       
@@ -530,6 +569,31 @@ const UserSettings = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="font_preference">Dashboard Font</Label>
+              <Select
+                value={settings.font_preference || 'guardian_mono'}
+                onValueChange={(value) => handleInputChange('font_preference', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {fontOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{option.label}</span>
+                        <span className="text-xs text-muted-foreground">{option.description}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                Slashed-zero preview: <span className="slashed-zero font-semibold">60,000 / 70%</span>
+              </p>
             </div>
 
             {/* Theme Selector */}
