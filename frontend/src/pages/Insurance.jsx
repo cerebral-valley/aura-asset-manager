@@ -20,9 +20,12 @@ import {
 } from '../utils/insuranceAggregation';
 import Loading from '../components/ui/Loading';
 import SafeSection from '@/components/util/SafeSection'
+import ReferralGate from '../components/referral/ReferralGate.jsx';
+import ReferralCodeDialog from '../components/referral/ReferralCodeDialog.jsx';
 import { log, warn, error } from '@/lib/debug';
 import { queryKeys } from '@/lib/queryKeys';
 import { mutationHelpers } from '@/lib/queryUtils';
+import { useUserSettings } from '../hooks/useUserSettings';
 import { Download, FileSpreadsheet, Plus, Upload, File, Trash2, ExternalLink } from 'lucide-react';
 
 const Insurance = () => {
@@ -36,11 +39,12 @@ const Insurance = () => {
   const { user } = useAuth();
   const { colors, getColor, isDark } = useChartColors();
   const queryClient = useQueryClient();
+  const [referralDialogOpen, setReferralDialogOpen] = useState(false);
   
   // TanStack Query data fetching
   const {
     data: policies = [],
-    isLoading: loading,
+    isLoading: policiesLoading,
     error: queryError
   } = useQuery({
     queryKey: queryKeys.insurance.list(),
@@ -55,6 +59,22 @@ const Insurance = () => {
       }
       return failureCount < 2
     },
+  })
+
+  const {
+    data: userSettings,
+    isLoading: settingsLoading
+  } = useUserSettings({
+    enabled: !!user,
+    retry: (failureCount, error) => {
+      if (error?.response?.status >= 400 && error?.response?.status < 500) {
+        return false
+      }
+      return failureCount < 1
+    },
+    onError: (err) => {
+      warn('Insurance', 'Could not load user settings for referral gate', err)
+    }
   })
 
   // Fetch profile data for annual income (needed for Coverage to Income ratio)
@@ -237,6 +257,9 @@ const Insurance = () => {
 
   // Global preferences trigger for re-renders
   const [globalPreferencesVersion, setGlobalPreferencesVersion] = useState(0);
+
+  const loading = policiesLoading || settingsLoading;
+  const referralRequired = !!user && !settingsLoading && !userSettings?.referral_code;
 
   // Handle query error
   if (queryError) {
@@ -806,17 +829,31 @@ const Insurance = () => {
     return <Loading pageName="Insurance" />;
   }
 
+  if (referralRequired) {
+    return (
+      <div className="p-6 space-y-6">
+        <ReferralGate onEnterCode={() => setReferralDialogOpen(true)} />
+        <ReferralCodeDialog
+          open={referralDialogOpen}
+          onOpenChange={setReferralDialogOpen}
+        />
+      </div>
+    )
+  }
+
+  const queryErrorMessage = queryError?.message || queryError?.response?.data?.detail || ''
+
   log('Insurance:render', { 
     policiesCount: policies.length,
     loading,
-    error: error?.message || null,
+    error: queryErrorMessage || null,
     pdfExporting,
     excelExporting
   });
 
   console.log('Insurance: About to render main component...', {
     policies: policies?.length || 0,
-    error,
+    error: queryErrorMessage,
     loading
   });
 
@@ -884,12 +921,12 @@ const Insurance = () => {
       </div>
 
       {/* Error message if fetch fails */}
-      {error && (
-        <div className="text-red-600 mb-4">{error}</div>
+      {queryErrorMessage && (
+        <div className="text-red-600 mb-4">{queryErrorMessage}</div>
       )}
 
       {/* If no error and no policies, show empty state */}
-      {!error && policies.length === 0 && (
+      {!queryErrorMessage && policies.length === 0 && (
                 <div className="bg-card rounded shadow p-6 flex flex-col items-center justify-center">
           <h2 className="text-xl font-bold text-foreground mb-4">No Insurance Policies Found</h2>
           <p className="text-muted-foreground mb-4">Start by adding your first insurance policy.</p>

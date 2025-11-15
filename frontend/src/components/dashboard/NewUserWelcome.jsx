@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Sparkles, User, Settings, ShieldCheck, Wallet2, CheckCircle2, ChevronRight, BookOpen } from 'lucide-react'
 import ShimmerButton from '../magicui/ShimmerButton.jsx'
+import { Button } from '../ui/button.jsx'
 
 const statusClasses = (complete) => complete
   ? 'text-emerald-300 bg-emerald-500/10 border border-emerald-400/30'
@@ -30,6 +31,8 @@ const NewUserWelcome = ({
   versionLabel,
   settingsError,
   settingsLoading,
+  needsReferralCode = false,
+  onReferralClick = () => {},
 }) => {
   const navigate = useNavigate()
 
@@ -134,6 +137,28 @@ const NewUserWelcome = ({
           <div className="rounded-2xl border border-amber-300/30 bg-amber-500/10 p-4 text-amber-100">
             <p className="text-sm font-medium">We couldn't load your saved settings.</p>
             <p className="text-sm text-amber-200/80">You can still continue onboarding—your data will be saved once the connection stabilizes.</p>
+          </div>
+        )}
+
+        {needsReferralCode && (
+          <div className="rounded-2xl border border-cyan-300/30 bg-cyan-500/10 p-4 text-cyan-50 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-start gap-3">
+              <ShieldCheck className="h-5 w-5 text-cyan-200" />
+              <div>
+                <p className="text-sm font-semibold text-cyan-50">Referral code required</p>
+                <p className="text-xs text-cyan-100/80">
+                  Paste the referral code you received to unlock asset and insurance data entry.
+                </p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="self-start lg:self-auto"
+              onClick={onReferralClick}
+            >
+              Paste referral code
+            </Button>
           </div>
         )}
 

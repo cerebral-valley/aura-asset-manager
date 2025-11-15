@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.241',
+  version: 'v0.242',
   buildDate: '2025-11-15',
-  deploymentId: 'profile-credit-score',
-  description: 'Expands the profile financial section with full credit score tracking (FICO/CIBIL/etc.) and persists the data alongside other profile fields'
+  deploymentId: 'referral-gating-login',
+  description: 'Enforces referral-code gating across assets/insurance, adds profile credit score data storage, and locks email sign-ups to keep Aura invite-only'
 }
 
 export const getVersionDisplay = () => {

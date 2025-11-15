@@ -105,12 +105,9 @@ export const AuthProvider = ({ children }) => {
     return { data, error }
   }
 
-  const signUp = async (email, password) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    })
-    return { data, error }
+  const signUp = async () => {
+    const disabledError = new Error('Email + password sign-ups are disabled. Please use Google sign-in.')
+    return { data: null, error: disabledError }
   }
 
   const signInWithGoogle = async () => {
@@ -143,4 +140,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   )
 }
-
