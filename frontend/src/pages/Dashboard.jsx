@@ -16,16 +16,14 @@ import { queryKeys } from '../lib/queryKeys'
 import { getVersionDisplay } from '../version.js'
 import { Wallet, Shield, TrendingUp } from 'lucide-react'
 import { Alert, AlertDescription } from '../components/ui/alert.jsx'
-import { Button } from '../components/ui/button.jsx'
 import AnimatedGradient from '../components/magicui/AnimatedGradient.jsx'
 import BlurFade from '../components/magicui/BlurFade.jsx'
 import Orbit from '../components/magicui/Orbit.jsx'
 import SafeSection from '../components/util/SafeSection'
 import { log, warn, error } from '@/lib/debug'
 import * as Sentry from '@sentry/react'
-import { useUserSettings } from '../hooks/useUserSettings.js'
+import { userSettingsService } from '../services/user-settings.js'
 import NewUserWelcome from '../components/dashboard/NewUserWelcome.jsx'
-import ReferralCodeDialog from '../components/referral/ReferralCodeDialog.jsx'
 
 // Utility function to calculate dynamic growth potential threshold
 const getGrowthPotentialThreshold = (netWorth) => {
@@ -59,7 +57,6 @@ const getGrowthPotentialThreshold = (netWorth) => {
 
 const Dashboard = () => {
   const { user } = useAuth()
-  const [referralDialogOpen, setReferralDialogOpen] = useState(false)
   // Import verification
   if (!dashboardService?.getSummary) warn('Dashboard', 'service missing: getSummary')
 
@@ -127,8 +124,11 @@ const Dashboard = () => {
     data: userSettingsData,
     isLoading: settingsLoading,
     error: settingsError
-  } = useUserSettings({
+  } = useQuery({
+    queryKey: queryKeys.user.settings(),
+    queryFn: () => userSettingsService.getSettings(),
     enabled: !!user,
+    staleTime: 5 * 60 * 1000,
   })
 
   // Calculate annual income from profile data
@@ -261,34 +261,25 @@ const Dashboard = () => {
   }
 
   const settingsErrorMessage = settingsError ? (settingsError.message || 'Failed to load settings') : ''
-  const needsReferralCode = !!user && !settingsLoading && !userSettingsData?.referral_code
 
   if (showWelcomeExperience) {
     log('Dashboard', 'render:onboarding', { hasAssets, hasInsurance })
     return (
-      <>
-        <div className="relative min-h-screen p-6">
-          <AnimatedGradient className="fixed inset-0 -z-10 opacity-30" />
-          <div className="max-w-6xl mx-auto py-10">
-            <NewUserWelcome
-              profileName={profileData?.first_name}
-              profileComplete={profileComplete}
-              settingsComplete={settingsComplete}
-              hasAssets={hasAssets}
-              hasInsurance={hasInsurance}
-              versionLabel={versionLabel}
-              settingsError={settingsErrorMessage}
-              settingsLoading={settingsLoading}
-              needsReferralCode={needsReferralCode}
-              onReferralClick={() => setReferralDialogOpen(true)}
-            />
-          </div>
+      <div className="relative min-h-screen p-6">
+        <AnimatedGradient className="fixed inset-0 -z-10 opacity-30" />
+        <div className="max-w-6xl mx-auto py-10">
+          <NewUserWelcome
+            profileName={profileData?.first_name}
+            profileComplete={profileComplete}
+            settingsComplete={settingsComplete}
+            hasAssets={hasAssets}
+            hasInsurance={hasInsurance}
+            versionLabel={versionLabel}
+            settingsError={settingsErrorMessage}
+            settingsLoading={settingsLoading}
+          />
         </div>
-        <ReferralCodeDialog
-          open={referralDialogOpen}
-          onOpenChange={setReferralDialogOpen}
-        />
-      </>
+      </div>
     )
   }
 
@@ -322,19 +313,10 @@ const Dashboard = () => {
               {themeLabels.subtitle}
             </p>
           </div>
-          <div className="text-right flex flex-col items-end gap-2">
+          <div className="text-right">
             <div className="text-xs text-muted-foreground font-mono">
               {versionLabel}
             </div>
-            {needsReferralCode && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setReferralDialogOpen(true)}
-              >
-                Enter referral code
-              </Button>
-            )}
           </div>
         </div>
 
@@ -457,10 +439,6 @@ const Dashboard = () => {
           </SafeSection>
         </BlurFade>
       </div>
-      <ReferralCodeDialog
-        open={referralDialogOpen}
-        onOpenChange={setReferralDialogOpen}
-      />
       </div>
     </div>
   )

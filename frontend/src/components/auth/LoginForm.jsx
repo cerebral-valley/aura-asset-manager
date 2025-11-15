@@ -9,19 +9,38 @@ import { Alert, AlertDescription } from '../ui/alert.jsx'
 const LoginForm = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [isSignUp, setIsSignUp] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [error, setError] = useState('')
-  const { signIn, signInWithGoogle } = useAuth()
+  const [successMessage, setSuccessMessage] = useState('')
+  const { signIn, signUp, signInWithGoogle } = useAuth()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setSuccessMessage('')
+
     try {
-      const { error: signInError } = await signIn(email, password)
-      if (signInError) {
-        setError(signInError.message)
+      if (isSignUp) {
+        const { data, error } = await signUp(email, password)
+        
+        if (error) {
+          setError(error.message)
+        } else {
+          setSuccessMessage(
+            "We've sent a verification link to your email. Please check your inbox and click the link to verify your account."
+          )
+          // Reset the form after successful signup
+          setEmail('')
+          setPassword('')
+        }
+      } else {
+        const { error } = await signIn(email, password)
+        if (error) {
+          setError(error.message)
+        }
       }
     } catch (err) {
       setError('An unexpected error occurred')
@@ -33,6 +52,7 @@ const LoginForm = () => {
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true)
     setError('')
+    setSuccessMessage('')
 
     try {
       const { error } = await signInWithGoogle()
@@ -65,11 +85,11 @@ const LoginForm = () => {
               </Alert>
             )}
             
-            <Alert className="bg-blue-50 border-blue-200 text-blue-900">
-              <AlertDescription>
-                Email + password sign-ups are closed. Existing members can still sign in below, but new accounts must start with Google sign-in to keep Aura invite-only.
-              </AlertDescription>
-            </Alert>
+            {successMessage && (
+              <Alert variant="success" className="bg-green-50 border-green-200 text-green-800">
+                <AlertDescription>{successMessage}</AlertDescription>
+              </Alert>
+            )}
             
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -100,7 +120,7 @@ const LoginForm = () => {
               className="w-full"
               disabled={loading || googleLoading}
             >
-              {loading ? 'Signing in…' : 'Sign In'}
+              {loading ? 'Please wait...' : (isSignUp ? 'Sign Up' : 'Sign In')}
             </Button>
             
             <div className="relative">
@@ -148,8 +168,18 @@ const LoginForm = () => {
               )}
             </Button>
             
-            <div className="text-center text-xs text-muted-foreground">
-              Need access? Use Google sign-in or contact the Aura team for a referral code.
+            <div className="text-center">
+              <Button
+                type="button"
+                variant="link"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-sm"
+              >
+                {isSignUp 
+                  ? 'Already have an account? Sign in' 
+                  : "Don't have an account? Sign up"
+                }
+              </Button>
             </div>
           </form>
         </CardContent>
@@ -159,3 +189,4 @@ const LoginForm = () => {
 }
 
 export default LoginForm
+

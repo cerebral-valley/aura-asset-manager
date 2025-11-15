@@ -1,13 +1,6 @@
 import { useState, useMemo } from 'react'
 import { validateDateOfBirth, validatePhoneNumber } from '../utils/profileUtils.js'
 
-const getCreditScoreRange = (provider) => {
-  if (provider === 'cibil') {
-    return { min: 300, max: 900 }
-  }
-  return { min: 300, max: 850 }
-}
-
 export const useProfileValidation = (profile) => {
   const [fieldErrors, setFieldErrors] = useState({})
   const [touchedFields, setTouchedFields] = useState({})
@@ -48,33 +41,6 @@ export const useProfileValidation = (profile) => {
       case 'annual_income':
         if (value && (isNaN(value) || parseFloat(value) < 0)) {
           validation = { valid: false, message: 'Annual income must be a positive number' }
-        }
-        break
-      case 'credit_score_value': {
-        if (value) {
-          const { min, max } = getCreditScoreRange(profile.credit_score_provider)
-          const numericValue = parseInt(value, 10)
-          if (isNaN(numericValue)) {
-            validation = { valid: false, message: 'Please enter a valid credit score' }
-          } else if (numericValue < min || numericValue > max) {
-            validation = { valid: false, message: `Score must be between ${min} and ${max}` }
-          }
-        }
-        break
-      }
-      case 'credit_score_last_checked': {
-        if (value) {
-          const selectedDate = new Date(value)
-          const today = new Date()
-          if (selectedDate > today) {
-            validation = { valid: false, message: 'Last checked date cannot be in the future' }
-          }
-        }
-        break
-      }
-      case 'credit_score_provider':
-        if (profile.credit_score_value && !value) {
-          validation = { valid: false, message: 'Select a score type when providing a credit score' }
         }
         break
       default:

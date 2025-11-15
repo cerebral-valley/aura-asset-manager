@@ -58,9 +58,6 @@ class ProfileUpdate(BaseModel):
     annual_income: Optional[Union[Decimal, str]] = None
     occupation: Optional[str] = None
     risk_appetite: Optional[str] = None
-    credit_score_provider: Optional[str] = None
-    credit_score_value: Optional[int] = None
-    credit_score_last_checked: Optional[date] = None
     
     # Enhanced family information fields
     partner: Optional[bool] = None
@@ -103,9 +100,6 @@ class UserProfile(UserInDB):
     annual_income: Optional[Decimal] = None
     occupation: Optional[str] = None
     risk_appetite: Optional[str] = None
-    credit_score_provider: Optional[str] = None
-    credit_score_value: Optional[int] = None
-    credit_score_last_checked: Optional[date] = None
     
     # Enhanced family information fields
     partner: Optional[bool] = None

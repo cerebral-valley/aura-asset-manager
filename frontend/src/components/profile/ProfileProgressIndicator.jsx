@@ -24,8 +24,7 @@ const ProfileProgressIndicator = ({ profile, className = '' }) => {
       'state',
       'pin_code',
       'nationality',
-      'annual_income',
-      'credit_score_value'
+      'annual_income'
     ];
     
     let filledCount = 0;

@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.243',
+  version: 'v0.244',
   buildDate: '2025-11-15',
-  deploymentId: 'login-hotfix',
-  description: 'Hotfixes the login form after referral changes so the invite-only banner renders without runtime errors'
+  deploymentId: 'rollback-v0240',
+  description: 'Rolls the platform back to the proven v0.240 baseline to disable the referral code experiment'
 }
 
 export const getVersionDisplay = () => {
