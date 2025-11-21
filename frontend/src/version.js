@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.253',
+  version: 'v0.254',
   buildDate: '2025-01-25',
-  deploymentId: 'hexagon-mandala-combo',
-  description: 'Added 4th logo variation: Hexagon Mandala (6+3 points) - killer combo fusing hexagonal symmetry with inner triangle mysticism. Perfect balance of the Hexagon and Mandala designs. Updated Logo Showcase to display all 4 variations in responsive grid layout.'
+  deploymentId: 'hexagon-mandala-fixes',
+  description: 'Fixed Hexagon Mandala geometry issues: increased inner triangle size (radius 18→22), enhanced aurora glow visibility (opacity 0.25→0.5, strokeWidth 0.3→0.5), removed cluttered radial center lines, improved Star of David pattern, larger constellation points for better visibility. Now a true visual match to the other logos.'
 }
 
 export const getVersionDisplay = () => {

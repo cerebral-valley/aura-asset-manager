@@ -7,7 +7,7 @@ export const HexagonMandala = ({ size = 64 }) => {
   const centerX = 50
   const centerY = 50
   const outerRadius = 35 // Outer hexagon points
-  const innerRadius = 18 // Inner triangle points
+  const innerRadius = 22 // Inner triangle points - increased for better balance
   
   // Generate 6 outer hexagon points at 60° intervals
   const outerPoints = Array.from({ length: 6 }, (_, i) => {
@@ -87,8 +87,9 @@ export const HexagonMandala = ({ size = 64 }) => {
         opacity="0.3"
       />
       
-      {/* Outer hexagon star pattern - connect every 2nd point */}
+      {/* Outer hexagon star pattern - Star of David effect */}
       {outerPoints.map((point, i) => {
+        // Create Star of David by connecting alternating triangles
         const nextIndex = (i + 2) % 6
         const nextPoint = outerPoints[nextIndex]
         return (
@@ -99,8 +100,8 @@ export const HexagonMandala = ({ size = 64 }) => {
             x2={nextPoint.x}
             y2={nextPoint.y}
             stroke="url(#hexMandalaAuroraGold)"
-            strokeWidth="0.5"
-            opacity="0.4"
+            strokeWidth="0.8"
+            opacity="0.6"
           />
         )
       })}
@@ -110,71 +111,48 @@ export const HexagonMandala = ({ size = 64 }) => {
         d={`M ${outerPoints[0].x},${outerPoints[0].y} ${outerPoints.map(p => `L ${p.x},${p.y}`).join(' ')} Z`}
         fill="none"
         stroke="url(#hexMandalaAuroraGold)"
-        strokeWidth="0.4"
-        opacity="0.3"
+        strokeWidth="0.6"
+        opacity="0.5"
       />
       
-      {/* Inner triangle */}
+      {/* Inner triangle perimeter - more visible */}
       <path
         d={`M ${innerPoints[0].x},${innerPoints[0].y} ${innerPoints.map(p => `L ${p.x},${p.y}`).join(' ')} Z`}
         fill="none"
         stroke="url(#hexMandalaAuroraCyan)"
-        strokeWidth="0.5"
-        opacity="0.5"
+        strokeWidth="0.8"
+        opacity="0.7"
       />
       
-      {/* Connections from outer hexagon points to center */}
-      {outerPoints.map((point, i) => (
-        <line
-          key={`outer-center-${i}`}
-          x1={point.x}
-          y1={point.y}
-          x2={centerX}
-          y2={centerY}
-          stroke="url(#hexMandalaAuroraGold)"
-          strokeWidth="0.3"
-          opacity="0.2"
-        />
-      ))}
+      {/* Removed center connections for cleaner look */}
       
-      {/* Connections from inner triangle points to center */}
-      {innerPoints.map((point, i) => (
-        <line
-          key={`inner-center-${i}`}
-          x1={point.x}
-          y1={point.y}
-          x2={centerX}
-          y2={centerY}
-          stroke="url(#hexMandalaAuroraCyan)"
-          strokeWidth="0.4"
-          opacity="0.3"
-        />
-      ))}
-      
-      {/* Connections between outer and inner points - creates mandala effect */}
+      {/* Enhanced mandala web - connect each outer point to nearest inner points */}
       {outerPoints.map((outerPoint, i) => {
-        // Connect each outer point to the two nearest inner points
-        const innerIndex1 = i % 3
-        const innerIndex2 = (i + 1) % 3
+        // Better connection logic: each outer point connects to 2 nearest inner points
+        // This creates a more balanced mandala pattern
+        const angle = -Math.PI / 2 + (Math.PI * 2 * i) / 6
+        const innerAngle1 = Math.floor((angle + Math.PI / 2) / (Math.PI * 2 / 3))
+        const innerAngle2 = (innerAngle1 + 1) % 3
+        
         return (
           <g key={`mandala-${i}`}>
             <line
               x1={outerPoint.x}
               y1={outerPoint.y}
-              x2={innerPoints[innerIndex1].x}
-              y2={innerPoints[innerIndex1].y}
+              x2={innerPoints[innerAngle1].x}
+              y2={innerPoints[innerAngle1].y}
               stroke="url(#hexMandalaAuroraCyan)"
-              strokeWidth="0.3"
-              opacity="0.25"
+              strokeWidth="0.5"
+              opacity="0.5"
             />
             <line
               x1={outerPoint.x}
               y1={outerPoint.y}
-              x2={innerPoints[innerIndex2].x}
-              y2={innerPoints[innerIndex2].y}
+              x2={innerPoints[innerAngle2].x}
+              y2={innerPoints[innerAngle2].y}
               stroke="url(#hexMandalaAuroraCyan)"
-              strokeWidth="0.3"
-              opacity="0.25"
+              strokeWidth="0.5"
+              opacity="0.5"
             />
           </g>
         )
@@ -197,40 +175,40 @@ export const HexagonMandala = ({ size = 64 }) => {
         opacity="0.8"
       />
       
-      {/* Outer hexagon constellation points */}
+      {/* Outer hexagon constellation points - larger for visibility */}
       {outerPoints.map((point, i) => (
         <g key={`outer-${i}`}>
           <circle
             cx={point.x}
             cy={point.y}
-            r="3"
+            r="3.5"
             fill="url(#hexMandalaOuterPoint)"
+          />
+          <circle
+            cx={point.x}
+            cy={point.y}
+            r="1.7"
+            fill="#ffffff"
+            opacity="0.95"
+          />
+        </g>
+      ))}
+      
+      {/* Inner triangle constellation points - larger for visibility */}
+      {innerPoints.map((point, i) => (
+        <g key={`inner-${i}`}>
+          <circle
+            cx={point.x}
+            cy={point.y}
+            r="3"
+            fill="url(#hexMandalaInnerPoint)"
           />
           <circle
             cx={point.x}
             cy={point.y}
             r="1.5"
             fill="#ffffff"
-            opacity="0.9"
-          />
-        </g>
-      ))}
-      
-      {/* Inner triangle constellation points */}
-      {innerPoints.map((point, i) => (
-        <g key={`inner-${i}`}>
-          <circle
-            cx={point.x}
-            cy={point.y}
-            r="2.5"
-            fill="url(#hexMandalaInnerPoint)"
-          />
-          <circle
-            cx={point.x}
-            cy={point.y}
-            r="1.2"
-            fill="#ffffff"
-            opacity="0.9"
+            opacity="0.95"
           />
         </g>
       ))}
