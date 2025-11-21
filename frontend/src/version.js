@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.250',
+  version: 'v0.251',
   buildDate: '2025-01-25',
-  deploymentId: 'pure-cosmic-constellation',
-  description: 'Pure constellation cosmic theme - removed mountains entirely, enhanced with 35 twinkling stars in varied sizes, added 4 subtle nebula clouds for depth, stronger aurora streams with animation, deeper gradient (black → deep navy → midnight blue with radial overlay). Refined, elegant cosmic aesthetic for wealth command center.'
+  deploymentId: 'logo-showcase',
+  description: 'Added Logo Showcase page with 3 custom SVG logo concepts: Cosmic Constellation (sacred geometry), Wealth Prism (geometric crystal), Orbital System (planetary rings). Fully scalable vector logos with size variations and in-context previews. Route: /logo-showcase'
 }
 
 export const getVersionDisplay = () => {

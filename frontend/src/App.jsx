@@ -24,6 +24,7 @@ import { Toaster } from './components/ui/toaster'
 import Loading from './components/ui/Loading'
 import { log, warn } from './lib/debug'
 import { userSettingsService } from './services/user-settings.js'
+import { LogoShowcase } from './components/ui/LogoShowcase'
 import './App.css'
 
 // Page Components
@@ -123,6 +124,7 @@ function AppContent() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<UserSettings />} />
           <Route path="/guide" element={<UserGuide />} />
+          <Route path="/logo-showcase" element={<LogoShowcase />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AppLayout>
