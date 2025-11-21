@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.259',
+  version: 'v0.260',
   buildDate: '2025-01-25',
-  deploymentId: 'logo-branding-integration',
-  description: 'Integrate Minimalist Mandala logo into login page and sidebar. Added 32px logo beside "Aura" text in sidebar header. Added 48px logo to login page fixed header alongside brand name. Updated copyright footer with standard legal wording: "© 2025 Aura Asset Manager. All rights reserved." plus proprietary marks disclaimer. Logo showcase remains at /logo-showcase for future prototyping.'
+  deploymentId: 'password-confirmation-signup',
+  description: 'Add password confirmation field for signup security. Users must now enter password twice during registration to prevent typos. Features: conditional confirm password field (only shows during signup), real-time validation before submission, clear error messages if passwords don\'t match, automatic field clearing when toggling between sign-in/sign-up modes. Improves UX and prevents account lockout from password typos.'
 }
 
 export const getVersionDisplay = () => {

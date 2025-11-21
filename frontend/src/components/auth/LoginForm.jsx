@@ -108,6 +108,7 @@ const LoginForm = () => {
   // Form state
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
@@ -158,6 +159,12 @@ const LoginForm = () => {
 
     try {
       if (isSignUp) {
+        // Validate password confirmation
+        if (password !== confirmPassword) {
+          setError('Passwords do not match. Please ensure both passwords are identical.')
+          setLoading(false)
+          return
+        }
         const { data, error } = await signUp(email, password)
         
         if (error) {
@@ -168,6 +175,7 @@ const LoginForm = () => {
           )
           setEmail('')
           setPassword('')
+          setConfirmPassword('')
         }
       } else {
         const { error } = await signIn(email, password)
@@ -407,6 +415,23 @@ const LoginForm = () => {
                     />
                   </div>
 
+                  {isSignUp && (
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword" className="text-white">
+                        Confirm Password
+                      </Label>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                        placeholder="••••••••"
+                        className="border-slate-700 bg-slate-950/50 text-white placeholder:text-slate-500 focus:border-amber-300/50 focus:ring-amber-300/20"
+                      />
+                    </div>
+                  )}
+
                   <Button
                     type="submit"
                     className="w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-slate-900 font-semibold hover:from-amber-300 hover:to-yellow-400 shadow-lg shadow-amber-500/30"
@@ -449,7 +474,12 @@ const LoginForm = () => {
                   <div className="text-center text-sm">
                     <button
                       type="button"
-                      onClick={() => setIsSignUp(!isSignUp)}
+                      onClick={() => {
+                        setIsSignUp(!isSignUp)
+                        setConfirmPassword('')
+                        setError('')
+                        setSuccessMessage('')
+                      }}
                       className="text-amber-300 hover:text-amber-200 hover:underline"
                     >
                       {isSignUp ? 'Already have command access? Sign in' : "New to the command center? Sign up"}
