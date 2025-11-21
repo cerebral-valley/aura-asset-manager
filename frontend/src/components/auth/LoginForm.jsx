@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../hooks/useAuth.jsx'
 import { Button } from '../ui/button.jsx'
 import { Input } from '../ui/input.jsx'
@@ -60,7 +60,24 @@ const testimonials = [
   }
 ]
 
+// Constellation points for background
+const constellationPoints = [
+  { x: '15%', y: '20%' }, { x: '25%', y: '15%' }, { x: '35%', y: '25%' },
+  { x: '45%', y: '18%' }, { x: '55%', y: '22%' }, { x: '65%', y: '28%' },
+  { x: '75%', y: '17%' }, { x: '85%', y: '24%' }, { x: '20%', y: '45%' },
+  { x: '30%', y: '52%' }, { x: '40%', y: '48%' }, { x: '50%', y: '55%' },
+  { x: '60%', y: '50%' }, { x: '70%', y: '58%' }, { x: '80%', y: '53%' },
+  { x: '18%', y: '75%' }, { x: '28%', y: '80%' }, { x: '38%', y: '78%' },
+  { x: '48%', y: '82%' }, { x: '58%', y: '77%' }, { x: '68%', y: '85%' },
+  { x: '78%', y: '79%' }, { x: '88%', y: '83%' }
+]
+
 const LoginForm = () => {
+  // Animation state: 'logo-enter', 'logo-move', 'tagline-enter', 'tagline-move', 'complete'
+  const [animationPhase, setAnimationPhase] = useState('logo-enter')
+  const [showSkip, setShowSkip] = useState(false)
+  
+  // Form state
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
@@ -69,6 +86,41 @@ const LoginForm = () => {
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const { signIn, signUp, signInWithGoogle } = useAuth()
+
+  useEffect(() => {
+    // Check if user has seen intro before
+    const hasSeenIntro = sessionStorage.getItem('aura_intro_seen')
+    
+    if (hasSeenIntro) {
+      setAnimationPhase('complete')
+      return
+    }
+    
+    // Animation sequence
+    const t1 = setTimeout(() => setAnimationPhase('logo-move'), 1500)
+    const t2 = setTimeout(() => setAnimationPhase('tagline-enter'), 2500)
+    const t3 = setTimeout(() => setAnimationPhase('tagline-move'), 3500)
+    const t4 = setTimeout(() => {
+      setAnimationPhase('complete')
+      sessionStorage.setItem('aura_intro_seen', 'true')
+    }, 4500)
+    
+    // Show skip button after 1s
+    const t5 = setTimeout(() => setShowSkip(true), 1000)
+    
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+      clearTimeout(t3)
+      clearTimeout(t4)
+      clearTimeout(t5)
+    }
+  }, [])
+
+  const skipIntro = () => {
+    setAnimationPhase('complete')
+    sessionStorage.setItem('aura_intro_seen', 'true')
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -120,49 +172,142 @@ const LoginForm = () => {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(16,185,129,0.15),transparent_50%),radial-gradient(ellipse_at_bottom_left,_rgba(59,130,246,0.15),transparent_50%)]" />
-      <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl animate-pulse" />
-      <div className="absolute bottom-0 -left-40 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-      
-      {/* Noise Texture Overlay */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNhKSIgb3BhY2l0eT0iMC4wNSIvPjwvc3ZnPg==')] opacity-30" />
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#0a1628] via-[#162447] to-[#1b1b2f]">
+      {/* Constellation + Mountain Background */}
+      <div className="absolute inset-0">
+        {/* Mountain Silhouette */}
+        <svg className="absolute bottom-0 w-full h-2/3 opacity-30" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMax slice">
+          <defs>
+            <linearGradient id="mountainGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#1f4068" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#0a1628" stopOpacity="0.8" />
+            </linearGradient>
+          </defs>
+          <path d="M0,800 L300,500 L500,650 L700,350 L900,550 L1100,400 L1400,600 L1600,450 L1920,700 L1920,1080 L0,1080 Z" 
+                fill="url(#mountainGrad)" />
+        </svg>
 
-      <div className="relative z-10">
-        {/* Hero Section */}
-        <div className="mx-auto max-w-7xl px-6 py-16 sm:py-24 lg:px-8">
-          <div className="text-center">
-            {/* Logo/Brand */}
-            <div className="mb-8 flex justify-center">
-              <div className="inline-flex items-center gap-3 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-6 py-2 backdrop-blur-sm">
-                <span className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
-                  Aura Asset Manager
-                </span>
-              </div>
+        {/* Constellation Points */}
+        <div className="absolute inset-0">
+          {constellationPoints.map((point, i) => (
+            <div
+              key={i}
+              className="absolute animate-pulse"
+              style={{
+                left: point.x,
+                top: point.y,
+                animationDelay: `${i * 0.2}s`,
+                animationDuration: `${3 + (i % 3)}s`
+              }}
+            >
+              <div className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-amber-300 to-yellow-200 shadow-lg shadow-amber-500/50" />
             </div>
+          ))}
+        </div>
 
-            {/* Hero Headline */}
-            <h1 className="mx-auto max-w-4xl text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl">
-              Your Personal
-              <span className="bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400 bg-clip-text text-transparent"> Financial Sanctuary</span>
+        {/* Aurora Streams */}
+        <div className="absolute inset-0 opacity-40">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-emerald-500/30 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
+          <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-gradient-to-bl from-blue-500/30 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
+          <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-tr from-purple-500/30 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDuration: '12s', animationDelay: '4s' }} />
+        </div>
+
+        {/* Noise Texture */}
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNhKSIgb3BhY2l0eT0iMC4wNSIvPjwvc3ZnPg==')] opacity-40" />
+      </div>
+
+      {/* Animated Logo Intro */}
+      {animationPhase !== 'complete' && (
+        <div className="relative z-50">
+          {/* Skip Button */}
+          {showSkip && (
+            <button
+              onClick={skipIntro}
+              className="fixed top-6 right-6 px-4 py-2 text-sm text-amber-300 border border-amber-300/30 rounded-full hover:bg-amber-300/10 transition-all duration-300 backdrop-blur-sm z-50"
+            >
+              Skip Intro →
+            </button>
+          )}
+
+          {/* Logo Animation */}
+          <div
+            className={`fixed transition-all duration-1000 ease-in-out ${
+              animationPhase === 'logo-enter'
+                ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 animate-fadeInScale'
+                : animationPhase === 'logo-move'
+                ? 'top-8 left-8 translate-x-0 translate-y-0'
+                : 'top-8 left-8 translate-x-0 translate-y-0'
+            }`}
+            style={{
+              fontSize: animationPhase === 'logo-enter' ? '4rem' : '1.5rem',
+              transition: 'all 1s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+          >
+            <h1 className="font-bold bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent whitespace-nowrap">
+              Aura Asset Manager
             </h1>
+          </div>
+
+          {/* Tagline Animation */}
+          {(animationPhase === 'tagline-enter' || animationPhase === 'tagline-move') && (
+            <div
+              className={`fixed transition-all duration-1000 ease-in-out ${
+                animationPhase === 'tagline-enter'
+                  ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 animate-fadeInScale'
+                  : 'top-20 left-8 translate-x-0 translate-y-0'
+              }`}
+              style={{
+                fontSize: animationPhase === 'tagline-enter' ? '2rem' : '0.875rem',
+                transition: 'all 1s cubic-bezier(0.4, 0, 0.2, 1)'
+              }}
+            >
+              <p className="text-slate-300 font-light tracking-wide whitespace-nowrap">
+                Your Command Center For Wealth
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Main Content (shown after animation complete) */}
+      <div
+        className={`relative z-10 transition-opacity duration-1000 ${
+          animationPhase === 'complete' ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        {/* Fixed Logo in Corner (after animation) */}
+        <div className="fixed top-8 left-8 z-40">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent">
+            Aura Asset Manager
+          </h1>
+          <p className="text-sm text-slate-300 font-light tracking-wide">
+            Your Command Center For Wealth
+          </p>
+        </div>
+
+        {/* Hero Section */}
+        <div className="mx-auto max-w-7xl px-6 py-16 sm:py-24 lg:px-8 pt-32">
+          <div className="text-center">
+            {/* Hero Headline */}
+            <h2 className="mx-auto max-w-4xl text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl">
+              Where Vision Meets
+              <span className="bg-gradient-to-r from-amber-300 via-yellow-200 to-emerald-400 bg-clip-text text-transparent"> Altitude</span>
+            </h2>
             
             <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-300 sm:text-xl">
-              Track your wealth, achieve your goals, and find peace of mind. 
-              Aura brings clarity to your complete financial picture.
+              Orchestrate your empire with intelligence. Built for those who shape markets, not follow them.
             </p>
           </div>
 
           {/* Auth Card - Centered */}
           <div className="mt-16 flex justify-center">
-            <Card className="w-full max-w-md border-white/10 bg-slate-900/95 backdrop-blur-xl shadow-2xl">
+            <Card className="w-full max-w-md border-amber-300/20 bg-slate-900/95 backdrop-blur-xl shadow-2xl shadow-amber-500/10">
               <CardHeader className="space-y-1">
                 <CardTitle className="text-center text-2xl font-bold text-white">
-                  {isSignUp ? 'Create Account' : 'Welcome Back'}
+                  {isSignUp ? 'Join The Command Center' : 'Access Your Empire'}
                 </CardTitle>
                 <CardDescription className="text-center text-slate-400">
-                  {isSignUp ? 'Start your journey to financial clarity' : 'Sign in to access your sanctuary'}
+                  {isSignUp ? 'Begin your strategic wealth orchestration' : 'Sign in to your command center'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -190,7 +335,7 @@ const LoginForm = () => {
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       placeholder="you@example.com"
-                      className="border-slate-700 bg-slate-950/50 text-white placeholder:text-slate-500"
+                      className="border-slate-700 bg-slate-950/50 text-white placeholder:text-slate-500 focus:border-amber-300/50 focus:ring-amber-300/20"
                     />
                   </div>
 
@@ -205,16 +350,16 @@ const LoginForm = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       placeholder="••••••••"
-                      className="border-slate-700 bg-slate-950/50 text-white placeholder:text-slate-500"
+                      className="border-slate-700 bg-slate-950/50 text-white placeholder:text-slate-500 focus:border-amber-300/50 focus:ring-amber-300/20"
                     />
                   </div>
 
                   <Button
                     type="submit"
-                    className="w-full bg-gradient-to-r from-emerald-500 to-blue-500 text-white hover:from-emerald-600 hover:to-blue-600"
+                    className="w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 text-slate-900 font-semibold hover:from-amber-300 hover:to-yellow-400 shadow-lg shadow-amber-500/30"
                     disabled={loading || googleLoading}
                   >
-                    {loading ? 'Please wait...' : (isSignUp ? 'Create Account' : 'Sign In')}
+                    {loading ? 'Connecting...' : (isSignUp ? 'Initialize Command Center' : 'Access Now')}
                   </Button>
 
                   <div className="relative py-2">
@@ -229,7 +374,7 @@ const LoginForm = () => {
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full border-slate-700 bg-slate-950/50 text-white hover:bg-slate-800"
+                    className="w-full border-slate-700 bg-slate-950/50 text-white hover:bg-slate-800 hover:border-amber-300/30"
                     disabled={loading || googleLoading}
                     onClick={handleGoogleSignIn}
                   >
@@ -252,9 +397,9 @@ const LoginForm = () => {
                     <button
                       type="button"
                       onClick={() => setIsSignUp(!isSignUp)}
-                      className="text-emerald-400 hover:text-emerald-300 hover:underline"
+                      className="text-amber-300 hover:text-amber-200 hover:underline"
                     >
-                      {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+                      {isSignUp ? 'Already have command access? Sign in' : "New to the command center? Sign up"}
                     </button>
                   </div>
                 </form>
@@ -266,14 +411,14 @@ const LoginForm = () => {
         {/* Features Section */}
         <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
           <div className="text-center">
-            <h2 className="text-base font-semibold uppercase tracking-wider text-emerald-400">
-              Everything You Need
+            <h2 className="text-base font-semibold uppercase tracking-wider text-amber-300">
+              Strategic Capabilities
             </h2>
             <p className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Built for modern wealth management
+              Built for command-level oversight
             </p>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">
-              Aura combines powerful features with beautiful design to give you complete control over your financial future.
+              Intelligence-first infrastructure for orchestrating complex wealth portfolios across global markets.
             </p>
           </div>
 
@@ -281,10 +426,10 @@ const LoginForm = () => {
             {features.map((feature, index) => (
               <div
                 key={feature.title}
-                className="group relative rounded-2xl border border-white/10 bg-gradient-to-b from-white/5 to-white/0 p-8 backdrop-blur-sm transition-all hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/10"
+                className="group relative rounded-2xl border border-amber-300/10 bg-gradient-to-b from-white/5 to-white/0 p-8 backdrop-blur-sm transition-all hover:border-amber-300/30 hover:shadow-lg hover:shadow-amber-500/10"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className="mb-4 inline-flex rounded-lg bg-gradient-to-br from-emerald-500/20 to-blue-500/20 p-3 text-emerald-400 ring-1 ring-emerald-500/30">
+                <div className="mb-4 inline-flex rounded-lg bg-gradient-to-br from-amber-400/20 to-yellow-300/20 p-3 text-amber-300 ring-1 ring-amber-400/30">
                   {feature.icon}
                 </div>
                 <h3 className="text-xl font-semibold text-white">{feature.title}</h3>
@@ -299,11 +444,11 @@ const LoginForm = () => {
         {/* Testimonials Section */}
         <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
           <div className="text-center">
-            <h2 className="text-base font-semibold uppercase tracking-wider text-emerald-400">
-              Testimonials
+            <h2 className="text-base font-semibold uppercase tracking-wider text-amber-300">
+              Summit Members
             </h2>
             <p className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Trusted by thousands worldwide
+              Join those who've reached the altitude
             </p>
           </div>
 
@@ -311,11 +456,11 @@ const LoginForm = () => {
             {testimonials.map((testimonial, index) => (
               <div
                 key={testimonial.name}
-                className="group relative rounded-2xl border border-white/10 bg-gradient-to-b from-white/5 to-white/0 p-8 backdrop-blur-sm transition-all hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/10"
+                className="group relative rounded-2xl border border-amber-300/10 bg-gradient-to-b from-white/5 to-white/0 p-8 backdrop-blur-sm transition-all hover:border-amber-300/30 hover:shadow-lg hover:shadow-amber-500/10"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 {/* Quote Icon */}
-                <div className="mb-4 text-emerald-400/20">
+                <div className="mb-4 text-amber-300/20">
                   <svg className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z" />
                   </svg>
@@ -326,13 +471,13 @@ const LoginForm = () => {
                 </p>
 
                 <div className="mt-6 flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 text-sm font-bold text-white">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-yellow-300 text-sm font-bold text-slate-900">
                     {testimonial.avatar}
                   </div>
                   <div>
                     <div className="font-semibold text-white">{testimonial.name}</div>
                     <div className="text-xs text-slate-400">{testimonial.role}</div>
-                    <div className="text-xs text-emerald-400">{testimonial.location}</div>
+                    <div className="text-xs text-amber-300">{testimonial.location}</div>
                   </div>
                 </div>
               </div>
@@ -341,19 +486,37 @@ const LoginForm = () => {
         </div>
 
         {/* Footer */}
-        <div className="border-t border-white/10 bg-slate-950/50 backdrop-blur-sm">
+        <div className="border-t border-amber-300/10 bg-slate-950/50 backdrop-blur-sm">
           <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
             <div className="text-center text-sm text-slate-400">
-              <p>© 2025 Aura Asset Manager. Built with care for your financial future.</p>
+              <p>© 2025 Aura Asset Manager. Command-level wealth orchestration.</p>
               <p className="mt-2">
-                <span className="text-emerald-400">🔒 Secure</span> · 
-                <span className="text-blue-400"> Private</span> · 
-                <span className="text-purple-400"> Encrypted</span>
+                <span className="text-amber-300">🔒 Encrypted</span> · 
+                <span className="text-yellow-300"> Private</span> · 
+                <span className="text-emerald-300"> Secure</span>
               </p>
             </div>
           </div>
         </div>
       </div>
+
+      {/* CSS Animations */}
+      <style jsx>{`
+        @keyframes fadeInScale {
+          from {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.8);
+          }
+          to {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+          }
+        }
+
+        .animate-fadeInScale {
+          animation: fadeInScale 1.5s ease-out forwards;
+        }
+      `}</style>
     </div>
   )
 }
