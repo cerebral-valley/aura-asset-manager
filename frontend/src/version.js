@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.257',
+  version: 'v0.258',
   buildDate: '2025-01-25',
-  deploymentId: 'minimalist-mandala-logo',
-  description: 'Add 5th logo variation: Minimalist Mandala (6+3). Clean, refined version with zero glows, no gradients, pure geometric elegance. Features: flat solid colors, subtle connection lines, negative space mastery, same 6+3 structure as Hexagon Mandala but stripped to essentials. Perfect for minimalist aesthetic preference.'
+  deploymentId: 'logo-visibility-darkmode-fix',
+  description: 'Enhanced Minimalist Mandala visibility + full light/dark mode support for logo showcase. Fixes: increased connection line stroke width (0.5→0.8px) and opacity (0.4→0.6) for better visibility when zoomed out, enhanced Star of David pattern visibility (0.15→0.35 opacity). Added comprehensive light/dark mode styling across entire showcase page with adaptive backgrounds, borders, text colors, and shadows.'
 }
 
 export const getVersionDisplay = () => {

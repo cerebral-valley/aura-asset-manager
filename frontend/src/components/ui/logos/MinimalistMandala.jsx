@@ -38,7 +38,7 @@ export const MinimalistMandala = ({ size = 64, className = '' }) => {
       className={className}
     >
       {/* Sacred geometry connection lines - thin and subtle */}
-      <g stroke="#d4af37" strokeWidth="0.5" opacity="0.4">
+      <g stroke="#d4af37" strokeWidth="0.8" opacity="0.6">
         {/* Outer hexagon perimeter */}
         <path 
           d={`M ${outerPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')} Z`}
@@ -49,9 +49,10 @@ export const MinimalistMandala = ({ size = 64, className = '' }) => {
         <path 
           d={`M ${innerPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')} Z`}
           fill="none"
+          strokeWidth="0.9"
         />
         
-        {/* Star of David pattern (every 2nd outer point) - very subtle */}
+        {/* Star of David pattern (every 2nd outer point) - more visible */}
         {outerPoints.map((point, i) => {
           const nextPoint = outerPoints[(i + 2) % 6]
           return (
@@ -61,7 +62,8 @@ export const MinimalistMandala = ({ size = 64, className = '' }) => {
               y1={point.y} 
               x2={nextPoint.x} 
               y2={nextPoint.y}
-              opacity="0.15"
+              opacity="0.35"
+              strokeWidth="0.7"
             />
           )
         })}
