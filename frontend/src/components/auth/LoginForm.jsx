@@ -49,7 +49,7 @@ const testimonials = [
     location: 'United States',
     avatar: 'NG',
     quote: 'Finally, a wealth management tool that feels personal. The interface is gorgeous and the insights are spot-on.',
-    role: 'Portfolio Manager'
+    role: 'Professor'
   },
   {
     name: 'Pete Siriwanransug',
@@ -57,24 +57,6 @@ const testimonials = [
     avatar: 'PS',
     quote: 'The goal tracking feature helped me achieve my first million. Aura makes complex finance feel simple.',
     role: 'Entrepreneur'
-  }
-]
-
-const stats = [
-  { 
-    value: '10,000+', 
-    label: 'Active Users',
-    description: 'Trust Aura with their wealth'
-  },
-  { 
-    value: '£500M+', 
-    label: 'Assets Tracked',
-    description: 'Across all asset classes'
-  },
-  { 
-    value: '99.9%', 
-    label: 'Uptime',
-    description: 'Always available when you need it'
   }
 ]
 
@@ -154,11 +136,8 @@ const LoginForm = () => {
             {/* Logo/Brand */}
             <div className="mb-8 flex justify-center">
               <div className="inline-flex items-center gap-3 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-6 py-2 backdrop-blur-sm">
-                <span className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
-                  Aura
-                </span>
-                <span className="rounded-full bg-emerald-400/90 px-2.5 py-0.5 text-xs font-semibold text-slate-900">
-                  v2.0
+                <span className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
+                  Aura Asset Manager
                 </span>
               </div>
             </div>
@@ -173,24 +152,6 @@ const LoginForm = () => {
               Track your wealth, achieve your goals, and find peace of mind. 
               Aura brings clarity to your complete financial picture.
             </p>
-          </div>
-
-          {/* Stats Section */}
-          <div className="mt-20 grid gap-8 sm:grid-cols-3">
-            {stats.map((stat, index) => (
-              <div 
-                key={stat.label}
-                className="group relative rounded-2xl border border-white/10 bg-white/5 p-8 text-center backdrop-blur-sm transition-all hover:border-emerald-500/30 hover:bg-white/10"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="text-4xl font-bold text-white sm:text-5xl">{stat.value}</div>
-                <div className="mt-2 text-sm font-semibold uppercase tracking-wider text-emerald-400">
-                  {stat.label}
-                </div>
-                <p className="mt-1 text-xs text-slate-400">{stat.description}</p>
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-emerald-500/0 via-emerald-500/10 to-emerald-500/0 opacity-0 transition-opacity group-hover:opacity-100" />
-              </div>
-            ))}
           </div>
 
           {/* Auth Card - Centered */}

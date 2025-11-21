@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.246',
+  version: 'v0.247',
   buildDate: '2025-01-06',
-  deploymentId: 'beautiful-login-testimonials',
-  description: 'Beautiful redesign of login page with testimonials from Kunal Jadhav, Nijat Garavey, Pete Siriwanransug. Updated stats to realistic values (10K+ users, £500M+ tracked, 99.9% uptime). Premium Apple/Wealthfront-inspired design with gradients, animations, and modern layout.'
+  deploymentId: 'login-refinements',
+  description: 'Removed stats cards, updated Nijat Garavey to Professor, replaced "Aura v2.0" badge with "Aura Asset Manager"'
 }
 
 export const getVersionDisplay = () => {
