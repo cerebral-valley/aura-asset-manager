@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.245',
-  buildDate: '2025-11-15',
-  deploymentId: 'login-hero-refresh',
-  description: 'Reimagines the landing/login experience with a cinematic hero, new copy, and refreshed card UI'
+  version: 'v0.246',
+  buildDate: '2025-01-06',
+  deploymentId: 'beautiful-login-testimonials',
+  description: 'Beautiful redesign of login page with testimonials from Kunal Jadhav, Nijat Garavey, Pete Siriwanransug. Updated stats to realistic values (10K+ users, £500M+ tracked, 99.9% uptime). Premium Apple/Wealthfront-inspired design with gradients, animations, and modern layout.'
 }
 
 export const getVersionDisplay = () => {
