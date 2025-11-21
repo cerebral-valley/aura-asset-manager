@@ -60,13 +60,43 @@ const testimonials = [
   }
 ]
 
-// Constellation points for background - reduced for better visibility
+// Constellation points for background - enhanced cosmic theme with twinkling stars
 const constellationPoints = [
-  { x: '15%', y: '20%' }, { x: '30%', y: '15%' }, { x: '45%', y: '25%' },
-  { x: '60%', y: '18%' }, { x: '75%', y: '22%' }, { x: '85%', y: '28%' },
-  { x: '20%', y: '45%' }, { x: '40%', y: '50%' }, { x: '55%', y: '48%' },
-  { x: '70%', y: '55%' }, { x: '82%', y: '50%' }, { x: '25%', y: '75%' },
-  { x: '50%', y: '80%' }, { x: '72%', y: '78%' }, { x: '88%', y: '85%' }
+  // Top region (sparse for form visibility)
+  { x: '12%', y: '8%', size: 3, twinkle: true }, { x: '25%', y: '12%', size: 2, twinkle: false },
+  { x: '38%', y: '6%', size: 4, twinkle: true }, { x: '52%', y: '10%', size: 2, twinkle: false },
+  { x: '65%', y: '14%', size: 3, twinkle: true }, { x: '78%', y: '8%', size: 2, twinkle: false },
+  { x: '88%', y: '16%', size: 4, twinkle: false }, { x: '92%', y: '11%', size: 2, twinkle: true },
+  
+  // Mid-top region
+  { x: '8%', y: '22%', size: 2, twinkle: false }, { x: '18%', y: '28%', size: 3, twinkle: true },
+  { x: '32%', y: '24%', size: 2, twinkle: false }, { x: '72%', y: '26%', size: 3, twinkle: true },
+  { x: '84%', y: '30%', size: 2, twinkle: false }, { x: '94%', y: '25%', size: 4, twinkle: true },
+  
+  // Mid region (fewer stars, more space for content)
+  { x: '6%', y: '45%', size: 3, twinkle: true }, { x: '15%', y: '52%', size: 2, twinkle: false },
+  { x: '85%', y: '48%', size: 3, twinkle: false }, { x: '92%', y: '55%', size: 2, twinkle: true },
+  
+  // Mid-bottom region
+  { x: '10%', y: '65%', size: 2, twinkle: false }, { x: '22%', y: '70%', size: 4, twinkle: true },
+  { x: '35%', y: '68%', size: 2, twinkle: false }, { x: '48%', y: '72%', size: 3, twinkle: true },
+  { x: '62%', y: '66%', size: 2, twinkle: false }, { x: '76%', y: '71%', size: 4, twinkle: false },
+  { x: '88%', y: '68%', size: 3, twinkle: true },
+  
+  // Bottom region (dense for cosmic depth)
+  { x: '8%', y: '82%', size: 2, twinkle: true }, { x: '18%', y: '88%', size: 3, twinkle: false },
+  { x: '28%', y: '85%', size: 4, twinkle: true }, { x: '42%', y: '90%', size: 2, twinkle: false },
+  { x: '56%', y: '84%', size: 3, twinkle: true }, { x: '68%', y: '92%', size: 2, twinkle: false },
+  { x: '78%', y: '86%', size: 4, twinkle: false }, { x: '88%', y: '90%', size: 3, twinkle: true },
+  { x: '95%', y: '88%', size: 2, twinkle: true }
+]
+
+// Nebula clouds for depth
+const nebulaClouds = [
+  { x: '15%', y: '25%', color: 'rgba(75, 0, 130, 0.12)', size: '500px' },
+  { x: '70%', y: '60%', color: 'rgba(0, 50, 100, 0.10)', size: '600px' },
+  { x: '40%', y: '75%', color: 'rgba(100, 50, 150, 0.08)', size: '450px' },
+  { x: '85%', y: '35%', color: 'rgba(30, 60, 90, 0.09)', size: '550px' }
 ]
 
 const LoginForm = () => {
@@ -169,47 +199,66 @@ const LoginForm = () => {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#0a1628] via-[#162447] to-[#1b1b2f]">
-      {/* Constellation + Mountain Background */}
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Pure Cosmic Background */}
       <div className="absolute inset-0">
-        {/* Mountain Silhouette */}
-        <svg className="absolute bottom-0 w-full h-2/3 opacity-70" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMax slice">
-          <defs>
-            <linearGradient id="mountainGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#3d5a80" stopOpacity="0.7" />
-              <stop offset="100%" stopColor="#1a2942" stopOpacity="0.9" />
-            </linearGradient>
-          </defs>
-          <path d="M0,800 L300,500 L500,650 L700,350 L900,550 L1100,400 L1400,600 L1600,450 L1920,700 L1920,1080 L0,1080 Z" 
-                fill="url(#mountainGrad)"
-                stroke="#4a6fa5"
-                strokeWidth="2"
-                opacity="0.85" />
-        </svg>
+        {/* Deep cosmic gradient base */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-[#0a1628] to-[#162447]" />
+        {/* Radial overlay for depth */}
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, rgba(22, 36, 71, 0.3) 0%, rgba(0, 0, 0, 0.8) 100%)' }} />
+        
+        {/* Nebula Clouds - subtle depth layer */}
+        <div className="absolute inset-0 opacity-70">
+          {nebulaClouds.map((cloud, i) => (
+            <div
+              key={`nebula-${i}`}
+              className="absolute rounded-full"
+              style={{
+                left: cloud.x,
+                top: cloud.y,
+                width: cloud.size,
+                height: cloud.size,
+                background: cloud.color,
+                transform: 'translate(-50%, -50%)',
+                filter: 'blur(100px)'
+              }}
+            />
+          ))}
+        </div>
 
-        {/* Constellation Points */}
+        {/* Constellation Stars */}
         <div className="absolute inset-0">
           {constellationPoints.map((point, i) => (
             <div
-              key={i}
-              className="absolute animate-pulse"
+              key={`star-${i}`}
+              className={point.twinkle ? 'absolute animate-twinkle' : 'absolute'}
               style={{
                 left: point.x,
                 top: point.y,
-                animationDelay: `${i * 0.2}s`,
-                animationDuration: `${3 + (i % 3)}s`
+                transform: 'translate(-50%, -50%)',
+                animationDelay: point.twinkle ? `${(i % 4)}s` : '0s',
+                animationDuration: point.twinkle ? `${3 + (i % 3)}s` : '0s'
               }}
             >
-              <div className="h-3 w-3 rounded-full bg-white shadow-[0_0_20px_5px_rgba(255,255,255,0.7)]" />
+              <div 
+                className="rounded-full bg-white"
+                style={{
+                  width: `${point.size}px`,
+                  height: `${point.size}px`,
+                  boxShadow: `0 0 ${point.size * 6}px ${point.size * 2}px rgba(255, 255, 255, 0.6)`
+                }}
+              />
             </div>
           ))}
         </div>
 
-        {/* Aurora Streams */}
-        <div className="absolute inset-0 opacity-40">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-emerald-500/30 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
-          <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-gradient-to-bl from-blue-500/30 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
-          <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-tr from-purple-500/30 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDuration: '12s', animationDelay: '4s' }} />
+        {/* Aurora Streams - enhanced with stronger glow */}
+        <div className="absolute inset-0 opacity-50">
+          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-cyan-400/40 to-transparent rounded-full blur-3xl animate-aurora-pulse" style={{ animationDuration: '7s' }} />
+          <div className="absolute top-1/3 right-1/4 w-[450px] h-[450px] bg-gradient-to-bl from-blue-400/35 to-transparent rounded-full blur-3xl animate-aurora-pulse" style={{ animationDuration: '9s', animationDelay: '2s' }} />
+          <div className="absolute bottom-1/4 left-1/3 w-[400px] h-[400px] bg-gradient-to-tr from-purple-400/40 to-transparent rounded-full blur-3xl animate-aurora-pulse" style={{ animationDuration: '11s', animationDelay: '4s' }} />
+          <div className="absolute top-1/2 left-1/2 w-[350px] h-[350px] bg-gradient-to-r from-emerald-400/30 to-transparent rounded-full blur-3xl animate-aurora-pulse" style={{ animationDuration: '13s', animationDelay: '6s' }} />
+          <div className="absolute bottom-10 right-1/3 w-[380px] h-[380px] bg-gradient-to-tl from-amber-400/25 to-transparent rounded-full blur-3xl animate-aurora-pulse" style={{ animationDuration: '10s', animationDelay: '3s' }} />
         </div>
 
         {/* Noise Texture */}
@@ -509,6 +558,36 @@ const LoginForm = () => {
           to {
             opacity: 1;
           }
+        }
+
+        @keyframes twinkle {
+          0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.3;
+            transform: scale(0.8);
+          }
+        }
+
+        @keyframes aurora-pulse {
+          0%, 100% {
+            opacity: 0.3;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.6;
+            transform: scale(1.1);
+          }
+        }
+
+        .animate-twinkle {
+          animation: twinkle 3s ease-in-out infinite;
+        }
+
+        .animate-aurora-pulse {
+          animation: aurora-pulse 8s ease-in-out infinite;
         }
       `}</style>
     </div>

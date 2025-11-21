@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.249',
+  version: 'v0.250',
   buildDate: '2025-01-25',
-  deploymentId: 'animation-ux-fixes',
-  description: 'Fixed animation centering with absolute positioning and proper transforms. Smoother 1.5s cubic-bezier transitions. Enhanced star visibility (white, larger, stronger glow). Improved mountain silhouette (opacity 0.7, stroke, lighter gradient). Larger fonts (7rem center, 1.75rem corner). Text corrections: High-Level Security, Nijat Garayev. Reduced stars to 15 for better visual clarity.'
+  deploymentId: 'pure-cosmic-constellation',
+  description: 'Pure constellation cosmic theme - removed mountains entirely, enhanced with 35 twinkling stars in varied sizes, added 4 subtle nebula clouds for depth, stronger aurora streams with animation, deeper gradient (black → deep navy → midnight blue with radial overlay). Refined, elegant cosmic aesthetic for wealth command center.'
 }
 
 export const getVersionDisplay = () => {
