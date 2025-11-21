@@ -75,11 +75,11 @@ export const HexagonMandala = ({ size = 64 }) => {
         </linearGradient>
       </defs>
       
-      {/* Background circle */}
+      {/* Background circle - positioned outside constellation points */}
       <circle
         cx={centerX}
         cy={centerY}
-        r="48"
+        r="42"
         fill="none"
         stroke="url(#hexMandalaAuroraGold)"
         strokeWidth="0.3"
@@ -126,30 +126,33 @@ export const HexagonMandala = ({ size = 64 }) => {
       
       {/* Removed center connections for cleaner look */}
       
-      {/* Enhanced mandala web - connect each outer point to nearest inner points */}
+      {/* Mandala web - each outer point connects to aligned inner point + adjacent */}
       {outerPoints.map((outerPoint, i) => {
-        // Better connection logic: each outer point connects to 2 nearest inner points
-        // This creates a more balanced mandala pattern
-        const angle = -Math.PI / 2 + (Math.PI * 2 * i) / 6
-        const innerAngle1 = Math.floor((angle + Math.PI / 2) / (Math.PI * 2 / 3))
-        const innerAngle2 = (innerAngle1 + 1) % 3
+        // Hexagon has 6 points (0°, 60°, 120°, 180°, 240°, 300°)
+        // Triangle has 3 points (0°, 120°, 240°)
+        // Outer points 0,2,4 align with inner points 0,1,2
+        // Each outer connects to: its aligned inner + the previous inner
+        const alignedInner = Math.floor(i / 2) // 0,1→0  2,3→1  4,5→2
+        const previousInner = (alignedInner - 1 + 3) % 3
         
         return (
           <g key={`mandala-${i}`}>
+            {/* Connect to aligned inner point */}
             <line
               x1={outerPoint.x}
               y1={outerPoint.y}
-              x2={innerPoints[innerAngle1].x}
-              y2={innerPoints[innerAngle1].y}
+              x2={innerPoints[alignedInner].x}
+              y2={innerPoints[alignedInner].y}
               stroke="url(#hexMandalaAuroraCyan)"
               strokeWidth="0.5"
               opacity="0.5"
             />
+            {/* Connect to previous inner point */}
             <line
               x1={outerPoint.x}
               y1={outerPoint.y}
-              x2={innerPoints[innerAngle2].x}
-              y2={innerPoints[innerAngle2].y}
+              x2={innerPoints[previousInner].x}
+              y2={innerPoints[previousInner].y}
               stroke="url(#hexMandalaAuroraCyan)"
               strokeWidth="0.5"
               opacity="0.5"

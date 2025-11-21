@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.254',
+  version: 'v0.255',
   buildDate: '2025-01-25',
-  deploymentId: 'hexagon-mandala-fixes',
-  description: 'Fixed Hexagon Mandala geometry issues: increased inner triangle size (radius 18→22), enhanced aurora glow visibility (opacity 0.25→0.5, strokeWidth 0.3→0.5), removed cluttered radial center lines, improved Star of David pattern, larger constellation points for better visibility. Now a true visual match to the other logos.'
+  deploymentId: 'hexagon-mandala-geometry-fix',
+  description: 'CRITICAL FIX: Hexagon Mandala geometry corrections. Fixed background circle overlap (radius 48→42) to not overlap outer constellation points. Corrected mandala web connections - each outer point now properly connects to its aligned inner point (0,2,4→0,1,2) plus previous inner, creating proper sacred geometry pattern instead of random connections.'
 }
 
 export const getVersionDisplay = () => {
