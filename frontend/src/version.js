@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.256',
+  version: 'v0.257',
   buildDate: '2025-01-25',
-  deploymentId: 'hexagon-mandala-redesign',
-  description: 'Complete redesign of Hexagon Mandala (6+3) to match Wealth Mandala (8+4) structure. Now features: dual orbital rings, radial center connections, Star of David pattern (every 2nd point), aurora glow background, larger central orb (r=10), matching gradients and visual style. Perfect visual harmony with the 8+4 mandala design.'
+  deploymentId: 'minimalist-mandala-logo',
+  description: 'Add 5th logo variation: Minimalist Mandala (6+3). Clean, refined version with zero glows, no gradients, pure geometric elegance. Features: flat solid colors, subtle connection lines, negative space mastery, same 6+3 structure as Hexagon Mandala but stripped to essentials. Perfect for minimalist aesthetic preference.'
 }
 
 export const getVersionDisplay = () => {

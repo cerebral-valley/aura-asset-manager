@@ -1,11 +1,12 @@
 /**
  * Logo Showcase Page
- * Display three Cosmic Constellation variations for comparison
+ * Display five Cosmic Constellation variations for comparison
  */
 import { CosmicConstellation } from './logos/CosmicConstellation'
 import { CosmicHexagon } from './logos/CosmicHexagon'
 import { WealthMandala } from './logos/WealthMandala'
 import { HexagonMandala } from './logos/HexagonMandala'
+import { MinimalistMandala } from './logos/MinimalistMandala'
 
 export const LogoShowcase = () => {
   return (
@@ -17,12 +18,12 @@ export const LogoShowcase = () => {
             Cosmic Constellation Logo Variations
           </h1>
           <p className="text-xl text-slate-300">
-            Four sacred geometry designs for Aura Asset Manager
+            Five sacred geometry designs for Aura Asset Manager
           </p>
         </div>
 
         {/* Logo Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Variation 1: Original 5-Point */}
           <div className="bg-slate-900/50 backdrop-blur-xl rounded-2xl p-8 border border-amber-300/20 hover:border-amber-300/40 transition-all duration-300">
             <div className="flex flex-col items-center space-y-6">
@@ -214,6 +215,54 @@ export const LogoShowcase = () => {
               </div>
             </div>
           </div>
+
+          {/* Variation 5: Minimalist Mandala 6+3 */}
+          <div className="bg-slate-900/50 backdrop-blur-xl rounded-2xl p-8 border border-rose-300/20 hover:border-rose-300/40 transition-all duration-300">
+            <div className="flex flex-col items-center space-y-6">
+              {/* Large display */}
+              <div className="bg-black/40 rounded-xl p-8 w-full flex items-center justify-center">
+                <MinimalistMandala size={120} />
+              </div>
+
+              {/* Title */}
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-rose-300 mb-2">
+                  Minimalist (6+3 Points)
+                </h2>
+                <p className="text-sm text-slate-400 mb-4">
+                  Clean, refined version - pure geometric elegance
+                </p>
+              </div>
+
+              {/* Size variations */}
+              <div className="space-y-4 w-full">
+                <div className="flex items-center justify-between bg-black/30 rounded-lg p-4">
+                  <span className="text-xs text-slate-400">Large (64px)</span>
+                  <MinimalistMandala size={64} />
+                </div>
+                <div className="flex items-center justify-between bg-black/30 rounded-lg p-4">
+                  <span className="text-xs text-slate-400">Medium (48px)</span>
+                  <MinimalistMandala size={48} />
+                </div>
+                <div className="flex items-center justify-between bg-black/30 rounded-lg p-4">
+                  <span className="text-xs text-slate-400">Small (32px)</span>
+                  <MinimalistMandala size={32} />
+                </div>
+                <div className="flex items-center justify-between bg-black/30 rounded-lg p-4">
+                  <span className="text-xs text-slate-400">Favicon (24px)</span>
+                  <MinimalistMandala size={24} />
+                </div>
+              </div>
+
+              {/* Features */}
+              <div className="w-full space-y-2 text-xs text-slate-300">
+                <p>⬡ 6 outer + 3 inner points</p>
+                <p>🎯 Zero glows or gradients</p>
+                <p>✨ Clean sacred geometry</p>
+                <p>💎 Negative space mastery</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Comparison Section */}
@@ -222,7 +271,7 @@ export const LogoShowcase = () => {
             Side-by-Side Comparison
           </h3>
           
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
             <div className="flex flex-col items-center space-y-4">
               <div className="bg-gradient-to-br from-amber-500/10 to-transparent rounded-xl p-6">
                 <CosmicConstellation size={96} />
@@ -254,6 +303,14 @@ export const LogoShowcase = () => {
               <p className="text-sm text-emerald-300 font-semibold">Hex Mandala (6+3)</p>
               <p className="text-xs text-slate-400 text-center">Killer combo design</p>
             </div>
+
+            <div className="flex flex-col items-center space-y-4">
+              <div className="bg-gradient-to-br from-rose-500/10 to-transparent rounded-xl p-6">
+                <MinimalistMandala size={96} />
+              </div>
+              <p className="text-sm text-rose-300 font-semibold">Minimalist (6+3)</p>
+              <p className="text-xs text-slate-400 text-center">Pure geometric elegance</p>
+            </div>
           </div>
         </div>
 
@@ -263,7 +320,7 @@ export const LogoShowcase = () => {
             In Context: Login Page Preview
           </h3>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Pentagon Mock */}
             <div className="bg-black/60 rounded-lg p-6 border border-amber-300/20">
               <div className="flex items-center space-x-3 mb-4">
@@ -309,6 +366,19 @@ export const LogoShowcase = () => {
                 <HexagonMandala size={40} />
                 <div>
                   <h4 className="text-lg font-bold bg-gradient-to-r from-emerald-300 to-cyan-200 bg-clip-text text-transparent">
+                    Aura Asset Manager
+                  </h4>
+                  <p className="text-xs text-slate-400">Your Command Center For Wealth</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Minimalist Mock */}
+            <div className="bg-black/60 rounded-lg p-6 border border-rose-300/20">
+              <div className="flex items-center space-x-3 mb-4">
+                <MinimalistMandala size={40} />
+                <div>
+                  <h4 className="text-lg font-bold bg-gradient-to-r from-rose-300 to-orange-200 bg-clip-text text-transparent">
                     Aura Asset Manager
                   </h4>
                   <p className="text-xs text-slate-400">Your Command Center For Wealth</p>
