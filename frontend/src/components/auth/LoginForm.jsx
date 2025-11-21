@@ -5,6 +5,7 @@ import { Input } from '../ui/input.jsx'
 import { Label } from '../ui/label.jsx'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card.jsx'
 import { Alert, AlertDescription } from '../ui/alert.jsx'
+import { MinimalistMandala } from '../ui/logos/MinimalistMandala.jsx'
 
 const features = [
   {
@@ -325,13 +326,16 @@ const LoginForm = () => {
         }`}
       >
         {/* Fixed Logo in Corner (after animation) */}
-        <div className="fixed top-8 left-8 z-40">
-          <h1 className="text-[1.75rem] font-bold bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent">
-            Aura Asset Manager
-          </h1>
-          <p className="text-[0.95rem] text-slate-300 font-light tracking-wide">
-            Your Command Center For Wealth
-          </p>
+        <div className="fixed top-8 left-8 z-40 flex items-start gap-4">
+          <MinimalistMandala size={48} />
+          <div>
+            <h1 className="text-[1.75rem] font-bold bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent">
+              Aura Asset Manager
+            </h1>
+            <p className="text-[0.95rem] text-slate-300 font-light tracking-wide">
+              Your Command Center For Wealth
+            </p>
+          </div>
         </div>
 
         {/* Hero Section */}
@@ -538,11 +542,14 @@ const LoginForm = () => {
         <div className="border-t border-amber-300/10 bg-slate-950/50 backdrop-blur-sm">
           <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
             <div className="text-center text-sm text-slate-400">
-              <p>© 2025 Aura Asset Manager. Command-level wealth orchestration.</p>
+              <p>© 2025 Aura Asset Manager. All rights reserved.</p>
               <p className="mt-2">
                 <span className="text-amber-300">🔒 Encrypted</span> · 
                 <span className="text-yellow-300"> Private</span> · 
                 <span className="text-emerald-300"> Secure</span>
+              </p>
+              <p className="mt-4 text-xs text-slate-500">
+                Aura Asset Manager and its associated logos are proprietary marks. Unauthorized use, reproduction, or distribution is prohibited.
               </p>
             </div>
           </div>

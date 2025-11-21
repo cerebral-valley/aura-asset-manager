@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth.jsx'
 import { userSettingsService } from '../../services/user-settings.js'
 import { Button } from '../ui/button.jsx'
+import { MinimalistMandala } from '../ui/logos/MinimalistMandala.jsx'
 import { 
   Sidebar,
   SidebarContent,
@@ -158,6 +159,7 @@ const AppLayout = ({ children, currentPage = 'dashboard' }) => {
       <Sidebar collapsible="icon" className="overflow-x-hidden">
         <SidebarHeader className="overflow-hidden">
           <div className="flex items-center gap-2 px-2 py-2 w-full box-border">
+            <MinimalistMandala size={32} />
             <h1 className="text-2xl font-bold text-primary">Aura</h1>
           </div>
         </SidebarHeader>
