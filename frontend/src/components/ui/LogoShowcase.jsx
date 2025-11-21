@@ -1,10 +1,10 @@
 /**
  * Logo Showcase Page
- * Display all three logo concepts for comparison
+ * Display three Cosmic Constellation variations for comparison
  */
 import { CosmicConstellation } from './logos/CosmicConstellation'
-import { WealthPrism } from './logos/WealthPrism'
-import { OrbitalSystem } from './logos/OrbitalSystem'
+import { CosmicHexagon } from './logos/CosmicHexagon'
+import { WealthMandala } from './logos/WealthMandala'
 
 export const LogoShowcase = () => {
   return (
@@ -13,16 +13,16 @@ export const LogoShowcase = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent mb-4">
-            Aura Asset Manager Logo Concepts
+            Cosmic Constellation Logo Variations
           </h1>
           <p className="text-xl text-slate-300">
-            Three cosmic logo designs for your wealth command center
+            Three sacred geometry designs for Aura Asset Manager
           </p>
         </div>
 
         {/* Logo Grid */}
         <div className="grid md:grid-cols-3 gap-12">
-          {/* Concept 1: Cosmic Constellation */}
+          {/* Variation 1: Original 5-Point */}
           <div className="bg-slate-900/50 backdrop-blur-xl rounded-2xl p-8 border border-amber-300/20 hover:border-amber-300/40 transition-all duration-300">
             <div className="flex flex-col items-center space-y-6">
               {/* Large display */}
@@ -33,10 +33,10 @@ export const LogoShowcase = () => {
               {/* Title */}
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-amber-300 mb-2">
-                  Cosmic Constellation
+                  Pentagon (5 Points)
                 </h2>
                 <p className="text-sm text-slate-400 mb-4">
-                  Sacred geometry with 5 constellation points around central wealth orb
+                  Original design with 5 constellation points in pentagonal pattern
                 </p>
               </div>
 
@@ -62,29 +62,29 @@ export const LogoShowcase = () => {
 
               {/* Features */}
               <div className="w-full space-y-2 text-xs text-slate-300">
-                <p>✨ Sacred geometry pattern</p>
-                <p>🌟 Aurora glow connections</p>
-                <p>💫 Central wealth orb</p>
                 <p>⭐ 5 constellation points</p>
+                <p>🌟 Pentagonal symmetry</p>
+                <p>💫 Aurora connections</p>
+                <p>✨ Central wealth orb</p>
               </div>
             </div>
           </div>
 
-          {/* Concept 2: Wealth Prism */}
+          {/* Variation 2: Hexagonal 6-Point */}
           <div className="bg-slate-900/50 backdrop-blur-xl rounded-2xl p-8 border border-cyan-300/20 hover:border-cyan-300/40 transition-all duration-300">
             <div className="flex flex-col items-center space-y-6">
               {/* Large display */}
               <div className="bg-black/40 rounded-xl p-8 w-full flex items-center justify-center">
-                <WealthPrism size={120} />
+                <CosmicHexagon size={120} />
               </div>
 
               {/* Title */}
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-cyan-300 mb-2">
-                  Wealth Prism
+                  Hexagon (6 Points)
                 </h2>
                 <p className="text-sm text-slate-400 mb-4">
-                  Geometric crystal with light refraction for clarity and multi-dimensional wealth
+                  Perfect symmetry with 6 points - vertical & horizontal balance
                 </p>
               </div>
 
@@ -92,47 +92,47 @@ export const LogoShowcase = () => {
               <div className="space-y-4 w-full">
                 <div className="flex items-center justify-between bg-black/30 rounded-lg p-4">
                   <span className="text-xs text-slate-400">Large (64px)</span>
-                  <WealthPrism size={64} />
+                  <CosmicHexagon size={64} />
                 </div>
                 <div className="flex items-center justify-between bg-black/30 rounded-lg p-4">
                   <span className="text-xs text-slate-400">Medium (48px)</span>
-                  <WealthPrism size={48} />
+                  <CosmicHexagon size={48} />
                 </div>
                 <div className="flex items-center justify-between bg-black/30 rounded-lg p-4">
                   <span className="text-xs text-slate-400">Small (32px)</span>
-                  <WealthPrism size={32} />
+                  <CosmicHexagon size={32} />
                 </div>
                 <div className="flex items-center justify-between bg-black/30 rounded-lg p-4">
                   <span className="text-xs text-slate-400">Favicon (24px)</span>
-                  <WealthPrism size={24} />
+                  <CosmicHexagon size={24} />
                 </div>
               </div>
 
               {/* Features */}
               <div className="w-full space-y-2 text-xs text-slate-300">
-                <p>💎 Geometric crystal facets</p>
-                <p>🌈 Light refraction effect</p>
-                <p>✨ Multi-color gradients</p>
-                <p>🔮 Transparency symbolism</p>
+                <p>⬡ 6 constellation points</p>
+                <p>⚖️ Perfect symmetry</p>
+                <p>🔷 Hexagonal sacred geometry</p>
+                <p>✨ No glow artifacts</p>
               </div>
             </div>
           </div>
 
-          {/* Concept 3: Orbital System */}
+          {/* Variation 3: Wealth Mandala 8-Point */}
           <div className="bg-slate-900/50 backdrop-blur-xl rounded-2xl p-8 border border-purple-300/20 hover:border-purple-300/40 transition-all duration-300">
             <div className="flex flex-col items-center space-y-6">
               {/* Large display */}
               <div className="bg-black/40 rounded-xl p-8 w-full flex items-center justify-center">
-                <OrbitalSystem size={120} />
+                <WealthMandala size={120} />
               </div>
 
               {/* Title */}
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-purple-300 mb-2">
-                  Orbital System
+                  Wealth Mandala (8+4 Points)
                 </h2>
                 <p className="text-sm text-slate-400 mb-4">
-                  Planetary rings representing portfolio balance and asset orbits
+                  Dual-layer octagonal mandala representing 8 pillars of wealth
                 </p>
               </div>
 
@@ -140,28 +140,28 @@ export const LogoShowcase = () => {
               <div className="space-y-4 w-full">
                 <div className="flex items-center justify-between bg-black/30 rounded-lg p-4">
                   <span className="text-xs text-slate-400">Large (64px)</span>
-                  <OrbitalSystem size={64} />
+                  <WealthMandala size={64} />
                 </div>
                 <div className="flex items-center justify-between bg-black/30 rounded-lg p-4">
                   <span className="text-xs text-slate-400">Medium (48px)</span>
-                  <OrbitalSystem size={48} />
+                  <WealthMandala size={48} />
                 </div>
                 <div className="flex items-center justify-between bg-black/30 rounded-lg p-4">
                   <span className="text-xs text-slate-400">Small (32px)</span>
-                  <OrbitalSystem size={32} />
+                  <WealthMandala size={32} />
                 </div>
                 <div className="flex items-center justify-between bg-black/30 rounded-lg p-4">
                   <span className="text-xs text-slate-400">Favicon (24px)</span>
-                  <OrbitalSystem size={24} />
+                  <WealthMandala size={24} />
                 </div>
               </div>
 
               {/* Features */}
               <div className="w-full space-y-2 text-xs text-slate-300">
-                <p>🪐 3 orbital rings</p>
-                <p>⚡ Asset satellites</p>
-                <p>💫 Central wealth core</p>
-                <p>🌀 Dynamic movement</p>
+                <p>🌟 8 outer + 4 inner points</p>
+                <p>🔮 Dual-layer mandala</p>
+                <p>💎 Octagonal symmetry</p>
+                <p>✨ Intricate sacred geometry</p>
               </div>
             </div>
           </div>
@@ -178,21 +178,24 @@ export const LogoShowcase = () => {
               <div className="bg-gradient-to-br from-amber-500/10 to-transparent rounded-xl p-6">
                 <CosmicConstellation size={96} />
               </div>
-              <p className="text-sm text-amber-300 font-semibold">Cosmic Constellation</p>
+              <p className="text-sm text-amber-300 font-semibold">Pentagon (5)</p>
+              <p className="text-xs text-slate-400 text-center">Original pentagonal design</p>
             </div>
 
             <div className="flex flex-col items-center space-y-4">
               <div className="bg-gradient-to-br from-cyan-500/10 to-transparent rounded-xl p-6">
-                <WealthPrism size={96} />
+                <CosmicHexagon size={96} />
               </div>
-              <p className="text-sm text-cyan-300 font-semibold">Wealth Prism</p>
+              <p className="text-sm text-cyan-300 font-semibold">Hexagon (6)</p>
+              <p className="text-xs text-slate-400 text-center">Perfect symmetry, balanced</p>
             </div>
 
             <div className="flex flex-col items-center space-y-4">
               <div className="bg-gradient-to-br from-purple-500/10 to-transparent rounded-xl p-6">
-                <OrbitalSystem size={96} />
+                <WealthMandala size={96} />
               </div>
-              <p className="text-sm text-purple-300 font-semibold">Orbital System</p>
+              <p className="text-sm text-purple-300 font-semibold">Mandala (8+4)</p>
+              <p className="text-xs text-slate-400 text-center">Intricate, multi-layered</p>
             </div>
           </div>
         </div>
@@ -204,7 +207,7 @@ export const LogoShowcase = () => {
           </h3>
           
           <div className="grid md:grid-cols-3 gap-6">
-            {/* Cosmic Constellation Mock */}
+            {/* Pentagon Mock */}
             <div className="bg-black/60 rounded-lg p-6 border border-amber-300/20">
               <div className="flex items-center space-x-3 mb-4">
                 <CosmicConstellation size={40} />
@@ -217,10 +220,10 @@ export const LogoShowcase = () => {
               </div>
             </div>
 
-            {/* Wealth Prism Mock */}
+            {/* Hexagon Mock */}
             <div className="bg-black/60 rounded-lg p-6 border border-cyan-300/20">
               <div className="flex items-center space-x-3 mb-4">
-                <WealthPrism size={40} />
+                <CosmicHexagon size={40} />
                 <div>
                   <h4 className="text-lg font-bold bg-gradient-to-r from-cyan-300 to-blue-200 bg-clip-text text-transparent">
                     Aura Asset Manager
@@ -230,10 +233,10 @@ export const LogoShowcase = () => {
               </div>
             </div>
 
-            {/* Orbital System Mock */}
+            {/* Mandala Mock */}
             <div className="bg-black/60 rounded-lg p-6 border border-purple-300/20">
               <div className="flex items-center space-x-3 mb-4">
-                <OrbitalSystem size={40} />
+                <WealthMandala size={40} />
                 <div>
                   <h4 className="text-lg font-bold bg-gradient-to-r from-purple-300 to-pink-200 bg-clip-text text-transparent">
                     Aura Asset Manager
@@ -241,6 +244,33 @@ export const LogoShowcase = () => {
                   <p className="text-xs text-slate-400">Your Command Center For Wealth</p>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Technical Notes */}
+        <div className="mt-16 bg-slate-900/50 backdrop-blur-xl rounded-2xl p-8 border border-slate-700">
+          <h3 className="text-2xl font-bold text-white mb-4 text-center">
+            ✨ Technical Improvements
+          </h3>
+          <div className="grid md:grid-cols-2 gap-6 text-sm text-slate-300">
+            <div>
+              <h4 className="font-semibold text-amber-300 mb-2">🔧 Issues Fixed:</h4>
+              <ul className="space-y-1 pl-4">
+                <li>✅ Removed square glow artifacts around constellation points</li>
+                <li>✅ Points now perfectly centered on circumferential line</li>
+                <li>✅ Clean circular gradients (no box shadows)</li>
+                <li>✅ Mathematically precise positioning using trigonometry</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-cyan-300 mb-2">🎨 Design Features:</h4>
+              <ul className="space-y-1 pl-4">
+                <li>🌟 Sacred geometry patterns (pentagon, hexagon, octagon)</li>
+                <li>💫 Aurora glow connections between points</li>
+                <li>✨ Radial gradients for smooth, cosmic aesthetic</li>
+                <li>🎯 Fully scalable from 24px to 120px+</li>
+              </ul>
             </div>
           </div>
         </div>

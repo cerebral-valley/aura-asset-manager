@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.251',
+  version: 'v0.252',
   buildDate: '2025-01-25',
-  deploymentId: 'logo-showcase',
-  description: 'Added Logo Showcase page with 3 custom SVG logo concepts: Cosmic Constellation (sacred geometry), Wealth Prism (geometric crystal), Orbital System (planetary rings). Fully scalable vector logos with size variations and in-context previews. Route: /logo-showcase'
+  deploymentId: 'cosmic-constellation-refined',
+  description: 'Refined Cosmic Constellation logo with 3 variations: Pentagon (5 points - original), Hexagon (6 points - perfect symmetry), Wealth Mandala (8+4 points - dual-layer). Fixed glow artifacts using clean radial gradients, mathematically precise point positioning on circumference using trigonometry. Updated Logo Showcase with comprehensive comparison tools.'
 }
 
 export const getVersionDisplay = () => {
