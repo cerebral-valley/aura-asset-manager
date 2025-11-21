@@ -31,7 +31,7 @@ const features = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
       </svg>
     ),
-    title: 'Bank-Level Security',
+    title: 'High-Level Security',
     description: 'Enterprise-grade encryption, secure authentication, and complete data privacy built into every layer.'
   }
 ]
@@ -45,7 +45,7 @@ const testimonials = [
     role: 'Angel Investor'
   },
   {
-    name: 'Nijat Garavey',
+    name: 'Nijat Garayev',
     location: 'United States',
     avatar: 'NG',
     quote: 'Finally, a wealth management tool that feels personal. The interface is gorgeous and the insights are spot-on.',
@@ -60,16 +60,13 @@ const testimonials = [
   }
 ]
 
-// Constellation points for background
+// Constellation points for background - reduced for better visibility
 const constellationPoints = [
-  { x: '15%', y: '20%' }, { x: '25%', y: '15%' }, { x: '35%', y: '25%' },
-  { x: '45%', y: '18%' }, { x: '55%', y: '22%' }, { x: '65%', y: '28%' },
-  { x: '75%', y: '17%' }, { x: '85%', y: '24%' }, { x: '20%', y: '45%' },
-  { x: '30%', y: '52%' }, { x: '40%', y: '48%' }, { x: '50%', y: '55%' },
-  { x: '60%', y: '50%' }, { x: '70%', y: '58%' }, { x: '80%', y: '53%' },
-  { x: '18%', y: '75%' }, { x: '28%', y: '80%' }, { x: '38%', y: '78%' },
-  { x: '48%', y: '82%' }, { x: '58%', y: '77%' }, { x: '68%', y: '85%' },
-  { x: '78%', y: '79%' }, { x: '88%', y: '83%' }
+  { x: '15%', y: '20%' }, { x: '30%', y: '15%' }, { x: '45%', y: '25%' },
+  { x: '60%', y: '18%' }, { x: '75%', y: '22%' }, { x: '85%', y: '28%' },
+  { x: '20%', y: '45%' }, { x: '40%', y: '50%' }, { x: '55%', y: '48%' },
+  { x: '70%', y: '55%' }, { x: '82%', y: '50%' }, { x: '25%', y: '75%' },
+  { x: '50%', y: '80%' }, { x: '72%', y: '78%' }, { x: '88%', y: '85%' }
 ]
 
 const LoginForm = () => {
@@ -176,15 +173,18 @@ const LoginForm = () => {
       {/* Constellation + Mountain Background */}
       <div className="absolute inset-0">
         {/* Mountain Silhouette */}
-        <svg className="absolute bottom-0 w-full h-2/3 opacity-30" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMax slice">
+        <svg className="absolute bottom-0 w-full h-2/3 opacity-70" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMax slice">
           <defs>
             <linearGradient id="mountainGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#1f4068" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#0a1628" stopOpacity="0.8" />
+              <stop offset="0%" stopColor="#3d5a80" stopOpacity="0.7" />
+              <stop offset="100%" stopColor="#1a2942" stopOpacity="0.9" />
             </linearGradient>
           </defs>
           <path d="M0,800 L300,500 L500,650 L700,350 L900,550 L1100,400 L1400,600 L1600,450 L1920,700 L1920,1080 L0,1080 Z" 
-                fill="url(#mountainGrad)" />
+                fill="url(#mountainGrad)"
+                stroke="#4a6fa5"
+                strokeWidth="2"
+                opacity="0.85" />
         </svg>
 
         {/* Constellation Points */}
@@ -200,7 +200,7 @@ const LoginForm = () => {
                 animationDuration: `${3 + (i % 3)}s`
               }}
             >
-              <div className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-amber-300 to-yellow-200 shadow-lg shadow-amber-500/50" />
+              <div className="h-3 w-3 rounded-full bg-white shadow-[0_0_20px_5px_rgba(255,255,255,0.7)]" />
             </div>
           ))}
         </div>
@@ -231,39 +231,39 @@ const LoginForm = () => {
 
           {/* Logo Animation */}
           <div
-            className={`fixed transition-all duration-1000 ease-in-out ${
-              animationPhase === 'logo-enter'
-                ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 animate-fadeInScale'
-                : animationPhase === 'logo-move'
-                ? 'top-8 left-8 translate-x-0 translate-y-0'
-                : 'top-8 left-8 translate-x-0 translate-y-0'
-            }`}
+            className="fixed font-bold bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent"
             style={{
-              fontSize: animationPhase === 'logo-enter' ? '4rem' : '1.5rem',
-              transition: 'all 1s cubic-bezier(0.4, 0, 0.2, 1)'
+              top: animationPhase === 'logo-enter' ? '50%' : '2rem',
+              left: animationPhase === 'logo-enter' ? '50%' : '2rem',
+              transform: animationPhase === 'logo-enter' ? 'translate(-50%, -50%)' : 'translate(0, 0)',
+              fontSize: animationPhase === 'logo-enter' ? 'clamp(4rem, 10vw, 7rem)' : '1.75rem',
+              opacity: animationPhase === 'logo-enter' ? 0 : 1,
+              whiteSpace: 'nowrap',
+              textAlign: 'center',
+              transition: 'all 1.5s cubic-bezier(0.65, 0, 0.35, 1)',
+              animation: animationPhase === 'logo-enter' ? 'fadeIn 1.5s ease-out forwards' : 'none'
             }}
           >
-            <h1 className="font-bold bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent whitespace-nowrap">
-              Aura Asset Manager
-            </h1>
+            <h1>Aura Asset Manager</h1>
           </div>
 
           {/* Tagline Animation */}
           {(animationPhase === 'tagline-enter' || animationPhase === 'tagline-move') && (
             <div
-              className={`fixed transition-all duration-1000 ease-in-out ${
-                animationPhase === 'tagline-enter'
-                  ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 animate-fadeInScale'
-                  : 'top-20 left-8 translate-x-0 translate-y-0'
-              }`}
+              className="fixed text-slate-300 font-light tracking-wide"
               style={{
-                fontSize: animationPhase === 'tagline-enter' ? '2rem' : '0.875rem',
-                transition: 'all 1s cubic-bezier(0.4, 0, 0.2, 1)'
+                top: animationPhase === 'tagline-enter' ? '50%' : '5rem',
+                left: animationPhase === 'tagline-enter' ? '50%' : '2rem',
+                transform: animationPhase === 'tagline-enter' ? 'translate(-50%, -50%)' : 'translate(0, 0)',
+                fontSize: animationPhase === 'tagline-enter' ? 'clamp(1.5rem, 5vw, 2.5rem)' : '0.95rem',
+                opacity: animationPhase === 'tagline-enter' ? 0 : 1,
+                whiteSpace: 'nowrap',
+                textAlign: 'center',
+                transition: 'all 1.5s cubic-bezier(0.65, 0, 0.35, 1)',
+                animation: animationPhase === 'tagline-enter' ? 'fadeIn 1s ease-out forwards' : 'none'
               }}
             >
-              <p className="text-slate-300 font-light tracking-wide whitespace-nowrap">
-                Your Command Center For Wealth
-              </p>
+              <p>Your Command Center For Wealth</p>
             </div>
           )}
         </div>
@@ -277,10 +277,10 @@ const LoginForm = () => {
       >
         {/* Fixed Logo in Corner (after animation) */}
         <div className="fixed top-8 left-8 z-40">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent">
+          <h1 className="text-[1.75rem] font-bold bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent">
             Aura Asset Manager
           </h1>
-          <p className="text-sm text-slate-300 font-light tracking-wide">
+          <p className="text-[0.95rem] text-slate-300 font-light tracking-wide">
             Your Command Center For Wealth
           </p>
         </div>
@@ -502,19 +502,13 @@ const LoginForm = () => {
 
       {/* CSS Animations */}
       <style jsx>{`
-        @keyframes fadeInScale {
+        @keyframes fadeIn {
           from {
             opacity: 0;
-            transform: translate(-50%, -50%) scale(0.8);
           }
           to {
             opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
           }
-        }
-
-        .animate-fadeInScale {
-          animation: fadeInScale 1.5s ease-out forwards;
         }
       `}</style>
     </div>
