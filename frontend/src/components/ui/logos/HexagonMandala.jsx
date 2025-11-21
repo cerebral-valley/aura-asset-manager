@@ -1,220 +1,219 @@
 /**
- * Hexagon Mandala Logo
- * Combines hexagonal symmetry (6 outer points) with inner triangle (3 points)
- * Perfect fusion of balance and mystical geometry
+ * Hexagon Mandala Logo (6 + 3 Points)
+ * Redesigned to match Wealth Mandala structure
+ * Dual-layer constellation: 6 outer hexagon + 3 inner triangle
+ * Sacred geometry pattern following 8+4 mandala design principles
  */
-export const HexagonMandala = ({ size = 64 }) => {
+export const HexagonMandala = ({ size = 64, className = '' }) => {
+  // Outer ring: 6 points at 60° intervals
+  const outerRadius = 40
+  const innerRadius = 25
   const centerX = 50
   const centerY = 50
-  const outerRadius = 35 // Outer hexagon points
-  const innerRadius = 22 // Inner triangle points - increased for better balance
   
-  // Generate 6 outer hexagon points at 60° intervals
   const outerPoints = Array.from({ length: 6 }, (_, i) => {
-    const angle = -Math.PI / 2 + (Math.PI * 2 * i) / 6
+    const angle = (i * 60 - 90) * (Math.PI / 180) // -90 to start at top
     return {
       x: centerX + outerRadius * Math.cos(angle),
-      y: centerY + outerRadius * Math.sin(angle),
+      y: centerY + outerRadius * Math.sin(angle)
     }
   })
-  
-  // Generate 3 inner triangle points at 120° intervals
+
+  // Inner ring: 3 points at 120° intervals
   const innerPoints = Array.from({ length: 3 }, (_, i) => {
-    const angle = -Math.PI / 2 + (Math.PI * 2 * i) / 3
+    const angle = (i * 120 - 90) * (Math.PI / 180) // -90 to start at top
     return {
       x: centerX + innerRadius * Math.cos(angle),
-      y: centerY + innerRadius * Math.sin(angle),
+      y: centerY + innerRadius * Math.sin(angle)
     }
   })
-  
+
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 100 100"
+      fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      style={{ display: 'block' }}
+      className={className}
     >
       <defs>
-        {/* Outer point gradient - Gold */}
-        <radialGradient id="hexMandalaOuterPoint">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
-          <stop offset="40%" stopColor="#ffd700" stopOpacity="0.95" />
-          <stop offset="70%" stopColor="#d4af37" stopOpacity="0.8" />
-          <stop offset="100%" stopColor="#d4af37" stopOpacity="0" />
+        {/* Gold gradient for central orb */}
+        <radialGradient id="hexMandala-orb-gradient" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#ffd700" stopOpacity="1" />
+          <stop offset="50%" stopColor="#d4af37" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="#b8941f" stopOpacity="0.7" />
         </radialGradient>
-        
-        {/* Inner point gradient - Cyan */}
-        <radialGradient id="hexMandalaInnerPoint">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
-          <stop offset="40%" stopColor="#00ffff" stopOpacity="0.95" />
-          <stop offset="70%" stopColor="#00d9ff" stopOpacity="0.8" />
+
+        {/* Aurora glow gradient */}
+        <radialGradient id="hexMandala-aurora-glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#00d9ff" stopOpacity="0.6" />
           <stop offset="100%" stopColor="#00d9ff" stopOpacity="0" />
         </radialGradient>
-        
-        {/* Central orb gradient */}
-        <radialGradient id="hexMandalaOrb">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
-          <stop offset="30%" stopColor="#ffd700" stopOpacity="0.95" />
-          <stop offset="70%" stopColor="#d4af37" stopOpacity="0.85" />
-          <stop offset="100%" stopColor="#b8860b" stopOpacity="0.7" />
+
+        {/* Outer star point gradient */}
+        <radialGradient id="hexMandala-outer-star" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="100%" stopColor="#d4af37" />
         </radialGradient>
-        
-        {/* Outer aurora gradient - Gold */}
-        <linearGradient id="hexMandalaAuroraGold" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#ffd700" stopOpacity="0.5" />
-          <stop offset="50%" stopColor="#d4af37" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="#ffd700" stopOpacity="0.1" />
-        </linearGradient>
-        
-        {/* Inner aurora gradient - Cyan */}
-        <linearGradient id="hexMandalaAuroraCyan" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#00ffff" stopOpacity="0.6" />
-          <stop offset="50%" stopColor="#00d9ff" stopOpacity="0.4" />
-          <stop offset="100%" stopColor="#00ffff" stopOpacity="0.2" />
-        </linearGradient>
+
+        {/* Inner star point gradient */}
+        <radialGradient id="hexMandala-inner-star" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#00d9ff" />
+          <stop offset="100%" stopColor="#0099cc" />
+        </radialGradient>
       </defs>
-      
-      {/* Background circle - positioned outside constellation points */}
-      <circle
-        cx={centerX}
-        cy={centerY}
-        r="42"
-        fill="none"
-        stroke="url(#hexMandalaAuroraGold)"
-        strokeWidth="0.3"
-        strokeDasharray="2,3"
-        opacity="0.3"
-      />
-      
-      {/* Outer hexagon star pattern - Star of David effect */}
-      {outerPoints.map((point, i) => {
-        // Create Star of David by connecting alternating triangles
-        const nextIndex = (i + 2) % 6
-        const nextPoint = outerPoints[nextIndex]
-        return (
-          <line
-            key={`outer-star-${i}`}
-            x1={point.x}
-            y1={point.y}
-            x2={nextPoint.x}
-            y2={nextPoint.y}
-            stroke="url(#hexMandalaAuroraGold)"
-            strokeWidth="0.8"
-            opacity="0.6"
+
+      {/* Aurora glow background */}
+      <circle cx="50" cy="50" r="45" fill="url(#hexMandala-aurora-glow)" opacity="0.3" />
+
+      {/* Connection lines - mandala sacred geometry */}
+      <g stroke="#00d9ff" strokeWidth="0.5" opacity="0.4">
+        {/* Outer hexagon */}
+        <path 
+          d={`M ${outerPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')} Z`}
+          fill="none"
+        />
+        
+        {/* Lines from center to outer points */}
+        {outerPoints.map((point, i) => (
+          <line 
+            key={`outer-center-${i}`}
+            x1="50" 
+            y1="50" 
+            x2={point.x} 
+            y2={point.y}
+            opacity="0.3"
           />
-        )
-      })}
-      
-      {/* Hexagon perimeter */}
-      <path
-        d={`M ${outerPoints[0].x},${outerPoints[0].y} ${outerPoints.map(p => `L ${p.x},${p.y}`).join(' ')} Z`}
-        fill="none"
-        stroke="url(#hexMandalaAuroraGold)"
-        strokeWidth="0.6"
-        opacity="0.5"
+        ))}
+        
+        {/* Lines from center to inner points */}
+        {innerPoints.map((point, i) => (
+          <line 
+            key={`inner-center-${i}`}
+            x1="50" 
+            y1="50" 
+            x2={point.x} 
+            y2={point.y}
+            opacity="0.5"
+          />
+        ))}
+        
+        {/* Star pattern connecting outer points (every 2nd point for hexagon) */}
+        {outerPoints.map((point, i) => {
+          const nextPoint = outerPoints[(i + 2) % 6]
+          return (
+            <line 
+              key={`star-${i}`}
+              x1={point.x} 
+              y1={point.y} 
+              x2={nextPoint.x} 
+              y2={nextPoint.y}
+              opacity="0.15"
+            />
+          )
+        })}
+
+        {/* Inner triangle connections */}
+        <path 
+          d={`M ${innerPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')} Z`}
+          fill="none"
+          opacity="0.5"
+        />
+      </g>
+
+      {/* Central wealth orb */}
+      <circle 
+        cx="50" 
+        cy="50" 
+        r="10" 
+        fill="url(#hexMandala-orb-gradient)"
       />
-      
-      {/* Inner triangle perimeter - more visible */}
-      <path
-        d={`M ${innerPoints[0].x},${innerPoints[0].y} ${innerPoints.map(p => `L ${p.x},${p.y}`).join(' ')} Z`}
-        fill="none"
-        stroke="url(#hexMandalaAuroraCyan)"
-        strokeWidth="0.8"
+      <circle 
+        cx="50" 
+        cy="50" 
+        r="6" 
+        fill="#ffd700" 
         opacity="0.7"
       />
-      
-      {/* Removed center connections for cleaner look */}
-      
-      {/* Mandala web - each outer point connects to aligned inner point + adjacent */}
-      {outerPoints.map((outerPoint, i) => {
-        // Hexagon has 6 points (0°, 60°, 120°, 180°, 240°, 300°)
-        // Triangle has 3 points (0°, 120°, 240°)
-        // Outer points 0,2,4 align with inner points 0,1,2
-        // Each outer connects to: its aligned inner + the previous inner
-        const alignedInner = Math.floor(i / 2) // 0,1→0  2,3→1  4,5→2
-        const previousInner = (alignedInner - 1 + 3) % 3
-        
-        return (
-          <g key={`mandala-${i}`}>
-            {/* Connect to aligned inner point */}
-            <line
-              x1={outerPoint.x}
-              y1={outerPoint.y}
-              x2={innerPoints[alignedInner].x}
-              y2={innerPoints[alignedInner].y}
-              stroke="url(#hexMandalaAuroraCyan)"
-              strokeWidth="0.5"
-              opacity="0.5"
-            />
-            {/* Connect to previous inner point */}
-            <line
-              x1={outerPoint.x}
-              y1={outerPoint.y}
-              x2={innerPoints[previousInner].x}
-              y2={innerPoints[previousInner].y}
-              stroke="url(#hexMandalaAuroraCyan)"
-              strokeWidth="0.5"
-              opacity="0.5"
-            />
-          </g>
-        )
-      })}
-      
-      {/* Central wealth orb */}
-      <circle
-        cx={centerX}
-        cy={centerY}
-        r="5"
-        fill="url(#hexMandalaOrb)"
-      />
-      
-      {/* Central orb highlight */}
-      <circle
-        cx={centerX - 1}
-        cy={centerY - 1}
-        r="2"
-        fill="#ffffff"
-        opacity="0.8"
-      />
-      
-      {/* Outer hexagon constellation points - larger for visibility */}
-      {outerPoints.map((point, i) => (
-        <g key={`outer-${i}`}>
-          <circle
-            cx={point.x}
-            cy={point.y}
-            r="3.5"
-            fill="url(#hexMandalaOuterPoint)"
-          />
-          <circle
-            cx={point.x}
-            cy={point.y}
-            r="1.7"
-            fill="#ffffff"
-            opacity="0.95"
-          />
-        </g>
-      ))}
-      
-      {/* Inner triangle constellation points - larger for visibility */}
+
+      {/* Inner constellation points (3 points - cyan) */}
       {innerPoints.map((point, i) => (
-        <g key={`inner-${i}`}>
-          <circle
-            cx={point.x}
-            cy={point.y}
-            r="3"
-            fill="url(#hexMandalaInnerPoint)"
+        <g key={`inner-point-${i}`}>
+          {/* Subtle glow */}
+          <circle 
+            cx={point.x} 
+            cy={point.y} 
+            r="4" 
+            fill="url(#hexMandala-inner-star)" 
+            opacity="0.3"
           />
-          <circle
-            cx={point.x}
-            cy={point.y}
-            r="1.5"
+          {/* Main point */}
+          <circle 
+            cx={point.x} 
+            cy={point.y} 
+            r="3" 
+            fill="url(#hexMandala-inner-star)"
+          />
+          {/* Center highlight */}
+          <circle 
+            cx={point.x} 
+            cy={point.y} 
+            r="1.5" 
             fill="#ffffff"
-            opacity="0.95"
           />
         </g>
       ))}
+
+      {/* Outer constellation points (6 points - gold) */}
+      {outerPoints.map((point, i) => (
+        <g key={`outer-point-${i}`}>
+          {/* Subtle glow */}
+          <circle 
+            cx={point.x} 
+            cy={point.y} 
+            r="5" 
+            fill="url(#hexMandala-outer-star)" 
+            opacity="0.3"
+          />
+          {/* Main point */}
+          <circle 
+            cx={point.x} 
+            cy={point.y} 
+            r="3.5" 
+            fill="url(#hexMandala-outer-star)"
+          />
+          {/* Center highlight */}
+          <circle 
+            cx={point.x} 
+            cy={point.y} 
+            r="1.5" 
+            fill="#ffffff"
+          />
+        </g>
+      ))}
+
+      {/* Orbital rings */}
+      <circle 
+        cx="50" 
+        cy="50" 
+        r={outerRadius} 
+        stroke="#d4af37" 
+        strokeWidth="0.4" 
+        fill="none" 
+        opacity="0.25"
+        strokeDasharray="2 2"
+      />
+      <circle 
+        cx="50" 
+        cy="50" 
+        r={innerRadius} 
+        stroke="#00d9ff" 
+        strokeWidth="0.4" 
+        fill="none" 
+        opacity="0.25"
+        strokeDasharray="2 2"
+      />
     </svg>
   )
 }
