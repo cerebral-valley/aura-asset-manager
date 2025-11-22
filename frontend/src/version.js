@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.261',
+  version: 'v0.262',
   buildDate: '2025-01-25',
-  deploymentId: 'favicon-logo-integration',
-  description: 'Add Minimalist Mandala logo as browser favicon. Created SVG favicon with sacred geometry design (6 outer gold points + 3 inner cyan points). Updated HTML to use SVG favicon with ICO fallback. Updated page title to "Aura Asset Manager - Your Command Center For Wealth" for better SEO and branding consistency. Logo now visible in browser tabs, bookmarks, and history.'
+  deploymentId: 'favicon-svg-fix',
+  description: 'Fix favicon SVG rendering issue. Corrected viewBox dimensions (100x100 instead of 32x32) and fixed SVG attribute naming (stroke-width instead of strokeWidth). Favicon now renders correctly in browser tabs with crisp MinimalistMandala logo design.'
 }
 
 export const getVersionDisplay = () => {
