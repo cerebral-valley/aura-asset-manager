@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.260',
+  version: 'v0.261',
   buildDate: '2025-01-25',
-  deploymentId: 'password-confirmation-signup',
-  description: 'Add password confirmation field for signup security. Users must now enter password twice during registration to prevent typos. Features: conditional confirm password field (only shows during signup), real-time validation before submission, clear error messages if passwords don\'t match, automatic field clearing when toggling between sign-in/sign-up modes. Improves UX and prevents account lockout from password typos.'
+  deploymentId: 'favicon-logo-integration',
+  description: 'Add Minimalist Mandala logo as browser favicon. Created SVG favicon with sacred geometry design (6 outer gold points + 3 inner cyan points). Updated HTML to use SVG favicon with ICO fallback. Updated page title to "Aura Asset Manager - Your Command Center For Wealth" for better SEO and branding consistency. Logo now visible in browser tabs, bookmarks, and history.'
 }
 
 export const getVersionDisplay = () => {
