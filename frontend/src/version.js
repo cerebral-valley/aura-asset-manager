@@ -2,10 +2,10 @@
 // This file is automatically updated with each deployment
 
 export const VERSION_INFO = {
-  version: 'v0.262',
+  version: 'v0.263',
   buildDate: '2025-01-25',
-  deploymentId: 'favicon-svg-fix',
-  description: 'Fix favicon SVG rendering issue. Corrected viewBox dimensions (100x100 instead of 32x32) and fixed SVG attribute naming (stroke-width instead of strokeWidth). Favicon now renders correctly in browser tabs with crisp MinimalistMandala logo design.'
+  deploymentId: 'favicon-gitignore-fix',
+  description: 'Fix favicon 404 error - .gitignore was blocking frontend/public/ folder. Updated .gitignore to allow Vite static assets, force-added favicon.svg and favicon.ico to git. Favicon files now properly deployed to Vercel and will display in browser tabs.'
 }
 
 export const getVersionDisplay = () => {

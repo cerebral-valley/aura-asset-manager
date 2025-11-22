@@ -1,0 +1,51 @@
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Sacred geometry connection lines -->
+  <g stroke="#d4af37" stroke-width="0.8" opacity="0.6">
+    <!-- Outer hexagon perimeter -->
+    <path d="M 50 10 L 83.30127018922194 25 L 83.30127018922194 75 L 50 90 L 16.69872981077806 75 L 16.69872981077806 25 Z" fill="none"/>
+    
+    <!-- Inner triangle perimeter -->
+    <path d="M 50 25 L 71.65063509461097 68.75 L 28.34936490538903 68.75 Z" fill="none" stroke-width="0.9"/>
+    
+    <!-- Star of David pattern -->
+    <line x1="50" y1="10" x2="83.30127018922194" y2="75" opacity="0.35" stroke-width="0.7"/>
+    <line x1="83.30127018922194" y1="25" x2="16.69872981077806" y2="75" opacity="0.35" stroke-width="0.7"/>
+    <line x1="83.30127018922194" y1="75" x2="16.69872981077806" y2="25" opacity="0.35" stroke-width="0.7"/>
+    <line x1="50" y1="90" x2="83.30127018922194" y2="25" opacity="0.35" stroke-width="0.7"/>
+    <line x1="16.69872981077806" y1="75" x2="50" y2="10" opacity="0.35" stroke-width="0.7"/>
+    <line x1="16.69872981077806" y1="25" x2="50" y2="90" opacity="0.35" stroke-width="0.7"/>
+  </g>
+
+  <!-- Central wealth orb -->
+  <circle cx="50" cy="50" r="7" fill="#ffd700" opacity="0.9"/>
+  <circle cx="50" cy="50" r="4" fill="#ffffff" opacity="0.3"/>
+
+  <!-- Inner constellation points (3 points - cyan) -->
+  <circle cx="50" cy="25" r="2.5" fill="#00d9ff"/>
+  <circle cx="50" cy="25" r="1" fill="#ffffff" opacity="0.6"/>
+  
+  <circle cx="71.65063509461097" cy="68.75" r="2.5" fill="#00d9ff"/>
+  <circle cx="71.65063509461097" cy="68.75" r="1" fill="#ffffff" opacity="0.6"/>
+  
+  <circle cx="28.34936490538903" cy="68.75" r="2.5" fill="#00d9ff"/>
+  <circle cx="28.34936490538903" cy="68.75" r="1" fill="#ffffff" opacity="0.6"/>
+
+  <!-- Outer constellation points (6 points - gold) -->
+  <circle cx="50" cy="10" r="3" fill="#d4af37"/>
+  <circle cx="50" cy="10" r="1" fill="#ffffff" opacity="0.6"/>
+  
+  <circle cx="83.30127018922194" cy="25" r="3" fill="#d4af37"/>
+  <circle cx="83.30127018922194" cy="25" r="1" fill="#ffffff" opacity="0.6"/>
+  
+  <circle cx="83.30127018922194" cy="75" r="3" fill="#d4af37"/>
+  <circle cx="83.30127018922194" cy="75" r="1" fill="#ffffff" opacity="0.6"/>
+  
+  <circle cx="50" cy="90" r="3" fill="#d4af37"/>
+  <circle cx="50" cy="90" r="1" fill="#ffffff" opacity="0.6"/>
+  
+  <circle cx="16.69872981077806" cy="75" r="3" fill="#d4af37"/>
+  <circle cx="16.69872981077806" cy="75" r="1" fill="#ffffff" opacity="0.6"/>
+  
+  <circle cx="16.69872981077806" cy="25" r="3" fill="#d4af37"/>
+  <circle cx="16.69872981077806" cy="25" r="1" fill="#ffffff" opacity="0.6"/>
+</svg>
